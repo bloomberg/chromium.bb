@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webgl/webgl_webcodecs_video_frame.h"
 
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/wait_and_replace_sync_token_client.h"
@@ -26,14 +27,15 @@ namespace blink {
 
 namespace {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const char kRequiredExtension[] = "GL_NV_EGL_stream_consumer_external";
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 const char kRequiredExtension[] = "GL_ANGLE_texture_rectangle";
-#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
 const char kRequiredExtension[] = "GL_OES_EGL_image_external";
 #else
 const char kRequiredExtension[] = "";
+#define NO_REQUIRED_EXTENSIONS
 #endif
 
 void GetMediaTaskRunnerAndGpuFactoriesOnMainThread(
@@ -53,21 +55,21 @@ WebGLWebCodecsVideoFrame::WebGLWebCodecsVideoFrame(
     : WebGLExtension(context) {
   context->ContextGL()->RequestExtensionCHROMIUM(kRequiredExtension);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // texture_rectangle needs to be turned on for MAC.
   context->ContextGL()->Enable(GC3D_TEXTURE_RECTANGLE_ARB);
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   formats_supported[media::PIXEL_FORMAT_NV12] = true;
   auto& components_nv12 = format_to_components_map_[media::PIXEL_FORMAT_NV12];
   components_nv12[media::VideoFrame::kYPlane] = "r";
   components_nv12[media::VideoFrame::kUPlane] = "rg";
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   formats_supported[media::PIXEL_FORMAT_XRGB] = true;
   auto& components_xrgb = format_to_components_map_[media::PIXEL_FORMAT_XRGB];
   components_xrgb[media::VideoFrame::kYPlane] = "rgba";
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   formats_supported[media::PIXEL_FORMAT_ABGR] = true;
   auto& components_abgr = format_to_components_map_[media::PIXEL_FORMAT_ABGR];
   components_abgr[media::VideoFrame::kYPlane] = "rgb";
@@ -77,7 +79,7 @@ WebGLWebCodecsVideoFrame::WebGLWebCodecsVideoFrame(
   auto& components_nv12 = format_to_components_map_[media::PIXEL_FORMAT_NV12];
   components_nv12[media::VideoFrame::kYPlane] = "r";
   components_nv12[media::VideoFrame::kUPlane] = "rg";
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS)
   formats_supported[media::PIXEL_FORMAT_ABGR] = true;
   auto& components_abgr = format_to_components_map_[media::PIXEL_FORMAT_ABGR];
   components_abgr[media::VideoFrame::kYPlane] = "rgb";
@@ -98,10 +100,11 @@ WebGLExtensionName WebGLWebCodecsVideoFrame::GetName() const {
 bool WebGLWebCodecsVideoFrame::Supported(WebGLRenderingContextBase* context) {
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    BUILDFLAG(IS_FUCHSIA)
   // TODO(jie.a.chen@intel.com): Add Linux support.
   return false;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   // This extension is only supported on the passthrough command
   // decoder on macOS.
   DrawingBuffer* drawing_buffer = context->GetDrawingBuffer();
@@ -133,14 +136,14 @@ WebGLWebCodecsVideoFrameHandle* WebGLWebCodecsVideoFrame::importVideoFrame(
   const char* sampler_func = "texture2D";
   gfx::ColorSpace src_color_space = gfx::ColorSpace::CreateREC709();
   media::VideoPixelFormat pixel_format = media::PIXEL_FORMAT_UNKNOWN;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   sampler_type = "samplerExternalOES";
   pixel_format = media::PIXEL_FORMAT_NV12;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   sampler_type = "sampler2DRect";
   sampler_func = "texture2DRect";
   pixel_format = media::PIXEL_FORMAT_XRGB;
-#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
   sampler_type = "samplerExternalOES";
   pixel_format = media::PIXEL_FORMAT_ABGR;
   src_color_space = gfx::ColorSpace::CreateSRGB();
@@ -167,9 +170,9 @@ WebGLWebCodecsVideoFrameHandle* WebGLWebCodecsVideoFrame::importVideoFrame(
       return nullptr;
     }
     frame = std::move(hardware_video_frame_);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     sampler_type = "sampler2D";
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
     sampler_type = "sampler2D";
     pixel_format = frame->format();
     src_color_space = frame->ColorSpace();
@@ -217,9 +220,9 @@ WebGLWebCodecsVideoFrameHandle* WebGLWebCodecsVideoFrame::importVideoFrame(
   WebGLWebCodecsVideoFrameHandle* video_frame_handle =
       MakeGarbageCollected<WebGLWebCodecsVideoFrameHandle>();
   video_frame_handle->setTextureInfoArray(info_array);
-  if (std::string(kRequiredExtension) != "") {
-    video_frame_handle->setRequiredExtension(kRequiredExtension);
-  }
+#ifndef NO_REQUIRED_EXTENSIONS
+  video_frame_handle->setRequiredExtension(kRequiredExtension);
+#endif
   // Remove "PIXEL_FORMAT_" prefix
   auto&& video_pixel_format =
       V8VideoPixelFormat::Create(&VideoPixelFormatToString(pixel_format)[13]);
@@ -231,10 +234,10 @@ WebGLWebCodecsVideoFrameHandle* WebGLWebCodecsVideoFrame::importVideoFrame(
   // video streams?
   video_frame_handle->setFlipY(true);
   video_frame_handle->setPremultipliedAlpha(false);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   DCHECK(frame->format() == media::PIXEL_FORMAT_NV12);
   src_color_space = frame->ColorSpace();
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   video_frame_handle->setRequiredExtension("GL_ARB_texture_rectangle");
   video_frame_handle->setPremultipliedAlpha(true);
   src_color_space = frame->ColorSpace();

@@ -14,6 +14,8 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -26,6 +28,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/sessions/app_session_service.h"
@@ -58,6 +62,7 @@
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -65,12 +70,12 @@
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/buildflags.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #endif
 
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
 #endif
 
@@ -81,12 +86,13 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/crosapi/browser_util.h"
-#include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_utils.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
 
 namespace {
@@ -101,14 +107,8 @@ namespace {
 // restarted.
 bool ShouldRestoreApps(bool is_post_restart, Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // If the full restore feature is enabled, check the full restore file.
-  // Restore apps only when there are apps launched before reboot.
-  if (full_restore::features::IsFullRestoreEnabled())
-    return full_restore::HasAppTypeBrowser(profile->GetPath());
-
-  // If the full restore feature is disabled, always restores apps
-  // unconditionally.
-  return true;
+  // In ChromeOS, restore apps only when there are apps launched before reboot.
+  return full_restore::HasAppTypeBrowser(profile->GetPath());
 #else
   return is_post_restart;
 #endif
@@ -160,7 +160,7 @@ void StartupBrowserCreatorImpl::MaybeToggleFullscreen(Browser* browser) {
   }
 }
 
-bool StartupBrowserCreatorImpl::Launch(
+void StartupBrowserCreatorImpl::Launch(
     Profile* profile,
     chrome::startup::IsProcessStartup process_startup,
     std::unique_ptr<LaunchModeRecorder> launch_mode_recorder) {
@@ -188,7 +188,7 @@ bool StartupBrowserCreatorImpl::Launch(
         command_line_.GetSwitchValueASCII(switches::kInstallChromeApp));
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (process_startup == chrome::startup::IsProcessStartup::kYes) {
     // Check whether the auto-update system needs to be promoted from user
     // to system.
@@ -202,8 +202,6 @@ bool StartupBrowserCreatorImpl::Launch(
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (browser)
     MaybeToggleFullscreen(browser);
-
-  return true;
 }
 
 Browser* StartupBrowserCreatorImpl::OpenURLsInBrowser(
@@ -243,8 +241,19 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
     // at the state of the MessageLoop.
     Browser::CreateParams params = Browser::CreateParams(profile_, false);
     params.creation_source = Browser::CreationSource::kStartupCreator;
+#if BUILDFLAG(IS_LINUX)
+    params.startup_id = command_line_.GetSwitchValueASCII("desktop-startup-id");
+#endif
     browser = Browser::Create(params);
   }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* init_params = chromeos::BrowserInitParams::Get();
+  bool from_arc =
+      init_params->initial_browser_action ==
+          crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls &&
+      init_params->startup_urls_from == crosapi::mojom::OpenUrlFrom::kArc;
+#endif
 
   bool first_tab = true;
   custom_handlers::ProtocolHandlerRegistry* registry =
@@ -293,6 +302,17 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
 
     Navigate(&params);
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (from_arc) {
+      auto* tab = params.navigated_or_inserted_contents;
+      if (tab) {
+        // Add a flag to remember this tab originated in the ARC context.
+        tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                         std::make_unique<arc::ArcWebContentsData>(tab));
+      }
+    }
+#endif
+
     first_tab = false;
   }
   if (!browser->tab_strip_model()->GetActiveWebContents()) {
@@ -311,13 +331,18 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
 StartupBrowserCreatorImpl::LaunchResult
 StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     chrome::startup::IsProcessStartup process_startup) {
-  if (!ShouldLaunch(command_line_))
+  if (StartupBrowserCreator::ShouldLoadProfileWithoutWindow(command_line_)) {
+    // Checking the flags this late in the launch should be redundant.
+    // TODO(https://crbug.com/1300109): Remove by M104.
+    NOTREACHED();
+    base::debug::DumpWithoutCrashing();
     return LaunchResult::kNormally;
+  }
 
   const bool is_incognito_or_guest = profile_->IsOffTheRecord();
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
   bool has_incompatible_applications = false;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (is_post_crash_launch) {
     // Check if there are any incompatible applications cached from the last
@@ -359,12 +384,28 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   const bool whats_new_enabled =
-      promotional_tabs_enabled && whats_new::ShouldShowForState(local_state);
+      whats_new::ShouldShowForState(local_state, promotional_tabs_enabled);
+
+  auto* privacy_sandbox_serivce =
+      PrivacySandboxServiceFactory::GetForProfile(profile_);
+  const bool will_use_new_notice_ui =
+      privacy_sandbox::kPrivacySandboxSettings3NewNotice.Get() &&
+      (privacy_sandbox_serivce &&
+       privacy_sandbox_serivce->GetRequiredPromptType() ==
+           PrivacySandboxService::PromptType::kNotice);
+  // Don't add any tabs for the new notice UI. It is a bubble instead of the
+  // modal dialog and it will stay up even while the user is navigating.
+  const bool privacy_sandbox_dialog_required =
+      privacy_sandbox_serivce &&
+      privacy_sandbox_serivce->GetRequiredPromptType() !=
+          PrivacySandboxService::PromptType::kNone &&
+      !will_use_new_notice_ui;
 
   auto result = DetermineStartupTabs(
       StartupTabProviderImpl(), process_startup, is_incognito_or_guest,
       is_post_crash_launch, has_incompatible_applications,
-      promotional_tabs_enabled, welcome_enabled, whats_new_enabled);
+      promotional_tabs_enabled, welcome_enabled, whats_new_enabled,
+      privacy_sandbox_dialog_required);
   StartupTabs tabs = std::move(result.tabs);
 
   // Return immediately if we start an async restore, since the remainder of
@@ -389,7 +430,7 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   SessionRestore::BehaviorBitmask restore_options =
       SessionRestore::RESTORE_BROWSER;
   if (behavior == BrowserOpenBehavior::SYNCHRONOUS_RESTORE) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     bool was_mac_login_or_resume = base::mac::WasLaunchedAsLoginOrResumeItem();
 #else
     bool was_mac_login_or_resume = false;
@@ -433,7 +474,8 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool has_incompatible_applications,
     bool promotional_tabs_enabled,
     bool welcome_enabled,
-    bool whats_new_enabled) {
+    bool whats_new_enabled,
+    bool privacy_sandbox_dialog_required) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   {
     // If URLs are passed via crosapi, forcibly opens those tabs.
@@ -447,6 +489,11 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
       provider.GetCommandLineTabs(command_line_, cur_dir_, profile_);
   LaunchResult launch_result =
       tabs.empty() ? LaunchResult::kNormally : LaunchResult::kWithGivenUrls;
+
+  if (whats_new_enabled && (launch_result == LaunchResult::kWithGivenUrls ||
+                            is_incognito_or_guest || is_post_crash_launch)) {
+    whats_new::LogStartupType(whats_new::StartupType::kIneligible);
+  }
 
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
   // A similar policy exists for crash recovery launches, to prevent getting the
@@ -485,7 +532,7 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
     StartupTabs onboarding_tabs;
     if (promotional_tabs_enabled) {
       StartupTabs welcome_back_tabs;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       // This is a launch from a prompt presented to an inactive user who chose
       // to open Chrome and is being brought to a specific URL for this one
       // launch. Launch the browser with the desired welcome back URL in the
@@ -494,7 +541,7 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
       welcome_back_tabs = provider.GetWelcomeBackTabs(
           profile_, browser_creator_, process_startup);
       AppendTabs(welcome_back_tabs, &tabs);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
       if (welcome_enabled) {
         // Policies for welcome (e.g., first run) may show promotional and
@@ -513,6 +560,8 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
         StartupTabs new_features_tabs;
         new_features_tabs = provider.GetNewFeaturesTabs(whats_new_enabled);
         AppendTabs(new_features_tabs, &tabs);
+      } else if (whats_new_enabled) {
+        whats_new::LogStartupType(whats_new::StartupType::kOverridden);
       }
     }
 
@@ -527,6 +576,14 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
     // URLs from preferences are explicitly meant to override showing the NTP.
     if (onboarding_tabs.empty() && prefs_tabs.empty())
       AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
+
+    // Potentially add a tab appropriate to display the Privacy Sandbox
+    // confirmaton dialog on top of. Ideally such a tab will already exist
+    // in |tabs|, and no additional tab will be required.
+    if (onboarding_tabs.empty() && privacy_sandbox_dialog_required &&
+        launch_result == LaunchResult::kNormally) {
+      AppendTabs(provider.GetPrivacySandboxTabs(profile_, tabs), &tabs);
+    }
   }
 
   // Maybe add any tabs which the user has previously pinned.
@@ -647,30 +704,6 @@ StartupBrowserCreatorImpl::DetermineSynchronousRestoreOptions(
     options |= SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
 
   return options;
-}
-
-// static
-bool StartupBrowserCreatorImpl::ShouldLaunch(
-    const base::CommandLine& command_line) {
-  // Don't open any browser windows if starting up in "background mode".
-  if (command_line.HasSwitch(switches::kNoStartupWindow))
-    return false;
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    // Don't open any browser windows if Ash requested that Lacros not do so.
-    // The implicit assumption is that some other code is responsible for
-    // keeping Lacros running in the background.
-    // Temporarily remove this logic to deal with https://crbug.com/1278549.
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // If Lacros is the primary web browser, do not open the browser window
-  // on Chrome OS session login.
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser())
-    return false;
-#endif
-
-  return true;
 }
 
 // static

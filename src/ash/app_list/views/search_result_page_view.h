@@ -74,6 +74,9 @@ class ASH_EXPORT SearchResultPageView
   void UpdatePageOpacityForState(AppListState state,
                                  float search_box_opacity,
                                  bool restore_opacity) override;
+  void UpdatePageBoundsForState(AppListState state,
+                                const gfx::Rect& contents_bounds,
+                                const gfx::Rect& search_box_bounds) override;
   gfx::Rect GetPageBoundsForState(
       AppListState state,
       const gfx::Rect& contents_bounds,
@@ -132,6 +135,10 @@ class ASH_EXPORT SearchResultPageView
   SearchResultListView* GetSearchResultListViewForTest();
 
  private:
+  // All possible states for the search results page. Used with productivity
+  // launcher.
+  enum class SearchResultsState { kClosed, kActive, kExpanded };
+
   // Separator between SearchResultContainerView.
   class HorizontalSeparator;
 
@@ -167,6 +174,23 @@ class ASH_EXPORT SearchResultPageView
   // selected search result view.
   void NotifySelectedResultChanged();
 
+  // Animates from the current search results state to the `target_state`. Used
+  // with productivity launcher.
+  void AnimateToSearchResultsState(SearchResultsState target_state);
+
+  // Transitions between `from_rect` and `to_rect` by animating the clip rect.
+  void AnimateBetweenBounds(const gfx::Rect& from_rect,
+                            const gfx::Rect& to_rect);
+
+  // Called when the clip rect animation between bounds has ended.
+  void OnAnimationBetweenBoundsEnded();
+
+  // Get the page bounds according to the input SearchResultsState.
+  gfx::Rect GetPageBoundsForResultState(SearchResultsState state) const;
+
+  // Get the corner radius associated with the SearchResultsState.
+  int GetCornerRadiusForSearchResultsState(SearchResultsState state);
+
   template <typename T>
   T* AddSearchResultContainerView(std::unique_ptr<T> result_container) {
     auto* result = result_container.get();
@@ -176,6 +200,8 @@ class ASH_EXPORT SearchResultPageView
 
   void AddSearchResultContainerViewInternal(
       std::unique_ptr<SearchResultContainerView> result_container);
+
+  AppListViewDelegate* view_delegate_ = nullptr;
 
   // The SearchResultContainerViews that compose the search page. All owned by
   // the views hierarchy.
@@ -213,6 +239,10 @@ class ASH_EXPORT SearchResultPageView
   // The last reported number of search results shown within search result
   // containers.
   int last_search_result_count_ = 0;
+
+  // The currently shown search results state. Used with productivity launcher.
+  SearchResultsState current_search_results_state_ =
+      SearchResultsState::kClosed;
 
   std::unique_ptr<ViewShadow> view_shadow_;
 

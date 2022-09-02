@@ -11,10 +11,13 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
+
+namespace blink {
+enum class PermissionType;
+}
 
 namespace content {
-enum class PermissionType;
-class WebContents;
 class RenderFrameHost;
 }  // namespace content
 
@@ -55,7 +58,7 @@ class PermissionUtil {
   // to remove the usage in PermissionUmaUtil, which uses PermissionType as a
   // histogram value to count permission request metrics.
   static bool GetPermissionType(ContentSettingsType type,
-                                content::PermissionType* out);
+                                blink::PermissionType* out);
 
   // Checks whether the given ContentSettingsType is a permission. Use this
   // to determine whether a specific ContentSettingsType is supported by the
@@ -71,13 +74,24 @@ class PermissionUtil {
   static bool CanPermissionBeAllowedOnce(ContentSettingsType type);
 
   // Returns the authoritative `embedding origin`, as a GURL, to be used for
-  // permission decisions in `web_contents`.
-  // TODO(crbug.com/698985): This method should only be used temporarily, and
-  // ultimately all call sites should be migrated to determine the authoritative
-  // security origin based on the requesting RenderFrameHost.
-  static GURL GetLastCommittedOriginAsURL(content::WebContents* web_contents);
+  // permission decisions in `render_frame_host`.
+  // TODO(crbug.com/1327384): Remove this method when possible.
   static GURL GetLastCommittedOriginAsURL(
       content::RenderFrameHost* render_frame_host);
+
+  // Helper method to convert PermissionType to ContentSettingType.
+  // If PermissionType is not supported or found, returns
+  // ContentSettingsType::DEFAULT.
+  static ContentSettingsType PermissionTypeToContentSettingSafe(
+      blink::PermissionType permission);
+
+  // Helper method to convert PermissionType to ContentSettingType.
+  static ContentSettingsType PermissionTypeToContentSetting(
+      blink::PermissionType permission);
+
+  // Helper method to convert PermissionStatus to ContentSetting.
+  static ContentSetting PermissionStatusToContentSetting(
+      blink::mojom::PermissionStatus status);
 };
 
 }  // namespace permissions

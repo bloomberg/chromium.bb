@@ -377,7 +377,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   const gfx::Rect disp_1_bounds(0, 0, 800, 600);
   EXPECT_EQ(disp_1_bounds, display_1.bounds());
   gfx::Rect disp_1_workarea_no_magnifier = disp_1_bounds;
-  disp_1_workarea_no_magnifier.Inset(0, 0, 0, ShelfConfig::Get()->shelf_size());
+  disp_1_workarea_no_magnifier.Inset(
+      gfx::Insets::TLBR(0, 0, ShelfConfig::Get()->shelf_size(), 0));
   EXPECT_EQ(disp_1_workarea_no_magnifier, display_1.work_area());
   // At this point, normal mouse cursor confinement should be used.
   AshWindowTreeHost* host1 =
@@ -391,7 +392,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   const gfx::Rect disp_2_bounds(800, 0, 400, 300);
   EXPECT_EQ(disp_2_bounds, display_2.bounds());
   gfx::Rect disp_2_workarea_no_magnifier = disp_2_bounds;
-  disp_2_workarea_no_magnifier.Inset(0, 0, 0, ShelfConfig::Get()->shelf_size());
+  disp_2_workarea_no_magnifier.Inset(
+      gfx::Insets::TLBR(0, 0, ShelfConfig::Get()->shelf_size(), 0));
   EXPECT_EQ(disp_2_workarea_no_magnifier, display_2.work_area());
   AshWindowTreeHost* host2 =
       Shell::Get()
@@ -414,14 +416,19 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   gfx::Rect disp_1_workspace_with_magnifier = disp_1_workarea_no_magnifier;
   const int disp_1_magnifier_height =
       GetMagnifierHeight(disp_1_bounds.height());
-  disp_1_workspace_with_magnifier.Inset(0, disp_1_magnifier_height, 0, 0);
+  disp_1_workspace_with_magnifier.Inset(
+      gfx::Insets::TLBR(disp_1_magnifier_height, 0, 0, 0));
   EXPECT_EQ(disp_1_bounds, display_1.bounds());
   EXPECT_EQ(disp_1_workspace_with_magnifier, display_1.work_area());
   // The first display should confine the mouse movement outside of the
   // viewport.
-  const gfx::Rect disp_1_confine_bounds(
+  gfx::Rect disp_1_confine_bounds(
       0, disp_1_magnifier_height, disp_1_bounds.width(),
       disp_1_bounds.height() - disp_1_magnifier_height);
+  if (::features::IsDockedMagnifierResizingEnabled()) {
+    disp_1_confine_bounds.Inset(
+        gfx::Insets().set_top(-DockedMagnifierController::kSeparatorHeight));
+  }
   EXPECT_EQ(host1->GetLastCursorConfineBoundsInPixels(), disp_1_confine_bounds);
 
   // The second display should remain unaffected.
@@ -449,12 +456,17 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   gfx::Rect disp_2_workspace_with_magnifier = disp_2_workarea_no_magnifier;
   const int disp_2_magnifier_height =
       GetMagnifierHeight(disp_2_bounds.height());
-  disp_2_workspace_with_magnifier.Inset(0, disp_2_magnifier_height, 0, 0);
+  disp_2_workspace_with_magnifier.Inset(
+      gfx::Insets().set_top(disp_2_magnifier_height));
   EXPECT_EQ(disp_2_workspace_with_magnifier, display_2.work_area());
   // Display 2's mouse is confined outside the viewport.
-  const gfx::Rect disp_2_confine_bounds(
+  gfx::Rect disp_2_confine_bounds(
       0, disp_2_magnifier_height, disp_2_bounds.width(),
       disp_2_bounds.height() - disp_2_magnifier_height);
+  if (::features::IsDockedMagnifierResizingEnabled()) {
+    disp_2_confine_bounds.Inset(
+        gfx::Insets().set_top(-DockedMagnifierController::kSeparatorHeight));
+  }
   EXPECT_EQ(host2->GetLastCursorConfineBoundsInPixels(), disp_2_confine_bounds);
 
   // Now, disable the magnifier, and expect both displays to return back to
@@ -495,7 +507,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   const display::Display& display = display_manager()->GetDisplayAt(0);
   gfx::Rect workarea = display.bounds();
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
-  workarea.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
+  workarea.Inset(gfx::Insets::TLBR(magnifier_height, 0,
+                                   ShelfConfig::Get()->shelf_size(), 0));
   EXPECT_EQ(workarea, display.work_area());
   EXPECT_EQ(workarea, window->bounds());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
@@ -583,7 +596,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();
-  work_area.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
+  work_area.Inset(gfx::Insets::TLBR(magnifier_height, 0,
+                                    ShelfConfig::Get()->shelf_size(), 0));
   EXPECT_EQ(work_area, display.work_area());
   EXPECT_EQ(work_area, window->bounds());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
@@ -633,7 +647,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();
-  work_area.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
+  work_area.Inset(gfx::Insets::TLBR(magnifier_height, 0,
+                                    ShelfConfig::Get()->shelf_size(), 0));
   EXPECT_EQ(work_area, display.work_area());
   EXPECT_EQ(work_area.height(), window1->bounds().height());
   EXPECT_EQ(work_area.height(), window2->bounds().height());
@@ -848,7 +863,7 @@ TEST_F(DockedMagnifierTest, ResizeDockedMagnifier) {
             viewport_widget->GetWindowBoundsInScreen());
 }
 
-// Tests to verify dragging about separator does not resize docked magnifier.
+// Tests to verify dragging above separator does not resize docked magnifier.
 TEST_F(DockedMagnifierTest, DragAboveSeparatorDoesNotResizeDockedMagnifier) {
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
@@ -871,9 +886,9 @@ TEST_F(DockedMagnifierTest, DragAboveSeparatorDoesNotResizeDockedMagnifier) {
   EXPECT_EQ(gfx::Rect(0, 0, 800, viewport_height),
             viewport_widget->GetWindowBoundsInScreen());
 
-  // Move cursor 1px above the docked magnifier separator, in the viewport area,
+  // Move cursor 2px above the docked magnifier separator, in the viewport area,
   // where dragging should not work.
-  gfx::Point mouse_location(400, viewport_height - 1);
+  gfx::Point mouse_location(400, viewport_height - 2);
   GetEventGenerator()->MoveMouseTo(mouse_location);
 
   // Drag 100 pixels down.
@@ -883,6 +898,60 @@ TEST_F(DockedMagnifierTest, DragAboveSeparatorDoesNotResizeDockedMagnifier) {
   // Assert docked magnifier viewport size remains at old height.
   EXPECT_EQ(gfx::Rect(0, 0, 800, viewport_height),
             viewport_widget->GetWindowBoundsInScreen());
+}
+
+// Tests to verify hovering and resizing the docked magnifier moves the cursor
+// in front of the viewport.
+TEST_F(DockedMagnifierTest, HoverAndResizeDockedMagnifierMovesCursorInFront) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(::features::kDockedMagnifierResizing);
+
+  UpdateDisplay("800x600");
+  const auto root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(1u, root_windows.size());
+
+  controller()->SetEnabled(true);
+  EXPECT_TRUE(controller()->GetEnabled());
+  const views::Widget* viewport_widget =
+      controller()->GetViewportWidgetForTesting();
+  ASSERT_NE(nullptr, viewport_widget);
+  EXPECT_EQ(root_windows[0], viewport_widget->GetNativeView()->GetRootWindow());
+  const int viewport_height =
+      root_windows[0]->bounds().height() /
+      DockedMagnifierController::kDefaultScreenHeightDivisor;
+  EXPECT_EQ(gfx::Rect(0, 0, 800, viewport_height),
+            viewport_widget->GetWindowBoundsInScreen());
+
+  CursorWindowController* cursor_window_controller =
+      Shell::Get()->window_tree_host_manager()->cursor_window_controller();
+
+  // Verify mouse is in layer behind separator.
+  EXPECT_EQ(cursor_window_controller->GetContainerForTest()->GetId(),
+            ash::kShellWindowId_MouseCursorContainer);
+
+  // Move cursor over the docked magnifier separator.
+  gfx::Point mouse_location(400, viewport_height);
+  GetEventGenerator()->MoveMouseTo(mouse_location);
+
+  // Verify mouse is in layer on top of separator
+  EXPECT_EQ(cursor_window_controller->GetContainerForTest()->GetId(),
+            ash::kShellWindowId_DockedMagnifierContainer);
+
+  // Drag mouse 100 pixels down.
+  mouse_location = gfx::Point(400, viewport_height + 100);
+  GetEventGenerator()->DragMouseTo(mouse_location);
+
+  // Assert mouse is still in layer on top of separator.
+  EXPECT_EQ(cursor_window_controller->GetContainerForTest()->GetId(),
+            ash::kShellWindowId_DockedMagnifierContainer);
+
+  // Move mouse 50 pixels down.
+  mouse_location = gfx::Point(400, viewport_height + 50);
+  GetEventGenerator()->MoveMouseTo(mouse_location);
+
+  // Assert mouse is back in layer behind separator.
+  EXPECT_EQ(cursor_window_controller->GetContainerForTest()->GetId(),
+            ash::kShellWindowId_MouseCursorContainer);
 }
 
 // Tests that there are no crashes observed when the docked magnifier switches

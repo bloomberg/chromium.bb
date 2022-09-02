@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/display/manager/content_protection_key_manager.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager_export.h"
 
@@ -110,6 +111,11 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
                               uint32_t protection_mask,
                               ApplyContentProtectionCallback callback);
 
+  void SetProvisionedKeyRequest(
+      ContentProtectionKeyManager::ProvisionedKeyRequest request) {
+    hdcp_key_manager_.set_provisioned_key_request(request);
+  }
+
  private:
   friend class test::ContentProtectionManagerTest;
 
@@ -147,7 +153,7 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
   void OnDisplayModeChangeFailed(const DisplayConfigurator::DisplayStateList&,
                                  MultipleDisplayState) override;
 
-  bool ShouldPollDisplaySecurity() const;
+  bool HasExternalDisplaysWithContentProtection() const;
 
   // Toggles timer for periodic security queries given latest client requests.
   void ToggleDisplaySecurityPolling();
@@ -162,6 +168,9 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
                                 Task::Status status,
                                 uint32_t connection_mask,
                                 uint32_t protection_mask);
+
+  void QueueContentProtectionTask(ApplyContentProtectionCallback callback,
+                                  ClientId client_id);
 
   DisplayLayoutManager* const layout_manager_;                // Not owned.
   NativeDisplayDelegate* native_display_delegate_ = nullptr;  // Not owned.
@@ -180,6 +189,8 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
 
   // Used for periodic queries to notify observers of display security changes.
   base::RepeatingTimer security_timer_;
+
+  ContentProtectionKeyManager hdcp_key_manager_;
 
   base::WeakPtrFactory<ContentProtectionManager> weak_ptr_factory_{this};
 };

@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColorSpace.h"
 #include "src/core/SkSpecialImage.h"
 #include "src/core/SkSurfacePriv.h"
 
@@ -119,7 +120,7 @@ sk_sp<SkSpecialSurface> SkSpecialSurface::MakeRaster(const SkImageInfo& info,
 #if SK_SUPPORT_GPU
 ///////////////////////////////////////////////////////////////////////////////
 #include "include/gpu/GrRecordingContext.h"
-#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
 
 class SkSpecialSurface_Gpu : public SkSpecialSurface_Base {
 public:
@@ -157,14 +158,15 @@ private:
 
 sk_sp<SkSpecialSurface> SkSpecialSurface::MakeRenderTarget(GrRecordingContext* rContext,
                                                            const SkImageInfo& ii,
-                                                           const SkSurfaceProps& props) {
+                                                           const SkSurfaceProps& props,
+                                                           GrSurfaceOrigin surfaceOrigin) {
     if (!rContext) {
         return nullptr;
     }
 
     auto device = rContext->priv().createDevice(SkBudgeted::kYes, ii, SkBackingFit::kApprox, 1,
                                                 GrMipmapped::kNo, GrProtected::kNo,
-                                                kBottomLeft_GrSurfaceOrigin, props,
+                                                surfaceOrigin, props,
                                                 skgpu::BaseDevice::InitContents::kUninit);
     if (!device) {
         return nullptr;

@@ -2,14 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-interface Window {
-  UI: {themeSupport: unknown}
-}
-
-interface RegExp {
-  __fromRegExpQuery: boolean;
-}
-
 declare class AnchorBox {
   x: number;
   y: number;
@@ -68,10 +60,6 @@ declare namespace Adb {
   type NetworkDiscoveryConfig = string[];
 }
 
-interface Document {
-  deepActiveElement(): Element|null;
-}
-
 interface HTMLElement {
   createChild(tagName: string, className?: string, content?: string): HTMLElement;
   totalOffset(): {left: number, top: number};
@@ -123,19 +111,6 @@ declare function isEnterOrSpaceKey(event: Event): boolean;
 declare function isEscKey(event: Event): boolean;
 declare function onInvokeElement(element: Element, callback: (event: Event) => void): void;
 
-interface ServicePort {
-  setHandlers(messageHandler: (arg: string) => void, closeHandler: () => void): void;
-
-  send(message: string): Promise<boolean>;
-
-  close(): Promise<boolean>;
-}
-
-declare class diff_match_patch {
-  diff_main(text1: string, text2: string): Array<{0: number, 1: string}>;
-  diff_cleanupSemantic(diff: Array<{0: number, 1: string}>): void;
-}
-
 // The following types exist in Chrome but were removed for various reasons
 // from the TypeScript DOM library.
 //
@@ -147,8 +122,8 @@ interface DOMError {
 }
 
 interface ShadowRoot {
-  elementFromPoint(x: number, y: number): Element | null;
-  getSelection(): Selection | null;
+  elementFromPoint(x: number, y: number): Element|null;
+  getSelection(): Selection|null;
 }
 
 interface HTMLDialogElement {

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -15,6 +16,10 @@
 namespace gfx {
 class RenderText;
 class Size;
+}
+
+namespace ui {
+class ColorProvider;
 }
 
 // CanvasImageSource for creating extension icon with a badge.
@@ -36,7 +41,11 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
     SkColor background_color;
   };
 
-  explicit IconWithBadgeImageSource(const gfx::Size& size);
+  using GetColorProviderCallback =
+      base::RepeatingCallback<const ui::ColorProvider*()>;
+  IconWithBadgeImageSource(
+      const gfx::Size& size,
+      GetColorProviderCallback get_color_provider_callback);
 
   IconWithBadgeImageSource(const IconWithBadgeImageSource&) = delete;
   IconWithBadgeImageSource& operator=(const IconWithBadgeImageSource&) = delete;
@@ -75,6 +84,8 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   // the area where the icon exists (ignoring all the paddings).
   // https://crbug.com/831946.
   gfx::Rect GetIconAreaRect() const;
+
+  GetColorProviderCallback get_color_provider_callback_;
 
   // The base icon to draw.
   gfx::Image icon_;

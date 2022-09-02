@@ -114,11 +114,19 @@ template<> struct unpacket_traits<Packet2cf> { typedef std::complex<float> type;
 template<> EIGEN_STRONG_INLINE Packet2cf pset1<Packet2cf>(const std::complex<float>&  from)
 {
   Packet2cf res;
+#ifdef __VSX__
+  // Load a single std::complex<float> from memory and duplicate
+  //
+  // Using pload would read past the end of the reference in this case
+  // Using vec_xl_len + vec_splat, generates poor assembly
+  __asm__ ("lxvdsx %x0,%y1" : "=wa" (res.v) : "Z" (from));
+#else
   if((std::ptrdiff_t(&from) % 16) == 0)
     res.v = pload<Packet4f>((const float *)&from);
   else
     res.v = ploadu<Packet4f>((const float *)&from);
   res.v = vec_perm(res.v, res.v, p16uc_PSET64_HI);
+#endif
   return res;
 }
 
@@ -129,20 +137,21 @@ template<> EIGEN_STRONG_INLINE Packet2cf ploaddup<Packet2cf>(const std::complex<
 template<> EIGEN_STRONG_INLINE void pstore <std::complex<float> >(std::complex<float> *   to, const Packet2cf& from) { pstore((float*)to, from.v); }
 template<> EIGEN_STRONG_INLINE void pstoreu<std::complex<float> >(std::complex<float> *   to, const Packet2cf& from) { pstoreu((float*)to, from.v); }
 
-EIGEN_STRONG_INLINE Packet2cf pload2(const std::complex<float>* from0, const std::complex<float>* from1)
+EIGEN_STRONG_INLINE Packet2cf pload2(const std::complex<float>& from0, const std::complex<float>& from1)
 {
   Packet4f res0, res1;
 #ifdef __VSX__
-  __asm__ ("lxsdx %x0,%y1" : "=wa" (res0) : "Z" (*from0));
-  __asm__ ("lxsdx %x0,%y1" : "=wa" (res1) : "Z" (*from1));
+  // Load two std::complex<float> from memory and combine
+  __asm__ ("lxsdx %x0,%y1" : "=wa" (res0) : "Z" (from0));
+  __asm__ ("lxsdx %x0,%y1" : "=wa" (res1) : "Z" (from1));
 #ifdef _BIG_ENDIAN
   __asm__ ("xxpermdi %x0, %x1, %x2, 0" : "=wa" (res0) : "wa" (res0), "wa" (res1));
 #else
   __asm__ ("xxpermdi %x0, %x2, %x1, 0" : "=wa" (res0) : "wa" (res0), "wa" (res1));
 #endif
 #else
-  *reinterpret_cast<std::complex<float> *>(&res0) = *from0;
-  *reinterpret_cast<std::complex<float> *>(&res1) = *from1;
+  *reinterpret_cast<std::complex<float> *>(&res0) = from0;
+  *reinterpret_cast<std::complex<float> *>(&res1) = from1;
   res0 = vec_perm(res0, res1, p16uc_TRANSPOSE64_HI);
 #endif
   return Packet2cf(res0);
@@ -186,7 +195,7 @@ template<> EIGEN_STRONG_INLINE std::complex<float>  pfirst<Packet2cf>(const Pack
 template<> EIGEN_STRONG_INLINE Packet2cf preverse(const Packet2cf& a)
 {
   Packet4f rev_a;
-  rev_a = vec_perm(a.v, a.v, p16uc_COMPLEX32_REV2);
+  rev_a = vec_sld(a.v, a.v, 8);
   return Packet2cf(rev_a);
 }
 
@@ -222,8 +231,8 @@ template<> EIGEN_STRONG_INLINE Packet2cf pcplxflip<Packet2cf>(const Packet2cf& x
 
 EIGEN_STRONG_INLINE void ptranspose(PacketBlock<Packet2cf,2>& kernel)
 {
-  Packet4f tmp = vec_perm(kernel.packet[0].v, kernel.packet[1].v, p16uc_TRANSPOSE64_HI);
-  kernel.packet[1].v = vec_perm(kernel.packet[0].v, kernel.packet[1].v, p16uc_TRANSPOSE64_LO);
+  Packet4f tmp = reinterpret_cast<Packet4f>(vec_mergeh(reinterpret_cast<Packet2d>(kernel.packet[0].v), reinterpret_cast<Packet2d>(kernel.packet[1].v)));
+  kernel.packet[1].v = reinterpret_cast<Packet4f>(vec_mergel(reinterpret_cast<Packet2d>(kernel.packet[0].v), reinterpret_cast<Packet2d>(kernel.packet[1].v)));
   kernel.packet[0].v = tmp;
 }
 
@@ -358,7 +367,7 @@ template<> EIGEN_STRONG_INLINE void prefetch<std::complex<double> >(const std::c
 
 template<> EIGEN_STRONG_INLINE std::complex<double>  pfirst<Packet1cd>(const Packet1cd& a)
 {
-  EIGEN_ALIGN16 std::complex<double> res[2];
+  EIGEN_ALIGN16 std::complex<double> res[1];
   pstore<std::complex<double> >(res, a);
 
   return res[0];
@@ -384,8 +393,8 @@ EIGEN_STRONG_INLINE Packet1cd pcplxflip/*<Packet1cd>*/(const Packet1cd& x)
 
 EIGEN_STRONG_INLINE void ptranspose(PacketBlock<Packet1cd,2>& kernel)
 {
-  Packet2d tmp = vec_perm(kernel.packet[0].v, kernel.packet[1].v, p16uc_TRANSPOSE64_HI);
-  kernel.packet[1].v = vec_perm(kernel.packet[0].v, kernel.packet[1].v, p16uc_TRANSPOSE64_LO);
+  Packet2d tmp = vec_mergeh(kernel.packet[0].v, kernel.packet[1].v);
+  kernel.packet[1].v = vec_mergel(kernel.packet[0].v, kernel.packet[1].v);
   kernel.packet[0].v = tmp;
 }
 

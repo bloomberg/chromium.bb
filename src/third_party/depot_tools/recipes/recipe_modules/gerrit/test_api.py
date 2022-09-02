@@ -12,6 +12,7 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
     # Exemplary change. Note: This contains only a subset of the key/value pairs
     # present in production to limit recipe simulation output.
     data = {
+        'id': 'fully~qualified~changeid',
         'status': 'NEW',
         'created': '2017-01-30 13:11:20.000000000',
         '_number': str(change_number),

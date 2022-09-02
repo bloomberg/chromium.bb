@@ -20,6 +20,7 @@
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -501,6 +502,21 @@ TEST_F(LockScreenMediaControlsViewTest, CloseButtonVisibility) {
   EXPECT_TRUE(media_controls_view_->IsDrawn());
   EXPECT_TRUE(close_button()->IsDrawn());
   EXPECT_FALSE(CloseButtonHasImage());
+
+  // Focusing the close button should show it.
+  views::FocusManager* focus_manager = media_controls_view_->GetFocusManager();
+  focus_manager->SetFocusedView(close_button());
+  EXPECT_EQ(close_button(), focus_manager->GetFocusedView());
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+  EXPECT_TRUE(close_button()->IsDrawn());
+  EXPECT_TRUE(CloseButtonHasImage());
+
+  // Move focus somewhere else and the close button should hide.
+  SimulateTab();
+  EXPECT_NE(close_button(), focus_manager->GetFocusedView());
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+  EXPECT_TRUE(close_button()->IsDrawn());
+  EXPECT_FALSE(CloseButtonHasImage());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, CloseButtonClick) {
@@ -665,8 +681,12 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateAppIcon) {
   SimulateMediaSessionChanged(
       media_session::mojom::MediaPlaybackState::kPlaying);
 
+  const bool should_use_dark_color =
+      features::IsDarkLightModeEnabled() &&
+      AshColorProvider::Get()->IsDarkModeEnabled();
   gfx::ImageSkia default_icon = gfx::CreateVectorIcon(
-      message_center::kProductIcon, kAppIconSize, gfx::kChromeIconGrey);
+      message_center::kProductIcon, kAppIconSize,
+      should_use_dark_color ? gfx::kGoogleGrey500 : gfx::kGoogleGrey700);
 
   // Verify that the icon is initialized to the default.
   EXPECT_TRUE(icon_view()->GetImage().BackedBySameObjectAs(default_icon));

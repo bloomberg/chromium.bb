@@ -55,11 +55,6 @@ BOOL IsShowcaseModelValid(NSArray<showcase::ModelRow*>* model) {
       showcase::kUseCaseKey : @"Credential Provider Consent UI",
     },
     @{
-      showcase::kClassForDisplayKey : @"ConsentLegacyViewController",
-      showcase::kClassForInstantiationKey : @"ConsentLegacyViewController",
-      showcase::kUseCaseKey : @"Legacy Credential Provider Consent UI",
-    },
-    @{
       showcase::kClassForDisplayKey : @"EnterpriseLoadScreenViewController",
       showcase::
       kClassForInstantiationKey : @"EnterpriseLoadScreenViewController",
@@ -198,6 +193,11 @@ BOOL IsShowcaseModelValid(NSArray<showcase::ModelRow*>* model) {
       showcase::kClassForDisplayKey : @"LinkPreviewViewController",
       showcase::kClassForInstantiationKey : @"SCLinkPreviewCoordinator",
       showcase::kUseCaseKey : @"Link Preview",
+    },
+    @{
+      showcase::kClassForDisplayKey : @"SCFollowViewController",
+      showcase::kClassForInstantiationKey : @"SCFollowViewController",
+      showcase::kUseCaseKey : @"Web Channels First Follow and Follow Mgmt UI",
     },
   ];
   DCHECK(IsShowcaseModelValid(model));

@@ -5,11 +5,16 @@
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
 
 #import "base/values.h"
+#import "ios/web/common/crw_viewport_adjustment.h"
+#import "ios/web/common/crw_viewport_adjustment_container.h"
+#include "ios/web/common/features.h"
 #import "ios/web/js_features/context_menu/context_menu_params_utils.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_delegate.h"
 #import "ios/web/web_state/ui/crw_context_menu_element_fetcher.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -33,11 +38,8 @@ void __attribute__((noinline)) ContextMenuNestedCFRunLoop() {
 // The context menu responsible for the interaction.
 @property(nonatomic, strong) UIContextMenuInteraction* contextMenu;
 
-// Views used to do the highlight/dismiss animation. Those view are empty and
-// are used to override the default animation which is to focus the whole
-// WebView (as the interaction is used on the whole WebView).
-@property(nonatomic, strong, readonly) UIView* highlightView;
-@property(nonatomic, strong, readonly) UIView* dismissView;
+// View used to do the highlight/dismiss animation.
+@property(nonatomic, strong) UIImageView* screenshotView;
 
 @property(nonatomic, strong) WKWebView* webView;
 
@@ -49,8 +51,7 @@ void __attribute__((noinline)) ContextMenuNestedCFRunLoop() {
 
 @implementation CRWContextMenuController
 
-@synthesize highlightView = _highlightView;
-@synthesize dismissView = _dismissView;
+@synthesize screenshotView = _screenshotView;
 
 - (instancetype)initWithWebView:(WKWebView*)webView
                        webState:(web::WebState*)webState {
@@ -72,24 +73,21 @@ void __attribute__((noinline)) ContextMenuNestedCFRunLoop() {
 
 #pragma mark - Property
 
-- (UIView*)highlightView {
-  if (!_highlightView) {
+- (UIImageView*)screenshotView {
+  if (!_screenshotView) {
     // If the views have a CGRectZero size, it is not taken into account.
     CGRect rectSizedOne = CGRectMake(0, 0, 1, 1);
-    _highlightView = [[UIView alloc] initWithFrame:rectSizedOne];
-    _highlightView.backgroundColor = UIColor.clearColor;
+    _screenshotView = [[UIImageView alloc] initWithFrame:rectSizedOne];
+    _screenshotView.backgroundColor = UIColor.clearColor;
   }
-  return _highlightView;
+  return _screenshotView;
 }
 
-- (UIView*)dismissView {
-  if (!_dismissView) {
-    // If the views have a CGRectZero size, it is not taken into account.
-    CGRect rectSizedOne = CGRectMake(0, 0, 1, 1);
-    _dismissView = [[UIView alloc] initWithFrame:rectSizedOne];
-    _dismissView.backgroundColor = UIColor.clearColor;
+- (void)setScreenshotView:(UIImageView*)screenshotView {
+  if (_screenshotView.superview) {
+    [_screenshotView removeFromSuperview];
   }
-  return _dismissView;
+  _screenshotView = screenshotView;
 }
 
 #pragma mark - UIContextMenuInteractionDelegate
@@ -100,33 +98,36 @@ void __attribute__((noinline)) ContextMenuNestedCFRunLoop() {
   CGPoint locationInWebView =
       [self.webView.scrollView convertPoint:location fromView:interaction.view];
 
-  absl::optional<web::ContextMenuParams> params =
+  absl::optional<web::ContextMenuParams> optionalParams =
       [self fetchContextMenuParamsAtLocation:locationInWebView];
 
-  if (!params.has_value() ||
-      !web::CanShowContextMenuForParams(params.value())) {
+  if (!optionalParams.has_value()) {
     return nil;
   }
+  web::ContextMenuParams params = optionalParams.value();
 
-  // User long pressed on a link or an image. Cancelling all touches will
-  // intentionally suppress system context menu UI. See crbug.com/1250352.
-  [self cancelAllTouches];
+  self.screenshotView.center = location;
 
-  // Adding the highlight/dismiss view here so they can be used in the
-  // delegate's methods.
-  [interaction.view addSubview:self.highlightView];
-  [interaction.view addSubview:self.dismissView];
-  self.highlightView.center = location;
-  self.dismissView.center = location;
+  // Adding the screenshotView here so they can be used in the
+  // delegate's methods. Will be removed if no menu is presented.
+  [interaction.view addSubview:self.screenshotView];
 
-  params.value().location = [self.webView convertPoint:location
-                                              fromView:interaction.view];
+  params.location = [self.webView convertPoint:location
+                                      fromView:interaction.view];
 
   __block UIContextMenuConfiguration* configuration;
   self.webState->GetDelegate()->ContextMenuConfiguration(
-      self.webState, params.value(), ^(UIContextMenuConfiguration* conf) {
+      self.webState, params, ^(UIContextMenuConfiguration* conf) {
         configuration = conf;
       });
+
+  if (configuration) {
+    // User long pressed on a link or an image. Cancelling all touches will
+    // intentionally suppress system context menu UI. See crbug.com/1250352.
+    [self cancelAllTouches];
+  } else {
+    [self.screenshotView removeFromSuperview];
+  }
 
   return configuration;
 }
@@ -135,18 +136,29 @@ void __attribute__((noinline)) ContextMenuNestedCFRunLoop() {
                           (UIContextMenuInteraction*)interaction
     previewForHighlightingMenuWithConfiguration:
         (UIContextMenuConfiguration*)configuration {
-  return [[UITargetedPreview alloc] initWithView:self.highlightView];
+  UIPreviewParameters* previewParameters = [[UIPreviewParameters alloc] init];
+  previewParameters.backgroundColor = UIColor.clearColor;
+
+  return [[UITargetedPreview alloc] initWithView:self.screenshotView
+                                      parameters:previewParameters];
 }
 
 - (UITargetedPreview*)contextMenuInteraction:
                           (UIContextMenuInteraction*)interaction
     previewForDismissingMenuWithConfiguration:
         (UIContextMenuConfiguration*)configuration {
+  UIPreviewParameters* previewParameters = [[UIPreviewParameters alloc] init];
+  previewParameters.backgroundColor = UIColor.clearColor;
+
   // If the dismiss view is not attached to the view hierarchy, fallback to nil
   // to prevent app crashing. See crbug.com/1231888.
-  return self.dismissView.window
-             ? [[UITargetedPreview alloc] initWithView:self.dismissView]
-             : nil;
+  UITargetedPreview* targetPreview =
+      self.screenshotView.window
+          ? [[UITargetedPreview alloc] initWithView:self.screenshotView
+                                         parameters:previewParameters]
+          : nil;
+  self.screenshotView = nil;
+  return targetPreview;
 }
 
 - (void)contextMenuInteraction:(UIContextMenuInteraction*)interaction
@@ -156,6 +168,18 @@ void __attribute__((noinline)) ContextMenuNestedCFRunLoop() {
         (id<UIContextMenuInteractionCommitAnimating>)animator {
   self.webState->GetDelegate()->ContextMenuWillCommitWithAnimator(self.webState,
                                                                   animator);
+}
+
+- (void)contextMenuInteraction:(UIContextMenuInteraction*)interaction
+       willEndForConfiguration:(UIContextMenuConfiguration*)configuration
+                      animator:(id<UIContextMenuInteractionAnimating>)animator {
+  __weak UIView* weakScreenshotView = self.screenshotView;
+  [animator addCompletion:^{
+    // Check if |self.screenshotView| has already been replaced and removed.
+    if (self.screenshotView && self.screenshotView == weakScreenshotView) {
+      [self.screenshotView removeFromSuperview];
+    }
+  }];
 }
 
 #pragma mark - Private

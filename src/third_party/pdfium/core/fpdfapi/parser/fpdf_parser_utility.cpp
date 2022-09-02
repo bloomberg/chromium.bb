@@ -93,6 +93,20 @@ int32_t GetDirectInteger(const CPDF_Dictionary* pDict, const ByteString& key) {
   return pObj ? pObj->GetInteger() : 0;
 }
 
+CPDF_Array* GetOrCreateArray(CPDF_Dictionary* dict, const ByteString& key) {
+  CPDF_Array* result = dict->GetArrayFor(key);
+  if (result)
+    return result;
+  return dict->SetNewFor<CPDF_Array>(key);
+}
+
+CPDF_Dictionary* GetOrCreateDict(CPDF_Dictionary* dict, const ByteString& key) {
+  CPDF_Dictionary* result = dict->GetDictFor(key);
+  if (result)
+    return result;
+  return dict->SetNewFor<CPDF_Dictionary>(key);
+}
+
 ByteString PDF_NameDecode(ByteStringView orig) {
   size_t src_size = orig.GetLength();
   size_t out_index = 0;
@@ -183,6 +197,12 @@ bool ValidateDictAllResourcesOfType(const CPDF_Dictionary* dict,
 
 bool ValidateFontResourceDict(const CPDF_Dictionary* dict) {
   return ValidateDictAllResourcesOfType(dict, "Font");
+}
+
+bool ValidateDictOptionalType(const CPDF_Dictionary* dict,
+                              ByteStringView type) {
+  DCHECK(!type.IsEmpty());
+  return dict && (!dict->KeyExist("Type") || dict->GetNameFor("Type") == type);
 }
 
 std::ostream& operator<<(std::ostream& buf, const CPDF_Object* pObj) {

@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -203,9 +204,6 @@ class ScopedFocusNavigation {
   static ScopedFocusNavigation OwnedByIFrame(const HTMLFrameOwnerElement&,
                                              FocusController::OwnerMap&);
   static HTMLSlotElement* FindFallbackScopeOwnerSlot(const Element&);
-  static bool IsSlotFallbackScoped(const Element&);
-  static bool IsSlotFallbackScopedForThisSlot(const HTMLSlotElement&,
-                                              const Element&);
 
  private:
   ScopedFocusNavigation(ContainerNode& scoping_root_node,
@@ -331,25 +329,6 @@ HTMLSlotElement* ScopedFocusNavigation::FindFallbackScopeOwnerSlot(
     parent = parent->parentElement();
   }
   return nullptr;
-}
-
-bool ScopedFocusNavigation::IsSlotFallbackScoped(const Element& element) {
-  return ScopedFocusNavigation::FindFallbackScopeOwnerSlot(element);
-}
-
-bool ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
-    const HTMLSlotElement& slot,
-    const Element& current) {
-  Element* parent = current.parentElement();
-  while (parent) {
-    auto* html_slot_element = DynamicTo<HTMLSlotElement>(parent);
-    if (html_slot_element && html_slot_element->AssignedNodes().IsEmpty()) {
-      return !SlotScopedTraversal::IsSlotScoped(current) &&
-             html_slot_element == slot;
-    }
-    parent = parent->parentElement();
-  }
-  return false;
 }
 
 inline void DispatchBlurEvent(const Document& document,
@@ -919,11 +898,19 @@ void FocusController::FocusHasChanged() {
 }
 
 void FocusController::SetFocused(bool focused) {
+  // If we are setting focus, we should be active.
+  DCHECK(!focused || is_active_);
   if (is_focused_ == focused)
     return;
   is_focused_ = focused;
   if (!is_emulating_focus_)
     FocusHasChanged();
+
+  // If the page has completely lost focus ensure we clear the focused
+  // frame.
+  if (!is_focused_ && page_->IsMainFrameFencedFrameRoot()) {
+    SetFocusedFrame(nullptr);
+  }
 }
 
 void FocusController::SetFocusEmulationEnabled(bool emulate_focus) {
@@ -1142,7 +1129,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
 
   SetFocusedFrame(new_document.GetFrame());
 
-  element->focus(
+  element->Focus(
       FocusParams(SelectionBehaviorOnFocus::kReset, type, source_capabilities));
   return true;
 }
@@ -1158,12 +1145,12 @@ Element* FocusController::FindFocusableElement(mojom::blink::FocusType type,
   return FindFocusableElementAcrossFocusScopes(type, scope, owner_map);
 }
 
-Element* FocusController::NextFocusableElementInForm(
+Element* FocusController::NextFocusableElementForIME(
     Element* element,
     mojom::blink::FocusType focus_type) {
   // TODO(ajith.v) Due to crbug.com/781026 when next/previous element is far
   // from current element in terms of tabindex, then it's signalling CPU load.
-  // Will nvestigate further for a proper solution later.
+  // Will investigate further for a proper solution later.
   static const int kFocusTraversalThreshold = 50;
   element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
   auto* html_element = DynamicTo<HTMLElement>(element);
@@ -1180,9 +1167,6 @@ Element* FocusController::NextFocusableElementInForm(
   else
     form_owner = form_control_element->formOwner();
 
-  if (!form_owner)
-    return nullptr;
-
   OwnerMap owner_map;
   Element* next_element = FindFocusableElement(focus_type, *element, owner_map);
   int traversal = 0;
@@ -1193,27 +1177,43 @@ Element* FocusController::NextFocusableElementInForm(
     auto* next_html_element = DynamicTo<HTMLElement>(next_element);
     if (!next_html_element)
       continue;
-    if (next_html_element->isContentEditableForBinding() &&
-        next_element->IsDescendantOf(form_owner))
-      return next_element;
-    auto* form_element = DynamicTo<HTMLFormControlElement>(next_element);
-    if (!form_element)
+    if (next_html_element->isContentEditableForBinding()) {
+      if (form_owner) {
+        if (next_element->IsDescendantOf(form_owner)) {
+          // |element| and |next_element| belongs to the same <form> element.
+          return next_element;
+        }
+      } else {
+        if (!Traversal<HTMLFormElement>::FirstAncestor(*next_html_element)) {
+          // Neither this |element| nor the |next_element| has a form owner,
+          // i.e. belong to the virtual <form>less form.
+          return next_element;
+        }
+      }
+    }
+    auto* next_form_control_element =
+        DynamicTo<HTMLFormControlElement>(next_element);
+    if (!next_form_control_element)
       continue;
-    if (form_element->formOwner() != form_owner ||
-        form_element->IsDisabledOrReadOnly())
+    if (next_form_control_element->formOwner() != form_owner ||
+        next_form_control_element->IsDisabledOrReadOnly())
       continue;
     // Focusless spatial navigation supports all form types. However, submit
     // buttons are explicitly excluded as moving to them isn't necessary - the
     // IME should just submit instead.
     if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled() &&
         page_->GetSettings().GetSpatialNavigationEnabled() &&
-        !form_element->CanBeSuccessfulSubmitButton()) {
+        !next_form_control_element->CanBeSuccessfulSubmitButton()) {
       return next_element;
     }
     LayoutObject* layout = next_element->GetLayoutObject();
     if (layout && layout->IsTextControlIncludingNG()) {
-      // TODO(ajith.v) Extend it for select elements, radio buttons and check
-      // boxes
+      // TODO(crbug.com/1320441): Extend it for radio buttons and checkboxes.
+      return next_element;
+    }
+
+    if (auto* select_element =
+            DynamicTo<HTMLSelectElement>(next_form_control_element)) {
       return next_element;
     }
   }
@@ -1222,6 +1222,9 @@ Element* FocusController::NextFocusableElementInForm(
 
 // This is an implementation of step 2 of the "shadow host" branch of
 // https://html.spec.whatwg.org/C/#get-the-focusable-area
+// TODO(https://crbug.com/383230): update this to the latest spec for "focus
+// delegate", including using Element::GetAutofocusDelegate(), and use it for
+// <dialog> too.
 Element* FocusController::FindFocusableElementInShadowHost(
     const Element& shadow_host) {
   DCHECK(shadow_host.AuthorShadowRoot());
@@ -1298,6 +1301,34 @@ bool FocusController::SetFocusedElement(Element* element,
       new_document->FocusedElement() == element)
     return true;
 
+  // Fenced frame focusing should not auto-scroll, since that behavior can
+  // be observed by an embedder.
+  FocusParams params_to_use = params;
+  if (new_document && params.type == mojom::blink::FocusType::kScript &&
+      new_document->GetFrame()->IsInFencedFrameTree()) {
+    FocusOptions* focus_options = FocusOptions::Create();
+    focus_options->setPreventScroll(true);
+    params_to_use = FocusParams(params.selection_behavior, params.type,
+                                params.source_capabilities, focus_options);
+  }
+
+  if (new_focused_frame && !new_focused_frame->ShouldAllowScriptFocus() &&
+      params_to_use.type == mojom::blink::FocusType::kScript) {
+    // Disallow script focus that crosses a fenced frame boundary on a
+    // frame that doesn't have transient user activation.
+    if (!new_focused_frame->HasTransientUserActivation())
+      return false;
+    // Fenced frames should consume user activation when attempting to pull
+    // focus across a fenced boundary into itself.
+    // TODO(crbug.com/1123606) Right now the browser can't verify that the
+    // renderer properly consumed user activation. When user activation code is
+    // migrated to the browser, move this logic to the browser as well.
+    if (new_focused_frame->IsInFencedFrameTree()) {
+      LocalFrame::ConsumeTransientUserActivation(
+          DynamicTo<LocalFrame>(new_focused_frame));
+    }
+  }
+
   if (old_document && old_document != new_document)
     old_document->ClearFocusedElement();
 
@@ -1305,11 +1336,12 @@ bool FocusController::SetFocusedElement(Element* element,
     SetFocusedFrame(nullptr);
     return false;
   }
+
   SetFocusedFrame(new_focused_frame);
 
   if (new_document) {
     bool successfully_focused =
-        new_document->SetFocusedElement(element, params);
+        new_document->SetFocusedElement(element, params_to_use);
     if (!successfully_focused)
       return false;
 

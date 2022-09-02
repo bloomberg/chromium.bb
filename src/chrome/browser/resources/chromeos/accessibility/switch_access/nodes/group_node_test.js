@@ -6,17 +6,13 @@ GEN_INCLUDE(['../switch_access_e2e_test_base.js']);
 
 /** Test fixture for the node wrapper type. */
 SwitchAccessGroupNodeTest = class extends SwitchAccessE2ETest {
-  setUp() {
-    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
-    (async function() {
-      await importModule(
-          ['BasicNode', 'BasicRootNode'], '/switch_access/nodes/basic_node.js');
-      await importModule('GroupNode', '/switch_access/nodes/group_node.js');
-      await importModule(
-          'SwitchAccessMenuAction',
-          '/switch_access/switch_access_constants.js');
-      runTest();
-    })();
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule(
+        ['BasicNode', 'BasicRootNode'], '/switch_access/nodes/basic_node.js');
+    await importModule('GroupNode', '/switch_access/nodes/group_node.js');
+    await importModule(
+        'SwitchAccessMenuAction', '/switch_access/switch_access_constants.js');
   }
 };
 
@@ -37,10 +33,10 @@ TEST_F('SwitchAccessGroupNodeTest', 'NodesRemoved', function() {
     root.children_ = [groupNode];
 
     // Try asking for the location of the group.
-    assertTrue(!!groupNode.location);
+    assertTrue(Boolean(groupNode.location));
 
     // Try again after clearing one of the button's underlying node.
     buttonNode.baseNode_ = undefined;
-    assertTrue(!!groupNode.location);
+    assertTrue(Boolean(groupNode.location));
   });
 });

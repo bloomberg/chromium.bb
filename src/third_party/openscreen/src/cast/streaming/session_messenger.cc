@@ -126,9 +126,8 @@ void SenderSessionMessenger::OnMessage(const std::string& source_id,
                                        const std::string& message_namespace,
                                        const std::string& message) {
   if (source_id != receiver_id_) {
-    OSP_DLOG_WARN << "Received message from unknown/incorrect Cast Receiver, "
-                     "expected id \""
-                  << receiver_id_ << "\", got \"" << source_id << "\"";
+    OSP_DLOG_WARN << "Received message from unknown/incorrect Cast Receiver "
+                  << source_id << ". Currently connected to " << receiver_id_;
     return;
   }
 
@@ -204,10 +203,11 @@ void ReceiverSessionMessenger::SetHandler(SenderMessage::Type type,
   callbacks_.emplace_back(type, std::move(cb));
 }
 
-Error ReceiverSessionMessenger::SendMessage(ReceiverMessage message) {
-  if (sender_session_id_.empty()) {
+Error ReceiverSessionMessenger::SendMessage(const std::string& sender_id,
+                                            ReceiverMessage message) {
+  if (sender_id.empty()) {
     return Error(Error::Code::kInitializationFailure,
-                 "Tried to send a message without receiving one first");
+                 "Cannot send a message without a current sender ID.");
   }
 
   const auto namespace_ = (message.type == ReceiverMessage::Type::kRpc)
@@ -216,23 +216,13 @@ Error ReceiverSessionMessenger::SendMessage(ReceiverMessage message) {
 
   ErrorOr<Json::Value> message_json = message.ToJson();
   OSP_CHECK(message_json.is_value()) << "Tried to send an invalid message";
-  return SessionMessenger::SendMessage(sender_session_id_, namespace_,
+  return SessionMessenger::SendMessage(sender_id, namespace_,
                                        message_json.value());
 }
 
 void ReceiverSessionMessenger::OnMessage(const std::string& source_id,
                                          const std::string& message_namespace,
                                          const std::string& message) {
-  // We assume we are connected to the first sender_id we receive.
-  if (sender_session_id_.empty()) {
-    sender_session_id_ = source_id;
-  } else if (source_id != sender_session_id_) {
-    OSP_DLOG_WARN << "Received message from unknown/incorrect sender, expected "
-                     "id \""
-                  << sender_session_id_ << "\", got \"" << source_id << "\"";
-    return;
-  }
-
   if (message_namespace != kCastWebrtcNamespace &&
       message_namespace != kCastRemotingNamespace) {
     OSP_DLOG_WARN << "Received message from unknown namespace: "
@@ -271,7 +261,7 @@ void ReceiverSessionMessenger::OnMessage(const std::string& source_id,
   if (it == callbacks_.end()) {
     OSP_DLOG_INFO << "Received message without a callback, dropping";
   } else {
-    it->second(sender_message.value());
+    it->second(source_id, sender_message.value());
   }
 }
 

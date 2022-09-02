@@ -15,7 +15,6 @@ void check_dim(const Xpr& ) {
   STATIC_CHECK( Xpr::NumDimensions == ExpectedDim );
 }
 
-#if EIGEN_HAS_CXX11
 template<template <typename,int,int> class Object>
 void map_num_dimensions()
 {
@@ -58,8 +57,6 @@ using TArray = Array<Scalar,Rows,Cols>;
 template<typename Scalar, int Rows, int Cols>
 using TMatrix = Matrix<Scalar,Rows,Cols>;
 
-#endif
-
 EIGEN_DECLARE_TEST(num_dimensions)
 {
   int n = 10;
@@ -81,10 +78,7 @@ EIGEN_DECLARE_TEST(num_dimensions)
   SparseVector<double> s(n);
   CALL_SUBTEST( check_dim<1>(s) );
   CALL_SUBTEST( check_dim<1>(s.head(2)) );
-  
 
-  #if EIGEN_HAS_CXX11
   CALL_SUBTEST( map_num_dimensions<TArray>() );
   CALL_SUBTEST( map_num_dimensions<TMatrix>() );
-  #endif
 }

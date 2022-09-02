@@ -133,6 +133,7 @@ class LoginScreenClientImpl : public ash::LoginScreenClient {
   void OnSystemTrayBubbleShown() override;
   void OnLoginScreenShown() override;
   void OnUserActivity() override;
+  views::Widget* GetLoginWindowWidget() override;
 
  private:
   void SetPublicSessionKeyboardLayout(
@@ -158,6 +159,8 @@ class LoginScreenClientImpl : public ash::LoginScreenClient {
   base::ObserverList<ash::SystemTrayObserver>::Unchecked system_tray_observers_;
 
   base::ObserverList<LoginScreenShownObserver> login_screen_shown_observers_;
+
+  base::TimeTicks time_show_gaia_signin_initiated_;
 
   base::WeakPtrFactory<LoginScreenClientImpl> weak_ptr_factory_{this};
 };

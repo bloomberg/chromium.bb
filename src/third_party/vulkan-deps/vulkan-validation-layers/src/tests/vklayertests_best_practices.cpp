@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +20,8 @@
 #include "best_practices_error_enums.h"
 
 void VkBestPracticesLayerTest::InitBestPracticesFramework() {
-    // Enable all vendor-specific checks    
-    InitBestPracticesFramework("");    
+    // Enable all vendor-specific checks
+    InitBestPracticesFramework("");
 }
 
 void VkBestPracticesLayerTest::InitBestPracticesFramework(const char* vendor_checks_to_enable) {
@@ -133,6 +133,7 @@ TEST_F(VkBestPracticesLayerTest, UseDeprecatedInstanceExtensions) {
     // Create a 1.0 vulkan instance and request an extension promoted to core in 1.1
     m_errorMonitor->ExpectSuccess(VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT);
     m_errorMonitor->SetUnexpectedError("UNASSIGNED-khronos-Validation-debug-build-warning-message");
+    m_errorMonitor->SetUnexpectedError("UNASSIGNED-khronos-Validation-fine-grained-locking-warning-message");
     VkApplicationInfo new_info{};
     new_info.apiVersion = VK_API_VERSION_1_0;
     new_info.pApplicationName = ici.pApplicationInfo->pApplicationName;
@@ -148,11 +149,7 @@ TEST_F(VkBestPracticesLayerTest, UseDeprecatedInstanceExtensions) {
 TEST_F(VkBestPracticesLayerTest, UseDeprecatedDeviceExtensions) {
     TEST_DESCRIPTION("Create a device with a deprecated extension.");
 
-    uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_2);
-    if (version < VK_API_VERSION_1_2) {
-        printf("%s At least Vulkan version 1.2 is required, skipping test.\n", kSkipPrefix);
-        return;
-    }
+    SetTargetApiVersion(VK_API_VERSION_1_2);
 
     if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
         m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
@@ -164,8 +161,7 @@ TEST_F(VkBestPracticesLayerTest, UseDeprecatedDeviceExtensions) {
     ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s At least Vulkan version 1.2 is required for device, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
@@ -800,13 +796,13 @@ TEST_F(VkBestPracticesLayerTest, ClearAttachmentsAfterLoadSecondary) {
     CreatePipelineHelper pipe_masked(*this);
     pipe_masked.InitInfo();
     pipe_masked.InitState();
-    pipe_masked.cb_attachments_.colorWriteMask = 0;
+    pipe_masked.cb_attachments_[0].colorWriteMask = 0;
     pipe_masked.CreateGraphicsPipeline();
 
     CreatePipelineHelper pipe_writes(*this);
     pipe_writes.InitInfo();
     pipe_writes.InitState();
-    pipe_writes.cb_attachments_.colorWriteMask = 0xf;
+    pipe_writes.cb_attachments_[0].colorWriteMask = 0xf;
     pipe_writes.CreateGraphicsPipeline();
 
     m_commandBuffer->begin();
@@ -932,6 +928,18 @@ TEST_F(VkBestPracticesLayerTest, TripleBufferingTest) {
         return;
     }
 
+    bool fifo_present = false;
+    for (const auto &present_mode : m_surface_present_modes) {
+        if (present_mode == VK_PRESENT_MODE_FIFO_KHR) {
+            fifo_present = true;
+            break;
+        }
+    }
+    if (!fifo_present) {
+        printf("%s fifo present mode not supported, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
     VkImageUsageFlags imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     VkSurfaceTransformFlagBitsKHR preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 
@@ -948,14 +956,14 @@ TEST_F(VkBestPracticesLayerTest, TripleBufferingTest) {
     swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchain_create_info.preTransform = preTransform;
     swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
-    swapchain_create_info.presentMode = m_surface_non_shared_present_mode;
+    swapchain_create_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
     swapchain_create_info.clipped = VK_FALSE;
     swapchain_create_info.oldSwapchain = 0;
 
     VkResult err = vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
     m_errorMonitor->VerifyFound();
 
-    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit,
                                          "UNASSIGNED-BestPractices-vkCreateSwapchainKHR-suboptimal-swapchain-image-count");
     swapchain_create_info.minImageCount = 3;
     err = vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
@@ -1207,12 +1215,360 @@ TEST_F(VkBestPracticesLayerTest, CreatePipelineVsFsTypeMismatchArraySize) {
         }
     )glsl";
 
-    VkShaderObj vs(m_device, vsSource, VK_SHADER_STAGE_VERTEX_BIT, this);
-    VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+    VkShaderObj vs(this, vsSource, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     const auto set_info = [&](CreatePipelineHelper &helper) {
         helper.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
     };
     CreatePipelineHelper::OneshotTest(*this, set_info, kPerformanceWarningBit | kErrorBit,
                                       "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed");
+}
+
+TEST_F(VkBestPracticesLayerTest, WorkgroupSizeDeprecated) {
+    TEST_DESCRIPTION("SPIR-V 1.6 deprecated WorkgroupSize build-in.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    AddRequiredExtensions(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    const std::string spv_source = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionMode %main LocalSize 1 1 1
+               OpSource GLSL 450
+               OpName %main "main"
+               OpDecorate %gl_WorkGroupSize BuiltIn WorkgroupSize
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+     %uint_1 = OpConstant %uint 1
+     %v3uint = OpTypeVector %uint 3
+%gl_WorkGroupSize = OpConstantComposite %v3uint %uint_1 %uint_1 %uint_1
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_.reset(new VkShaderObj(this, spv_source, VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_ASM));
+    };
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kWarningBit,
+                                             "UNASSIGNED-BestPractices-SpirvDeprecated_WorkgroupSize");
+}
+
+TEST_F(VkBestPracticesLayerTest, CreatePipelineWithoutRenderPass) {
+    TEST_DESCRIPTION("Test creating a graphics pipeline with no render pass");
+
+    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    m_errorMonitor->ExpectSuccess();
+
+    VkShaderObj vs(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.InitState();
+    pipe.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
+    pipe.CreateGraphicsPipeline();
+
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkBestPracticesLayerTest, ImageExtendedUsageWithoutMutableFormat) {
+    TEST_DESCRIPTION("Create image with extended usage bit but not mutable format bit.");
+
+    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkImageCreateInfo image_ci = LvlInitStruct<VkImageCreateInfo>();
+    image_ci.flags = VK_IMAGE_CREATE_EXTENDED_USAGE_BIT;
+    image_ci.imageType = VK_IMAGE_TYPE_2D;
+    image_ci.format = VK_FORMAT_B8G8R8A8_UNORM;
+    image_ci.extent.width = 256;
+    image_ci.extent.height = 256;
+    image_ci.extent.depth = 1;
+    image_ci.mipLevels = 1;
+    image_ci.arrayLayers = 1;
+    image_ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_ci.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    image_ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    VkImage image;
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, kVUID_BestPractices_ImageCreateFlags);
+    vk::CreateImage(device(), &image_ci, nullptr, &image);
+    m_errorMonitor->VerifyFound();
+}
+
+#if GTEST_IS_THREADSAFE
+TEST_F(VkBestPracticesLayerTest, ThreadUpdateDescriptorUpdateAfterBindNoCollision) {
+    TEST_DESCRIPTION("Two threads updating the same UAB descriptor set, expected not to generate a threading error");
+    test_platform_thread thread;
+    m_errorMonitor->ExpectSuccess();
+
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_MAINTENANCE_3_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    // Create a device that enables descriptorBindingStorageBufferUpdateAfterBind
+    auto indexing_features = LvlInitStruct<VkPhysicalDeviceDescriptorIndexingFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&indexing_features);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+
+    if (VK_FALSE == indexing_features.descriptorBindingStorageBufferUpdateAfterBind) {
+        printf("%s Test requires (unsupported) descriptorBindingStorageBufferUpdateAfterBind, skipping\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+    ASSERT_NO_FATAL_FAILURE(InitViewport());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    std::array<VkDescriptorBindingFlagsEXT, 2> flags = {
+        {VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT}};
+    auto flags_create_info = LvlInitStruct<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT>();
+    flags_create_info.bindingCount = (uint32_t)flags.size();
+    flags_create_info.pBindingFlags = flags.data();
+
+    OneOffDescriptorSet normal_descriptor_set(m_device,
+                                              {
+                                                  {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
+                                                  {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
+                                              },
+                                              VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT, &flags_create_info,
+                                              VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT);
+
+    VkBufferObj buffer;
+    buffer.init(*m_device, 256, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+
+    struct thread_data_struct data;
+    data.device = device();
+    data.descriptorSet = normal_descriptor_set.set_;
+    data.binding = 0;
+    data.buffer = buffer.handle();
+    bool bailout = false;
+    data.bailout = &bailout;
+    m_errorMonitor->SetBailout(data.bailout);
+
+    // Update descriptors from another thread.
+    test_platform_thread_create(&thread, UpdateDescriptor, (void *)&data);
+    // Update descriptors from this thread at the same time.
+
+    struct thread_data_struct data2;
+    data2.device = device();
+    data2.descriptorSet = normal_descriptor_set.set_;
+    data2.binding = 1;
+    data2.buffer = buffer.handle();
+    data2.bailout = &bailout;
+
+    UpdateDescriptor(&data2);
+
+    test_platform_thread_join(thread, NULL);
+
+    m_errorMonitor->SetBailout(NULL);
+
+    m_errorMonitor->VerifyNotFound();
+}
+#endif  // GTEST_IS_THREADSAFE
+
+TEST_F(VkBestPracticesLayerTest, TransitionFromUndefinedToReadOnly) {
+    TEST_DESCRIPTION("Transition image layout from undefined to read only");
+
+    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkImageObj image(m_device);
+    image.Init(128, 128, 1, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+
+    VkClearColorValue color_clear_value = {};
+    color_clear_value.uint32[0] = 255;
+    VkImageSubresourceRange clear_range;
+    clear_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    clear_range.baseMipLevel = 0;
+    clear_range.baseArrayLayer = 0;
+    clear_range.layerCount = 1;
+    clear_range.levelCount = 1;
+
+    VkImageMemoryBarrier img_barrier = LvlInitStruct<VkImageMemoryBarrier>();
+    img_barrier.srcAccessMask = 0;
+    img_barrier.dstAccessMask = 0;
+    img_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    img_barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    img_barrier.image = image.handle();
+    img_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    img_barrier.subresourceRange.baseArrayLayer = 0;
+    img_barrier.subresourceRange.baseMipLevel = 0;
+    img_barrier.subresourceRange.layerCount = 1;
+    img_barrier.subresourceRange.levelCount = 1;
+
+    m_commandBuffer->begin();
+
+    m_commandBuffer->ClearColorImage(image.handle(), VK_IMAGE_LAYOUT_GENERAL, &color_clear_value, 1, &clear_range);
+
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "UNASSIGNED-BestPractices-TransitionUndefinedToReadOnly");
+    vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0,
+                           nullptr, 0, nullptr, 1, &img_barrier);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+}
+
+TEST_F(VkBestPracticesLayerTest, CreateFifoRelaxedSwapchain) {
+    TEST_DESCRIPTION("Test creating fifo relaxed swapchain");
+
+    AddSurfaceInstanceExtension();
+    InitBestPracticesFramework();
+    AddSwapchainDeviceExtension();
+    InitState();
+    if (!InitSurface()) {
+        printf("%s Cannot create surface, skipping test\n", kSkipPrefix);
+        return;
+    }
+    InitSwapchainInfo();
+
+    VkBool32 supported;
+    vk::GetPhysicalDeviceSurfaceSupportKHR(gpu(), m_device->graphics_queue_node_index_, m_surface, &supported);
+    if (!supported) {
+        printf("%s Graphics queue does not support present, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    bool fifo_relaxed = false;
+    for (const auto& present_mode : m_surface_present_modes) {
+        if (present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR) {
+            fifo_relaxed = true;
+            break;
+        }
+    }
+    if (!fifo_relaxed) {
+        printf("%s fifo relaxed present mode not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    VkImageUsageFlags imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    VkSurfaceTransformFlagBitsKHR preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+
+    VkSwapchainCreateInfoKHR swapchain_create_info = {};
+    swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapchain_create_info.pNext = 0;
+    swapchain_create_info.surface = m_surface;
+    swapchain_create_info.minImageCount = 2;
+    swapchain_create_info.imageFormat = m_surface_formats[0].format;
+    swapchain_create_info.imageColorSpace = m_surface_formats[0].colorSpace;
+    swapchain_create_info.imageExtent = {m_surface_capabilities.minImageExtent.width, m_surface_capabilities.minImageExtent.height};
+    swapchain_create_info.imageArrayLayers = 1;
+    swapchain_create_info.imageUsage = imageUsage;
+    swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchain_create_info.preTransform = preTransform;
+    swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
+    swapchain_create_info.presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+    swapchain_create_info.clipped = VK_FALSE;
+    swapchain_create_info.oldSwapchain = 0;
+
+    m_errorMonitor->ExpectSuccess(VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT);
+    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkBestPracticesLayerTest, SemaphoreSetWhenCountIsZero) {
+    TEST_DESCRIPTION("Set semaphore in SubmitInfo but count is 0");
+
+    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+
+    auto semaphore_ci = LvlInitStruct<VkSemaphoreCreateInfo>();
+    vk_testing::Semaphore semaphore;
+    semaphore.init(*m_device, semaphore_ci);
+    VkSemaphore semaphore_handle = semaphore.handle();
+
+    VkSubmitInfo signal_submit_info = LvlInitStruct<VkSubmitInfo>();
+    signal_submit_info.signalSemaphoreCount = 0;
+    signal_submit_info.pSignalSemaphores = &semaphore_handle;
+
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "UNASSIGNED-BestPractices-SemaphoreCount");
+    vk::QueueSubmit(m_device->m_queue, 1, &signal_submit_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->ExpectSuccess(kWarningBit);
+    signal_submit_info.signalSemaphoreCount = 1;
+    vk::QueueSubmit(m_device->m_queue, 1, &signal_submit_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
+
+    VkSubmitInfo wait_submit_info = LvlInitStruct<VkSubmitInfo>();
+    wait_submit_info.waitSemaphoreCount = 0;
+    wait_submit_info.pWaitSemaphores = &semaphore_handle;
+
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "UNASSIGNED-BestPractices-SemaphoreCount");
+    vk::QueueSubmit(m_device->m_queue, 1, &wait_submit_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkBestPracticesLayerTest, OverAllocateFromDescriptorPool) {
+    TEST_DESCRIPTION("Attempt to allocate more sets and descriptors than descriptor pool has available.");
+    VkResult err;
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
+    // Create Pool w/ 1 Sampler descriptor, but try to alloc Uniform Buffer
+    // descriptor from it
+    VkDescriptorPoolSize ds_type_count = {};
+    ds_type_count.type = VK_DESCRIPTOR_TYPE_SAMPLER;
+    ds_type_count.descriptorCount = 2;
+
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
+    ds_pool_ci.flags = 0;
+    ds_pool_ci.maxSets = 1;
+    ds_pool_ci.poolSizeCount = 1;
+    ds_pool_ci.pPoolSizes = &ds_type_count;
+
+    VkDescriptorPool ds_pool;
+    err = vk::CreateDescriptorPool(m_device->device(), &ds_pool_ci, NULL, &ds_pool);
+    ASSERT_VK_SUCCESS(err);
+
+    VkDescriptorSetLayoutBinding dsl_binding_samp = {};
+    dsl_binding_samp.binding = 0;
+    dsl_binding_samp.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+    dsl_binding_samp.descriptorCount = 1;
+    dsl_binding_samp.stageFlags = VK_SHADER_STAGE_ALL;
+    dsl_binding_samp.pImmutableSamplers = NULL;
+
+    const VkDescriptorSetLayoutObj ds_layout_samp(m_device, {dsl_binding_samp});
+
+    // Try to allocate 2 sets when pool only has 1 set
+    VkDescriptorSet descriptor_sets[2];
+    VkDescriptorSetLayout set_layouts[2] = {ds_layout_samp.handle(), ds_layout_samp.handle()};
+    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
+    alloc_info.descriptorSetCount = 2;
+    alloc_info.descriptorPool = ds_pool;
+    alloc_info.pSetLayouts = set_layouts;
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "UNASSIGNED-BestPractices-EmptyDescriptorPool");
+    err = vk::AllocateDescriptorSets(m_device->device(), &alloc_info, descriptor_sets);
+    m_errorMonitor->VerifyFound();
 }

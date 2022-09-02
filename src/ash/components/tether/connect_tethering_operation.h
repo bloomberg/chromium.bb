@@ -10,22 +10,20 @@
 #include <map>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/tether/message_transfer_operation.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 class DeviceSyncClient;
-}  // namespace device_sync
-
-namespace secure_channel {
-class SecureChannelClient;
-}  // namespace secure_channel
+}
 
 namespace tether {
 
@@ -166,6 +164,6 @@ class ConnectTetheringOperation : public MessageTransferOperation {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_CONNECT_TETHERING_OPERATION_H_

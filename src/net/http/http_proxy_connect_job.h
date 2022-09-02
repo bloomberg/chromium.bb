@@ -155,10 +155,8 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
  private:
   enum State {
     STATE_BEGIN_CONNECT,
-    STATE_TCP_CONNECT,
-    STATE_TCP_CONNECT_COMPLETE,
-    STATE_SSL_CONNECT,
-    STATE_SSL_CONNECT_COMPLETE,
+    STATE_TRANSPORT_CONNECT,
+    STATE_TRANSPORT_CONNECT_COMPLETE,
     STATE_HTTP_PROXY_CONNECT,
     STATE_HTTP_PROXY_CONNECT_COMPLETE,
     STATE_SPDY_PROXY_CREATE_STREAM,
@@ -191,12 +189,9 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
 
   // Determine if need to go through TCP or SSL path.
   int DoBeginConnect();
-  // Connecting to HTTP Proxy
+  // Connecting to HTTP or HTTPS Proxy
   int DoTransportConnect();
   int DoTransportConnectComplete(int result);
-  // Connecting to HTTPS Proxy
-  int DoSSLConnect();
-  int DoSSLConnectComplete(int result);
 
   int DoHttpProxyConnect();
   int DoHttpProxyConnectComplete(int result);
@@ -215,8 +210,6 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
   void ChangePriorityInternal(RequestPriority priority) override;
   void OnTimedOutInternal() override;
 
-  int HandleConnectResult(int result);
-
   void OnAuthChallenge();
 
   const HostPortPair& GetDestination() const;
@@ -229,16 +222,13 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
 
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
 
-  State next_state_;
+  State next_state_ = STATE_NONE;
 
-  bool has_restarted_;
-
-  bool using_spdy_;
-  NextProto negotiated_protocol_;
+  bool has_restarted_ = false;
 
   // Set to true once a connection has been successfully established. Remains
   // true even if a new socket is being connected to retry with auth.
-  bool has_established_connection_;
+  bool has_established_connection_ = false;
 
   ResolveErrorInfo resolve_error_info_;
 

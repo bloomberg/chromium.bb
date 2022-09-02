@@ -122,7 +122,7 @@ TEST_F(ShowGenericUiActionTest, GoesIntoPromptState) {
   EXPECT_CALL(mock_action_delegate_, Prompt(_, _, _, _, _)).Times(1);
   EXPECT_CALL(mock_action_delegate_, SetGenericUi(_, _, _)).Times(1);
   EXPECT_CALL(mock_action_delegate_, ClearGenericUi()).Times(1);
-  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt()).Times(1);
+  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt(Eq(true))).Times(1);
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
@@ -251,207 +251,6 @@ TEST_F(ShowGenericUiActionTest, ClientOnlyValuesDoNotLeaveDevice) {
   Run();
 }
 
-TEST_F(ShowGenericUiActionTest, RequestProfiles) {
-  autofill::AutofillProfile profile_a(base::GenerateGUID(), kFakeUrl);
-  autofill::test::SetProfileInfo(
-      &profile_a, "Marion", "Mitchell", "Morrison", "marion@me.xyz", "Fox",
-      "123 Zoo St.", "unit 5", "Hollywood", "CA", "91601", "US", "16505678910");
-  AutofillProfileProto profile_a_proto;
-  profile_a_proto.set_guid(profile_a.guid());
-
-  ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
-      .WillByDefault(Return(true));
-  ON_CALL(mock_personal_data_manager_, GetProfiles)
-      .WillByDefault(
-          Return(std::vector<autofill::AutofillProfile*>({&profile_a})));
-
-  proto_.mutable_request_profiles()->set_model_identifier("profiles");
-  // Keep action alive by storing it in local variable.
-  auto action = Run();
-
-  EXPECT_THAT(user_model_.GetProfile(profile_a_proto)->Compare(profile_a),
-              Eq(0));
-  ValueProto expected_value;
-  expected_value.set_is_client_side_only(true);
-  expected_value.mutable_profiles()->add_values()->set_guid(profile_a.guid());
-  EXPECT_EQ(*user_model_.GetValue("profiles"), expected_value);
-
-  // Add second profile.
-  autofill::AutofillProfile profile_b(base::GenerateGUID(), kFakeUrl);
-  autofill::test::SetProfileInfo(&profile_b, "John", "", "Doe",
-                                 "editor@gmail.com", "", "203 Barfield Lane",
-                                 "", "Mountain View", "CA", "94043", "US",
-                                 "+12345678901");
-  AutofillProfileProto profile_b_proto;
-  profile_b_proto.set_guid(profile_b.guid());
-  ON_CALL(mock_personal_data_manager_, GetProfiles)
-      .WillByDefault(Return(
-          std::vector<autofill::AutofillProfile*>({&profile_a, &profile_b})));
-  mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_THAT(user_model_.GetProfile(profile_a_proto)->Compare(profile_a),
-              Eq(0));
-  EXPECT_THAT(user_model_.GetProfile(profile_b_proto)->Compare(profile_b),
-              Eq(0));
-  expected_value.mutable_profiles()->add_values()->set_guid(profile_b.guid());
-  EXPECT_THAT(user_model_.GetValue("profiles")->profiles().values(),
-              UnorderedElementsAreArray(expected_value.profiles().values()));
-
-  // Remove profile_a.
-  ON_CALL(mock_personal_data_manager_, GetProfiles)
-      .WillByDefault(
-          Return(std::vector<autofill::AutofillProfile*>({&profile_b})));
-  mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_EQ(user_model_.GetProfile(profile_a_proto), nullptr);
-  EXPECT_THAT(user_model_.GetProfile(profile_b_proto)->Compare(profile_b),
-              Eq(0));
-  expected_value.Clear();
-  expected_value.set_is_client_side_only(true);
-  expected_value.mutable_profiles()->add_values()->set_guid(profile_b.guid());
-  EXPECT_THAT(user_model_.GetValue("profiles")->profiles().values(),
-              UnorderedElementsAreArray(expected_value.profiles().values()));
-
-  // After the action has ended, updates to the PDM are ignored.
-  action.reset();
-  ON_CALL(mock_personal_data_manager_, GetProfiles)
-      .WillByDefault(Return(
-          std::vector<autofill::AutofillProfile*>({&profile_a, &profile_b})));
-  mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_EQ(user_model_.GetProfile(profile_a_proto), nullptr);
-  EXPECT_THAT(user_model_.GetProfile(profile_b_proto)->Compare(profile_b),
-              Eq(0));
-  expected_value.Clear();
-  expected_value.set_is_client_side_only(true);
-  expected_value.mutable_profiles()->add_values()->set_guid(profile_b.guid());
-  EXPECT_THAT(user_model_.GetValue("profiles")->profiles().values(),
-              UnorderedElementsAreArray(expected_value.profiles().values()));
-}
-
-TEST_F(ShowGenericUiActionTest, RequestCreditCards) {
-  ON_CALL(mock_personal_data_manager_, IsAutofillCreditCardEnabled)
-      .WillByDefault(Return(true));
-  ON_CALL(mock_personal_data_manager_, ShouldSuggestServerCards)
-      .WillByDefault(Return(true));
-  ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
-      .WillByDefault(Return(true));
-
-  autofill::AutofillProfile profile_a(base::GenerateGUID(), kFakeUrl);
-  autofill::test::SetProfileInfo(
-      &profile_a, "Marion", "Mitchell", "Morrison", "marion@me.xyz", "Fox",
-      "123 Zoo St.", "unit 5", "Hollywood", "CA", "91601", "US", "16505678910");
-
-  autofill::CreditCard credit_card_a(base::GenerateGUID(), kFakeUrl);
-  autofill::test::SetCreditCardInfo(&credit_card_a, "Marion Mitchell",
-                                    "4111 1111 1111 1111", "01", "2050",
-                                    profile_a.guid());
-  AutofillCreditCardProto credit_card_a_proto;
-  credit_card_a_proto.set_guid(credit_card_a.guid());
-  ON_CALL(mock_personal_data_manager_, GetCreditCards)
-      .WillByDefault(
-          Return(std::vector<autofill::CreditCard*>({&credit_card_a})));
-
-  proto_.mutable_request_credit_cards()->set_model_identifier("cards");
-  // Keep action alive by storing it in local variable.
-  auto action = Run();
-
-  EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_a_proto)->Compare(credit_card_a),
-      Eq(0));
-  ValueProto expected_value;
-  expected_value.set_is_client_side_only(true);
-  expected_value.mutable_credit_cards()->add_values()->set_guid(
-      credit_card_a.guid());
-  EXPECT_EQ(*user_model_.GetValue("cards"), expected_value);
-
-  // Add second card.
-  autofill::AutofillProfile profile_b(base::GenerateGUID(), kFakeUrl);
-  autofill::test::SetProfileInfo(&profile_b, "John", "", "Doe",
-                                 "editor@gmail.com", "", "203 Barfield Lane",
-                                 "", "Mountain View", "CA", "94043", "US",
-                                 "+12345678901");
-  autofill::CreditCard credit_card_b(base::GenerateGUID(), kFakeUrl);
-  autofill::test::SetCreditCardInfo(&credit_card_b, "John Doe",
-                                    "4111 1111 1111 1111", "01", "2050",
-                                    profile_b.guid());
-  AutofillCreditCardProto credit_card_b_proto;
-  credit_card_b_proto.set_guid(credit_card_b.guid());
-  ON_CALL(mock_personal_data_manager_, GetCreditCards)
-      .WillByDefault(Return(std::vector<autofill::CreditCard*>(
-          {&credit_card_a, &credit_card_b})));
-  mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_a_proto)->Compare(credit_card_a),
-      Eq(0));
-  EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_b_proto)->Compare(credit_card_b),
-      Eq(0));
-  expected_value.mutable_credit_cards()->add_values()->set_guid(
-      credit_card_b.guid());
-  EXPECT_THAT(
-      user_model_.GetValue("cards")->credit_cards().values(),
-      UnorderedElementsAreArray(expected_value.credit_cards().values()));
-
-  // Remove credit_card_a.
-  ON_CALL(mock_personal_data_manager_, GetCreditCards)
-      .WillByDefault(
-          Return(std::vector<autofill::CreditCard*>({&credit_card_b})));
-  mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_EQ(user_model_.GetCreditCard(credit_card_a_proto), nullptr);
-  EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_b_proto)->Compare(credit_card_b),
-      Eq(0));
-  expected_value.Clear();
-  expected_value.set_is_client_side_only(true);
-  expected_value.mutable_credit_cards()->add_values()->set_guid(
-      credit_card_b.guid());
-  EXPECT_THAT(
-      user_model_.GetValue("cards")->credit_cards().values(),
-      UnorderedElementsAreArray(expected_value.credit_cards().values()));
-
-  // After the action has ended, updates to the PDM are ignored.
-  action.reset();
-  ON_CALL(mock_personal_data_manager_, GetCreditCards)
-      .WillByDefault(Return(std::vector<autofill::CreditCard*>(
-          {&credit_card_a, &credit_card_b})));
-  mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_EQ(user_model_.GetCreditCard(credit_card_a_proto), nullptr);
-  EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_b_proto)->Compare(credit_card_b),
-      Eq(0));
-  expected_value.Clear();
-  expected_value.set_is_client_side_only(true);
-  expected_value.mutable_credit_cards()->add_values()->set_guid(
-      credit_card_b.guid());
-  EXPECT_THAT(
-      user_model_.GetValue("cards")->credit_cards().values(),
-      UnorderedElementsAreArray(expected_value.credit_cards().values()));
-}
-
-TEST_F(ShowGenericUiActionTest, RequestLogins) {
-  auto* request_login_options = proto_.mutable_request_login_options();
-  request_login_options->set_model_identifier("login_options");
-  auto* login_option_a =
-      request_login_options->add_login_options()->mutable_custom_login_option();
-  login_option_a->set_label("label_a");
-  login_option_a->set_sublabel("sublabel_a");
-  login_option_a->set_payload("payload_a");
-
-  auto* login_option_b = request_login_options->add_login_options()
-                             ->mutable_password_manager_logins();
-  login_option_b->set_sublabel("sublabel_b");
-  login_option_b->set_payload("payload_b");
-
-  Run();
-
-  ValueProto expected_value;
-  expected_value.set_is_client_side_only(true);
-  *expected_value.mutable_login_options()->add_values() = *login_option_a;
-  auto* expected_b = expected_value.mutable_login_options()->add_values();
-  expected_b->set_label("user@example.com");
-  expected_b->set_sublabel("sublabel_b");
-  expected_b->set_payload("payload_b");
-  EXPECT_EQ(*user_model_.GetValue("login_options"), expected_value);
-}
-
 TEST_F(ShowGenericUiActionTest, ElementPreconditionMissesIdentifier) {
   auto* element_check =
       proto_.mutable_periodic_element_checks()->add_element_checks();
@@ -490,7 +289,7 @@ TEST_F(ShowGenericUiActionTest, EndActionOnNavigation) {
                    bool browse_mode, bool browse_mode_invisible) {
         std::move(end_navigation_callback).Run();
       });
-  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt()).Times(1);
+  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt(Eq(true))).Times(1);
   EXPECT_CALL(
       callback_,
       Run(Pointee(
@@ -525,7 +324,7 @@ TEST_F(ShowGenericUiActionTest, BreakingNavigationBeforeUiIsSet) {
             std::move(end_action_callback)
                 .Run(ClientStatus(OTHER_ACTION_STATUS));
           }));
-  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt()).Times(1);
+  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt(Eq(true))).Times(1);
   EXPECT_CALL(
       callback_,
       Run(Pointee(

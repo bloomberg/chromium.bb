@@ -165,10 +165,10 @@ from :3
     return self.OptionsObject(*args, **kwargs)
 
   def checkstdout(self, expected):
+    # pylint: disable=no-member
     value = sys.stdout.getvalue()
     sys.stdout.close()
     # Check that the expected output appears.
-    # pylint: disable=no-member
     self.assertIn(expected, strip_timestamps(value))
 
   @staticmethod
@@ -225,6 +225,36 @@ from :3
 
 
 class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
+
+  @mock.patch('gclient_scm.GitWrapper._IsCog')
+  @mock.patch('gclient_scm.GitWrapper._Run', return_value=True)
+  @mock.patch('gclient_scm.GitWrapper._SetFetchConfig')
+  @mock.patch('gclient_scm.GitWrapper._GetCurrentBranch')
+  def testCloneInCog(self, mockGetCurrentBranch, mockSetFetchConfig, mockRun,
+                     _mockIsCog):
+    """Test that we call the correct commands when in a cog workspace."""
+    if not self.enabled:
+      return
+    options = self.Options()
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, self.relpath)
+    scm._Clone('123123ab', self.url, options)
+    self.assertEquals(mockRun.mock_calls, [
+        mock.call(
+            ['citc', 'clone-repo', self.url, scm.checkout_path, '123123ab'],
+            options,
+            cwd=scm._root_dir,
+            retry=True,
+            print_stdout=False,
+            filter_fn=scm.filter),
+        mock.call(['-C', scm.checkout_path, 'sparse-checkout', 'reapply'],
+                  options,
+                  cwd=scm._root_dir,
+                  retry=True,
+                  print_stdout=False,
+                  filter_fn=scm.filter),
+    ])
+    mockSetFetchConfig.assert_called_once()
+    mockGetCurrentBranch.assert_called_once()
 
   def testRevertMissing(self):
     if not self.enabled:
@@ -597,10 +627,10 @@ class ManagedGitWrapperTestCaseMock(unittest.TestCase):
     return self.OptionsObject(*args, **kwargs)
 
   def checkstdout(self, expected):
+    # pylint: disable=no-member
     value = sys.stdout.getvalue()
     sys.stdout.close()
     # Check that the expected output appears.
-    # pylint: disable=no-member
     self.assertIn(expected, strip_timestamps(value))
 
   def setUp(self):
@@ -711,15 +741,15 @@ class ManagedGitWrapperTestCaseMock(unittest.TestCase):
 
 class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
   def checkInStdout(self, expected):
+    # pylint: disable=no-member
     value = sys.stdout.getvalue()
     sys.stdout.close()
-    # pylint: disable=no-member
     self.assertIn(expected, value)
 
   def checkNotInStdout(self, expected):
+    # pylint: disable=no-member
     value = sys.stdout.getvalue()
     sys.stdout.close()
-    # pylint: disable=no-member
     self.assertNotIn(expected, value)
 
   def getCurrentBranch(self):
@@ -1358,6 +1388,39 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertNotEqual(self.githash('repo_1', 4),
                         self.gitrevparse(self.root_dir))
 
+  @mock.patch('gerrit_util.GetChange', return_value={'topic': 'test_topic'})
+  @mock.patch('gerrit_util.QueryChanges', return_value=[
+      {'_number': 1234},
+      {'_number': 1235, 'current_revision': 'abc',
+       'revisions': {'abc': {'ref': 'refs/changes/35/1235/1'}}}])
+  def testDownloadTopics(self, query_changes_mock, get_change_mock):
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    self.options.revision = 'refs/changes/34/1234/1'
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
+
+    # pylint: disable=attribute-defined-outside-init
+    self.options.download_topics = True
+    scm.url = 'https://test-repo.googlesource.com/repo_1.git'
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/34/1234/1', 'refs/heads/main', self.options,
+        file_list)
+
+    get_change_mock.assert_called_once_with(
+        mock.ANY, '1234')
+    query_changes_mock.assert_called_once_with(
+        mock.ANY,
+        [('topic', 'test_topic'), ('status', 'open'), ('repo', 'repo_1')],
+        o_params=['ALL_REVISIONS'])
+
+    self.assertCommits([1, 2, 3, 5, 6])
+    # The commit hash after the two cherry-picks is not known, but it must be
+    # different from what the repo was synced at before patching.
+    self.assertNotEqual(self.githash('repo_1', 4),
+                        self.gitrevparse(self.root_dir))
+
   def testRecoversAfterPatchFailure(self):
     scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
     file_list = []
@@ -1426,6 +1489,10 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertCommits([1, 2, 3, 5, 6])
     self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
 
+
+if 'unittest.util' in __import__('sys').modules:
+  # Show full diff in self.assertEqual.
+  __import__('sys').modules['unittest.util']._MAX_LENGTH = 999999999
 
 if __name__ == '__main__':
   level = logging.DEBUG if '-v' in sys.argv else logging.FATAL

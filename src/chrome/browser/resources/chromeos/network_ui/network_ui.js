@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_components/chromeos/network/network_select.m.js';
-import 'chrome://resources/cr_components/chromeos/network_health/network_diagnostics.m.js';
-import 'chrome://resources/cr_components/chromeos/network_health/network_health_summary.m.js';
+import 'chrome://resources/cr_components/chromeos/network_health/network_diagnostics.js';
+import 'chrome://resources/cr_components/chromeos/network_health/network_health_summary.js';
 import 'chrome://resources/cr_components/chromeos/traffic_counters/traffic_counters.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
@@ -103,8 +103,9 @@ Polymer({
   /** @private */
   selectTabFromHash_() {
     const selectedTab = window.location.hash.substring(1);
-    if (!selectedTab)
+    if (!selectedTab) {
       return;
+    }
     const tabpanels = this.$$('iron-pages').querySelectorAll('.tabpanel');
     for (let idx = 0; idx < tabpanels.length; ++idx) {
       if (tabpanels[idx].id == selectedTab) {
@@ -127,6 +128,16 @@ Polymer({
   },
 
   /** @private */
+  onDisableActiveESimProfileClick_() {
+    this.browserProxy_.disableActiveESimProfile();
+  },
+
+  /** @private */
+  onResetEuiccClick_() {
+    this.browserProxy_.resetEuicc();
+  },
+
+  /** @private */
   showAddNewWifi_() {
     this.browserProxy_.showAddNewWifi();
   },
@@ -139,8 +150,9 @@ Polymer({
   onImportOncChange_(event) {
     const file = event.target.files[0];
     event.stopPropagation();
-    if (!file)
+    if (!file) {
       return;
+    }
     const reader = new FileReader();
     reader.onloadend = (e) => {
       const content = reader.result;

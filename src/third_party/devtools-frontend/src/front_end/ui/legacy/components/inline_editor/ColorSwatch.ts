@@ -64,6 +64,10 @@ export class ColorSwatch extends HTMLElement {
     return this.format;
   }
 
+  getText(): string|null {
+    return this.text;
+  }
+
   get anchorBox(): AnchorBox|null {
     const swatch = this.shadow.querySelector('.color-swatch');
     return swatch ? swatch.boxInWindow() : null;
@@ -180,6 +184,7 @@ function nextColorFormat(color: Common.Color.Color, curFormat: string): string {
   // * original
   // * rgb(a)
   // * hsl(a)
+  // * hwb(a)
   // * nickname (if the color has a nickname)
   // * shorthex (if has short hex)
   // * hex
@@ -195,6 +200,10 @@ function nextColorFormat(color: Common.Color.Color, curFormat: string): string {
 
     case cf.HSL:
     case cf.HSLA:
+      return !color.hasAlpha() ? cf.HWB : cf.HWBA;
+
+    case cf.HWB:
+    case cf.HWBA:
       if (color.nickname()) {
         return cf.Nickname;
       }

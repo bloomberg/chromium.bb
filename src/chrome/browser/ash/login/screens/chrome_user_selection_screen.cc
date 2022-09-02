@@ -122,8 +122,9 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
   // Parse the list of recommended locales set by policy.
   std::vector<std::string> new_recommended_locales;
   if (entry && entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
-      entry->value() && entry->value()->is_list()) {
-    for (const auto& entry : entry->value()->GetList()) {
+      entry->value(base::Value::Type::LIST)) {
+    for (const auto& entry :
+         entry->value(base::Value::Type::LIST)->GetListDeprecated()) {
       if (!entry.is_string()) {
         NOTREACHED();
         new_recommended_locales.clear();
@@ -171,7 +172,8 @@ void ChromeUserSelectionScreen::SetPublicSessionLocales(
   // Construct the list of available locales. This list consists of the
   // recommended locales, followed by all others.
   std::unique_ptr<base::ListValue> available_locales =
-      GetUILanguageList(&recommended_locales, std::string());
+      GetUILanguageList(&recommended_locales, std::string(),
+                        input_method::InputMethodManager::Get());
 
   // Set the initially selected locale to the first recommended locale that is
   // actually available or the current UI locale if none of them are available.

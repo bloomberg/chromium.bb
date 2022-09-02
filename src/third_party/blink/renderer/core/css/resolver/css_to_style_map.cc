@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/style/border_image_length_box.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/fill_layer.h"
@@ -584,14 +583,17 @@ BorderImageLengthBox CSSToStyleMap::MapNinePieceImageQuad(
 void CSSToStyleMap::MapNinePieceImageRepeat(StyleResolverState&,
                                             const CSSValue& value,
                                             NinePieceImage& image) {
-  const auto* pair = DynamicTo<CSSValuePair>(value);
-  if (!pair)
-    return;
+  CSSValueID first_identifier;
+  CSSValueID second_identifier;
 
-  CSSValueID first_identifier =
-      To<CSSIdentifierValue>(pair->First()).GetValueID();
-  CSSValueID second_identifier =
-      To<CSSIdentifierValue>(pair->Second()).GetValueID();
+  const auto* pair = DynamicTo<CSSValuePair>(value);
+  if (pair != nullptr) {
+    first_identifier = To<CSSIdentifierValue>(pair->First()).GetValueID();
+    second_identifier = To<CSSIdentifierValue>(pair->Second()).GetValueID();
+  } else {
+    first_identifier = second_identifier =
+        To<CSSIdentifierValue>(value).GetValueID();
+  }
 
   ENinePieceImageRule horizontal_rule;
   switch (first_identifier) {

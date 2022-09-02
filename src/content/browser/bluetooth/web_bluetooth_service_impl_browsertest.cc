@@ -169,6 +169,11 @@ class TestBluetoothDelegate : public BluetoothDelegate {
                                    CredentialsCallback callback) override {
     NOTREACHED();
   }
+  void ShowDevicePairConfirmPrompt(RenderFrameHost* frame,
+                                   const std::u16string& device_identifier,
+                                   PairConfirmCallback callback) override {
+    NOTREACHED();
+  }
   blink::WebBluetoothDeviceId GetWebBluetoothDeviceId(
       RenderFrameHost* frame,
       const std::string& device_address) override {
@@ -194,6 +199,9 @@ class TestBluetoothDelegate : public BluetoothDelegate {
       const blink::WebBluetoothDeviceId& device_id) override {
     return false;
   }
+  void RevokeDevicePermissionWebInitiated(
+      RenderFrameHost* frame,
+      const blink::WebBluetoothDeviceId& device_id) override {}
   bool IsAllowedToAccessService(RenderFrameHost* frame,
                                 const blink::WebBluetoothDeviceId& device_id,
                                 const device::BluetoothUUID& service) override {
@@ -564,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothServiceImplBrowserTest,
       prerender_helper()->GetPrerenderedMainFrameHost(host_id);
 
   // Runs JS asynchronously since Mojo calls are deferred during prerendering.
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(prerendered_frame_host);
   content::ExecuteScriptAsync(prerendered_frame_host, R"(
     navigator.bluetooth.getAvailability()
     .then(isBluetoothAvailable => {

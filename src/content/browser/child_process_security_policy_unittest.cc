@@ -81,7 +81,7 @@ class ChildProcessSecurityPolicyTestBrowserClient
 };
 
 bool IsCitadelProtectionEnabled() {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // TODO(lukasza): https://crbug.com/566091: Once remote NTP is capable of
   // embedding OOPIFs, start enforcing citadel-style checks on desktop
   // platforms.
@@ -95,13 +95,12 @@ void LockProcessIfNeeded(int process_id,
                          BrowserContext* browser_context,
                          const GURL& url) {
   scoped_refptr<SiteInstanceImpl> site_instance =
-      SiteInstanceImpl::CreateForUrlInfo(browser_context,
-                                         UrlInfo::CreateForTesting(url));
+      SiteInstanceImpl::CreateForTesting(browser_context, url);
   if (site_instance->RequiresDedicatedProcess() &&
       site_instance->GetSiteInfo().ShouldLockProcessToSite(
           site_instance->GetIsolationContext())) {
     ChildProcessSecurityPolicyImpl::GetInstance()->LockProcess(
-        site_instance->GetIsolationContext(), process_id,
+        site_instance->GetIsolationContext(), process_id, false,
         ProcessLock::FromSiteInfo(site_instance->GetSiteInfo()));
   }
 }
@@ -220,7 +219,8 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
                         const url::Origin& origin) {
     ChildProcessSecurityPolicyImpl* p =
         ChildProcessSecurityPolicyImpl::GetInstance();
-    return p->IsIsolatedOrigin(IsolationContext(browsing_instance_id, context),
+    return p->IsIsolatedOrigin(IsolationContext(browsing_instance_id, context,
+                                                /*is_guest=*/false),
                                origin, false /* origin_requests_isolation */);
   }
 
@@ -3037,13 +3037,14 @@ TEST_F(ChildProcessSecurityPolicyTest, NoBrowsingInstanceIDs_OriginKeyed) {
             UrlInfo::OriginIsolationRequest::kOriginAgentCluster |
             UrlInfo::OriginIsolationRequest::kRequiresOriginKeyedProcess);
     UrlInfo url_info(UrlInfoInit(foo.GetURL())
-                         .WithOrigin(foo)
                          .WithOriginIsolationRequest(origin_isolation_request));
     scoped_refptr<SiteInstanceImpl> foo_instance =
-        SiteInstanceImpl::CreateForUrlInfo(&context, url_info);
+        SiteInstanceImpl::CreateForUrlInfo(&context, url_info,
+                                           /*is_guest=*/false);
 
     p->Add(kRendererID, &context);
     p->LockProcess(foo_instance->GetIsolationContext(), kRendererID,
+                   /*is_process_used=*/false,
                    ProcessLock::FromSiteInfo(foo_instance->GetSiteInfo()));
 
     EXPECT_TRUE(p->GetProcessLock(kRendererID).is_locked_to_site());
@@ -3093,10 +3094,12 @@ TEST_F(ChildProcessSecurityPolicyTest, NoBrowsingInstanceIDs_SiteKeyed) {
     p->AddFutureIsolatedOrigins({url::Origin::Create(GURL("https://foo.com"))},
                                 IsolatedOriginSource::TEST, &context);
 
-    UrlInfo url_info(UrlInfoInit(foo.GetURL()).WithOrigin(foo));
+    UrlInfo url_info(UrlInfoInit(foo.GetURL()));
     scoped_refptr<SiteInstanceImpl> foo_instance =
-        SiteInstanceImpl::CreateForUrlInfo(&context, url_info);
+        SiteInstanceImpl::CreateForUrlInfo(&context, url_info,
+                                           /*is_guest=*/false);
     p->LockProcess(foo_instance->GetIsolationContext(), kRendererID,
+                   /*is_process_used=*/false,
                    ProcessLock::FromSiteInfo(foo_instance->GetSiteInfo()));
 
     EXPECT_TRUE(p->GetProcessLock(kRendererID).is_locked_to_site());
@@ -3167,8 +3170,7 @@ TEST_F(ChildProcessSecurityPolicyTest, NoBrowsingInstanceIDs_UnlockedProcess) {
   TestBrowserContext context;
   {
     scoped_refptr<SiteInstanceImpl> foo_instance =
-        SiteInstanceImpl::CreateForUrlInfo(&context,
-                                           UrlInfo::CreateForTesting(foo_url));
+        SiteInstanceImpl::CreateForTesting(&context, foo_url);
     // Adds the process with an "allow_any_site" lock.
     // The next two statements are basically AddForTesting(...), but with a
     // BrowsingInstanceId based on `foo_instance` and not pinned to '1'.
@@ -3176,6 +3178,7 @@ TEST_F(ChildProcessSecurityPolicyTest, NoBrowsingInstanceIDs_UnlockedProcess) {
     // BrowsingInstanceId will not be '1' in general.
     p->Add(kRendererID, &context);
     p->LockProcess(foo_instance->GetIsolationContext(), kRendererID,
+                   /*is_process_used=*/false,
                    ProcessLock::CreateAllowAnySite(
                        StoragePartitionConfig::CreateDefault(&context),
                        WebExposedIsolationInfo::CreateNonIsolated()));
@@ -3202,5 +3205,44 @@ TEST_F(ChildProcessSecurityPolicyTest, NoBrowsingInstanceIDs_UnlockedProcess) {
   // We need to remove it otherwise other tests may fail.
   p->Remove(kRendererID);
 }
+
+// Regression test for https://crbug.com/1324407.
+// This does not pass on Android due to a difference with threads in the
+// EXPECT_DEATH_IF_SUPPORTED block.
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(ChildProcessSecurityPolicyTest, CannotLockUsedProcessToSite) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  TestBrowserContext context;
+
+  scoped_refptr<SiteInstanceImpl> foo_instance =
+      SiteInstanceImpl::CreateForTesting(&context, GURL("https://foo.com"));
+  scoped_refptr<SiteInstanceImpl> bar_instance =
+      SiteInstanceImpl::CreateForTesting(&context, GURL("https://bar.com"));
+
+  // Start by putting foo.com into an allows-any-site process.
+  p->Add(kRendererID, &context);
+  p->LockProcess(foo_instance->GetIsolationContext(), kRendererID,
+                 /*is_process_used=*/false,
+                 ProcessLock::CreateAllowAnySite(
+                     StoragePartitionConfig::CreateDefault(&context),
+                     WebExposedIsolationInfo::CreateNonIsolated()));
+  EXPECT_TRUE(p->GetProcessLock(kRendererID).allows_any_site());
+  EXPECT_FALSE(p->GetProcessLock(kRendererID).is_locked_to_site());
+
+  // If the process is then considered used (e.g., by loading content), it
+  // should not be possible to lock it to another site.
+  EXPECT_DEATH_IF_SUPPORTED(
+      {
+        p->LockProcess(bar_instance->GetIsolationContext(), kRendererID,
+                       /*is_process_used=*/true,
+                       ProcessLock::FromSiteInfo(bar_instance->GetSiteInfo()));
+      },
+      // We expect the message to include 'Cannot lock an already used process
+      // to { https://bar.com }', but we don't search for that in the output
+      // because some bots are inconsistent in how much of the logging occurs.
+      "");
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace content

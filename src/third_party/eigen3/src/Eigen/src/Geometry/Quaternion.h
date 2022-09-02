@@ -46,8 +46,8 @@ class QuaternionBase : public RotationBase<Derived, 3>
   typedef typename NumTraits<Scalar>::Real RealScalar;
   typedef typename internal::traits<Derived>::Coefficients Coefficients;
   typedef typename Coefficients::CoeffReturnType CoeffReturnType;
-  typedef typename internal::conditional<bool(internal::traits<Derived>::Flags&LvalueBit),
-                                        Scalar&, CoeffReturnType>::type NonConstCoeffReturnType;
+  typedef std::conditional_t<bool(internal::traits<Derived>::Flags&LvalueBit),
+                                  Scalar&, CoeffReturnType> NonConstCoeffReturnType;
 
 
   enum {
@@ -200,14 +200,14 @@ class QuaternionBase : public RotationBase<Derived, 3>
 
   template<typename NewScalarType>
   EIGEN_DEVICE_FUNC inline
-  typename internal::enable_if<internal::is_same<Scalar,NewScalarType>::value,const Derived&>::type cast() const
+  std::enable_if_t<internal::is_same<Scalar,NewScalarType>::value,const Derived&> cast() const
   {
     return derived();
   }
 
   template<typename NewScalarType>
   EIGEN_DEVICE_FUNC inline
-  typename internal::enable_if<!internal::is_same<Scalar,NewScalarType>::value,Quaternion<NewScalarType> >::type cast() const
+  std::enable_if_t<!internal::is_same<Scalar,NewScalarType>::value,Quaternion<NewScalarType> > cast() const
   {
     return Quaternion<NewScalarType>(coeffs().template cast<NewScalarType>());
   }
@@ -309,7 +309,7 @@ public:
 
   /** Constructs and initializes a quaternion from either:
     *  - a rotation matrix expression,
-    *  - a 4D vector expression representing quaternion coefficients.
+    *  - a 4D vector expression representing quaternion coefficients in the order [\c x, \c y, \c z, \c w].
     */
   template<typename Derived>
   EIGEN_DEVICE_FUNC explicit inline Quaternion(const MatrixBase<Derived>& other) { *this = other; }
@@ -319,7 +319,6 @@ public:
   EIGEN_DEVICE_FUNC explicit inline Quaternion(const Quaternion<OtherScalar, OtherOptions>& other)
   { m_coeffs = other.coeffs().template cast<Scalar>(); }
 
-#if EIGEN_HAS_RVALUE_REFERENCES
   // We define a copy constructor, which means we don't get an implicit move constructor or assignment operator.
   /** Default move constructor */
   EIGEN_DEVICE_FUNC inline Quaternion(Quaternion&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
@@ -332,7 +331,6 @@ public:
     m_coeffs = std::move(other.coeffs());
     return *this;
   }
-#endif
 
   EIGEN_DEVICE_FUNC static Quaternion UnitRandom();
 
@@ -653,7 +651,7 @@ EIGEN_DEVICE_FUNC inline Derived& QuaternionBase<Derived>::setFromTwoVectors(con
   {
     c = numext::maxi(c,Scalar(-1));
     Matrix<Scalar,2,3> m; m << v0.transpose(), v1.transpose();
-    JacobiSVD<Matrix<Scalar,2,3> > svd(m, ComputeFullV);
+    JacobiSVD<Matrix<Scalar,2,3>, ComputeFullV> svd(m);
     Vector3 axis = svd.matrixV().col(2);
 
     Scalar w2 = (Scalar(1)+c)*Scalar(0.5);

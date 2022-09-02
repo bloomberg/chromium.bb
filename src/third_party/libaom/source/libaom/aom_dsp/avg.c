@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "config/aom_dsp_rtcd.h"
@@ -46,6 +47,16 @@ unsigned int aom_avg_8x8_c(const uint8_t *s, int p) {
     }
 
   return (sum + 32) >> 6;
+}
+
+void aom_avg_8x8_quad_c(const uint8_t *s, int p, int x16_idx, int y16_idx,
+                        int *avg) {
+  for (int k = 0; k < 4; k++) {
+    const int x8_idx = x16_idx + ((k & 1) << 3);
+    const int y8_idx = y16_idx + ((k >> 1) << 3);
+    const uint8_t *s_tmp = s + y8_idx * p + x8_idx;
+    avg[k] = aom_avg_8x8_c(s_tmp, p);
+  }
 }
 
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -87,6 +98,14 @@ void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
   }
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
+
+void aom_pixel_scale_c(const int16_t *src_diff, ptrdiff_t src_stride,
+                       int16_t *coeff, int log_scale, int h8, int w8) {
+  for (int idy = 0; idy < h8 * 8; ++idy)
+    for (int idx = 0; idx < w8 * 8; ++idx)
+      coeff[idy * (h8 * 8) + idx] = src_diff[idy * src_stride + idx]
+                                    << log_scale;
+}
 
 static void hadamard_col4(const int16_t *src_diff, ptrdiff_t src_stride,
                           int16_t *coeff) {
@@ -207,6 +226,14 @@ void aom_hadamard_lp_8x8_c(const int16_t *src_diff, ptrdiff_t src_stride,
   }
 
   for (int idx = 0; idx < 64; ++idx) coeff[idx] = buffer2[idx];
+}
+
+void aom_hadamard_8x8_dual_c(const int16_t *src_diff, ptrdiff_t src_stride,
+                             int16_t *coeff) {
+  for (int i = 0; i < 2; i++) {
+    aom_hadamard_lp_8x8_c(src_diff + (i * 8), src_stride,
+                          (int16_t *)coeff + (i * 64));
+  }
 }
 
 // In place 16x16 2D Hadamard transform
@@ -484,6 +511,7 @@ void aom_int_pro_row_c(int16_t hbuf[16], const uint8_t *ref,
                        const int ref_stride, const int height) {
   int idx;
   const int norm_factor = height >> 1;
+  assert(height >= 2);
   for (idx = 0; idx < 16; ++idx) {
     int i;
     hbuf[idx] = 0;

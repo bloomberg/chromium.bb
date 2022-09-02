@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
-import("//chromeos/assistant/assistant.gni")
+import("//chromeos/ash/components/assistant/assistant.gni")
+import("//components/services/screen_ai/buildflags/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
@@ -40,6 +41,7 @@ source_set("utility") {
     "//base",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//components/services/screen_ai/buildflags",
     "//components/services/storage",
     "//components/services/storage/public/mojom",
     "//content:export",
@@ -83,14 +85,24 @@ source_set("utility") {
   if (is_chromeos_ash) {
     deps += [
       "//ash/services/ime:sandbox_hook",
-      "//chromeos/assistant:buildflags",
+      "//chromeos/ash/components/assistant:buildflags",
       "//chromeos/services/tts:sandbox_hook",
+    ]
+    if (use_vaapi || use_v4l2_codec) {
+      deps += [ "//ash/components/arc/video_accelerator" ]
+    }
+  }
+
+  if (is_linux || is_chromeos_ash) {
+    deps += [
       "//gpu/config",
       "//media/gpu/sandbox",
       "//third_party/angle:angle_gpu_info_util",
     ]
+
     if (use_vaapi || use_v4l2_codec) {
-      deps += [ "//ash/components/arc/video_accelerator" ]
+      # To allow creating media::StableVideoDecoderFactoryService objects.
+      deps += [ "//media/mojo/services" ]
     }
   }
 
@@ -118,6 +130,10 @@ source_set("utility") {
     if (enable_oop_printing) {
       deps += [ "//printing:printing_sandbox_hook" ]
     }
+  }
+
+  if (is_linux || is_chromeos_ash || is_chromeos_lacros) {
+    deps += [ "//components/services/screen_ai:screen_ai_sandbox_hook" ]
   }
 
   if (enable_vr && !is_android) {

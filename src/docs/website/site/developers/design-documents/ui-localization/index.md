@@ -9,8 +9,8 @@ title: Add & translate strings (aka 'Localization' or 'Translations')
 ---
 
 **Help improve our translations:**
-* **[File a bug](http://code.google.com/p/chromium/issues/entry?template=Translation%20Issue)** using the translation template; CC "chromelocalization@google.com"
-* **[Provide translations](http://davidplanella.org/chromium-opens-to-community-translations-in-launchpad/)** for the chromium-browser package on Ubuntu
+* **[File a bug](https://bugs.chromium.org/p/chromium/issues/entry?template=Translation%20Issue)** using the translation template; CC "chromelocalization@google.com"
+* **[Provide translations](https://davidplanella.org/chromium-opens-to-community-translations-in-launchpad/)** for the chromium-browser package on Ubuntu
 
 ---
 
@@ -22,7 +22,7 @@ translated strings in grd/grdp files.
 Base messages are written in U.S. English (en-US) and are translated into
 supported language locales by an internal Google Localization process.
 Translations are submitted to the chromium
-[.xtb](https://code.google.com/p/chromium/codesearch#search/&q=android%20file:%5C.xtb&sq=package:chromium&type=cs)
+[.xtb](https://source.chromium.org/search?q=android%20file:%5C.xtb&sq=&ss=chromium)
 files after a few weeks.
 
 Strings are included on all platforms by default and will needlessly increase
@@ -59,7 +59,7 @@ If you're developing for Mac, also see notes on [how to add strings for Chrome o
     and
     [descriptions](/developers/design-documents/ui-localization#write-good-descriptions)
     for all strings. This is crucial for high-quality translations.
-4.  Use [ICU message syntax](http://userguide.icu-project.org/formatparse/messages) to
+4.  Use [ICU message syntax](https://unicode-org.github.io/icu/userguide/format_parse/messages/) to
     accommodate plurals and gender.
 5.  As needed, surround the string with an appropriate &lt;if&gt; clause
     to ensure that it's only included it on platforms where it's

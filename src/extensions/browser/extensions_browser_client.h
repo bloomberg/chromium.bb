@@ -9,7 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/bluetooth_chooser.h"
@@ -25,6 +28,7 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
+#include "url/gurl.h"
 
 class ExtensionFunctionRegistry;
 class PrefService;
@@ -32,7 +36,6 @@ class PrefService;
 namespace base {
 class CommandLine;
 class FilePath;
-class ListValue;
 }  // namespace base
 
 namespace content {
@@ -54,11 +57,15 @@ class NetworkContext;
 
 namespace update_client {
 class UpdateClient;
-}
+}  // namespace update_client
 
 namespace url {
 class Origin;
-}
+}  // namespace url
+
+namespace base {
+class CancelableTaskTracker;
+}  // namespace base
 
 namespace extensions {
 
@@ -142,6 +149,11 @@ class ExtensionsBrowserClient {
   // be extracted.
   virtual std::string GetUserIdHashFromContext(
       content::BrowserContext* context) = 0;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Returns if a browser |context| belongs to the main profile or not.
+  virtual bool IsFromMainProfile(content::BrowserContext* context) = 0;
 #endif
 
   // Returns true if |context| corresponds to a guest session.
@@ -261,7 +273,7 @@ class ExtensionsBrowserClient {
   virtual void BroadcastEventToRenderers(
       events::HistogramValue histogram_value,
       const std::string& event_name,
-      std::unique_ptr<base::ListValue> args,
+      base::Value::List args,
       bool dispatch_to_off_the_record_profiles) = 0;
 
   // Gets the single ExtensionCache instance shared across the browser process.
@@ -381,6 +393,15 @@ class ExtensionsBrowserClient {
   // Returns true if the given |tab_id| exists.
   virtual bool IsValidTabId(content::BrowserContext* context, int tab_id) const;
 
+  // Returns true if chrome extension telemetry service is enabled.
+  virtual bool IsExtensionTelemetryServiceEnabled(
+      content::BrowserContext* context) const;
+
+  // Returns true if remote host contacted signal feature is enabled.
+  // TODO(zackhan): This function is for measuring the impacts in finch
+  // experiments, will remove afterwards.
+  virtual bool IsExtensionTelemetryRemoteHostContactedSignalEnabled() const;
+
   // TODO(anunoy): This is a temporary implementation of notifying the
   // extension telemetry service of the tabs.executeScript API invocation
   // while its usefulness is evaluated.
@@ -388,6 +409,29 @@ class ExtensionsBrowserClient {
       content::BrowserContext* context,
       const ExtensionId& extension_id,
       const std::string& code) const;
+
+  // TODO(zackhan): This is a temporary implementation of notifying the
+  // extension telemetry service when there are web requests initiated from
+  // chrome extensions. Its usefulness will be evaluated.
+  virtual void NotifyExtensionRemoteHostContacted(
+      content::BrowserContext* context,
+      const ExtensionId& extension_id,
+      const GURL& url) const;
+
+  // Return true if the USB device is allowed by policy.
+  virtual bool IsUsbDeviceAllowedByPolicy(content::BrowserContext* context,
+                                          const ExtensionId& extension_id,
+                                          int vendor_id,
+                                          int product_id) const;
+
+  // Populate callback with the asynchronously retrieved cached favicon image.
+  virtual void GetFavicon(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const GURL& url,
+      base::CancelableTaskTracker* tracker,
+      base::OnceCallback<void(
+          scoped_refptr<base::RefCountedMemory> bitmap_data)> callback) const;
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;

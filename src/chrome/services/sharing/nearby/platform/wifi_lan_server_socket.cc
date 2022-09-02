@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -17,9 +18,11 @@ namespace chrome {
 
 WifiLanServerSocket::ServerSocketParameters::ServerSocketParameters(
     const net::IPEndPoint& local_end_point,
-    mojo::PendingRemote<network::mojom::TCPServerSocket> tcp_server_socket)
+    mojo::PendingRemote<network::mojom::TCPServerSocket> tcp_server_socket,
+    mojo::PendingRemote<sharing::mojom::FirewallHole> firewall_hole)
     : local_end_point(local_end_point),
-      tcp_server_socket(std::move(tcp_server_socket)) {}
+      tcp_server_socket(std::move(tcp_server_socket)),
+      firewall_hole(std::move(firewall_hole)) {}
 
 WifiLanServerSocket::ServerSocketParameters::~ServerSocketParameters() =
     default;
@@ -37,9 +40,15 @@ WifiLanServerSocket::WifiLanServerSocket(
       task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
       tcp_server_socket_(std::move(server_socket_parameters.tcp_server_socket),
-                         task_runner_) {
+                         task_runner_),
+      firewall_hole_(std::move(server_socket_parameters.firewall_hole),
+                     task_runner_) {
   tcp_server_socket_.set_disconnect_handler(
       base::BindOnce(&WifiLanServerSocket::OnTcpServerSocketDisconnected,
+                     base::Unretained(this)),
+      task_runner_);
+  firewall_hole_.set_disconnect_handler(
+      base::BindOnce(&WifiLanServerSocket::OnFirewallHoleDisconnected,
                      base::Unretained(this)),
       task_runner_);
 }
@@ -99,8 +108,6 @@ void WifiLanServerSocket::DoAccept(
     return;
   }
 
-  // TODO(https://crbug.com/1261238): Open firewall hole.
-
   VLOG(1) << "WifiLanServerSocket::" << __func__
           << ": Start accepting incoming connections.";
   tcp_server_socket_->Accept(
@@ -120,12 +127,14 @@ void WifiLanServerSocket::OnAccepted(
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  // TODO(https://crbug.com/1261238): Log metric.
+  base::UmaHistogramSparse("Nearby.Connections.WifiLan.Socket.AcceptResult",
+                           -net_error);
+
   if (net_error == net::OK) {
     DCHECK(remote_addr);
     VLOG(1) << "WifiLanServerSocket::" << __func__
             << ": Connection accepted from " << remote_addr->ToString();
-    *connected_socket_parameters = {*remote_addr, std::move(connected_socket),
+    *connected_socket_parameters = {std::move(connected_socket),
                                     std::move(receive_stream),
                                     std::move(send_stream)};
   } else {
@@ -164,12 +173,14 @@ void WifiLanServerSocket::DoClose(base::WaitableEvent* close_waitable_event) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (!IsClosed()) {
-    // Note that resetting the Remote will cancel any pending TCPServerSocket
-    // callbacks, including those already in the task queue.
+    // Note that resetting the Remote will cancel any pending callbacks,
+    // including those already in the task queue.
     VLOG(1) << "WifiLanServerSocket::" << __func__
-            << ": Closing TCP server socket.";
+            << ": Closing TCP server socket and firewall hole.";
     DCHECK(tcp_server_socket_);
     tcp_server_socket_.reset();
+    DCHECK(firewall_hole_);
+    firewall_hole_.reset();
 
     // Cancel all pending Accept() calls. This is thread safe because all
     // changes to |pending_accept_waitable_events_| are sequenced. Make a copy
@@ -195,6 +206,7 @@ void WifiLanServerSocket::DoClose(base::WaitableEvent* close_waitable_event) {
 
 bool WifiLanServerSocket::IsClosed() const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(tcp_server_socket_.is_bound(), firewall_hole_.is_bound());
   return !tcp_server_socket_.is_bound();
 }
 
@@ -213,6 +225,14 @@ void WifiLanServerSocket::OnTcpServerSocketDisconnected() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   LOG(WARNING) << "WifiLanServerSocket::" << __func__
                << ": TCP server socket unexpectedly disconnected. Closing "
+               << "WifiLanServerSocket.";
+  Close();
+}
+
+void WifiLanServerSocket::OnFirewallHoleDisconnected() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  LOG(WARNING) << "WifiLanServerSocket::" << __func__
+               << ": Firewall hole unexpectedly disconnected. Closing "
                << "WifiLanServerSocket.";
   Close();
 }

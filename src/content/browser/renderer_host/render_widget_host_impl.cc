@@ -27,13 +27,14 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -81,6 +82,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
+#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
@@ -102,7 +104,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -142,12 +143,12 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/browser/renderer_host/input/fling_scheduler_android.h"
 #include "ui/android/view_android.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "content/browser/renderer_host/input/fling_scheduler_mac.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -167,20 +168,16 @@ namespace {
 // before clearing previously displayed graphics.
 constexpr base::TimeDelta kNewContentRenderingDelay = base::Seconds(4);
 
+constexpr gfx::Rect kInvalidScreenRect(std::numeric_limits<int>::max(),
+                                       std::numeric_limits<int>::max(),
+                                       0,
+                                       0);
+
 bool g_check_for_pending_visual_properties_ack = true;
 
 bool ShouldDisableHangMonitor() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHangMonitor);
-}
-
-// Returns the cached result of IsUseZoomForDSFEnabled().
-// IsUseZoomForDSFEnabled() calls base::CommandLine::HasSwitch() which
-// is relatively heavyweight when invoked repeatedly (some functions that
-// check this setting can be called frequently). https://crbug.com/1220717 .
-bool ShouldUseZoomForDSF() {
-  static bool is_use_zoom_for_DSF_enabled = IsUseZoomForDSFEnabled();
-  return is_use_zoom_for_DSF_enabled;
 }
 
 // <process id, routing id>
@@ -279,7 +276,7 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
 
 class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {
  public:
-  void SetFocus(bool focused) override {
+  void SetFocus(blink::mojom::FocusState focus_state) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void MouseCaptureLost() override {
@@ -328,7 +325,7 @@ class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {
   void WaitForInputProcessed(WaitForInputProcessedCallback callback) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void AttachSynchronousCompositor(
       mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
           control_host,
@@ -389,27 +386,29 @@ base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
 std::unique_ptr<RenderWidgetHostImpl> RenderWidgetHostImpl::Create(
     FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
-    AgentSchedulingGroupHost& agent_scheduling_host,
+    base::SafeRef<SiteInstanceGroup> site_instance_group,
     int32_t routing_id,
     bool hidden,
     bool renderer_initiated_creation,
     std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue) {
   return base::WrapUnique(new RenderWidgetHostImpl(
       frame_tree,
-      /*self_owned=*/false, delegate, agent_scheduling_host, routing_id, hidden,
-      renderer_initiated_creation, std::move(frame_token_message_queue)));
+      /*self_owned=*/false, delegate, std::move(site_instance_group),
+      routing_id, hidden, renderer_initiated_creation,
+      std::move(frame_token_message_queue)));
 }
 
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::CreateSelfOwned(
     FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
-    AgentSchedulingGroupHost& agent_scheduling_host,
+    base::SafeRef<SiteInstanceGroup> site_instance_group,
     int32_t routing_id,
     bool hidden,
     std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue) {
   return new RenderWidgetHostImpl(frame_tree, /*self_owned=*/true, delegate,
-                                  agent_scheduling_host, routing_id, hidden,
+                                  std::move(site_instance_group), routing_id,
+                                  hidden,
                                   /*renderer_initiated_creation=*/true,
                                   std::move(frame_token_message_queue));
 }
@@ -418,7 +417,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
     FrameTree* frame_tree,
     bool self_owned,
     RenderWidgetHostDelegate* delegate,
-    AgentSchedulingGroupHost& agent_scheduling_group,
+    base::SafeRef<SiteInstanceGroup> site_instance_group,
     int32_t routing_id,
     bool hidden,
     bool renderer_initiated_creation,
@@ -427,22 +426,25 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       self_owned_(self_owned),
       waiting_for_init_(renderer_initiated_creation),
       delegate_(delegate),
-      agent_scheduling_group_(agent_scheduling_group),
+      agent_scheduling_group_(site_instance_group->agent_scheduling_group()),
+      site_instance_group_(std::move(site_instance_group)),
       routing_id_(routing_id),
       is_hidden_(hidden),
+      last_view_screen_rect_(kInvalidScreenRect),
+      last_window_screen_rect_(kInvalidScreenRect),
       latency_tracker_(delegate_),
       hung_renderer_delay_(kHungRendererDelay),
       new_content_rendering_delay_(kNewContentRenderingDelay),
       frame_token_message_queue_(std::move(frame_token_message_queue)),
       render_frame_metadata_provider_(
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
           ui::WindowResizeHelperMac::Get()->task_runner(),
 #else
           content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}),
 #endif
           frame_token_message_queue_.get()),
       frame_sink_id_(base::checked_cast<uint32_t>(
-                         agent_scheduling_group.GetProcess()->GetID()),
+                         agent_scheduling_group_.GetProcess()->GetID()),
                      base::checked_cast<uint32_t>(routing_id_)),
       power_mode_input_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
@@ -453,21 +455,20 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
   DCHECK(frame_token_message_queue_);
   frame_token_message_queue_->Init(this);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   fling_scheduler_ = std::make_unique<FlingSchedulerMac>(this);
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   fling_scheduler_ = std::make_unique<FlingSchedulerAndroid>(this);
 #else
   fling_scheduler_ = std::make_unique<FlingScheduler>(this);
 #endif
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  DCHECK(base::ThreadPoolInstance::Get())
-      << "Ref. Prerequisite section of post_task.h";
+  DCHECK(base::ThreadPoolInstance::Get());
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(
-          RenderWidgetHostID(agent_scheduling_group.GetProcess()->GetID(),
+          RenderWidgetHostID(agent_scheduling_group_.GetProcess()->GetID(),
                              routing_id_),
           this));
   CHECK(result.second) << "Inserting a duplicate item!";
@@ -476,14 +477,14 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
   // To avoid leaking any instance. They self-delete when their renderer process
   // is gone.
   if (self_owned_)
-    agent_scheduling_group.GetProcess()->AddObserver(this);
+    agent_scheduling_group_.GetProcess()->AddObserver(this);
 
   render_process_blocked_state_changed_subscription_ =
-      agent_scheduling_group.GetProcess()->RegisterBlockStateChangedCallback(
+      agent_scheduling_group_.GetProcess()->RegisterBlockStateChangedCallback(
           base::BindRepeating(
               &RenderWidgetHostImpl::RenderProcessBlockedStateChanged,
               base::Unretained(this)));
-  agent_scheduling_group.GetProcess()->AddPriorityClient(this);
+  agent_scheduling_group_.GetProcess()->AddPriorityClient(this);
 
   SetupInputRouter();
 
@@ -646,6 +647,11 @@ void RenderWidgetHostImpl::SendScreenRects() {
   if (is_hidden_) {
     // On GTK, this comes in for backgrounded tabs. Ignore, to match what
     // happens on Win & Mac, and when the view is shown it'll call this again.
+    return;
+  }
+
+  if (last_view_screen_rect_ == view_->GetViewBounds() &&
+      last_window_screen_rect_ == view_->GetBoundsInRootWindow()) {
     return;
   }
 
@@ -934,7 +940,7 @@ void RenderWidgetHostImpl::CancelPresentationTimeRequest() {
   blink_widget_->CancelPresentationTimeRequest();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   if (importance_ == importance)
     return;
@@ -1019,25 +1025,14 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
       .only_expand_top_controls_at_page_top =
       rvh_delegate_view->OnlyExpandTopControlsAtPageTop();
 
-  float top_controls_height = rvh_delegate_view->GetTopControlsHeight();
-  float top_controls_min_height = rvh_delegate_view->GetTopControlsMinHeight();
-  float bottom_controls_height = rvh_delegate_view->GetBottomControlsHeight();
-  float bottom_controls_min_height =
-      rvh_delegate_view->GetBottomControlsMinHeight();
-  float browser_controls_dsf_multiplier = 1.f;
-  // The top and bottom control sizes are physical pixels but the IPC wants
-  // DIPs *when not using page zoom for DSF* because blink layout is working
-  // in DIPs then.
-  if (!ShouldUseZoomForDSF())
-    browser_controls_dsf_multiplier = current_screen_info.device_scale_factor;
   visual_properties.browser_controls_params.top_controls_height =
-      top_controls_height / browser_controls_dsf_multiplier;
+      rvh_delegate_view->GetTopControlsHeight();
   visual_properties.browser_controls_params.top_controls_min_height =
-      top_controls_min_height / browser_controls_dsf_multiplier;
+      rvh_delegate_view->GetTopControlsMinHeight();
   visual_properties.browser_controls_params.bottom_controls_height =
-      bottom_controls_height / browser_controls_dsf_multiplier;
+      rvh_delegate_view->GetBottomControlsHeight();
   visual_properties.browser_controls_params.bottom_controls_min_height =
-      bottom_controls_min_height / browser_controls_dsf_multiplier;
+      rvh_delegate_view->GetBottomControlsMinHeight();
 
   visual_properties.auto_resize_enabled = auto_resize_enabled_;
   visual_properties.min_size_for_auto_resize = min_size_for_auto_resize_;
@@ -1090,14 +1085,6 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   } else {
     visual_properties.compositor_viewport_pixel_rect =
         properties_from_parent_local_root_.compositor_viewport;
-    if (!ShouldUseZoomForDSF()) {
-      // If UseZoomForDSF is not used, the coordinates were not scaled by DSF
-      // when coming from the renderer.
-      visual_properties.compositor_viewport_pixel_rect =
-          gfx::ScaleToEnclosingRect(
-              visual_properties.compositor_viewport_pixel_rect,
-              current_screen_info.device_scale_factor);
-    }
   }
 
   // These properties come from the top-level main frame's renderer. The
@@ -1262,10 +1249,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
       delegate_->DidChangeScreenOrientation();
   }
 
-  if (ShouldUseZoomForDSF()) {
-    input_router_->SetDeviceScaleFactor(
-        visual_properties->screen_infos.current().device_scale_factor);
-  }
+  input_router_->SetDeviceScaleFactor(
+      visual_properties->screen_infos.current().device_scale_factor);
 
   // If we do not have a valid viz::LocalSurfaceId then we are a child frame
   // waiting on the id to be propagated from our parent. We cannot create a hash
@@ -1339,6 +1324,12 @@ void RenderWidgetHostImpl::SetPageFocus(bool focused) {
                         "is_focused", focused);
   is_focused_ = focused;
 
+  // If focused state is being set is_active must be true. Android does
+  // not call SetActive so if we are trying to focus ensure `is_active`
+  // is true.
+  if (focused)
+    is_active_ = true;
+
   // Portals should never get page focus.
   DCHECK(!delegate_ || !delegate_->IsPortal() || !focused);
 
@@ -1358,7 +1349,14 @@ void RenderWidgetHostImpl::SetPageFocus(bool focused) {
     LockKeyboard();
   }
 
-  GetWidgetInputHandler()->SetFocus(focused);
+  blink::mojom::FocusState focus_state =
+      blink::mojom::FocusState::kNotFocusedAndNotActive;
+  if (focused)
+    focus_state = blink::mojom::FocusState::kFocused;
+  else if (is_active_)
+    focus_state = blink::mojom::FocusState::kNotFocusedAndActive;
+
+  GetWidgetInputHandler()->SetFocus(focus_state);
 
   // Also send page-level focus state to other SiteInstances involved in
   // rendering the current FrameTree, if this widget is for a main frame.
@@ -1380,8 +1378,8 @@ void RenderWidgetHostImpl::LostCapture() {
 }
 
 void RenderWidgetHostImpl::SetActive(bool active) {
-  const bool is_frame_widget = owner_delegate_;
-  if (is_frame_widget)
+  is_active_ = active;
+  if (blink_frame_widget_)
     blink_frame_widget_->SetActive(active);
 }
 
@@ -2034,7 +2032,9 @@ void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,
     blink_frame_widget_->DragTargetDrop(
         DropDataToDragData(drop_data_with_permissions,
                            storage_partition->GetFileSystemAccessManager(),
-                           GetProcess()->GetID()),
+                           GetProcess()->GetID(),
+                           ChromeBlobStorageContext::GetFor(
+                               GetProcess()->GetBrowserContext())),
         ConvertWindowPointToViewport(client_point), screen_point, key_modifiers,
         std::move(callback));
   }
@@ -2104,7 +2104,7 @@ RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
     is_hidden_,
     frame_depth_,
     intersects_viewport_,
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     importance_,
 #endif
   };
@@ -2112,7 +2112,7 @@ RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
       !owner_delegate_->ShouldContributePriorityToProcess()) {
     priority.is_hidden = true;
     priority.frame_depth = RenderProcessHostImpl::kMaxFrameDepthForPriority;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     priority.importance = ChildProcessImportance::NORMAL;
 #endif
   }
@@ -2166,7 +2166,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
     return;
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // MacOS version of underlying GrabViewSnapshot() blocks while
   // display/GPU are in a power-saving mode, so make sure display
   // does not go to sleep for the duration of reading a snapshot.
@@ -2245,6 +2245,7 @@ void RenderWidgetHostImpl::ResetStateForCreatedRenderWidget(
   // When the RenderWidget was destroyed, the ack may never come back. Don't
   // let that prevent us from speaking to the next RenderWidget.
   waiting_for_screen_rects_ack_ = false;
+  last_view_screen_rect_ = last_window_screen_rect_ = kInvalidScreenRect;
 
   visual_properties_ack_pending_ =
       DoesVisualPropertiesNeedAck(nullptr, initial_props);
@@ -2286,7 +2287,7 @@ void RenderWidgetHostImpl::ImeSetComposition(
   GetWidgetInputHandler()->ImeSetComposition(
       text, ime_text_spans, replacement_range, selection_start, selection_end,
       base::OnceClosure());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   for (auto& observer : ime_input_event_observers_) {
     observer.OnImeSetComposingTextEvent(text);
   }
@@ -2302,7 +2303,7 @@ void RenderWidgetHostImpl::ImeCommitText(
   GetWidgetInputHandler()->ImeCommitText(text, ime_text_spans,
                                          replacement_range, relative_cursor_pos,
                                          base::OnceClosure());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   for (auto& observer : ime_input_event_observers_) {
     observer.OnImeTextCommittedEvent(text);
   }
@@ -2311,7 +2312,7 @@ void RenderWidgetHostImpl::ImeCommitText(
 
 void RenderWidgetHostImpl::ImeFinishComposingText(bool keep_selection) {
   GetWidgetInputHandler()->ImeFinishComposingText(keep_selection);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   for (auto& observer : ime_input_event_observers_) {
     observer.OnImeFinishComposingTextEvent();
   }
@@ -2609,6 +2610,10 @@ void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
   }
 }
 
+SiteInstanceGroup* RenderWidgetHostImpl::GetSiteInstanceGroup() {
+  return &*site_instance_group_;
+}
+
 // static
 bool RenderWidgetHostImpl::DidVisualPropertiesSizeChange(
     const blink::VisualProperties& old_visual_properties,
@@ -2810,12 +2815,21 @@ void RenderWidgetHostImpl::StartDragging(
   storage::FileSystemContext* file_system_context =
       GetProcess()->GetStoragePartition()->GetFileSystemContext();
   filtered_data.file_system_files.clear();
-  // TODO(https://crbug.com/1221308): determine whether StorageKey should be
-  // replaced with a non-first-party value
+
   for (const auto& file_system_file : drop_data.file_system_files) {
-    storage::FileSystemURL file_system_url = file_system_context->CrackURL(
-        file_system_file.url,
-        blink::StorageKey(url::Origin::Create(file_system_file.url)));
+    storage::FileSystemURL file_system_url =
+        file_system_context->CrackURLInFirstPartyContext(file_system_file.url);
+
+    // Sandboxed filesystem files should never be handled via this path, so
+    // skip any that are sent from the renderer. In all other cases, it should
+    // be safe to use the FileSystemURL returned from calling
+    // CrackURLInFirstPartyContext as long as CanReadFileSystemFile only
+    // performs checks on the origin and doesn't use more of the StorageKey.
+    if (file_system_url.type() == storage::kFileSystemTypePersistent ||
+        file_system_url.type() == storage::kFileSystemTypeTemporary) {
+      continue;
+    }
+
     if (policy->CanReadFileSystemFile(GetProcess()->GetID(), file_system_url))
       filtered_data.file_system_files.push_back(file_system_file);
   }
@@ -2823,10 +2837,12 @@ void RenderWidgetHostImpl::StartDragging(
   float scale = GetScaleFactorForView(GetView());
   gfx::ImageSkia image = gfx::ImageSkia::CreateFromBitmap(bitmap, scale);
   gfx::Vector2d offset = bitmap_offset_in_dip;
-#if defined(OS_WIN)
-  // On Windows, scale the offset by device scale factor, otherwise the drag
+#if !BUILDFLAG(IS_MAC)
+  // Scale the offset by device scale factor, otherwise the drag
   // image location doesn't line up with the drop location (drag destination).
-  gfx::Vector2dF scaled_offset = gfx::Vector2dF(offset);
+  // (TODO: crbug.com/1298831) Remove !BUILDFLAG(IS_MAC) after fixing the drag
+  // icon position.
+  gfx::Vector2dF scaled_offset = static_cast<gfx::Vector2dF>(offset);
   scaled_offset.Scale(scale);
   offset = gfx::ToRoundedVector2d(scaled_offset);
 #endif
@@ -3324,7 +3340,7 @@ void RenderWidgetHostImpl::GotResponseToForceRedraw(int snapshot_id) {
 
   if (pending_browser_snapshots_.empty())
     return;
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
   // delay between when content is drawn to the screen, and when the
   // snapshot will actually pick up that content. Insert a manual delay of
@@ -3349,7 +3365,7 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   DCHECK(base::CurrentUIThread::IsSet());
 
   if (!pending_browser_snapshots_.empty()) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // On Android, call sites should pass in the bounds with correct offset
     // to capture the intended content area.
     gfx::Rect snapshot_bounds(GetView()->GetViewBounds());
@@ -3415,7 +3431,7 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
       ++it;
     }
   }
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (pending_browser_snapshots_.empty())
     GetWakeLock()->CancelWakeLock();
 #endif
@@ -3509,7 +3525,7 @@ void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token,
   frame_token_message_queue_->DidProcessFrame(frame_token, activation_time);
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
@@ -3539,10 +3555,7 @@ void RenderWidgetHostImpl::SetupInputRouter() {
 
   // input_router_ recreated, need to update the force_enable_zoom_ state.
   input_router_->SetForceEnableZoom(force_enable_zoom_);
-
-  if (ShouldUseZoomForDSF()) {
-    input_router_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
-  }
+  input_router_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
 }
 
 void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
@@ -3603,6 +3616,19 @@ void RenderWidgetHostImpl::OnRenderFrameMetadataChangedAfterActivation(
     base::TimeTicks activation_time) {
   const auto& metadata =
       render_frame_metadata_provider_.LastRenderFrameMetadata();
+  // We only want to report the timings for the very First Surface that is
+  // activated.
+  if (!first_surface_activated_) {
+    first_surface_activated_ = true;
+    UMA_HISTOGRAM_TIMES(
+        "Compositing.Renderer.FirstSurfaceActivationUpdateDuration."
+        "PreviousSurfaces",
+        metadata.previous_surfaces_visual_update_duration);
+    UMA_HISTOGRAM_TIMES(
+        "Compositing.Renderer.FirstSurfaceActivationUpdateDuration."
+        "CurrentSurface",
+        metadata.current_surface_visual_update_duration);
+  }
 
   bool is_mobile_optimized = metadata.is_mobile_optimized;
   input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
@@ -3751,8 +3777,7 @@ gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
 gfx::PointF RenderWidgetHostImpl::ConvertWindowPointToViewport(
     const gfx::PointF& window_point) {
   gfx::PointF viewport_point = window_point;
-  if (ShouldUseZoomForDSF())
-    viewport_point.Scale(GetScaleFactorForView(GetView()));
+  viewport_point.Scale(GetScaleFactorForView(GetView()));
   return viewport_point;
 }
 

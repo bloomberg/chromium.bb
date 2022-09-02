@@ -15,7 +15,6 @@
 #include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "skia/ext/skia_matrix_44.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/hdr_metadata.h"
@@ -163,16 +162,17 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
   const raw_ptr<const DebugRendererSettings> debug_settings_;
 
   bool previous_frame_underlay_is_opaque_ = true;
+  bool allow_promotion_hinting_ = false;
   gfx::RectF previous_display_rect_;
   std::vector<size_t> damages_to_be_removed_;
 
   struct OverlayRect {
     gfx::Rect rect;
     bool is_overlay;  // If false, it's an underlay.
-    bool operator==(const OverlayRect& b) {
+    bool operator==(const OverlayRect& b) const {
       return rect == b.rect && is_overlay == b.is_overlay;
     }
-    bool operator!=(const OverlayRect& b) { return !(*this == b); }
+    bool operator!=(const OverlayRect& b) const { return !(*this == b); }
   };
   std::vector<OverlayRect> previous_frame_overlay_rects_;
   std::vector<OverlayRect> current_frame_overlay_rects_;

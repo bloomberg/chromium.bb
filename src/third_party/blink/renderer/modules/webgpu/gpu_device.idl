@@ -5,7 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 [
-    Exposed(Window WebGPU, Worker WebGPU)
+    Exposed(Window WebGPU, DedicatedWorker WebGPU),
+    SecureContext
 ] interface GPUDevice : EventTarget {
     [SameObject] readonly attribute GPUSupportedFeatures features;
     [SameObject] readonly attribute GPUSupportedLimits limits;
@@ -13,6 +14,8 @@
     [CallWith=ScriptState] readonly attribute Promise<GPUDeviceLostInfo> lost;
 
     [SameObject] readonly attribute GPUQueue queue;
+
+    void destroy();
 
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
     [RaisesException] GPUTexture createTexture(GPUTextureDescriptor descriptor);
@@ -32,7 +35,7 @@
     [CallWith=ScriptState] Promise<GPUComputePipeline?> createComputePipelineAsync(GPUComputePipelineDescriptor descriptor);
 
     GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor = {});
-    GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
+    [RaisesException] GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
 
     GPUQuerySet createQuerySet(GPUQuerySetDescriptor descriptor);
 
@@ -44,10 +47,8 @@
 GPUDevice includes GPUObjectBase;
 
 enum GPUErrorFilter {
-    "none",
     "out-of-memory",
     "validation"
 };
 
 typedef sequence<(GPUBuffer or ArrayBuffer)> GPUMappedBuffer;
-typedef (GPUOutOfMemoryError or GPUValidationError) GPUError;

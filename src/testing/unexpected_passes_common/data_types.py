@@ -24,6 +24,8 @@ Result = None
 BuildStats = None
 TestExpectationMap = None
 
+# pylint: disable=super-with-arguments,useless-object-inheritance
+
 
 def SetExpectationImplementation(impl):
   global Expectation
@@ -191,7 +193,8 @@ class BaseBuildStats(object):
   def GetStatsAsString(self):
     return '(%d/%d passed)' % (self.passed_builds, self.total_builds)
 
-  def NeverNeededExpectation(self, expectation):  # pylint:disable=unused-argument
+  # pylint:disable=unused-argument
+  def NeverNeededExpectation(self, expectation):
     """Returns whether the results tallied in |self| never needed |expectation|.
 
     Args:
@@ -202,8 +205,10 @@ class BaseBuildStats(object):
       |expectation| being present. Otherwise, False.
     """
     return self.did_fully_pass
+  # pylint:enable=unused-argument
 
-  def AlwaysNeededExpectation(self, expectation):  # pylint:disable=unused-argument
+  # pylint:disable=unused-argument
+  def AlwaysNeededExpectation(self, expectation):
     """Returns whether the results tallied in |self| always needed |expectation.
 
     Args:
@@ -214,6 +219,7 @@ class BaseBuildStats(object):
       |expectation| being present. Otherwise, False.
     """
     return self.did_never_pass
+  # pylint:enable=unused-argument
 
   def __eq__(self, other):
     return (isinstance(other, BuildStats)
@@ -510,6 +516,14 @@ class BaseTestExpectationMap(BaseTypedMap):
               expectation_file,
               ExpectationBuilderMap()).setdefault(expectation, BuilderStepMap())
           _CopyPassesIntoBuilderMap(builder_map, [NEVER_PASS, PARTIAL_PASS])
+        # Handle the case of a semi-stale expectation that should be considered
+        # active.
+        elif self._ShouldTreatSemiStaleAsActive(tmp_map):
+          builder_map = active_dict.setdefault(
+              expectation_file,
+              ExpectationBuilderMap()).setdefault(expectation, BuilderStepMap())
+          _CopyPassesIntoBuilderMap(builder_map,
+                                    [FULL_PASS, PARTIAL_PASS, NEVER_PASS])
         # Handle the case of a semi-stale expectation.
         else:
           # TODO(crbug.com/998329): Sort by pass percentage so it's easier to
@@ -520,6 +534,22 @@ class BaseTestExpectationMap(BaseTypedMap):
           _CopyPassesIntoBuilderMap(builder_map,
                                     [FULL_PASS, PARTIAL_PASS, NEVER_PASS])
     return stale_dict, semi_stale_dict, active_dict
+
+  def _ShouldTreatSemiStaleAsActive(self, pass_map):
+    """Check if a semi-stale expectation should be treated as active.
+
+    Allows for implementation-specific workarounds.
+
+    Args:
+      pass_map: A dict mapping the FULL/NEVER/PARTIAL_PASS constants to
+          BuilderStepMaps, as used in self.SplitByStaleness().
+
+    Returns:
+      A boolean denoting whether the given results data should be treated as an
+      active expectation instead of a semi-stale one.
+    """
+    del pass_map
+    return False
 
   def FilterOutUnusedExpectations(self):
     """Filters out any unused Expectations from stored data.
@@ -630,6 +660,38 @@ class StepBuildStatsMap(BaseTypedMap):
 
   def _value_type(self):
     return BuildStats
+
+
+class BuilderEntry(object):
+  """Simple container for defining a builder."""
+
+  def __init__(self, name, builder_type, is_internal_builder):
+    """
+    Args:
+      name: A string containing the name of the builder.
+      builder_type: A string containing the type of builder this is, either
+          "ci" or "try".
+      is_internal_builder: A boolean denoting whether the builder is internal or
+          not.
+    """
+    self.name = name
+    self.builder_type = builder_type
+    self.is_internal_builder = is_internal_builder
+
+  @property
+  def project(self):
+    return 'chrome' if self.is_internal_builder else 'chromium'
+
+  def __eq__(self, other):
+    return (isinstance(other, BuilderEntry) and self.name == other.name
+            and self.builder_type == other.builder_type
+            and self.is_internal_builder == other.is_internal_builder)
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
+
+  def __hash__(self):
+    return hash((self.name, self.builder_type, self.is_internal_builder))
 
 
 def IsStringType(s):

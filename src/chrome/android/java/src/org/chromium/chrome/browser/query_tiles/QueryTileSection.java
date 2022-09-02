@@ -30,6 +30,7 @@ import org.chromium.components.query_tiles.TileUmaLogger;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,7 @@ public class QueryTileSection {
     private static final String VARIATION_SMALL_SCREEN_HEIGHT_THRESHOLD_DP =
             "small_screen_height_threshold_dp";
     private static final int DEFAULT_SMALL_SCREEN_HEIGHT_THRESHOLD_DP = 700;
+    private static final int DEFAULT_MOST_VISITED_MAX_ROWS = 1;
 
     private final ViewGroup mQueryTileSectionView;
     private final Callback<QueryInfo> mSubmitQueryCallback;
@@ -119,9 +121,7 @@ public class QueryTileSection {
     private void onTileClicked(ImageTile tile) {
         QueryTile queryTile = (QueryTile) tile;
         mTileUmaLogger.recordTileClicked(queryTile);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_TILES_LOCAL_ORDERING)) {
-            mTileProvider.onTileClicked(queryTile.id);
-        }
+        mTileProvider.onTileClicked(queryTile.id);
         QueryTileUtils.onQueryTileClicked();
 
         // TODO(qinmin): make isLastLevelTile a member variable of ImageTile.
@@ -160,7 +160,7 @@ public class QueryTileSection {
             return;
         }
 
-        String url = queryTile.urls.get(0);
+        GURL url = queryTile.urls.get(0);
         ImageFetcher.Params params = ImageFetcher.Params.createWithExpirationInterval(url,
                 ImageFetcher.QUERY_TILE_UMA_CLIENT_NAME, size, size,
                 QueryTileConstants.IMAGE_EXPIRATION_INTERVAL_MINUTES);
@@ -182,6 +182,6 @@ public class QueryTileSection {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(ChromeFeatureList.QUERY_TILES,
                 isSmallScreen ? MOST_VISITED_MAX_ROWS_SMALL_SCREEN
                               : MOST_VISITED_MAX_ROWS_NORMAL_SCREEN,
-                2);
+                DEFAULT_MOST_VISITED_MAX_ROWS);
     }
 }

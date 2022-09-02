@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/pipe_reader.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
+#include "chromeos/dbus/common/pipe_reader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
@@ -36,8 +36,8 @@ class PerfOutputCall {
   using DoneCallback = base::OnceCallback<void(std::string perf_stdout)>;
 
   PerfOutputCall(chromeos::DebugDaemonClient* debug_daemon_client,
-                 base::TimeDelta duration,
-                 const std::vector<std::string>& perf_args,
+                 const std::vector<std::string>& quipper_args,
+                 bool disable_cpu_idle,
                  DoneCallback callback);
 
   PerfOutputCall(const PerfOutputCall&) = delete;
@@ -66,8 +66,8 @@ class PerfOutputCall {
   std::unique_ptr<chromeos::PipeReader> perf_data_pipe_reader_;
 
   // Saved arguments.
-  base::TimeDelta duration_;
-  std::vector<std::string> perf_args_;
+  std::vector<std::string> quipper_args_;
+  bool disable_cpu_idle_;
   DoneCallback done_callback_;
 
   // Whether Stop() is called before OnGetPerfOutput() has returned the session

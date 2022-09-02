@@ -11,11 +11,16 @@ enum GPUFeatureName {
     "texture-compression-astc",
     "timestamp-query",
     "shader-float16",
-    "depth-clamping"
+    "depth-clamping",
+    "depth24unorm-stencil8",
+    "depth32float-stencil8",
+    "indirect-first-instance",
+    "chromium-experimental-dp4a",
 };
 
 [
-    Exposed(Window WebGPU, Worker WebGPU)
+    Exposed(Window WebGPU, DedicatedWorker WebGPU),
+    SecureContext
 ] interface GPUSupportedFeatures {
     readonly setlike<DOMString>;
 };

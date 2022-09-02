@@ -104,8 +104,14 @@ MessageCenterController::MessageCenterController() {
         std::make_unique<PhoneHubNotificationController>();
   }
 
-  // Set the system notification source display name ("Chrome OS" or "Chromium
-  // OS").
+  // When adding other notification blockers, ensure that they are initialized
+  // before the shell's `SnoopingProtectionController`. The notification blocker
+  // that it adds during its construction must be the last blocker, since it
+  // observes the states of all the others.
+  DCHECK(!Shell::Get()->snooping_protection_controller());
+
+  // Set the system notification source display name ("ChromeOS" or
+  // "ChromiumOS").
   message_center::MessageCenter::Get()->SetSystemNotificationAppName(
       l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME));
 }

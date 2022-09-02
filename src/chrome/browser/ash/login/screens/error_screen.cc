@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -28,14 +29,15 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/connectivity_diagnostics_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -66,23 +68,21 @@ Profile* GetAppProfile() {
 
 }  // namespace
 
-constexpr const char ErrorScreen::kUserActionConfigureCertsButtonClicked[] =
+constexpr const char kUserActionConfigureCertsButtonClicked[] =
     "configure-certs";
-constexpr const char ErrorScreen::kUserActionDiagnoseButtonClicked[] =
-    "diagnose";
-constexpr const char ErrorScreen::kUserActionLaunchOobeGuestSessionClicked[] =
+constexpr const char kUserActionDiagnoseButtonClicked[] = "diagnose";
+constexpr const char kUserActionLaunchOobeGuestSessionClicked[] =
     "launch-oobe-guest";
-constexpr const char
-    ErrorScreen::kUserActionLocalStateErrorPowerwashButtonClicked[] =
-        "local-state-error-powerwash";
-constexpr const char ErrorScreen::kUserActionRebootButtonClicked[] = "reboot";
-constexpr const char ErrorScreen::kUserActionShowCaptivePortalClicked[] =
+constexpr const char kUserActionLocalStateErrorPowerwashButtonClicked[] =
+    "local-state-error-powerwash";
+constexpr const char kUserActionRebootButtonClicked[] = "reboot";
+constexpr const char kUserActionShowCaptivePortalClicked[] =
     "show-captive-portal";
-constexpr const char ErrorScreen::kUserActionNetworkConnected[] =
-    "network-connected";
-constexpr const char ErrorScreen::kUserActionReloadGaia[] = "reload-gaia";
-constexpr const char ErrorScreen::kUserActionCancelReset[] = "cancel-reset";
-constexpr const char ErrorScreen::kUserActionCancel[] = "cancel";
+constexpr const char kUserActionOpenInternetDialog[] = "open-internet-dialog";
+constexpr const char kUserActionNetworkConnected[] = "network-connected";
+constexpr const char kUserActionReloadGaia[] = "reload-gaia";
+constexpr const char kUserActionCancelReset[] = "cancel-reset";
+constexpr const char kUserActionCancel[] = "cancel";
 
 ErrorScreen::ErrorScreen(ErrorScreenView* view)
     : BaseScreen(ErrorScreenView::kScreenId, OobeScreenPriority::DEFAULT),
@@ -273,9 +273,12 @@ void ErrorScreen::HideImpl() {
     view_->Hide();
 }
 
-void ErrorScreen::OnUserAction(const std::string& action_id) {
+void ErrorScreen::OnUserActionDeprecated(const std::string& action_id) {
   if (action_id == kUserActionShowCaptivePortalClicked) {
     ShowCaptivePortal();
+  } else if (action_id == kUserActionOpenInternetDialog) {
+    // Empty string opens the internet detail dialog for the default network.
+    chromeos::InternetDetailDialog::ShowDialog("");
   } else if (action_id == kUserActionConfigureCertsButtonClicked) {
     OnConfigureCerts();
   } else if (action_id == kUserActionDiagnoseButtonClicked) {
@@ -294,7 +297,7 @@ void ErrorScreen::OnUserAction(const std::string& action_id) {
              action_id == kUserActionCancelReset) {
     Hide();
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 
@@ -332,7 +335,7 @@ void ErrorScreen::PolicyLoadFailed() {
 }
 
 void ErrorScreen::DefaultHideCallback() {
-  if (parent_screen_ != OobeScreen::SCREEN_UNKNOWN && view_)
+  if (parent_screen_ != ash::OOBE_SCREEN_UNKNOWN && view_)
     view_->ShowOobeScreen(parent_screen_);
 
   // TODO(antrim): Due to potential race with GAIA reload and hiding network
@@ -367,8 +370,8 @@ void ErrorScreen::OnRebootButtonClicked() {
 }
 
 void ErrorScreen::OnCancelButtonClicked() {
-  if (view_)
-    view_->OnCancelButtonClicked();
+  DCHECK(LoginDisplayHost::default_host()->HasUserPods());
+  LoginDisplayHost::default_host()->HideOobeDialog();
   Hide();
 }
 
@@ -410,7 +413,8 @@ void ErrorScreen::StartGuestSessionAfterOwnershipCheck(
   if (guest_login_performer_)
     return;
 
-  guest_login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
+  guest_login_performer_ = std::make_unique<ChromeLoginPerformer>(
+      this, LoginDisplayHost::default_host()->metrics_recorder());
   guest_login_performer_->LoginOffTheRecord();
 }
 

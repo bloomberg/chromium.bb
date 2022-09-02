@@ -53,20 +53,9 @@ template<typename Derived, int Level> class DenseCoeffsBase;
 
 template<typename Scalar_, int Rows_, int Cols_,
          int Options_ = AutoAlign |
-#if EIGEN_GNUC_AT(3,4)
-    // workaround a bug in at least gcc 3.4.6
-    // the innermost ?: ternary operator is misparsed. We write it slightly
-    // differently and this makes gcc 3.4.6 happy, but it's ugly.
-    // The error would only show up with EIGEN_DEFAULT_TO_ROW_MAJOR is defined
-    // (when EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION is RowMajor)
-                          ( (Rows_==1 && Cols_!=1) ? Eigen::RowMajor
-                          : !(Cols_==1 && Rows_!=1) ?  EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION
-                          : Eigen::ColMajor ),
-#else
                           ( (Rows_==1 && Cols_!=1) ? Eigen::RowMajor
                           : (Cols_==1 && Rows_!=1) ? Eigen::ColMajor
                           : EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION ),
-#endif
          int MaxRows_ = Rows_,
          int MaxCols_ = Cols_
 > class Matrix;
@@ -89,7 +78,6 @@ template<typename MatrixType> class Transpose;
 template<typename MatrixType> class Conjugate;
 template<typename NullaryOp, typename MatrixType>         class CwiseNullaryOp;
 template<typename UnaryOp,   typename MatrixType>         class CwiseUnaryOp;
-template<typename ViewOp,    typename MatrixType>         class CwiseUnaryView;
 template<typename BinaryOp,  typename Lhs, typename Rhs>  class CwiseBinaryOp;
 template<typename TernaryOp, typename Arg1, typename Arg2, typename Arg3>  class CwiseTernaryOp;
 template<typename Decomposition, typename Rhstype>        class Solve;
@@ -98,7 +86,7 @@ template<typename XprType>                                class Inverse;
 template<typename Lhs, typename Rhs, int Option = DefaultProduct> class Product;
 
 template<typename Derived> class DiagonalBase;
-template<typename _DiagonalVectorType> class DiagonalWrapper;
+template<typename DiagonalVectorType_> class DiagonalWrapper;
 template<typename Scalar_, int SizeAtCompileTime, int MaxSizeAtCompileTime=SizeAtCompileTime> class DiagonalMatrix;
 template<typename MatrixType, typename DiagonalType, int ProductOrder> class DiagonalProduct;
 template<typename MatrixType, int Index = 0> class Diagonal;
@@ -118,7 +106,8 @@ template<int Value = Dynamic> class OuterStride;
 template<typename MatrixType, int MapOptions=Unaligned, typename StrideType = Stride<0,0> > class Map;
 template<typename Derived> class RefBase;
 template<typename PlainObjectType, int Options = 0,
-         typename StrideType = typename internal::conditional<PlainObjectType::IsVectorAtCompileTime,InnerStride<1>,OuterStride<> >::type > class Ref;
+         typename StrideType = typename std::conditional_t<PlainObjectType::IsVectorAtCompileTime,InnerStride<1>,OuterStride<> > > class Ref;
+template<typename ViewOp,    typename MatrixType, typename StrideType = Stride<0,0>>         class CwiseUnaryView;
 
 template<typename Derived> class TriangularBase;
 template<typename MatrixType, unsigned int Mode> class TriangularView;
@@ -246,20 +235,9 @@ struct IOFormat;
 // Array module
 template<typename Scalar_, int Rows_, int Cols_,
          int Options_ = AutoAlign |
-#if EIGEN_GNUC_AT(3,4)
-    // workaround a bug in at least gcc 3.4.6
-    // the innermost ?: ternary operator is misparsed. We write it slightly
-    // differently and this makes gcc 3.4.6 happy, but it's ugly.
-    // The error would only show up with EIGEN_DEFAULT_TO_ROW_MAJOR is defined
-    // (when EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION is RowMajor)
-                          ( (Rows_==1 && Cols_!=1) ? Eigen::RowMajor
-                          : !(Cols_==1 && Rows_!=1) ?  EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION
-                          : Eigen::ColMajor ),
-#else
                           ( (Rows_==1 && Cols_!=1) ? Eigen::RowMajor
                           : (Cols_==1 && Rows_!=1) ? Eigen::ColMajor
                           : EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION ),
-#endif
          int MaxRows_ = Rows_, int MaxCols_ = Cols_> class Array;
 template<typename ConditionMatrixType, typename ThenMatrixType, typename ElseMatrixType> class Select;
 template<typename MatrixType, typename BinaryOp, int Direction> class PartialReduxExpr;
@@ -277,8 +255,8 @@ template<typename MatrixType> class ColPivHouseholderQR;
 template<typename MatrixType> class FullPivHouseholderQR;
 template<typename MatrixType> class CompleteOrthogonalDecomposition;
 template<typename MatrixType> class SVDBase;
-template<typename MatrixType, int QRPreconditioner = ColPivHouseholderQRPreconditioner> class JacobiSVD;
-template<typename MatrixType> class BDCSVD;
+template<typename MatrixType, int Options = 0> class JacobiSVD;
+template<typename MatrixType, int Options = 0> class BDCSVD;
 template<typename MatrixType, int UpLo = Lower> class LLT;
 template<typename MatrixType, int UpLo = Lower> class LDLT;
 template<typename VectorsType, typename CoeffsType, int Side=OnTheLeft> class HouseholderSequence;
@@ -294,8 +272,8 @@ template<typename Scalar,int Dim> class Translation;
 template<typename Scalar,int Dim> class AlignedBox;
 template<typename Scalar, int Options = AutoAlign> class Quaternion;
 template<typename Scalar,int Dim,int Mode,int Options_=AutoAlign> class Transform;
-template <typename Scalar_, int _AmbientDim, int Options=AutoAlign> class ParametrizedLine;
-template <typename Scalar_, int _AmbientDim, int Options=AutoAlign> class Hyperplane;
+template <typename Scalar_, int AmbientDim_, int Options=AutoAlign> class ParametrizedLine;
+template <typename Scalar_, int AmbientDim_, int Options=AutoAlign> class Hyperplane;
 template<typename Scalar> class UniformScaling;
 template<typename MatrixType,int Direction> class Homogeneous;
 

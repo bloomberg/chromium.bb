@@ -18,14 +18,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "components/sync/base/client_tag_hash.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/cancelation_signal.h"
 #include "components/sync/engine/commit_contribution.h"
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
 #include "components/sync/engine/cycle/status_controller.h"
 #include "components/sync/engine/model_type_processor.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -664,6 +665,8 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   const ClientTagHash tag_hash = GenerateTagHash(kTag1);
 
   TriggerUpdateFromServer(10, kTag1, kValue1);
+  EXPECT_EQ(status_controller()->get_updated_types(),
+            ModelTypeSet{worker()->GetModelType()});
 
   ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
   std::vector<const UpdateResponseData*> updates_list =
@@ -687,6 +690,13 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   histogram_tester.ExpectBucketCount(
       GetEntityChangeHistogramNameForTest(worker()->GetModelType()),
       ModelTypeEntityChange::kRemoteNonInitialUpdate, 1);
+}
+
+TEST_F(ModelTypeWorkerTest,
+       ReceiveUpdates_ShouldNotPopulateUpdatedTypesOnTombstone) {
+  NormalInitialize();
+  TriggerTombstoneFromServer(10, kTag1);
+  EXPECT_EQ(status_controller()->get_updated_types(), ModelTypeSet());
 }
 
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_NoDuplicateHash) {
@@ -1409,8 +1419,7 @@ TEST_F(ModelTypeWorkerTest, TimeUntilEncryptionKeyFoundMetric) {
 TEST_F(ModelTypeWorkerTest, IgnoreUpdatesEncryptedWithKeysMissingForTooLong) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      switches::kIgnoreSyncEncryptionKeysLongMissing);
+  feature_list.InitAndEnableFeature(kIgnoreSyncEncryptionKeysLongMissing);
 
   NormalInitialize();
   worker()->SetMinGetUpdatesToIgnoreKeyForTest(2);
@@ -1559,7 +1568,7 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
                 FakeCryptographer(), PREFERENCES, entity, &response_data));
   const EntityData& data = response_data.entity;
   EXPECT_FALSE(data.id.empty());
-  EXPECT_FALSE(data.parent_id.empty());
+  EXPECT_FALSE(data.legacy_parent_id.empty());
   EXPECT_EQ("CLIENT_TAG", data.client_tag_hash.value());
   EXPECT_EQ("SERVER_TAG", data.server_defined_unique_tag);
   EXPECT_FALSE(data.is_deleted());
@@ -1841,14 +1850,14 @@ void GetLocalChangesRequestTest::ScheduleBlockingWait(
 // Tests that request doesn't block when cancelation signal is already signaled.
 TEST_F(GetLocalChangesRequestTest, CancelationSignaledBeforeRequest) {
   cancelation_signal_.Signal();
-  auto request = MakeRequest();
+  scoped_refptr<GetLocalChangesRequest> request = MakeRequest();
   request->WaitForResponseOrCancelation();
   EXPECT_TRUE(request->WasCancelled());
 }
 
 // Tests that signaling cancelation signal while request is blocked unblocks it.
 TEST_F(GetLocalChangesRequestTest, CancelationSignaledAfterRequest) {
-  auto request = MakeRequest();
+  scoped_refptr<GetLocalChangesRequest> request = MakeRequest();
   ScheduleBlockingWait(request);
   start_event_.Wait();
   cancelation_signal_.Signal();
@@ -1859,7 +1868,7 @@ TEST_F(GetLocalChangesRequestTest, CancelationSignaledAfterRequest) {
 // Tests that setting response unblocks request.
 TEST_F(GetLocalChangesRequestTest, SuccessfulRequest) {
   const std::string kHash1 = "SomeHash";
-  auto request = MakeRequest();
+  scoped_refptr<GetLocalChangesRequest> request = MakeRequest();
   ScheduleBlockingWait(request);
   start_event_.Wait();
   {
@@ -2376,6 +2385,182 @@ TEST_F(ModelTypeWorkerTest, ShouldHaveLocalChangesWhenContributedMaxEntities) {
   contribution = worker()->GetContribution(kMaxEntities);
   ASSERT_THAT(contribution, IsNull());
   EXPECT_FALSE(worker()->HasLocalChangesForTest());
+}
+
+class ModelTypeWorkerPasswordsTestWithNotes
+    : public ModelTypeWorkerPasswordsTest {
+ public:
+  ModelTypeWorkerPasswordsTestWithNotes() {
+    feature_list_.InitAndEnableFeature(
+        syncer::kReadWritePasswordNotesBackupField);
+  }
+  ~ModelTypeWorkerPasswordsTestWithNotes() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
+       ShouldIgnoreTheEncryptedNotesBackupWhenNotesInPasswordSpecificsData) {
+  base::HistogramTester histogram_tester;
+  const std::string kPasswordInSpecificsNote = "Note Value";
+  const std::string kPasswordNoteBackup = "Note Backup";
+  NormalInitialize();
+
+  // Create a new Nigori and allow the cryptographer to decrypt it.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // Set a value for the note in the PasswordSpecificsData.
+  sync_pb::PasswordSpecificsData unencrypted_password;
+  unencrypted_password.set_password_value(kPassword);
+  unencrypted_password.mutable_notes()->add_note()->set_value(
+      kPasswordInSpecificsNote);
+  sync_pb::EntitySpecifics encrypted_specifics =
+      EncryptPasswordSpecificsWithNthKey(1, unencrypted_password);
+
+  sync_pb::PasswordSpecificsData_Notes notes_backup;
+  notes_backup.add_note()->set_value(kPasswordNoteBackup);
+
+  FakeCryptographer::FromSingleDefaultKey(GetNthKeyName(1))
+      ->EncryptString(notes_backup.SerializeAsString(),
+                      encrypted_specifics.mutable_password()
+                          ->mutable_encrypted_notes_backup());
+
+  // Receive an encrypted password, encrypted with a key that is already known.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
+  const UpdateResponseData& update = processor()->GetUpdateResponse(kHash1);
+  ASSERT_TRUE(
+      update.entity.specifics.password().has_client_only_encrypted_data());
+  EXPECT_EQ(kPasswordInSpecificsNote, update.entity.specifics.password()
+                                          .client_only_encrypted_data()
+                                          .notes()
+                                          .note(0)
+                                          .value());
+  histogram_tester.ExpectUniqueSample(
+      "Sync.PasswordNotesStateInUpdate",
+      syncer::PasswordNotesStateForUMA::kSetInSpecificsData, 1);
+}
+
+TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
+       ShouldUseTheEncryptedNotesBackupWhenMissingInPasswordSpecificsData) {
+  base::HistogramTester histogram_tester;
+  const std::string kPasswordNoteBackup = "Note Backup";
+  NormalInitialize();
+
+  // Create a new Nigori and allow the cryptographer to decrypt it.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  sync_pb::PasswordSpecificsData unencrypted_password;
+  unencrypted_password.set_password_value(kPassword);
+  sync_pb::EntitySpecifics encrypted_specifics =
+      EncryptPasswordSpecificsWithNthKey(1, unencrypted_password);
+
+  sync_pb::PasswordSpecificsData_Notes notes_backup;
+  notes_backup.add_note()->set_value(kPasswordNoteBackup);
+
+  FakeCryptographer::FromSingleDefaultKey(GetNthKeyName(1))
+      ->EncryptString(notes_backup.SerializeAsString(),
+                      encrypted_specifics.mutable_password()
+                          ->mutable_encrypted_notes_backup());
+
+  // Receive an encrypted password, encrypted with a key that is already known.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
+  const UpdateResponseData& update = processor()->GetUpdateResponse(kHash1);
+  ASSERT_TRUE(
+      update.entity.specifics.password().has_client_only_encrypted_data());
+  EXPECT_EQ(kPasswordNoteBackup, update.entity.specifics.password()
+                                     .client_only_encrypted_data()
+                                     .notes()
+                                     .note(0)
+                                     .value());
+  histogram_tester.ExpectUniqueSample(
+      "Sync.PasswordNotesStateInUpdate",
+      syncer::PasswordNotesStateForUMA::kSetOnlyInBackup, 1);
+}
+
+TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
+       ShouldEmitUnsetWhenNoNotesInUpdate) {
+  base::HistogramTester histogram_tester;
+  NormalInitialize();
+
+  // Create a new Nigori and allow the cryptographer to decrypt it.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  sync_pb::PasswordSpecificsData unencrypted_password;
+  unencrypted_password.set_password_value(kPassword);
+  sync_pb::EntitySpecifics encrypted_specifics =
+      EncryptPasswordSpecificsWithNthKey(1, unencrypted_password);
+
+  // Receive an encrypted password, encrypted with a key that is already known.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
+  histogram_tester.ExpectUniqueSample("Sync.PasswordNotesStateInUpdate",
+                                      syncer::PasswordNotesStateForUMA::kUnset,
+                                      1);
+}
+
+TEST_F(ModelTypeWorkerPasswordsTestWithNotes, ShouldEmitNotesBackupCorrupted) {
+  base::HistogramTester histogram_tester;
+  const std::string kPasswordNoteBackup = "Note Backup";
+  NormalInitialize();
+
+  // Create a new Nigori and allow the cryptographer to decrypt it.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  sync_pb::PasswordSpecificsData unencrypted_password;
+  unencrypted_password.set_password_value(kPassword);
+  sync_pb::EntitySpecifics encrypted_specifics =
+      EncryptPasswordSpecificsWithNthKey(1, unencrypted_password);
+
+  sync_pb::PasswordSpecificsData_Notes notes_backup;
+  notes_backup.add_note()->set_value(kPasswordNoteBackup);
+
+  FakeCryptographer::FromSingleDefaultKey(GetNthKeyName(1))
+      ->EncryptString(notes_backup.SerializeAsString(),
+                      encrypted_specifics.mutable_password()
+                          ->mutable_encrypted_notes_backup());
+
+  // Replace a few bytes to corrupt it.
+  encrypted_specifics.mutable_password()
+      ->mutable_encrypted_notes_backup()
+      ->mutable_blob()
+      ->replace(0, 4, "xyz!");
+
+  // Receive an encrypted password, encrypted with a key that is already known.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.PasswordNotesStateInUpdate",
+      syncer::PasswordNotesStateForUMA::kSetOnlyInBackupButCorrupted, 1);
 }
 
 }  // namespace syncer

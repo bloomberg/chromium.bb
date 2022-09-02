@@ -14,7 +14,9 @@
 #include "gpu/command_buffer/service/shared_image_backing_d3d.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_utils.h"
 
 namespace gpu {
 
@@ -25,7 +27,7 @@ bool ClearBackBuffer(Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
   HRESULT hr = swap_chain->GetBuffer(0, IID_PPV_ARGS(&d3d11_texture));
   if (FAILED(hr)) {
-    DLOG(ERROR) << "GetBuffer failed with error " << std::hex << hr;
+    LOG(ERROR) << "GetBuffer failed with error " << std::hex << hr;
     return false;
   }
   DCHECK(d3d11_texture);
@@ -34,8 +36,7 @@ bool ClearBackBuffer(Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
   hr = d3d11_device->CreateRenderTargetView(d3d11_texture.Get(), nullptr,
                                             &render_target);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "CreateRenderTargetView failed with error " << std::hex
-                << hr;
+    LOG(ERROR) << "CreateRenderTargetView failed with error " << std::hex << hr;
     return false;
   }
   DCHECK(render_target);
@@ -106,18 +107,18 @@ scoped_refptr<DXGISharedHandleState> ValidateAndOpenSharedHandle(
     gfx::BufferFormat format,
     const gfx::Size& size) {
   if (handle.type != gfx::DXGI_SHARED_HANDLE || !handle.dxgi_handle.IsValid()) {
-    DLOG(ERROR) << "Invalid handle with type: " << handle.type;
+    LOG(ERROR) << "Invalid handle with type: " << handle.type;
     return nullptr;
   }
 
   if (!handle.dxgi_token.has_value()) {
-    DLOG(ERROR) << "Missing token for DXGI handle";
+    LOG(ERROR) << "Missing token for DXGI handle";
     return nullptr;
   }
 
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, format)) {
-    DLOG(ERROR) << "Invalid image size " << size.ToString() << " for "
-                << gfx::BufferFormatToString(format);
+    LOG(ERROR) << "Invalid image size " << size.ToString() << " for "
+               << gfx::BufferFormatToString(format);
     return nullptr;
   }
 
@@ -125,7 +126,7 @@ scoped_refptr<DXGISharedHandleState> ValidateAndOpenSharedHandle(
       dxgi_shared_handle_manager->GetOrCreateSharedHandleState(
           std::move(handle.dxgi_token.value()), std::move(handle.dxgi_handle));
   if (!dxgi_shared_handle_state) {
-    DLOG(ERROR) << "Failed to open DXGI shared handle";
+    LOG(ERROR) << "Failed to open DXGI shared handle";
     return nullptr;
   }
 
@@ -135,13 +136,13 @@ scoped_refptr<DXGISharedHandleState> ValidateAndOpenSharedHandle(
   // TODO: Add checks for device specific limits.
   if (desc.Width != static_cast<UINT>(size.width()) ||
       desc.Height != static_cast<UINT>(size.height())) {
-    DLOG(ERROR) << "Size must match texture being opened";
+    LOG(ERROR) << "Size must match texture being opened";
     return nullptr;
   }
 
   if ((desc.Format != GetDXGIFormat(format)) &&
       (desc.Format != GetDXGITypelessFormat(format))) {
-    DLOG(ERROR) << "Format must match texture being opened";
+    LOG(ERROR) << "Format must match texture being opened";
     return nullptr;
   }
 
@@ -176,6 +177,18 @@ SharedImageBackingFactoryD3D::SwapChainBackings::operator=(
     SharedImageBackingFactoryD3D::SwapChainBackings&&) = default;
 
 // static
+bool SharedImageBackingFactoryD3D::IsD3DSharedImageSupported(
+    const GpuPreferences& gpu_preferences) {
+  // Only supported for passthrough command decoder and Skia-GL.
+  const bool using_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
+                                 gl::PassthroughCommandDecoderSupported();
+  const bool is_skia_gl = gpu_preferences.gr_context_type == GrContextType::kGL;
+  // D3D11 device will be null if ANGLE is using the D3D9 backend.
+  const bool using_d3d11 = gl::QueryD3D11DeviceObjectFromANGLE() != nullptr;
+  return using_passthrough && is_skia_gl && using_d3d11;
+}
+
+// static
 bool SharedImageBackingFactoryD3D::IsSwapChainSupported() {
   return gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported() &&
          gl::DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
@@ -205,8 +218,8 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
       swap_chain_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
       break;
     default:
-      DLOG(ERROR) << gfx::BufferFormatToString(viz::BufferFormat(format))
-                  << " format is not supported by swap chain.";
+      LOG(ERROR) << gfx::BufferFormatToString(viz::BufferFormat(format))
+                 << " format is not supported by swap chain.";
       return {nullptr, nullptr};
   }
 
@@ -240,8 +253,8 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
       d3d11_device_.Get(), &desc, nullptr, &swap_chain);
 
   if (FAILED(hr)) {
-    DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
-                << std::hex << hr;
+    LOG(ERROR) << "CreateSwapChainForComposition failed with error " << std::hex
+               << hr;
     return {nullptr, nullptr};
   }
 
@@ -255,7 +268,7 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
   params.pDirtyRects = nullptr;
   hr = swap_chain->Present1(0 /* interval */, 0 /* flags */, &params);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Present1 failed with error " << std::hex << hr;
+    LOG(ERROR) << "Present1 failed with error " << std::hex << hr;
     return {nullptr, nullptr};
   }
 
@@ -265,7 +278,7 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
   Microsoft::WRL::ComPtr<ID3D11Texture2D> back_buffer_texture;
   hr = swap_chain->GetBuffer(0, IID_PPV_ARGS(&back_buffer_texture));
   if (FAILED(hr)) {
-    DLOG(ERROR) << "GetBuffer failed with error " << std::hex;
+    LOG(ERROR) << "GetBuffer failed with error " << std::hex;
     return {nullptr, nullptr};
   }
   auto back_buffer_backing = SharedImageBackingD3D::CreateFromSwapChainBuffer(
@@ -279,7 +292,7 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
   Microsoft::WRL::ComPtr<ID3D11Texture2D> front_buffer_texture;
   hr = swap_chain->GetBuffer(1, IID_PPV_ARGS(&front_buffer_texture));
   if (FAILED(hr)) {
-    DLOG(ERROR) << "GetBuffer failed with error " << std::hex;
+    LOG(ERROR) << "GetBuffer failed with error " << std::hex;
     return {nullptr, nullptr};
   }
   auto front_buffer_backing = SharedImageBackingD3D::CreateFromSwapChainBuffer(
@@ -316,7 +329,7 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
   const absl::optional<DXGI_FORMAT> dxgi_format =
       GetSupportedRGBAFormat(format);
   if (!dxgi_format.has_value()) {
-    DLOG(ERROR) << "Unsupported viz format found: " << format;
+    LOG(ERROR) << "Unsupported viz format found: " << format;
     return nullptr;
   }
 
@@ -330,13 +343,18 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
   desc.SampleDesc.Quality = 0;
   desc.Usage = D3D11_USAGE_DEFAULT;
   desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+  // WebGPU can use RGBA_8888 and RGBA_16 for STORAGE_BINDING.
+  if ((usage & gpu::SHARED_IMAGE_USAGE_WEBGPU) &&
+      (format == viz::RGBA_8888 || format == viz::RGBA_F16)) {
+    desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+  }
   desc.CPUAccessFlags = 0;
   desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_NTHANDLE |
                    D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
   HRESULT hr = d3d11_device_->CreateTexture2D(&desc, nullptr, &d3d11_texture);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "CreateTexture2D failed with error " << std::hex << hr;
+    LOG(ERROR) << "CreateTexture2D failed with error " << std::hex << hr;
     return nullptr;
   }
 
@@ -348,8 +366,8 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
   Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
   hr = d3d11_texture.As(&dxgi_resource);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "QueryInterface for IDXGIResource failed with error "
-                << std::hex << hr;
+    LOG(ERROR) << "QueryInterface for IDXGIResource failed with error "
+               << std::hex << hr;
     return nullptr;
   }
 
@@ -358,8 +376,8 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
       nullptr, DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE, nullptr,
       &shared_handle);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Unable to create shared handle for DXGIResource "
-                << std::hex << hr;
+    LOG(ERROR) << "Unable to create shared handle for DXGIResource " << std::hex
+               << hr;
     return nullptr;
   }
 
@@ -401,12 +419,12 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     uint32_t usage) {
   if (handle.type == gfx::DXGI_SHARED_HANDLE) {
     if (!GetSupportedRGBAFormat(viz::GetResourceFormat(format))) {
-      DLOG(ERROR) << "Unsupported format " << gfx::BufferFormatToString(format);
+      LOG(ERROR) << "Unsupported format " << gfx::BufferFormatToString(format);
       return nullptr;
     }
 
     if (plane != gfx::BufferPlane::DEFAULT) {
-      DLOG(ERROR) << "Invalid plane " << gfx::BufferPlaneToString(plane);
+      LOG(ERROR) << "Invalid plane " << gfx::BufferPlaneToString(plane);
       return nullptr;
     }
 
@@ -434,7 +452,7 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     case gfx::BufferPlane::UV:
       break;
     default:
-      DLOG(ERROR) << "Invalid plane " << gfx::BufferPlaneToString(plane);
+      LOG(ERROR) << "Invalid plane " << gfx::BufferPlaneToString(plane);
       return nullptr;
   }
 
@@ -445,7 +463,7 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
   absl::optional<DXGI_FORMAT> dxgi_format =
       GetSupportedRGBAFormat(plane_format);
   if (!dxgi_format.has_value()) {
-    DLOG(ERROR) << "Invalid format " << gfx::BufferFormatToString(format);
+    LOG(ERROR) << "Invalid format " << gfx::BufferFormatToString(format);
     return nullptr;
   }
 
@@ -467,7 +485,7 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
   HRESULT hr = d3d11_device_->CreateTexture2D(&desc, nullptr, &d3d11_texture);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "CreateTexture2D failed. hr = " << std::hex << hr;
+    LOG(ERROR) << "CreateTexture2D failed. hr = " << std::hex << hr;
     return nullptr;
   }
 
@@ -499,7 +517,7 @@ SharedImageBackingFactoryD3D::CreateSharedImageVideoPlanes(
     uint32_t usage) {
   // Only supports NV12 for now.
   if (format != gfx::BufferFormat::YUV_420_BIPLANAR) {
-    DLOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format);
+    LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format);
     return {};
   }
 
@@ -526,10 +544,11 @@ bool SharedImageBackingFactoryD3D::UseMapOnDefaultTextures() {
       map_on_default_textures_.emplace(features.MapOnDefaultTextures &&
                                        features.UnifiedMemoryArchitecture);
     } else {
-      DVLOG(1) << "Failed to retrieve D3D11_FEATURE_D3D11_OPTIONS2. hr = "
-               << std::hex << hr;
+      VLOG(1) << "Failed to retrieve D3D11_FEATURE_D3D11_OPTIONS2. hr = "
+              << std::hex << hr;
       map_on_default_textures_.emplace(false);
     }
+    VLOG(1) << "UseMapOnDefaultTextures = " << map_on_default_textures_.value();
   }
   return map_on_default_textures_.value();
 }

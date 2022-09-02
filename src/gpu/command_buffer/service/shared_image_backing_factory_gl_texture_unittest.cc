@@ -102,7 +102,8 @@ class SharedImageBackingFactoryGLTextureTestBase
     GpuPreferences preferences;
     preferences.use_passthrough_cmd_decoder = use_passthrough();
     backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
-        preferences, workarounds, GpuFeatureInfo(), &progress_reporter_);
+        preferences, workarounds, context_state_->feature_info(),
+        &progress_reporter_);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -150,7 +151,6 @@ class SharedImageBackingFactoryGLTextureTest
       : SharedImageBackingFactoryGLTextureTestBase(false) {}
   void SetUp() override {
     GpuDriverBugWorkarounds workarounds;
-    workarounds.max_texture_size = INT_MAX - 1;
     SetUpBase(workarounds, &image_factory_);
   }
 
@@ -510,7 +510,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, TexImageTexStorageEquivalence) {
     if (!viz::GLSupportsFormat(format) ||
         viz::IsResourceFormatCompressed(format))
       continue;
-    int storage_format = viz::TextureStorageFormat(format);
+    int storage_format = viz::TextureStorageFormat(
+        format, feature_info->feature_flags().angle_rgbx_internal_format);
 
     int image_gl_format = viz::GLDataFormat(format);
     int storage_gl_format =
@@ -542,7 +543,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, TexImageTexStorageEquivalence) {
   }
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 const auto kResourceFormats =
     ::testing::Values(viz::ResourceFormat::RGBA_8888,
                       viz::ResourceFormat::BGRA_1010102,

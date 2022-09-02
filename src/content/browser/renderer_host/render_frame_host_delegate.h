@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/safe_ref.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -48,11 +49,11 @@
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/window_open_disposition.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/gfx/native_widget_types.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #endif
@@ -94,12 +95,11 @@ class ClipboardFormatType;
 }
 
 namespace content {
-class AgentSchedulingGroupHost;
 class FrameTreeNode;
 class PrerenderHostRegistry;
-class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class SessionStorageNamespace;
+class SiteInstanceGroup;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
@@ -151,7 +151,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                const GURL& url) {}
 
   // Notifies that the manifest URL is updated.
-  virtual void OnManifestUrlChanged(const PageImpl& page) {}
+  virtual void OnManifestUrlChanged(PageImpl& page) {}
 
   // A message was added to to the console. |source_id| is a URL.
   // |untrusted_stack_trace| is not present for most messages; only when
@@ -293,7 +293,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Gets the GeolocationContext associated with this delegate.
   virtual device::mojom::GeolocationContext* GetGeolocationContext();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Gets an NFC implementation within the context of this delegate.
   virtual void GetNFC(RenderFrameHost* render_frame_host,
                       mojo::PendingReceiver<device::mojom::NFC> receiver);
@@ -322,7 +322,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Updates information to determine whether a user gesture should carryover to
   // future navigations. This is needed so navigations within a certain
   // timeframe of a request initiated by a gesture will be treated as if they
@@ -333,9 +333,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Let the delegate decide whether postMessage should be delivered to
   // |target_rfh| from a source frame in the given SiteInstance.  This defaults
   // to false and overrides the RenderFrameHost's decision if true.
-  virtual bool ShouldRouteMessageEvent(
-      RenderFrameHostImpl* target_rfh,
-      SiteInstance* source_site_instance) const;
+  virtual bool ShouldRouteMessageEvent(RenderFrameHostImpl* target_rfh) const;
 
   // Ensure that |source_rfh| has swapped-out RenderViews and
   // RenderFrameProxies for itself and for all frames on its opener chain in
@@ -352,10 +350,16 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Set the |node| frame as focused in the current FrameTree as well as
   // possibly changing focus in distinct but related inner/outer WebContents.
-  virtual void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {}
+  virtual void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) {
+  }
 
   // The frame called |window.focus()|.
   virtual void DidCallFocus() {}
+
+  // Returns whether this delegate is an inner WebContents for a guest.
+  // TODO(https://crbug.com/1295431): Remove in favor of tracking pending guest
+  // initializations instead.
+  virtual bool IsInnerWebContentsForGuest();
 
   // Searches the WebContents for a focused frame, potentially in an inner
   // WebContents. If this WebContents has no focused frame, returns |nullptr|.
@@ -428,8 +432,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // The main frame document element is ready. This happens when the document
   // has finished parsing.
-  virtual void DocumentAvailableInMainFrame(
-      RenderFrameHost* render_frame_host) {}
+  virtual void PrimaryMainDocumentElementAvailable() {}
 
   // Reports that passive mixed content was found at the specified url.
   virtual void PassiveInsecureContentFound(const GURL& resource_url) {}
@@ -442,7 +445,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Opens a new view-source tab for the last committed document in |frame|.
   virtual void ViewSource(RenderFrameHostImpl* frame) {}
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject>
   GetJavaRenderFrameHostDelegate();
 #endif
@@ -566,10 +569,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // The page is trying to open a new widget (e.g. a select popup). The
   // widget should be created associated with the given
-  // |agent_scheduling_group|, but it should not be shown yet. That should
+  // |site_instance_group|, but it should not be shown yet. That should
   // happen in response to ShowCreatedWidget.
   virtual RenderWidgetHostImpl* CreateNewPopupWidget(
-      AgentSchedulingGroupHost& agent_scheduling_group,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t route_id,
       mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
           blink_popup_widget_host,
@@ -602,7 +605,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Called when the renderer sends a response via DomAutomationController.
   // For example, `window.domAutomationController.send(foo())` sends the result
   // of foo() here.
-  virtual void DomOperationResponse(const std::string& json_string) {}
+  virtual void DomOperationResponse(RenderFrameHost* render_frame_host,
+                                    const std::string& json_string) {}
 
   virtual void OnCookiesAccessed(RenderFrameHostImpl* render_frame_host,
                                  const CookieAccessDetails& details) {}

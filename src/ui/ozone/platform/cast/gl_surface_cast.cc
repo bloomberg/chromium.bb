@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/cast_features.h"
@@ -45,6 +46,7 @@ namespace ui {
 GLSurfaceCast::GLSurfaceCast(gfx::AcceleratedWidget widget,
                              GLOzoneEglCast* parent)
     : NativeViewGLSurfaceEGL(
+          GLSurfaceEGL::GetGLDisplayEGL(),
           parent->GetNativeWindow(),
           std::make_unique<gfx::FixedVSyncProvider>(base::TimeTicks(),
                                                     GetVSyncInterval())),
@@ -107,7 +109,7 @@ EGLConfig GLSurfaceCast::GetConfig() {
                                EGL_SURFACE_TYPE,
                                EGL_WINDOW_BIT,
                                EGL_NONE};
-    config_ = ChooseEGLConfig(GetDisplay(), config_attribs);
+    config_ = ChooseEGLConfig(GetEGLDisplay(), config_attribs);
   }
   return config_;
 }

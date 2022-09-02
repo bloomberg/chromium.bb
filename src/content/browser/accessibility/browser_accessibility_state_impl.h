@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_provider.h"
 #include "content/common/content_export.h"
@@ -73,7 +74,7 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   void UpdateUniqueUserHistograms() override;
   void UpdateHistogramsForTesting() override;
   void SetCaretBrowsingState(bool enabled) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void SetImageLabelsModeForProfile(bool enabled,
                                     BrowserContext* profile) override;
 #endif

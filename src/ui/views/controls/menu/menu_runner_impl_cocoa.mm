@@ -122,23 +122,6 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
       }];
 }
 
-NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
-    NSString* string) {
-  // Starting in 10.13, if an attributed string is set as a menu item title,
-  // and NSFontAttributeName is not specified for it, it is automatically
-  // rendered in a font matching other menu items. Prior to then, a menu item
-  // with no specified font is rendered in Helvetica. In addition, while the
-  // documentation says that -[NSFont menuFontOfSize:0] gives the standard
-  // menu font, that doesn't actually match up. Therefore, specify a font that
-  // visually matches.
-  NSDictionary* attrs = nil;
-  if (base::mac::IsAtMostOS10_12())
-    attrs = @{NSFontAttributeName : [NSFont menuFontOfSize:14]};
-
-  return [[[NSMutableAttributedString alloc] initWithString:string
-                                                 attributes:attrs] autorelease];
-}
-
 }  // namespace
 
 // --- Private API begin ---
@@ -232,6 +215,9 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
                       atIndex:(NSInteger)index
             withColorProvider:(const ui::ColorProvider*)colorProvider {
   if (model->IsNewFeatureAt(index)) {
+    NSMutableAttributedString* attrTitle = [[[NSMutableAttributedString alloc]
+        initWithString:menuItem.title] autorelease];
+
     // /!\ WARNING /!\ Do not update this to use NSTextAttachment.image until
     // macOS 10.15 is the minimum required OS. See the details on the class
     // comment above.
@@ -240,8 +226,6 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
     attachment.attachmentCell = [[[NewTagAttachmentCell alloc]
         initWithColorProvider:colorProvider] autorelease];
 
-    NSMutableAttributedString* attrTitle =
-        MutableAttributedStringForMenuItemTitleString(menuItem.title);
     [attrTitle
         appendAttributedString:[NSAttributedString
                                    attributedStringWithAttachment:attachment]];
@@ -300,21 +284,19 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
       dispatch_after(
           dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC),
           dispatch_get_main_queue(), ^{
-            // Since we can't get bounds on all platforms, we should have a
-            // reasonable fallback. This is intentionally twice as wide as it
+            // Even though all supported macOS releases have `-_boundsIfOpen`,
+            // because it's not official API, retain the fallback code written
+            // for earlier versions of macOSes.
+            //
+            // The fallback bounds are intentionally twice as wide as they
             // should be because even though we could check the RTL bit and
             // guess whether the menu should appear to the left or right of the
             // anchor, if the anchor is near one side of the screen the menu
             // could end up on the other side.
-            //
-            // TODO(dfried): When 10.12 is the earliest version of MacOS we
-            // support, remove this code and always use the _boundsIfOpen call
-            // (assuming the call isn't deprecated in a future version of
-            // MacOS).
             gfx::Rect screen_rect = _anchorRect;
             CGSize menu_size = [menu_obj size];
-            screen_rect.Inset(gfx::Insets(0, -menu_size.width,
-                                          -menu_size.height, -menu_size.width));
+            screen_rect.Inset(gfx::Insets::TLBR(
+                0, -menu_size.width, -menu_size.height, -menu_size.width));
             if ([menu_obj respondsToSelector:@selector(_boundsIfOpen)]) {
               CGRect bounds = [menu_obj _boundsIfOpen];
               // A broken bounds for a menu that isn't
@@ -378,8 +360,7 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
 
 @end
 
-namespace views {
-namespace internal {
+namespace views::internal {
 namespace {
 
 // Returns the first item in |menu_controller|'s menu that will be checked.
@@ -453,19 +434,19 @@ NSEvent* EventForPositioningContextMenu(const gfx::Rect& anchor,
                                         NSWindow* window) {
   NSEvent* event = [NSApp currentEvent];
   switch ([event type]) {
-    case NSLeftMouseDown:
-    case NSLeftMouseUp:
-    case NSRightMouseDown:
-    case NSRightMouseUp:
-    case NSOtherMouseDown:
-    case NSOtherMouseUp:
+    case NSEventTypeLeftMouseDown:
+    case NSEventTypeLeftMouseUp:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeRightMouseUp:
+    case NSEventTypeOtherMouseDown:
+    case NSEventTypeOtherMouseUp:
       return event;
     default:
       break;
   }
   NSPoint location_in_window = ui::ConvertPointFromScreenToWindow(
       window, gfx::ScreenPointToNSPoint(anchor.CenterPoint()));
-  return [NSEvent mouseEventWithType:NSRightMouseDown
+  return [NSEvent mouseEventWithType:NSEventTypeRightMouseDown
                             location:location_in_window
                        modifierFlags:0
                            timestamp:0
@@ -495,10 +476,7 @@ MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
 MenuRunnerImplCocoa::MenuRunnerImplCocoa(
     ui::MenuModel* menu,
     base::RepeatingClosure on_menu_closed_callback)
-    : running_(false),
-      delete_after_run_(false),
-      closing_event_time_(base::TimeTicks()),
-      on_menu_closed_callback_(std::move(on_menu_closed_callback)) {
+    : on_menu_closed_callback_(std::move(on_menu_closed_callback)) {
   menu_delegate_.reset([[MenuControllerDelegate alloc] init]);
   menu_controller_.reset([[MenuControllerCocoa alloc]
                initWithModel:menu
@@ -593,7 +571,6 @@ base::TimeTicks MenuRunnerImplCocoa::GetClosingEventTime() const {
   return closing_event_time_;
 }
 
-MenuRunnerImplCocoa::~MenuRunnerImplCocoa() {}
+MenuRunnerImplCocoa::~MenuRunnerImplCocoa() = default;
 
-}  // namespace internal
-}  // namespace views
+}  // namespace views::internal

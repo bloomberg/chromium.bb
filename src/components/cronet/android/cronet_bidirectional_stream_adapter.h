@@ -16,7 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "net/http/bidirectional_stream.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_header_block.h"
 
 namespace net {
 struct BidirectionalStreamRequestInfo;
@@ -24,7 +24,7 @@ struct BidirectionalStreamRequestInfo;
 
 namespace cronet {
 
-class CronetURLRequestContextAdapter;
+class CronetContextAdapter;
 class IOBufferWithByteBuffer;
 
 // Convenient wrapper to hold Java references and data to represent the pending
@@ -68,7 +68,7 @@ class CronetBidirectionalStreamAdapter
     : public net::BidirectionalStream::Delegate {
  public:
   CronetBidirectionalStreamAdapter(
-      CronetURLRequestContextAdapter* context,
+      CronetContextAdapter* context,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jbidi_stream,
       bool jsend_request_headers_automatically,
@@ -76,7 +76,8 @@ class CronetBidirectionalStreamAdapter
       bool traffic_stats_tag_set,
       int32_t traffic_stats_tag,
       bool traffic_stats_uid_set,
-      int32_t traffic_stats_uid);
+      int32_t traffic_stats_uid,
+      net::NetworkChangeNotifier::NetworkHandle network);
 
   CronetBidirectionalStreamAdapter(const CronetBidirectionalStreamAdapter&) =
       delete;
@@ -168,7 +169,7 @@ class CronetBidirectionalStreamAdapter
       const spdy::Http2HeaderBlock& header_block);
   // Helper method to report metrics to the Java layer.
   void MaybeReportMetrics();
-  const raw_ptr<CronetURLRequestContextAdapter> context_;
+  const raw_ptr<CronetContextAdapter> context_;
 
   // Java object that owns this CronetBidirectionalStreamAdapter.
   base::android::ScopedJavaGlobalRef<jobject> owner_;
@@ -183,6 +184,9 @@ class CronetBidirectionalStreamAdapter
   const bool traffic_stats_uid_set_;
   // UID to be applied to URLRequest.
   const int32_t traffic_stats_uid_;
+  // If not equal to net::NetworkChangeNotifier::kInvalidNetworkHandle, the
+  // network to be used to send this request.
+  const net::NetworkChangeNotifier::NetworkHandle network_;
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
   std::unique_ptr<PendingWriteData> pending_write_data_;

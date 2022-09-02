@@ -62,7 +62,8 @@ class CPDF_Array final : public CPDF_Object {
   bool GetBooleanAt(size_t index, bool bDefault) const;
   int GetIntegerAt(size_t index) const;
   float GetNumberAt(size_t index) const;
-  CPDF_Dictionary* GetDictAt(size_t index);
+  RetainPtr<CPDF_Dictionary> GetMutableDictAt(size_t index);
+  CPDF_Dictionary* GetDictAt(size_t index);  // prefer previous form.
   const CPDF_Dictionary* GetDictAt(size_t index) const;
   CPDF_Stream* GetStreamAt(size_t index);
   const CPDF_Stream* GetStreamAt(size_t index) const;
@@ -162,6 +163,7 @@ class CPDF_Array final : public CPDF_Object {
 
 class CPDF_ArrayLocker {
  public:
+  FX_STACK_ALLOCATED();
   using const_iterator = CPDF_Array::const_iterator;
 
   explicit CPDF_ArrayLocker(const CPDF_Array* pArray);

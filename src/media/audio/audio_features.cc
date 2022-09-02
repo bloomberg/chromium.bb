@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/audio/audio_features.h"
+
 #include "base/feature_list.h"
-#include "build/chromeos_buildflags.h"
+#include "build/build_config.h"
 
 namespace features {
 
@@ -12,8 +13,8 @@ namespace features {
 // detected. It will be restarted when needed.
 const base::Feature kAudioServiceOutOfProcessKillAtHang{
   "AudioServiceOutOfProcessKillAtHang",
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -25,14 +26,14 @@ const base::Feature kAudioServiceOutOfProcessKillAtHang{
 const base::Feature kDumpOnAudioServiceHang{"DumpOnAudioServiceHang",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Enables loading and using AAudio instead of OpenSLES on compatible devices,
 // for audio output streams.
 const base::Feature kUseAAudioDriver{"UseAAudioDriver",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 const base::Feature kCrOSSystemAEC{"CrOSSystemAECWithBoardTuningsAllowed",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kCrOSSystemAECDeactivatedGroups{
@@ -46,9 +47,23 @@ const base::Feature kCrOSEnforceSystemAecAgc{"CrOSEnforceSystemAecAgc",
 const base::Feature kCrOSEnforceSystemAec{"CrOSEnforceSystemAec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCrOSDspBasedAecDeactivatedGroups{
+    "CrOSDspBasedAecDeactivatedGroups", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kCrOSDspBasedNsDeactivatedGroups{
+    "CrOSDspBasedNsDeactivatedGroups", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kCrOSDspBasedAgcDeactivatedGroups{
+    "CrOSDspBasedAgcDeactivatedGroups", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCrOSDspBasedAecAllowed{"CrOSDspBasedAecAllowed",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kCrOSDspBasedNsAllowed{"CrOSDspBasedNsAllowed",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kCrOSDspBasedAgcAllowed{"CrOSDspBasedAgcAllowed",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const base::Feature kAllowIAudioClient3{"AllowIAudioClient3",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 #endif

@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/features.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -145,7 +144,7 @@ std::string TruncateUrl(const std::string& url) {
 // returned.
 GURL GetUrlFromClipboard(bool notify_if_restricted) {
   std::u16string url_text;
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
       ui::EndpointType::kDefault, notify_if_restricted);
   ui::Clipboard::GetForCurrentThread()->ReadText(
@@ -179,7 +178,7 @@ void GetBookmarksMatchingPropertiesImpl(
   }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Returns whether or not a bookmark model contains any bookmarks aside of the
 // permanent nodes.
 bool HasUserCreatedBookmarks(BookmarkModel* model) {
@@ -430,28 +429,21 @@ bool DoesBookmarkContainWords(const std::u16string& title,
          DoesBookmarkTextContainWords(base::UTF8ToUTF16(url.spec()), words) ||
          DoesBookmarkTextContainWords(
              url_formatter::FormatUrl(url, url_formatter::kFormatUrlOmitNothing,
-                                      net::UnescapeRule::NORMAL, nullptr,
+                                      base::UnescapeRule::NORMAL, nullptr,
                                       nullptr, nullptr),
              words);
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
-      prefs::kShowBookmarkBar,
-      false,
+      prefs::kShowBookmarkBar, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kEditBookmarksEnabled, true);
   registry->RegisterBooleanPref(
-      prefs::kShowAppsShortcutInBookmarkBar,
-      base::FeatureList::IsEnabled(features::kAppsShortcutDefaultOff) ? false
-                                                                      : true,
+      prefs::kShowAppsShortcutInBookmarkBar, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kShowReadingListInBookmarkBar, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kShowManagedBookmarksInBookmarkBar,
-      true,
+      prefs::kShowManagedBookmarksInBookmarkBar, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   RegisterManagedBookmarksPrefs(registry);
 }
@@ -530,8 +522,8 @@ std::u16string CleanUpUrlForMatching(
   return base::i18n::ToLower(url_formatter::FormatUrlWithAdjustments(
       GURL(TruncateUrl(gurl.spec())),
       url_formatter::kFormatUrlOmitUsernamePassword,
-      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+      base::UnescapeRule::SPACES | base::UnescapeRule::PATH_SEPARATORS |
+          base::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
       nullptr, nullptr, adjustments ? adjustments : &tmp_adjustments));
 }
 
@@ -578,7 +570,7 @@ bool HasDescendantsOf(const std::vector<const BookmarkNode*>& list,
 }
 
 const BookmarkNode* GetParentForNewNodes(BookmarkModel* model) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (!HasUserCreatedBookmarks(model))
     return model->mobile_node();
 #endif

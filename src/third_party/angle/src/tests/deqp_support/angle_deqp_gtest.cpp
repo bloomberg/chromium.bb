@@ -70,20 +70,20 @@ constexpr char kSupportPath[] = "src/tests/deqp_support/";
 #define OPENGL_CTS_DIR(PATH) "external/openglcts/data/mustpass/gles/" PATH
 
 const char *gCaseListFiles[] = {
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles2-master.txt"),
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles3-master.txt"),
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles31-master.txt"),
-    "/android/cts/master/egl-master.txt",
-    OPENGL_CTS_DIR("khronos_mustpass/master/gles2-khr-master.txt"),
-    OPENGL_CTS_DIR("khronos_mustpass/master/gles3-khr-master.txt"),
-    OPENGL_CTS_DIR("khronos_mustpass/master/gles31-khr-master.txt"),
-    OPENGL_CTS_DIR("khronos_mustpass/master/gles32-khr-master.txt"),
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles3-rotate-landscape.txt"),
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles3-rotate-reverse-portrait.txt"),
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles3-rotate-reverse-landscape.txt"),
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles31-rotate-landscape.txt"),
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles31-rotate-reverse-portrait.txt"),
-    OPENGL_CTS_DIR("aosp_mustpass/master/gles31-rotate-reverse-landscape.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles2-master.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles3-master.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles31-master.txt"),
+    "/android/cts/main/egl-master.txt",
+    OPENGL_CTS_DIR("khronos_mustpass/main/gles2-khr-master.txt"),
+    OPENGL_CTS_DIR("khronos_mustpass/main/gles3-khr-master.txt"),
+    OPENGL_CTS_DIR("khronos_mustpass/main/gles31-khr-master.txt"),
+    OPENGL_CTS_DIR("khronos_mustpass/main/gles32-khr-master.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles3-rotate-landscape.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles3-rotate-reverse-portrait.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles3-rotate-reverse-landscape.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles31-rotate-landscape.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles31-rotate-reverse-portrait.txt"),
+    OPENGL_CTS_DIR("aosp_mustpass/main/gles31-rotate-reverse-landscape.txt"),
 };
 
 #undef OPENGL_CTS_DIR
@@ -142,8 +142,8 @@ constexpr bool kEnableRenderDocCapture = false;
 
 const APIInfo *gInitAPI = nullptr;
 dEQPOptions gOptions    = {
-    kDefaultPreRotation,      // preRotation
-    kEnableRenderDocCapture,  // enableRenderDocCapture
+       kDefaultPreRotation,      // preRotation
+       kEnableRenderDocCapture,  // enableRenderDocCapture
 };
 
 constexpr const char gdEQPEGLConfigNameString[] = "--deqp-gl-config-name=";
@@ -365,24 +365,23 @@ bool IsPassingResult(dEQPTestResult result)
     }
 }
 
-template <size_t TestModuleIndex>
-class dEQPTest : public testing::TestWithParam<size_t>
+class dEQP : public testing::TestWithParam<size_t>
 {
   public:
-    static testing::internal::ParamGenerator<size_t> GetTestingRange()
+    static testing::internal::ParamGenerator<size_t> GetTestingRange(size_t testModuleIndex)
     {
-        return testing::Range<size_t>(0, GetCaseList().numCases());
+        return testing::Range<size_t>(0, GetCaseList(testModuleIndex).numCases());
     }
 
-    static std::string GetCaseGTestName(size_t caseIndex)
+    static std::string GetCaseGTestName(size_t testModuleIndex, size_t caseIndex)
     {
-        const auto &caseInfo = GetCaseList().getCaseInfo(caseIndex);
+        const auto &caseInfo = GetCaseList(testModuleIndex).getCaseInfo(caseIndex);
         return caseInfo.mGTestName;
     }
 
-    static const dEQPCaseList &GetCaseList()
+    static const dEQPCaseList &GetCaseList(size_t testModuleIndex)
     {
-        static dEQPCaseList sCaseList(TestModuleIndex);
+        static dEQPCaseList sCaseList(testModuleIndex);
         sCaseList.initialize();
         return sCaseList;
     }
@@ -391,7 +390,7 @@ class dEQPTest : public testing::TestWithParam<size_t>
     static void TearDownTestCase();
 
   protected:
-    void runTest() const
+    void runTest(size_t testModuleIndex) const
     {
         if (sTestExceptionCount > 1)
         {
@@ -399,7 +398,7 @@ class dEQPTest : public testing::TestWithParam<size_t>
             return;
         }
 
-        const auto &caseInfo = GetCaseList().getCaseInfo(GetParam());
+        const auto &caseInfo = GetCaseList(testModuleIndex).getCaseInfo(GetParam());
         std::cout << caseInfo.mDEQPName << std::endl;
 
         // Tests that crash exit the harness before collecting the result. To tally the number of
@@ -514,26 +513,17 @@ class dEQPTest : public testing::TestWithParam<size_t>
     static std::vector<std::string> sUnexpectedPasses;
 };
 
-template <size_t TestModuleIndex>
-uint32_t dEQPTest<TestModuleIndex>::sTestCount = 0;
-template <size_t TestModuleIndex>
-uint32_t dEQPTest<TestModuleIndex>::sPassedTestCount = 0;
-template <size_t TestModuleIndex>
-uint32_t dEQPTest<TestModuleIndex>::sFailedTestCount = 0;
-template <size_t TestModuleIndex>
-uint32_t dEQPTest<TestModuleIndex>::sTestExceptionCount = 0;
-template <size_t TestModuleIndex>
-uint32_t dEQPTest<TestModuleIndex>::sNotSupportedTestCount = 0;
-template <size_t TestModuleIndex>
-uint32_t dEQPTest<TestModuleIndex>::sSkippedTestCount = 0;
-template <size_t TestModuleIndex>
-std::vector<std::string> dEQPTest<TestModuleIndex>::sUnexpectedFailed;
-template <size_t TestModuleIndex>
-std::vector<std::string> dEQPTest<TestModuleIndex>::sUnexpectedPasses;
+uint32_t dEQP::sTestCount             = 0;
+uint32_t dEQP::sPassedTestCount       = 0;
+uint32_t dEQP::sFailedTestCount       = 0;
+uint32_t dEQP::sTestExceptionCount    = 0;
+uint32_t dEQP::sNotSupportedTestCount = 0;
+uint32_t dEQP::sSkippedTestCount      = 0;
+std::vector<std::string> dEQP::sUnexpectedFailed;
+std::vector<std::string> dEQP::sUnexpectedPasses;
 
 // static
-template <size_t TestModuleIndex>
-void dEQPTest<TestModuleIndex>::SetUpTestCase()
+void dEQP::SetUpTestCase()
 {
     sPassedTestCount       = 0;
     sFailedTestCount       = 0;
@@ -606,21 +596,21 @@ void dEQPTest<TestModuleIndex>::SetUpTestCase()
 }
 
 // static
-template <size_t TestModuleIndex>
-void dEQPTest<TestModuleIndex>::TearDownTestCase()
+void dEQP::TearDownTestCase()
 {
     PrintTestStats();
     deqp_libtester_shutdown_platform();
 }
 
-#define ANGLE_INSTANTIATE_DEQP_TEST_CASE(API, N)                              \
-    class dEQP : public dEQPTest<N>                                           \
-    {};                                                                       \
-    TEST_P(dEQP, API) { runTest(); }                                          \
-                                                                              \
-    INSTANTIATE_TEST_SUITE_P(, dEQP, dEQP::GetTestingRange(),                 \
-                             [](const testing::TestParamInfo<size_t> &info) { \
-                                 return dEQP::GetCaseGTestName(info.param);   \
+#define ANGLE_INSTANTIATE_DEQP_TEST_CASE(API, N)                               \
+    TEST_P(dEQP, API)                                                          \
+    {                                                                          \
+        runTest(N);                                                            \
+    }                                                                          \
+                                                                               \
+    INSTANTIATE_TEST_SUITE_P(, dEQP, dEQP::GetTestingRange(N),                 \
+                             [](const testing::TestParamInfo<size_t> &info) {  \
+                                 return dEQP::GetCaseGTestName(N, info.param); \
                              })
 
 #ifdef ANGLE_DEQP_GLES2_TESTS

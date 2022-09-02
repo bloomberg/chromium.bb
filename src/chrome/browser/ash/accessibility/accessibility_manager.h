@@ -27,8 +27,6 @@
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/soda/soda_installer.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -37,8 +35,6 @@
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/ime/ash/input_method_manager.h"
-
-class Browser;
 
 namespace content {
 struct FocusedNodeDetails;
@@ -51,6 +47,7 @@ class Rect;
 namespace ash {
 class AccessibilityExtensionLoader;
 class Dictation;
+class PumpkinInstaller;
 class SelectToSpeakEventHandlerDelegateImpl;
 enum class SelectToSpeakState;
 enum class SelectToSpeakPanelAction;
@@ -105,8 +102,7 @@ enum class PlaySoundOption {
 // watching profile notifications and pref-changes.
 // TODO(yoshiki): merge MagnificationManager with AccessibilityManager.
 class AccessibilityManager
-    : public content::NotificationObserver,
-      public session_manager::SessionManagerObserver,
+    : public session_manager::SessionManagerObserver,
       public extensions::api::braille_display_private::BrailleObserver,
       public extensions::ExtensionRegistryObserver,
       public user_manager::UserManager::UserSessionStateObserver,
@@ -127,7 +123,7 @@ class AccessibilityManager
   static AccessibilityManager* Get();
 
   // Show the accessibility help as a tab in the browser.
-  static void ShowAccessibilityHelp(Browser* browser);
+  static void ShowAccessibilityHelp();
 
   // Returns true when the accessibility menu should be shown.
   bool ShouldShowAccessibilityMenu();
@@ -256,8 +252,8 @@ class AccessibilityManager
 
   // Register a callback to be notified when the status of an accessibility
   // option changes.
-  base::CallbackListSubscription RegisterCallback(
-      const AccessibilityStatusCallback& cb) WARN_UNUSED_RESULT;
+  [[nodiscard]] base::CallbackListSubscription RegisterCallback(
+      const AccessibilityStatusCallback& cb);
 
   // Notify registered callbacks of a status change in an accessibility setting.
   void NotifyAccessibilityStatusChanged(
@@ -365,13 +361,10 @@ class AccessibilityManager
                                   double value);
 
   // SodaInstaller::Observer:
-  void OnSodaInstalled() override;
-  void OnSodaLanguagePackInstalled(speech::LanguageCode language_code) override;
-  void OnSodaError() override;
-  void OnSodaLanguagePackError(speech::LanguageCode language_code) override;
-  void OnSodaProgress(int combined_progress) override {}
-  void OnSodaLanguagePackProgress(int language_progress,
-                                  speech::LanguageCode language_code) override;
+  void OnSodaInstalled(speech::LanguageCode language_code) override;
+  void OnSodaError(speech::LanguageCode language_code) override;
+  void OnSodaProgress(speech::LanguageCode language_code,
+                      int progress) override;
 
   // Test helpers:
   void SetProfileForTest(Profile* profile);
@@ -388,6 +381,15 @@ class AccessibilityManager
   const std::set<std::string>& GetAccessibilityCommonEnabledFeaturesForTest() {
     return accessibility_common_enabled_features_;
   }
+  bool IsDisableAutoclickDialogVisibleForTest();
+  bool is_pumpkin_installed_for_testing() {
+    return is_pumpkin_installed_for_testing_;
+  }
+
+  // Triggers a request to install Pumpkin. Runs `callback` with a value of
+  // true if the install was successful. Otherwise, runs `callback` with a
+  // value of false.
+  void InstallPumpkinForDictation(base::OnceCallback<void(bool)> callback);
 
  protected:
   AccessibilityManager();
@@ -452,11 +454,6 @@ class AccessibilityManager
 
   void PlayVolumeAdjustSound();
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // session_manager::SessionManagerObserver:
   void OnLoginOrLockScreenVisible() override;
 
@@ -493,8 +490,6 @@ class AccessibilityManager
 
   // SODA-related methods.
   void MaybeInstallSoda(const std::string& locale);
-  void OnSodaInstallSucceeded();
-  void OnSodaInstallError(speech::LanguageCode language_code);
   void OnSodaInstallUpdated(int progress);
   bool ShouldShowSodaSucceededNotificationForDictation();
   bool ShouldShowSodaFailedNotificationForDictation(
@@ -502,8 +497,14 @@ class AccessibilityManager
   void ShowSodaDownloadNotificationForDictation(bool succeeded);
 
   void ShowDictationLanguageUpgradedNudge(const std::string& locale);
+  speech::LanguageCode GetDictationLanguageCode();
 
   void CreateChromeVoxPanel();
+
+  void OnPumpkinInstalled(bool success);
+  void OnPumpkinError(const std::string& error);
+
+  void OnAppTerminating();
 
   // Profile which has the current a11y context.
   Profile* profile_ = nullptr;
@@ -513,7 +514,6 @@ class AccessibilityManager
                           session_manager::SessionManagerObserver>
       session_observation_{this};
 
-  content::NotificationRegistrar notification_registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
 
@@ -565,12 +565,13 @@ class AccessibilityManager
 
   std::unique_ptr<AccessibilityExtensionLoader> switch_access_loader_;
 
+  std::unique_ptr<PumpkinInstaller> pumpkin_installer_;
+
   std::map<std::string, std::set<std::string>>
       focus_ring_names_for_extension_id_;
 
   bool app_terminating_ = false;
 
-  std::unique_ptr<Dictation> dictation_;
   bool dictation_active_ = false;
   bool network_dictation_dialog_is_showing_ = false;
   // Whether a SODA download failed notification has been shown. This is
@@ -591,7 +592,12 @@ class AccessibilityManager
   // Whether the virtual keyboard was enabled before Switch Access loaded.
   bool was_vk_enabled_before_switch_access_ = false;
 
+  base::OnceCallback<void(bool)> install_pumpkin_callback_;
+  bool is_pumpkin_installed_for_testing_ = false;
+
   base::CallbackListSubscription focus_changed_subscription_;
+
+  base::CallbackListSubscription on_app_terminating_subscription_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_{this};
 

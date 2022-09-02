@@ -4,10 +4,12 @@
 
 #include "ui/base/ime/input_method_base.h"
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/ignore_result.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -44,7 +46,7 @@ void InputMethodBase::OnBlur() {
 
 void InputMethodBase::OnTouch(ui::EventPointerType pointerType) {}
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 bool InputMethodBase::OnUntranslatedIMEMessage(
     const CHROME_MSG event,
     InputMethod::NativeEventResult* result) {
@@ -78,7 +80,7 @@ void InputMethodBase::SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) {
     text_input_client_->EnsureCaretNotInRect(keyboard_bounds_);
 }
 
-void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
+void InputMethodBase::OnTextInputTypeChanged(TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
   NotifyTextInputStateChanged(client);
@@ -87,12 +89,6 @@ void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
 TextInputType InputMethodBase::GetTextInputType() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetTextInputType() : TEXT_INPUT_TYPE_NONE;
-}
-
-void InputMethodBase::ShowVirtualKeyboardIfEnabled() {
-  // TODO(crbug.com/1275410): Merge this into
-  // SetVirtualKeyboardVisibilityIfEnabled.
-  SetVirtualKeyboardVisibilityIfEnabled(true);
 }
 
 void InputMethodBase::SetVirtualKeyboardVisibilityIfEnabled(bool should_show) {
@@ -192,7 +188,7 @@ std::vector<gfx::Rect> InputMethodBase::GetCompositionBounds(
 bool InputMethodBase::SendFakeProcessKeyEvent(bool pressed) const {
   KeyEvent evt(pressed ? ET_KEY_PRESSED : ET_KEY_RELEASED,
                pressed ? VKEY_PROCESSKEY : VKEY_UNKNOWN, EF_IME_FABRICATED_KEY);
-  ignore_result(DispatchKeyEventPostIME(&evt));
+  std::ignore = DispatchKeyEventPostIME(&evt);
   return evt.stopped_propagation();
 }
 

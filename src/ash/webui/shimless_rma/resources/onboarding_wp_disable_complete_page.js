@@ -10,11 +10,12 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ShimlessRmaServiceInterface, StateResult, WriteProtectDisableCompleteAction} from './shimless_rma_types.js';
+import {enableNextButton} from './shimless_rma_util.js';
 
 /** @type {!Object<WriteProtectDisableCompleteAction, string>} */
 const disableActionTextKeys = {
   [WriteProtectDisableCompleteAction.kSkippedAssembleDevice]:
-      'wpDisableSkippedText',
+      'wpDisableReassembleNowText',
   [WriteProtectDisableCompleteAction.kCompleteAssembleDevice]:
       'wpDisableReassembleNowText',
   [WriteProtectDisableCompleteAction.kCompleteKeepDeviceOpen]:
@@ -59,10 +60,7 @@ export class OnboardingWpDisableCompletePage extends
   /** @override */
   ready() {
     super.ready();
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: false},
-        ));
+    enableNextButton(this);
   }
 
   constructor() {
@@ -81,16 +79,17 @@ export class OnboardingWpDisableCompletePage extends
   }
 
   /**
-   * @protected
    * @return {string}
+   * @protected
    */
   getActionString_() {
-    return (this.action_ === WriteProtectDisableCompleteAction.kUnknown) ?
+    return (this.action_ === WriteProtectDisableCompleteAction.kUnknown ||
+            this.action_ === WriteProtectDisableCompleteAction.kCompleteNoOp) ?
         '' :
         this.i18n(disableActionTextKeys[this.action_]);
   }
 
-  /** @return {!Promise<!StateResult>} */
+  /** @return {!Promise<!{stateResult: !StateResult}>} */
   onNextButtonClick() {
     return this.shimlessRmaService_.confirmManualWpDisableComplete();
   }

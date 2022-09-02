@@ -55,8 +55,10 @@ void ChromeCrashReporterClient::InitializeCrashReportingForProcess() {
     if (process_type.empty())
       install_static::GetUserDataDirectory(&user_data_dir, nullptr);
 
-    crash_reporter::InitializeCrashpadWithEmbeddedHandler(
-        process_type.empty(), install_static::WideToUTF8(process_type),
+    // TODO(wfh): Add a DCHECK for success. See https://crbug.com/1329269.
+    std::ignore = crash_reporter::InitializeCrashpadWithEmbeddedHandler(
+        /*initial_client=*/process_type.empty(),
+        install_static::WideToUTF8(process_type),
         install_static::WideToUTF8(user_data_dir), base::FilePath());
   }
 }

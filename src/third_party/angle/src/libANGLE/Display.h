@@ -27,7 +27,7 @@
 #include "libANGLE/Observer.h"
 #include "libANGLE/Version.h"
 #include "platform/Feature.h"
-#include "platform/FrontendFeatures.h"
+#include "platform/FrontendFeatures_autogen.h"
 
 namespace angle
 {
@@ -93,6 +93,7 @@ class ShareGroup final : angle::NonCopyable
 
     const ContextSet &getContexts() const { return mContexts; }
     void addSharedContext(gl::Context *context);
+    void removeSharedContext(gl::Context *context);
 
     size_t getShareGroupContextCount() const { return mContexts.size(); }
 
@@ -139,6 +140,7 @@ class Display final : public LabeledObject,
         EnumCount = InvalidEnum,
     };
     Error terminate(Thread *thread, TerminateReason terminateReason);
+    Error destroyInvalidEglObjects();
     // Called before all display state dependent EGL functions. Backends can set up, for example,
     // thread-specific backend state through this function. Not called for functions that do not
     // need the state.
@@ -148,7 +150,8 @@ class Display final : public LabeledObject,
     Error releaseThread();
 
     static Display *GetDisplayFromDevice(Device *device, const AttributeMap &attribMap);
-    static Display *GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay,
+    static Display *GetDisplayFromNativeDisplay(EGLenum platform,
+                                                EGLNativeDisplayType nativeDisplay,
                                                 const AttributeMap &attribMap);
     static Display *GetExistingDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay);
 
@@ -259,7 +262,7 @@ class Display final : public LabeledObject,
 
     std::string getBackendRendererDescription() const;
     std::string getBackendVendorString() const;
-    std::string getBackendVersionString() const;
+    std::string getBackendVersionString(bool includeFullVersion) const;
 
     EGLint programCacheGetAttrib(EGLenum attrib) const;
     Error programCacheQuery(EGLint index,
@@ -301,6 +304,7 @@ class Display final : public LabeledObject,
     void returnZeroFilledBuffer(angle::ScratchBuffer zeroFilledBuffer);
 
     egl::Error handleGPUSwitch();
+    egl::Error forceGPUSwitch(EGLint gpuIDHigh, EGLint gpuIDLow);
 
     std::mutex &getDisplayGlobalMutex() { return mDisplayGlobalMutex; }
     std::mutex &getProgramCacheMutex() { return mProgramCacheMutex; }
@@ -308,6 +312,14 @@ class Display final : public LabeledObject,
     // Installs LoggingAnnotator as the global DebugAnnotator, for back-ends that do not implement
     // their own DebugAnnotator.
     void setGlobalDebugAnnotator() { gl::InitializeDebugAnnotations(&mAnnotator); }
+
+    bool supportsDmaBufFormat(EGLint format) const;
+    Error queryDmaBufFormats(EGLint max_formats, EGLint *formats, EGLint *num_formats);
+    Error queryDmaBufModifiers(EGLint format,
+                               EGLint max_modifiers,
+                               EGLuint64KHR *modifiers,
+                               EGLBoolean *external_only,
+                               EGLint *num_modifiers);
 
   private:
     Display(EGLenum platform, EGLNativeDisplayType displayId, Device *eglDevice);
@@ -348,6 +360,17 @@ class Display final : public LabeledObject,
 
     typedef std::set<Sync *> SyncSet;
     SyncSet mSyncSet;
+
+    void destroyImageImpl(Image *image, ImageSet *images);
+    void destroyStreamImpl(Stream *stream, StreamSet *streams);
+    Error destroySurfaceImpl(Surface *surface, SurfaceSet *surfaces);
+    void destroySyncImpl(Sync *sync, SyncSet *syncs);
+
+    std::mutex mInvalidEglObjectsMutex;
+    ImageSet mInvalidImageSet;
+    StreamSet mInvalidStreamSet;
+    SurfaceSet mInvalidSurfaceSet;
+    SyncSet mInvalidSyncSet;
 
     bool mInitialized;
     bool mDeviceLost;

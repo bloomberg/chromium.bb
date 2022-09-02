@@ -16,8 +16,11 @@
 #include "include/core/SkSurface.h"
 #include "include/private/SkTPin.h"
 #include "modules/particles/include/SkParticleData.h"
+#include "modules/skottie/include/Skottie.h"
 #include "modules/skresources/include/SkResources.h"
 #include "src/core/SkAutoMalloc.h"
+
+#include <math.h>
 
 static sk_sp<SkImage> make_circle_image(int radius) {
     auto surface = SkSurface::MakeRasterN32Premul(radius * 2, radius * 2);
@@ -77,8 +80,7 @@ public:
 
     REFLECTED(SkCircleDrawable, SkParticleDrawable)
 
-    void draw(SkCanvas* canvas, const SkParticles& particles, int count,
-              const SkPaint& paint) override {
+    void draw(SkCanvas* canvas, const SkParticles& particles, int count) override {
         int r = std::max(fRadius, 1);
         SkPoint center = { SkIntToScalar(r), SkIntToScalar(r) };
         DrawAtlasArrays arrays(particles, count, center);
@@ -86,9 +88,15 @@ public:
             arrays.fRects[i].setIWH(fImage->width(), fImage->height());
         }
         SkSamplingOptions sampling(SkFilterMode::kLinear);
-        canvas->drawAtlas(fImage.get(), arrays.fXforms.get(), arrays.fRects.get(),
-                          arrays.fColors.get(), count, SkBlendMode::kModulate, sampling,
-                          nullptr, &paint);
+        canvas->drawAtlas(fImage.get(),
+                          arrays.fXforms.get(),
+                          arrays.fRects.get(),
+                          arrays.fColors.get(),
+                          count,
+                          SkBlendMode::kModulate,
+                          sampling,
+                          /*cullRect=*/nullptr,
+                          /*paint=*/nullptr);
     }
 
     void prepare(const skresources::ResourceProvider*) override {
@@ -120,8 +128,7 @@ public:
 
     REFLECTED(SkImageDrawable, SkParticleDrawable)
 
-    void draw(SkCanvas* canvas, const SkParticles& particles, int count,
-              const SkPaint& paint) override {
+    void draw(SkCanvas* canvas, const SkParticles& particles, int count) override {
         int cols = std::max(fCols, 1),
             rows = std::max(fRows, 1);
         SkRect baseRect = SkRect::MakeWH(static_cast<float>(fImage->width()) / cols,
@@ -138,9 +145,15 @@ public:
             int col = frame % cols;
             arrays.fRects[i] = baseRect.makeOffset(col * baseRect.width(), row * baseRect.height());
         }
-        canvas->drawAtlas(fImage.get(), arrays.fXforms.get(), arrays.fRects.get(),
-                          arrays.fColors.get(), count, SkBlendMode::kModulate,
-                          SkSamplingOptions(SkFilterMode::kLinear), nullptr, &paint);
+        canvas->drawAtlas(fImage.get(),
+                          arrays.fXforms.get(),
+                          arrays.fRects.get(),
+                          arrays.fColors.get(),
+                          count,
+                          SkBlendMode::kModulate,
+                          SkSamplingOptions(SkFilterMode::kLinear),
+                          /*cullRect=*/nullptr,
+                          /*paint=*/nullptr);
     }
 
     void prepare(const skresources::ResourceProvider* resourceProvider) override {
@@ -171,10 +184,76 @@ private:
     sk_sp<SkImage> fImage;
 };
 
+class SkSkottieDrawable : public SkParticleDrawable {
+public:
+    SkSkottieDrawable(const char* animationPath = "", const char* animationName = "")
+            : fPath(animationPath)
+            , fName(animationName) {}
+
+    REFLECTED(SkSkottieDrawable, SkParticleDrawable)
+
+    void draw(SkCanvas* canvas, const SkParticles& particles, int count) override {
+        float* animationFrames = particles.fData[SkParticles::kSpriteFrame].get();
+        float* scales = particles.fData[SkParticles::kScale].get();
+        float* dir[] = {
+                    particles.fData[SkParticles::kHeadingX].get(),
+                    particles.fData[SkParticles::kHeadingY].get(),
+                };
+        float width = fAnimation->size().width();
+        float height = fAnimation->size().height();
+
+        for (int i = 0; i < count; ++i) {
+            // get skottie frame
+            double frame = animationFrames[i] * fAnimation->duration() * fAnimation->fps();
+            frame = SkTPin(frame, 0.0, fAnimation->duration() * fAnimation->fps());
+
+            // move and scale
+            SkAutoCanvasRestore acr(canvas, true);
+            float s = scales[i];
+            float rads = atan2(dir[0][i], -dir[1][i]);
+            auto mat = SkMatrix::Translate(particles.fData[SkParticles::kPositionX][i],
+                                           particles.fData[SkParticles::kPositionY][i])
+                     * SkMatrix::Scale(s, s)
+                     * SkMatrix::RotateRad(rads)
+                     * SkMatrix::Translate(width / -2, height / -2);
+            canvas->concat(mat);
+
+            // draw
+            fAnimation->seekFrame(frame);
+            fAnimation->render(canvas);
+        }
+    }
+
+    void prepare(const skresources::ResourceProvider* resourceProvider) override {
+        skottie::Animation::Builder builder;
+        if (auto asset = resourceProvider->load(fPath.c_str(), fName.c_str())) {
+            SkDebugf("Loading lottie particle \"%s:%s\"\n", fPath.c_str(), fName.c_str());
+            fAnimation = builder.make(reinterpret_cast<const char*>(asset->data()), asset->size());
+        }
+        if (!fAnimation) {
+            SkDebugf("Could not load bodymovin animation \"%s:%s\"\n", fPath.c_str(),
+                                                                       fName.c_str());
+        }
+    }
+
+    void visitFields(SkFieldVisitor* v) override {
+        v->visit("Path", fPath);
+        v->visit("Name", fName);
+    }
+
+private:
+    SkString fPath;
+    SkString fName;
+
+    // Cached
+    sk_sp<skottie::Animation> fAnimation;
+};
+
 void SkParticleDrawable::RegisterDrawableTypes() {
     REGISTER_REFLECTED(SkParticleDrawable);
     REGISTER_REFLECTED(SkCircleDrawable);
     REGISTER_REFLECTED(SkImageDrawable);
+    REGISTER_REFLECTED(SkSkottieDrawable);
 }
 
 sk_sp<SkParticleDrawable> SkParticleDrawable::MakeCircle(int radius) {
@@ -185,4 +264,10 @@ sk_sp<SkParticleDrawable> SkParticleDrawable::MakeImage(const char* imagePath,
                                                         const char* imageName,
                                                         int cols, int rows) {
     return sk_sp<SkParticleDrawable>(new SkImageDrawable(imagePath, imageName, cols, rows));
+}
+
+sk_sp<SkParticleDrawable> SkParticleDrawable::MakeSkottie(const char* animPath,
+                                                        const char* animName,
+                                                        int cols, int rows) {
+    return sk_sp<SkParticleDrawable>(new SkSkottieDrawable(animPath, animName));
 }

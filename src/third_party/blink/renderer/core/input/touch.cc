@@ -42,8 +42,9 @@ gfx::Vector2dF ContentsOffset(LocalFrame* frame) {
   if (!frame_view)
     return gfx::Vector2dF();
   float scale = 1.0f / frame->PageZoomFactor();
-  return gfx::ScalePoint(frame_view->LayoutViewport()->ScrollPosition(), scale)
-      .OffsetFromOrigin();
+  gfx::Vector2dF offset = frame_view->LayoutViewport()->GetScrollOffset();
+  offset.Scale(scale);
+  return offset;
 }
 
 LayoutPoint PageToAbsolute(LocalFrame* frame, const gfx::PointF& page_pos) {
@@ -63,7 +64,7 @@ Touch::Touch(LocalFrame* frame,
              int identifier,
              const gfx::PointF& screen_pos,
              const gfx::PointF& page_pos,
-             const FloatSize& radius,
+             const gfx::SizeF& radius,
              float rotation_angle,
              float force)
     : target_(target),
@@ -81,7 +82,7 @@ Touch::Touch(EventTarget* target,
              const gfx::PointF& client_pos,
              const gfx::PointF& screen_pos,
              const gfx::PointF& page_pos,
-             const FloatSize& radius,
+             const gfx::SizeF& radius,
              float rotation_angle,
              float force,
              LayoutPoint absolute_location)

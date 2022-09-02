@@ -14,24 +14,7 @@
 #include "components/variations/proto/study.pb.h"
 
 namespace variations {
-
 namespace {
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class InvalidStudyReason {
-  kInvalidMinVersion = 0,
-  kInvalidMaxVersion = 1,
-  kInvalidMinOsVersion = 2,
-  kInvalidMaxOsVersion = 3,
-  kMissingExperimentName = 4,
-  kRepeatedExperimentName = 5,
-  kTotalProbabilityOverflow = 6,
-  kMissingDefaultExperimentInList = 7,
-  kBlankStudyName = 8,
-  kExperimentProbabilityOverflow = 9,
-  kMaxValue = kExperimentProbabilityOverflow,
-};
 
 void LogInvalidReason(InvalidStudyReason reason) {
   base::UmaHistogramEnumeration("Variations.InvalidStudyReason", reason);
@@ -114,6 +97,15 @@ bool ValidateStudyAndComputeTotalProbability(
       for (int j = 0; j < features.disable_feature_size(); ++j) {
         features_to_associate.insert(features.disable_feature(j));
       }
+    }
+
+    if (experiment.has_google_web_experiment_id() &&
+        experiment.has_google_web_trigger_experiment_id()) {
+      LogInvalidReason(InvalidStudyReason::kTriggerAndNonTriggerExperimentId);
+      DVLOG(1) << study.name() << " has experiment (" << experiment.name()
+               << ") with a google_web_experiment_id and a "
+               << "web_trigger_experiment_id.";
+      return false;
     }
 
     if (!experiment.has_forcing_flag() && experiment.probability_weight() > 0) {
@@ -208,11 +200,11 @@ int ProcessedStudy::GetExperimentIndexByName(const std::string& name) const {
   return -1;
 }
 
-const char* ProcessedStudy::GetDefaultExperimentName() const {
+const base::StringPiece ProcessedStudy::GetDefaultExperimentName() const {
   if (study_->default_experiment_name().empty())
     return kGenericDefaultExperimentName;
 
-  return study_->default_experiment_name().c_str();
+  return study_->default_experiment_name();
 }
 
 }  // namespace variations

@@ -7,7 +7,9 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+#import "ios/chrome/browser/discover_feed/feed_constants.h"
 #import "ios/chrome/browser/ui/ntp/logo_animation_controller.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_configuring.h"
 
 namespace web {
 class WebState;
@@ -20,7 +22,8 @@ class WebState;
 
 // Coordinator handling the NTP.
 @interface NewTabPageCoordinator
-    : ChromeCoordinator <LogoAnimationControllerOwnerOwner>
+    : ChromeCoordinator <LogoAnimationControllerOwnerOwner,
+                         NewTabPageConfiguring>
 
 // ViewController associated with this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
@@ -47,9 +50,6 @@ class WebState;
 
 // Bubble presenter for displaying IPH bubbles relating to the NTP.
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
-
-// Dismisses all modals owned by the NTP.
-- (void)dismissModals;
 
 // Animates the NTP fakebox to the focused position and focuses the real
 // omnibox.
@@ -79,9 +79,12 @@ class WebState;
 // Constrains the named layout guide for the Discover header menu button.
 - (void)constrainDiscoverHeaderMenuButtonNamedGuide;
 
-// TODO(crbug.com/1200303):Remove this method once we stop starting/stopping the
-// Coordinator when turning the feed on/off.
-- (void)disconnect;
+// Updates the new tab page based on if there is unseen content in the Following
+// feed.
+- (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent;
+
+// Called when the given |feedType| has completed updates.
+- (void)handleFeedModelDidEndUpdates:(FeedType)feedType;
 
 @end
 

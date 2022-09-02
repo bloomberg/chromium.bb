@@ -5,6 +5,7 @@
 module chromeos.bluetooth_config.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
+import "url/mojom/url.mojom";
 
 // The maximum number of characters a Bluetooth device's nickname can be set
 // to.
@@ -48,6 +49,7 @@ enum DeviceType {
   kVideoCamera,
   kGameController,
   kKeyboard,
+  kKeyboardMouseCombo,
   kMouse,
   kTablet
 };
@@ -83,6 +85,22 @@ struct DeviceBatteryInfo {
   BatteryProperties? case_info;
 };
 
+// True Wireless image info belonging to a device. Contains fields for
+// True Wireless images (stored as base64-encoded data URLs) for the left
+// earbud, right earbud, and case.
+struct TrueWirelessImageInfo {
+  url.mojom.Url left_bud_image_url;
+  url.mojom.Url right_bud_image_url;
+  url.mojom.Url case_image_url;
+};
+
+// Image info belonging to a device. Contains an optional default image (stored
+// as a base64-encoded data URL) as well as optional True Wireless images.
+struct DeviceImageInfo {
+  url.mojom.Url? default_image_url;
+  TrueWirelessImageInfo? true_wireless_images;
+};
+
 // Properties belonging to a Bluetooth device.
 struct BluetoothDeviceProperties {
   // Unique identifier for this device, which is stable across device reboots.
@@ -104,6 +122,9 @@ struct BluetoothDeviceProperties {
 
   // Null if no battery information is available for the device.
   DeviceBatteryInfo? battery_info;
+
+  // Null if no device images are available for the device.
+  DeviceImageInfo? image_info;
 
   DeviceConnectionState connection_state;
 
@@ -151,6 +172,14 @@ interface BluetoothDeviceStatusObserver {
 
   // Invoked when a device has been disconnected.
   OnDeviceDisconnected(PairedBluetoothDeviceProperties device);
+};
+
+// Observer for changes to starting/stopping Discovery Sessions.
+interface DiscoverySessionStatusObserver {
+  // Invoked when the number of discovery sessions changes from 0 to 1
+  // or vice versa.
+  OnHasAtLeastOneDiscoverySessionChanged(
+      bool has_at_least_one_discovery_session);
 };
 
 // Provided to the pairing UI to handle keys that have been entered
@@ -225,6 +254,14 @@ interface DevicePairingHandler {
       string device_id,
       pending_remote<DevicePairingDelegate> delegate) =>
           (PairingResult result);
+
+  // Returns the device with address |device_address|. This can be used
+  // to find the ID of a device where only its address is known in order
+  // to pair with it. Returns null if no device was found. Devices
+  // returned here may not be found in BluetoothDiscoveryDelegate's
+  // discovered devices list as this method retrieves the devices from the
+  // adapter directly without any filtering.
+  FetchDevice(string device_address) => (BluetoothDeviceProperties? device);
 };
 
 // Allows clients of Bluetooth discovery to be notified of the progress of a
@@ -266,9 +303,19 @@ interface CrosBluetoothConfig {
   ObserveDeviceStatusChanges(
     pending_remote<BluetoothDeviceStatusObserver> observer);
 
+  // Invokes OnHasAtLeastOneDiscoverySessionChanged() when the number of
+  // discovery sessions changes from 0 to 1 or vice versa. To stop observing,
+  // disconnect |observer|.
+  ObserveDiscoverySessionStatusChanges(
+    pending_remote<DiscoverySessionStatusObserver> observer);
+
   // Turns Bluetooth on or off. If Bluetooth is unavailable or if it is
   // not currently modifiable, this function is a no-op.
   SetBluetoothEnabledState(bool enabled);
+
+  // Turns Bluetooth on if |active| is true, and restores the Bluetooth enabled
+  // state that was last persisted to local state if |active| is false.
+  SetBluetoothHidDetectionActive(bool active);
 
   // Starts a discovery session, during which time it will be possible
   // to find new devices and pair them. To stop discovery, disconnect

@@ -19,9 +19,12 @@
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkRasterClip.h"
+#include "src/core/SkScalerContext.h"
 #include "src/shaders/SkShaderBase.h"
 
 class SkBitmap;
+class SkColorSpace;
+class SkMesh;
 struct SkDrawShadowRec;
 class SkGlyphRun;
 class SkGlyphRunList;
@@ -32,7 +35,22 @@ class SkRasterHandleAllocator;
 class SkSpecialImage;
 
 namespace skif { class Mapping; }
-namespace skgpu { class BaseDevice; }
+namespace skgpu {
+class BaseDevice;
+}
+namespace skgpu::graphite {
+class Device;
+}
+namespace sktext::gpu {
+class SDFTControl;
+}
+
+struct SkStrikeDeviceInfo {
+    const SkSurfaceProps fSurfaceProps;
+    const SkScalerContextFlags fScalerContextFlags;
+    // This is a pointer so this can be compiled without SK_GPU_SUPPORT.
+    const sktext::gpu::SDFTControl* const fSDFTControl;
+};
 
 class SkBaseDevice : public SkRefCnt, public SkMatrixProvider {
 public:
@@ -49,6 +67,12 @@ public:
      */
     const SkSurfaceProps& surfaceProps() const {
         return fSurfaceProps;
+    }
+
+    SkScalerContextFlags scalerContextFlags() const;
+
+    virtual SkStrikeDeviceInfo strikeDeviceInfo() const {
+        return {fSurfaceProps, this->scalerContextFlags(), nullptr};
     }
 
     SkIRect bounds() const { return SkIRect::MakeWH(this->width(), this->height()); }
@@ -181,16 +205,21 @@ public:
     void setLocalToDevice(const SkM44& localToDevice) {
         fLocalToDevice = localToDevice;
         fLocalToDevice33 = fLocalToDevice.asM33();
+        fLocalToDeviceDirty = true;
     }
     void setGlobalCTM(const SkM44& ctm);
     virtual void validateDevBounds(const SkIRect&) {}
 
     virtual bool android_utils_clipWithStencil() { return false; }
 
-    virtual skgpu::BaseDevice* asGpuDevice() { return nullptr; }
+    virtual skgpu::BaseDevice* asGaneshDevice() { return nullptr; }
+    virtual skgpu::graphite::Device* asGraphiteDevice() { return nullptr; }
 
     // Ensure that non-RSXForm runs are passed to onDrawGlyphRunList.
-    void drawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint);
+    void drawGlyphRunList(SkCanvas*,
+                          const SkGlyphRunList& glyphRunList,
+                          const SkPaint& initialPaint,
+                          const SkPaint& drawingPaint);
 
 protected:
     enum TileUsage {
@@ -263,7 +292,17 @@ protected:
     virtual void drawImageLattice(const SkImage*, const SkCanvas::Lattice&,
                                   const SkRect& dst, SkFilterMode, const SkPaint&);
 
-    virtual void drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&) = 0;
+    /**
+     * If skipColorXform is true, then the implementation should assume that the provided
+     * vertex colors are already in the destination color space.
+     */
+    virtual void drawVertices(const SkVertices*,
+                              sk_sp<SkBlender>,
+                              const SkPaint&,
+                              bool skipColorXform = false) = 0;
+#ifdef SK_ENABLE_SKSL
+    virtual void drawMesh(const SkMesh& mesh, sk_sp<SkBlender>, const SkPaint&) = 0;
+#endif
     virtual void drawShadow(const SkPath&, const SkDrawShadowRec&);
 
     // default implementation calls drawVertices
@@ -289,17 +328,21 @@ protected:
                                     const SkSamplingOptions&, const SkPaint&,
                                     SkCanvas::SrcRectConstraint);
 
-    virtual void drawDrawable(SkDrawable*, const SkMatrix*, SkCanvas*);
+    virtual void drawDrawable(SkCanvas*, SkDrawable*, const SkMatrix*);
 
     // Only called with glyphRunLists that do not contain RSXForm.
-    virtual void onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) = 0;
+    virtual void onDrawGlyphRunList(SkCanvas*,
+                                    const SkGlyphRunList&,
+                                    const SkPaint& initialPaint,
+                                    const SkPaint& drawingPaint) = 0;
 
-    // GrSlug handling routines.
-#if SK_SUPPORT_GPU
-    virtual sk_sp<GrSlug> convertGlyphRunListToSlug(
+    // Slug handling routines.
+#if (SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED))
+    virtual sk_sp<sktext::gpu::Slug> convertGlyphRunListToSlug(
             const SkGlyphRunList& glyphRunList,
-            const SkPaint& paint) const;
-    virtual void drawSlug(GrSlug* slug);
+            const SkPaint& initialPaint,
+            const SkPaint& drawingPaint);
+    virtual void drawSlug(SkCanvas*, const sktext::gpu::Slug* slug, const SkPaint& drawingPaint);
 #endif
 
     /**
@@ -403,6 +446,13 @@ protected:
     // inspect a layer's device to know if calling drawDevice() later is allowed.
     virtual bool isNoPixelsDevice() const { return false; }
 
+    // Returns whether or not localToDevice() has changed since the last call to this function.
+    bool checkLocalToDeviceDirty() {
+        bool wasDirty = fLocalToDeviceDirty;
+        fLocalToDeviceDirty = false;
+        return wasDirty;
+    }
+
 private:
     friend class SkAndroidFrameworkUtils;
     friend class SkCanvas;
@@ -410,7 +460,10 @@ private:
     friend class SkSurface_Raster;
     friend class DeviceTestingAccess;
 
-    void simplifyGlyphRunRSXFormAndRedraw(const SkGlyphRunList& glyphRunList, const SkPaint& paint);
+    void simplifyGlyphRunRSXFormAndRedraw(SkCanvas*,
+                                          const SkGlyphRunList&,
+                                          const SkPaint& initialPaint,
+                                          const SkPaint& drawingPaint);
 
     // used to change the backend's pixels (and possibly config/rowbytes)
     // but cannot change the width/height, so there should be no change to
@@ -428,16 +481,15 @@ private:
     // is anchored in the device space. The final device-to-global matrix stored by the SkDevice
     // will include a pre-translation by T(deviceOriginX, deviceOriginY), and the final
     // local-to-device matrix will have a post-translation of T(-deviceOriginX, -deviceOriginY).
-    //
-    // Returns false if the final device coordinate space is invalid, in which case the canvas
-    // should discard the device
-    bool SK_WARN_UNUSED_RESULT setDeviceCoordinateSystem(const SkM44& deviceToGlobal,
-                                                         const SkM44& localToDevice,
-                                                         int bufferOriginX, int bufferOriginY);
+    void setDeviceCoordinateSystem(const SkM44& deviceToGlobal,
+                                   const SkM44& globalToDevice,
+                                   const SkM44& localToDevice,
+                                   int bufferOriginX,
+                                   int bufferOriginY);
     // Convenience to configure the device to be axis-aligned with the root canvas, but with a
     // unique origin.
     void setOrigin(const SkM44& globalCTM, int x, int y) {
-        SkAssertResult(this->setDeviceCoordinateSystem(SkM44(), globalCTM, x, y));
+        this->setDeviceCoordinateSystem(SkM44(), SkM44(), globalCTM, x, y);
     }
 
     virtual SkImageFilterCache* getImageFilterCache() { return nullptr; }
@@ -458,23 +510,20 @@ private:
     // fLocalToDevice (inherited from SkMatrixProvider) is the device CTM, not the global CTM
     // It maps from local space to the device's coordinate space.
     // fDeviceToGlobal * fLocalToDevice will match the canvas' CTM.
+    //
+    // setGlobalCTM and setLocalToDevice are intentionally not virtual for performance reasons.
+    // However, track a dirty bit for subclasses that want to defer local-to-device dependent
+    // calculations until needed for a clip or draw.
+    bool fLocalToDeviceDirty = true;
 
     using INHERITED = SkRefCnt;
 };
 
 class SkNoPixelsDevice : public SkBaseDevice {
 public:
+    SkNoPixelsDevice(const SkIRect& bounds, const SkSurfaceProps& props);
     SkNoPixelsDevice(const SkIRect& bounds, const SkSurfaceProps& props,
-                     sk_sp<SkColorSpace> colorSpace = nullptr)
-            : SkBaseDevice(SkImageInfo::Make(bounds.size(), kUnknown_SkColorType,
-                                             kUnknown_SkAlphaType, std::move(colorSpace)),
-                           props) {
-        // this fails if we enable this assert: DiscardableImageMapTest.GetDiscardableImagesInRectMaxImage
-        //SkASSERT(bounds.width() >= 0 && bounds.height() >= 0);
-
-        this->setOrigin(SkM44(), bounds.left(), bounds.top());
-        this->resetClipStack();
-    }
+                     sk_sp<SkColorSpace> colorSpace);
 
     void resetForNextPicture(const SkIRect& bounds) {
         //SkASSERT(bounds.width() >= 0 && bounds.height() >= 0);
@@ -515,13 +564,19 @@ protected:
     void drawRRect(const SkRRect&, const SkPaint&) override {}
     void drawPath(const SkPath&, const SkPaint&, bool) override {}
     void drawDevice(SkBaseDevice*, const SkSamplingOptions&, const SkPaint&) override {}
-    void drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&) override {}
+    void drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&, bool) override {}
+#ifdef SK_ENABLE_SKSL
+    void drawMesh(const SkMesh&, sk_sp<SkBlender>, const SkPaint&) override {}
+#endif
 
     void drawFilteredImage(const skif::Mapping&, SkSpecialImage* src, const SkImageFilter*,
                            const SkSamplingOptions&, const SkPaint&) override {}
+#if SK_SUPPORT_GPU
+    void drawSlug(SkCanvas*, const sktext::gpu::Slug*, const SkPaint&) override {}
+#endif
 
-    void onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) override {}
-
+    void onDrawGlyphRunList(
+            SkCanvas*, const SkGlyphRunList&, const SkPaint&, const SkPaint&) override {}
 
     bool isNoPixelsDevice() const override { return true; }
 

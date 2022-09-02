@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
+import {getTemplate} from './app_service_internals.html.js';
 import {AppInfo, AppServiceInternalsPageHandler, PreferredAppInfo} from './app_service_internals.mojom-webui.js';
 
 export class AppServiceInternalsElement extends PolymerElement {
@@ -14,7 +13,7 @@ export class AppServiceInternalsElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -30,7 +29,7 @@ export class AppServiceInternalsElement extends PolymerElement {
   /** List containing preferred app debug information for installed apps. */
   preferredAppList_: Array<PreferredAppInfo> = [];
 
-  ready() {
+  override ready() {
     super.ready();
     (async () => {
       const remote = AppServiceInternalsPageHandler.getRemote();
@@ -44,7 +43,7 @@ export class AppServiceInternalsElement extends PolymerElement {
     })();
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     window.removeEventListener('hashchange', this.hashChangeListener_);
   }
 
@@ -64,6 +63,32 @@ export class AppServiceInternalsElement extends PolymerElement {
     }
 
     selected.scrollIntoView();
+  }
+
+  save_() {
+    const fileParts = [];
+    fileParts.push('App List\n');
+    fileParts.push('========\n\n');
+    for (const app of this.appList_) {
+      fileParts.push(app.name + '\n');
+      fileParts.push('-----\n');
+      fileParts.push(app.debugInfo + '\n');
+    }
+
+    fileParts.push('Preferred Apps\n');
+    fileParts.push('==============\n\n');
+    for (const preferredApp of this.preferredAppList_) {
+      fileParts.push(preferredApp.name + '\n');
+      fileParts.push('-----\n');
+      fileParts.push(preferredApp.preferredFilters + '\n');
+    }
+
+    const file = new Blob(fileParts);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = 'app-service-internals.txt';
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 }
 

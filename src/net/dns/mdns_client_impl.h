@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
@@ -102,7 +103,7 @@ class NET_EXPORT_PRIVATE MDnsConnection {
     IPEndPoint recv_addr_;
     DnsResponse response_;
     IPEndPoint multicast_addr_;
-    bool send_in_progress_;
+    bool send_in_progress_ = false;
     base::queue<std::pair<scoped_refptr<IOBuffer>, unsigned>> send_queue_;
   };
 
@@ -292,8 +293,8 @@ class MDnsListenerImpl : public MDnsListener,
 
   base::Time last_update_;
   uint32_t ttl_;
-  bool started_;
-  bool active_refresh_;
+  bool started_ = false;
+  bool active_refresh_ = false;
 
   base::CancelableRepeatingClosure next_refresh_;
 };
@@ -359,7 +360,7 @@ class MDnsTransactionImpl : public base::SupportsWeakPtr<MDnsTransactionImpl>,
 
   raw_ptr<MDnsClientImpl> client_;
 
-  bool started_;
+  bool started_ = false;
   int flags_;
 };
 

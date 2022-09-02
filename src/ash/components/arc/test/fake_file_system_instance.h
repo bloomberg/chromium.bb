@@ -16,9 +16,11 @@
 #include "ash/components/arc/mojom/file_system.mojom.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/file_system/watcher_manager.h"
+#include "url/gurl.h"
 
 namespace arc {
 
@@ -31,8 +33,9 @@ namespace arc {
 // Content URL based functions are:
 // - GetFileSize()
 // - GetMimeType()
-// - OpenFileToRead()
-// - OpenFileToWrite()
+// - CloseFileSession()
+// - OpenFileSessionToWrite()
+// - OpenFileSessionToRead()
 // Fake files for those functions can be set up by AddFile().
 //
 // Documents provider based functions are:
@@ -54,8 +57,8 @@ namespace arc {
 //   added with AddDocument().
 // - GetRecentDocuments() returns recent documents in the same order as they
 //   were added with AddRecentDocument().
-// - OpenFileToRead() and OpenFileToWrite() will fail unless AddFile() for the
-//   file to open is called beforehand.
+// - OpenFileSessionToRead(), OpenFileSessionToWrite() will fail unless
+//   AddFile() for the file to open is called beforehand.
 // - Callbacks are never invoked synchronously.
 // - All member functions must be called on the same thread.
 class FakeFileSystemInstance : public mojom::FileSystemInstance {
@@ -82,10 +85,10 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
     // Content URL of a file.
     std::string url;
 
-    // The content of a file, which can be read by OpenFileToRead().
-    // When Seekable.NO is specified and OpenFileToWrite() is called, this
-    // |content| will be ignored and bytes written to FD from OpenFileToWrite()
-    // will be read by OpenFileToRead().
+    // The content of a file, which can be read by OpenFileSessionToRead().
+    // When Seekable.NO is specified and OpenFileSessionToWrite() is called,
+    // this |content| will be ignored and bytes written to FD from
+    // OpenFileSessionToWrite() will be read by OpenFileSessionToRead().
     std::string content;
 
     // The MIME type of a file.
@@ -228,8 +231,14 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // Adds a recent document accessible by document provider based methods.
   void AddRecentDocument(const std::string& root_id, const Document& document);
 
+  // Removes a recent document accessible by document provider based methods.
+  void RemoveRecentDocument(const Document& document);
+
   // Adds a root accessible by document provider based methods.
   void AddRoot(const Root& root);
+
+  // Add a file descriptor accessible by a URL ID.
+  void AddOpenSession(const std::string& url_id, const int fd);
 
   // Fake the GetLastChangedTime implementation.
   void SetGetLastChangeTimeCallback(GetLastChangeTimeCallback ctime_callback);
@@ -277,11 +286,11 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                        const std::string& document_id,
                        const base::FilePath& path);
 
-  // Returns the content written to the FD returned by OpenFileToWrite().
+  // Returns the content written to the FD returned by OpenFileSessionToWrite().
   std::string GetFileContent(const std::string& url);
 
-  // Returns the content written to the FD returned by OpenFileToWrite(), up to
-  // |bytes| bytes.
+  // Returns the content written to the FD returned by OpenFileSessionToWrite(),
+  // up to |bytes| bytes.
   std::string GetFileContent(const std::string& url, size_t bytes);
 
   // For clearing the list of handled requests
@@ -339,13 +348,14 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                     const std::string& source_parent_document_id,
                     const std::string& target_parent_document_id,
                     MoveDocumentCallback callback) override;
-  void InitDeprecated(mojo::PendingRemote<mojom::FileSystemHost> host) override;
   void Init(mojo::PendingRemote<mojom::FileSystemHost> host,
             InitCallback callback) override;
-  void OpenFileToRead(const std::string& url,
-                      OpenFileToReadCallback callback) override;
-  void OpenFileToWrite(const std::string& url,
-                       OpenFileToWriteCallback callback) override;
+  void CloseFileSession(const std::string& url_id,
+                        const std::string& error_message) override;
+  void OpenFileSessionToWrite(const GURL& url,
+                              OpenFileSessionToWriteCallback callback) override;
+  void OpenFileSessionToRead(const GURL& url,
+                             OpenFileSessionToReadCallback callback) override;
   void OpenThumbnail(const std::string& url,
                      const gfx::Size& size_hint,
                      OpenThumbnailCallback callback) override;
@@ -355,12 +365,13 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   void RequestFileRemovalScan(
       const std::vector<std::string>& directory_paths) override;
   void ReindexDirectory(const std::string& directory_path) override;
-  void OpenUrlsWithPermission(mojom::OpenUrlsRequestPtr request,
-                              OpenUrlsWithPermissionCallback callback) override;
+  void DEPRECATED_OpenUrlsWithPermission(
+      mojom::OpenUrlsRequestPtr request,
+      DEPRECATED_OpenUrlsWithPermissionCallback callback) override;
   void OpenUrlsWithPermissionAndWindowInfo(
       mojom::OpenUrlsRequestPtr request,
       mojom::WindowInfoPtr window_info,
-      OpenUrlsWithPermissionCallback callback) override;
+      DEPRECATED_OpenUrlsWithPermissionCallback callback) override;
 
  private:
   // A pair of an authority and a document ID which identifies the location
@@ -405,7 +416,7 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   // Mapping from a content URL to a read end of a pipe.
   // The corresponding write end should have been returned from
-  // OpenFileToWrite() on non-seekable file entry.
+  // OpenFileSessionToWrite() on non-seekable file entry.
   std::map<std::string, base::ScopedFD> pipe_read_ends_;
 
   // Mapping from a document key to a document.
@@ -425,6 +436,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   // Mapping from a watcher ID to a document key.
   std::map<int64_t, DocumentKey> watcher_to_document_;
+
+  // Mapping of open URL ID to a file descriptor.
+  std::map<std::string, int> open_urls_;
 
   // List of all OpenUrlsRequests made to the fake_file_system_instance
   std::vector<mojom::OpenUrlsRequestPtr> handled_url_requests_;

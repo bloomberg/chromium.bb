@@ -92,8 +92,6 @@ source_set("fwl") {
     "theme/cfwl_datetimepickertp.h",
     "theme/cfwl_edittp.cpp",
     "theme/cfwl_edittp.h",
-    "theme/cfwl_fontmanager.cpp",
-    "theme/cfwl_fontmanager.h",
     "theme/cfwl_listboxtp.cpp",
     "theme/cfwl_listboxtp.h",
     "theme/cfwl_monthcalendartp.cpp",
@@ -108,6 +106,11 @@ source_set("fwl") {
     "theme/cfwl_widgettp.cpp",
     "theme/cfwl_widgettp.h",
   ]
+  configs += [
+    "../../:pdfium_strict_config",
+    "../../:pdfium_noshorten_config",
+    "../:xfa_warnings",
+  ]
   deps = [
     "../../core/fxcrt",
     "../../core/fxge",
@@ -117,15 +120,14 @@ source_set("fwl") {
     "../fgas/font",
     "../fgas/graphics",
   ]
-  configs += [
-    "../../:pdfium_strict_config",
-    "../:xfa_warnings",
-  ]
   visibility = [ "../../*" ]
 }
 
 pdfium_embeddertest_source_set("embeddertests") {
   sources = [ "cfwl_edit_embeddertest.cpp" ]
-  deps = [ "../../fxjs:gc" ]
+  deps = [
+    ":fwl",
+    "../../fxjs:gc",
+  ]
   pdfium_root_dir = "../../"
 }

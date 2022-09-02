@@ -8,14 +8,13 @@
 #include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_event_log.h"
-#include "chromeos/network/onc/network_onc_utils.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -39,7 +38,7 @@ std::string GetString(const base::Value* value) {
 // Masked properties match src/platform2/modem-utilities/connectivity.
 // Note: We rely on intelligent anonymous replacements for IP and MAC addresses
 // and BSSID in components/feedback/anonymizer_tool.cc.
-constexpr std::array<const char*, 20> kMaskedList = {
+constexpr std::array<const char*, 19> kMaskedList = {
     // Masked for devices only in ScrubAndExpandProperties:
     // shill::kAddress,
     shill::kCellularPPPUsernameProperty,
@@ -58,7 +57,6 @@ constexpr std::array<const char*, 20> kMaskedList = {
     shill::kMinProperty,
     // Replaced with logging id for services only in ScrubAndExpandProperties:
     // shill::kName,
-    shill::kPPPoEUsernameProperty,
     shill::kSSIDProperty,
     shill::kUsageURLProperty,
     shill::kWifiHexSsid,
@@ -113,7 +111,7 @@ void ShillLogSource::OnGetManagerProperties(
 
   const base::Value* devices = result->FindListKey(shill::kDevicesProperty);
   if (devices) {
-    for (const base::Value& device : devices->GetList()) {
+    for (const base::Value& device : devices->GetListDeprecated()) {
       std::string path = GetString(&device);
       if (path.empty())
         continue;
@@ -127,7 +125,7 @@ void ShillLogSource::OnGetManagerProperties(
 
   const base::Value* services = result->FindListKey(shill::kServicesProperty);
   if (services) {
-    for (const base::Value& service : services->GetList()) {
+    for (const base::Value& service : services->GetListDeprecated()) {
       std::string path = GetString(&service);
       if (path.empty())
         continue;
@@ -164,7 +162,7 @@ void ShillLogSource::AddDeviceAndRequestIPConfigs(
   if (!ip_configs)
     return;
 
-  for (const base::Value& ip_config : ip_configs->GetList()) {
+  for (const base::Value& ip_config : ip_configs->GetListDeprecated()) {
     std::string ip_config_path = GetString(&ip_config);
     if (ip_config_path.empty())
       continue;

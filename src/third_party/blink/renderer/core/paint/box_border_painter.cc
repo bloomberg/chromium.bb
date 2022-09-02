@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
@@ -282,9 +281,9 @@ void DrawBleedAdjustedDRRect(GraphicsContext& context,
       path.addRRect(SkRRect(inner));
       path.setFillType(SkPathFillType::kInverseWinding);
 
-      PaintFlags flags;
+      cc::PaintFlags flags;
       flags.setColor(color.Rgb());
-      flags.setStyle(PaintFlags::kFill_Style);
+      flags.setStyle(cc::PaintFlags::kFill_Style);
       flags.setAntiAlias(true);
       context.DrawPath(path, flags, auto_dark_mode);
 
@@ -298,7 +297,7 @@ void DrawBleedAdjustedDRRect(GraphicsContext& context,
         context.FillDRRect(adjusted_outer, inner, color, auto_dark_mode);
         break;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       context.FillDRRect(outer, inner, color, auto_dark_mode);
       break;
@@ -620,7 +619,7 @@ void FillQuad(GraphicsContext& context,
   path.lineTo(gfx::PointFToSkPoint(quad[1]));
   path.lineTo(gfx::PointFToSkPoint(quad[2]));
   path.lineTo(gfx::PointFToSkPoint(quad[3]));
-  PaintFlags flags(context.FillFlags());
+  cc::PaintFlags flags(context.FillFlags());
   flags.setAntiAlias(antialias);
   flags.setColor(color.Rgb());
 
@@ -923,12 +922,10 @@ BoxBorderPainter::BoxBorderPainter(GraphicsContext& context,
                                    const ComputedStyle& style,
                                    const PhysicalRect& border_rect,
                                    int width,
-                                   int inner_outset_x,
-                                   int inner_outset_y)
+                                   const LayoutRectOutsets& inner_outsets)
     : context_(context),
       border_rect_(border_rect),
-      outer_outset_x_(inner_outset_x + width),
-      outer_outset_y_(inner_outset_y + width),
+      outer_outsets_(inner_outsets + LayoutUnit(width)),
       style_(style),
       bleed_avoidance_(kBackgroundBleedNone),
       sides_to_include_(PhysicalBoxSides()),
@@ -950,19 +947,15 @@ BoxBorderPainter::BoxBorderPainter(GraphicsContext& context,
   ComputeBorderProperties();
 
   outer_ = RoundedBorderGeometry::PixelSnappedRoundedBorderWithOutsets(
-      style, border_rect,
-      LayoutRectOutsets(outer_outset_y_, outer_outset_x_, outer_outset_y_,
-                        outer_outset_x_));
+      style, border_rect, outer_outsets_);
   is_rounded_ = outer_.IsRounded();
 
   inner_ = RoundedBorderGeometry::PixelSnappedRoundedBorderWithOutsets(
-      style, border_rect,
-      LayoutRectOutsets(inner_outset_y, inner_outset_x, inner_outset_y,
-                        inner_outset_x));
+      style, border_rect, inner_outsets);
 }
 
 void BoxBorderPainter::ComputeBorderProperties() {
-  for (unsigned i = 0; i < base::size(edges_); ++i) {
+  for (unsigned i = 0; i < std::size(edges_); ++i) {
     const BorderEdge& edge = edges_[i];
 
     if (!edge.ShouldRender()) {
@@ -1771,22 +1764,20 @@ void BoxBorderPainter::ClipBorderSidePolygon(BoxSide side,
 
 LayoutRectOutsets BoxBorderPainter::DoubleStripeOutsets(
     BorderEdge::DoubleBorderStripe stripe) const {
-  return LayoutRectOutsets(
-      outer_outset_y_ - Edge(BoxSide::kTop).GetDoubleBorderStripeWidth(stripe),
-      outer_outset_x_ -
-          Edge(BoxSide::kRight).GetDoubleBorderStripeWidth(stripe),
-      outer_outset_y_ -
-          Edge(BoxSide::kBottom).GetDoubleBorderStripeWidth(stripe),
-      outer_outset_x_ -
-          Edge(BoxSide::kLeft).GetDoubleBorderStripeWidth(stripe));
+  return outer_outsets_ -
+         LayoutRectOutsets(
+             Edge(BoxSide::kTop).GetDoubleBorderStripeWidth(stripe),
+             Edge(BoxSide::kRight).GetDoubleBorderStripeWidth(stripe),
+             Edge(BoxSide::kBottom).GetDoubleBorderStripeWidth(stripe),
+             Edge(BoxSide::kLeft).GetDoubleBorderStripeWidth(stripe));
 }
 
 LayoutRectOutsets BoxBorderPainter::CenterOutsets() const {
-  return LayoutRectOutsets(
-      outer_outset_y_ - Edge(BoxSide::kTop).UsedWidth() * 0.5,
-      outer_outset_x_ - Edge(BoxSide::kRight).UsedWidth() * 0.5,
-      outer_outset_y_ - Edge(BoxSide::kBottom).UsedWidth() * 0.5,
-      outer_outset_x_ - Edge(BoxSide::kLeft).UsedWidth() * 0.5);
+  return outer_outsets_ -
+         LayoutRectOutsets(Edge(BoxSide::kTop).UsedWidth() * 0.5,
+                           Edge(BoxSide::kRight).UsedWidth() * 0.5,
+                           Edge(BoxSide::kBottom).UsedWidth() * 0.5,
+                           Edge(BoxSide::kLeft).UsedWidth() * 0.5);
 }
 
 bool BoxBorderPainter::ColorsMatchAtCorner(BoxSide side,
@@ -1857,12 +1848,12 @@ void BoxBorderPainter::DrawLineForBoxSide(GraphicsContext& context,
       // https://bugs.webkit.org/show_bug.cgi?id=58608
       if (side == BoxSide::kTop || side == BoxSide::kLeft)
         color = color.Dark();
-      FALLTHROUGH;
+      [[fallthrough]];
     case EBorderStyle::kOutset:
       if (style == EBorderStyle::kOutset &&
           (side == BoxSide::kBottom || side == BoxSide::kRight))
         color = color.Dark();
-      FALLTHROUGH;
+      [[fallthrough]];
     case EBorderStyle::kSolid:
       DrawSolidBoxSide(context, x1, y1, x2, y2, side, color, adjacent_width1,
                        adjacent_width2, antialias, auto_dark_mode);

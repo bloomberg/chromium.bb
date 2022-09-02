@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import 'chrome://test/cr_elements/cr_policy_strings.js';
+import 'chrome://webui-test/cr_elements/cr_policy_strings.js';
 
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ChooserException, ChooserExceptionListEntryElement, ChooserType, ContentSetting,ContentSettingsTypes, SiteException, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
@@ -230,7 +230,7 @@ suite('ChooserExceptionListEntry', function() {
 
   test(
       'The reset button calls the resetChooserExceptionForSite method',
-      function() {
+      async function() {
         testElement.exception =
             createChooserException(ChooserType.USB_DEVICES, [
               createSiteException('https://foo.com'),
@@ -252,14 +252,14 @@ suite('ChooserExceptionListEntry', function() {
         assertFalse(resetButton.hidden);
 
         resetButton!.click();
-        return browserProxy.whenCalled('resetChooserExceptionForSite')
-            .then(function(args) {
-              // The args should be the chooserType, origin, embeddingOrigin,
-              // and object.
-              assertEquals(ChooserType.USB_DEVICES, args[0]);
-              assertEquals('https://foo.com', args[1]);
-              assertEquals('https://foo.com', args[2]);
-              assertEquals('object', typeof args[3]);
-            });
+        const args =
+            await browserProxy.whenCalled('resetChooserExceptionForSite');
+
+        // The args should be the chooserType, origin, embeddingOrigin,
+        // and object.
+        assertEquals(ChooserType.USB_DEVICES, args[0]);
+        assertEquals('https://foo.com', args[1]);
+        assertEquals('https://foo.com', args[2]);
+        assertEquals('object', typeof args[3]);
       });
 });

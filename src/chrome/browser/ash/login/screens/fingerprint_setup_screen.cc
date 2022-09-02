@@ -17,6 +17,10 @@
 #include "content/public/browser/device_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace ash {
 namespace {
 
@@ -120,8 +124,10 @@ FingerprintSetupScreen::~FingerprintSetupScreen() {
 }
 
 bool FingerprintSetupScreen::MaybeSkip(WizardContext* context) {
-  if (!quick_unlock::IsFingerprintEnabled(
-          ProfileManager::GetActiveUserProfile()) ||
+  if (context->skip_post_login_screens_for_tests ||
+      !quick_unlock::IsFingerprintEnabled(
+          ProfileManager::GetActiveUserProfile(),
+          quick_unlock::Purpose::kAny) ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
@@ -144,9 +150,10 @@ void FingerprintSetupScreen::HideImpl() {
   view_->Hide();
 }
 
-void FingerprintSetupScreen::OnUserAction(const std::string& action_id) {
+void FingerprintSetupScreen::OnUserActionDeprecated(
+    const std::string& action_id) {
   if (!IsFingerprintUserAction(action_id)) {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
     return;
   }
   RecordUserAction(action_id);
@@ -190,7 +197,7 @@ void FingerprintSetupScreen::OnEnrollScanDone(
 }
 
 void FingerprintSetupScreen::OnAuthScanDone(
-    device::mojom::ScanResult scan_result,
+    const device::mojom::FingerprintMessagePtr ptr,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {}
 
 void FingerprintSetupScreen::OnSessionFailed() {

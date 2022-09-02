@@ -55,9 +55,7 @@ URLFetcherStringWriter* URLFetcherStringWriter::AsStringWriter() {
 URLFetcherFileWriter::URLFetcherFileWriter(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const base::FilePath& file_path)
-    : file_task_runner_(file_task_runner),
-      file_path_(file_path),
-      owns_file_(false) {
+    : file_task_runner_(file_task_runner), file_path_(file_path) {
   DCHECK(file_task_runner_.get());
 }
 
@@ -166,8 +164,8 @@ void URLFetcherFileWriter::CloseAndDeleteFile() {
 
   file_stream_.reset();
   DisownFile();
-  file_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), file_path_));
+  file_task_runner_->PostTask(FROM_HERE,
+                              base::GetDeleteFileCallback(file_path_));
 }
 
 void URLFetcherFileWriter::DidCreateTempFile(base::FilePath* temp_file_path,

@@ -11,57 +11,57 @@
 #include "ash/calendar/calendar_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/time/calendar_metrics.h"
+#include "ash/system/time/calendar_model.h"
 #include "ash/system/time/calendar_utils.h"
 #include "base/check.h"
-#include "base/i18n/time_formatting.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace ash {
+
 namespace {
 
-// Absolute minimum number of months to cache, which includes the
-// current/previous/next on-screen months and current/prev/next months including
-// today's date.
-constexpr int kMinNumberOfMonthsCached = 6;
-
-// Number of additional months to cache, to be adjusted as needed for optimal
-// UX.
-constexpr int kAdditionalNumberOfMonthsCached = 1;
-
-// Maximum number of months to cache.
-constexpr int kMaxNumberOfMonthsCached =
-    kMinNumberOfMonthsCached + kAdditionalNumberOfMonthsCached;
-
-// Methods for debugging and gathering of metrics.
-
-ALLOW_UNUSED_TYPE int GetEventMapSize(
-    const ash::CalendarViewController::SingleMonthEventMap& event_map) {
-  int total_bytes = 0;
-  for (auto& event_list : event_map) {
-    total_bytes += sizeof(event_list);
-    for (auto& event : event_list.second) {
-      total_bytes += event.GetApproximateSizeInBytes();
-    }
-  }
-
-  return total_bytes;
-}
+// The percentage of a normal row height, which (percentage * row_height) will
+// be used as the `CalendarView` height when the `CalendarEventListView` is
+// expanded.
+constexpr float kExpandedCalendarViewHeightScale = 1.1;
 
 }  // namespace
 
-namespace ash {
-
 CalendarViewController::CalendarViewController()
-    : current_date_(base::Time::Now()),
-      non_prunable_months_{GetPreviousMonthFirstDayUTC(1).UTCMidnight(),
-                           GetOnScreenMonthFirstDayUTC().UTCMidnight(),
-                           GetNextMonthFirstDayUTC(1).UTCMidnight()} {}
+    : currently_shown_date_(base::Time::Now()),
+      calendar_open_time_(base::TimeTicks::Now()),
+      month_dwell_time_(base::TimeTicks::Now()),
+      first_shown_date_(base::Time::Now()) {
+  std::set<base::Time> months = calendar_utils::GetSurroundingMonthsUTC(
+      base::Time::Now() +
+          calendar_utils::GetTimeDifference(currently_shown_date_),
+      calendar_utils::kNumSurroundingMonthsCached);
+  Shell::Get()->system_tray_model()->calendar_model()->AddNonPrunableMonths(
+      months);
+}
 
-CalendarViewController::~CalendarViewController() = default;
+CalendarViewController::~CalendarViewController() {
+  CalendarModel* calendar_model =
+      Shell::Get()->system_tray_model()->calendar_model();
+  DCHECK(calendar_model);
+  calendar_model->UploadLifetimeMetrics();
+  calendar_model->ClearAllPrunableEvents();
+
+  calendar_metrics::RecordMonthDwellTime(base::TimeTicks::Now() -
+                                         month_dwell_time_);
+
+  if (user_journey_time_recorded_)
+    return;
+
+  base::UmaHistogramMediumTimes("Ash.Calendar.UserJourneyTime.EventNotLaunched",
+                                base::TimeTicks::Now() - calendar_open_time_);
+  base::UmaHistogramCounts100000("Ash.Calendar.MaxDistanceBrowsed",
+                                 max_distance_browsed_);
+}
 
 void CalendarViewController::AddObserver(Observer* observer) {
   if (observer)
@@ -75,28 +75,29 @@ void CalendarViewController::RemoveObserver(Observer* observer) {
 
 void CalendarViewController::UpdateMonth(
     const base::Time current_month_first_date) {
-  if (calendar_utils::GetExplodedLocal(current_date_).month ==
-          calendar_utils::GetExplodedLocal(current_month_first_date).month &&
-      calendar_utils::GetExplodedLocal(current_date_).year ==
-          calendar_utils::GetExplodedLocal(current_month_first_date).year) {
+  if (calendar_utils::GetMonthNameAndYear(currently_shown_date_) ==
+      calendar_utils::GetMonthNameAndYear(current_month_first_date)) {
     return;
   }
 
-  was_on_later_month_ = current_date_ > current_month_first_date;
-  current_date_ = current_month_first_date;
-  for (auto& observer : observers_) {
-    observer.OnMonthChanged(
-        calendar_utils::GetExplodedLocal(current_month_first_date));
-  }
+  calendar_metrics::RecordMonthDwellTime(base::TimeTicks::Now() -
+                                         month_dwell_time_);
+  month_dwell_time_ = base::TimeTicks::Now();
+
+  currently_shown_date_ = current_month_first_date;
+
+  max_distance_browsed_ =
+      std::max(max_distance_browsed_,
+               static_cast<size_t>(abs(calendar_utils::GetMonthsBetween(
+                   first_shown_date_, current_month_first_date))));
+
+  for (auto& observer : observers_)
+    observer.OnMonthChanged();
 }
 
-base::Time CalendarViewController::GetOnScreenMonthFirstDayLocal() const {
-  return calendar_utils::GetStartOfMonthLocal(current_date_);
-}
-
-base::Time CalendarViewController::GetPreviousMonthFirstDayLocal(
-    unsigned int num_months) const {
-  base::Time prev, current = GetOnScreenMonthFirstDayLocal();
+base::Time CalendarViewController::GetPreviousMonthFirstDayUTC(
+    unsigned int num_months) {
+  base::Time prev, current = ApplyTimeDifference(GetOnScreenMonthFirstDayUTC());
 
   DCHECK_GE(num_months, 1UL);
 
@@ -104,65 +105,43 @@ base::Time CalendarViewController::GetPreviousMonthFirstDayLocal(
     prev = calendar_utils::GetStartOfPreviousMonthLocal(current);
   }
 
-  return prev;
+  return prev - calendar_utils::GetTimeDifference(prev);
 }
 
-base::Time CalendarViewController::GetNextMonthFirstDayLocal(
-    unsigned int num_months) const {
-  base::Time next, current = GetOnScreenMonthFirstDayLocal();
+base::Time CalendarViewController::GetNextMonthFirstDayUTC(
+    unsigned int num_months) {
+  base::Time next, current = ApplyTimeDifference(GetOnScreenMonthFirstDayUTC());
 
   DCHECK_GE(num_months, 1UL);
 
   for (unsigned int i = 0; i < num_months; i++, current = next) {
     next = calendar_utils::GetStartOfNextMonthLocal(current);
   }
-  return next;
+
+  return next - calendar_utils::GetTimeDifference(next);
 }
 
-base::Time CalendarViewController::GetOnScreenMonthFirstDayUTC() const {
-  return calendar_utils::GetStartOfMonthUTC(current_date_);
+std::u16string CalendarViewController::GetPreviousMonthName() {
+  return calendar_utils::GetMonthName(GetPreviousMonthFirstDayUTC(1));
 }
 
-base::Time CalendarViewController::GetPreviousMonthFirstDayUTC(
-    unsigned int num_months) const {
-  base::Time prev, current = GetOnScreenMonthFirstDayUTC();
-
-  DCHECK_GE(num_months, 1UL);
-
-  for (unsigned int i = 0; i < num_months; i++, current = prev) {
-    prev = calendar_utils::GetStartOfPreviousMonthUTC(current);
-  }
-
-  return prev;
-}
-
-base::Time CalendarViewController::GetNextMonthFirstDayUTC(
-    unsigned int num_months) const {
-  base::Time next, current = GetOnScreenMonthFirstDayUTC();
-
-  DCHECK_GE(num_months, 1UL);
-
-  for (unsigned int i = 0; i < num_months; i++, current = next) {
-    next = calendar_utils::GetStartOfNextMonthUTC(current);
-  }
-  return next;
-}
-
-std::u16string CalendarViewController::GetPreviousMonthName() const {
-  return calendar_utils::GetMonthName(GetPreviousMonthFirstDayLocal(1));
-}
-
-std::u16string CalendarViewController::GetNextMonthName() const {
-  return calendar_utils::GetMonthName(GetNextMonthFirstDayLocal(1));
+std::u16string CalendarViewController::GetNextMonthName(int num_months) {
+  return calendar_utils::GetMonthName(GetNextMonthFirstDayUTC(num_months));
 }
 
 std::u16string CalendarViewController::GetOnScreenMonthName() const {
-  return calendar_utils::GetMonthName(current_date_);
+  return calendar_utils::GetMonthName(currently_shown_date_);
 }
 
 int CalendarViewController::GetExpandedRowIndex() const {
   DCHECK(is_event_list_showing_);
   return expanded_row_index_;
+}
+
+int CalendarViewController::GetRowHeightWithEventListView() const {
+  //`is_event_list_showing_` may not be true because this is called before the
+  // animation begins.
+  return kExpandedCalendarViewHeightScale * row_height_;
 }
 
 int CalendarViewController::GetTodayRowTopHeight() const {
@@ -173,131 +152,38 @@ int CalendarViewController::GetTodayRowBottomHeight() const {
   return today_row_ * row_height_;
 }
 
-bool CalendarViewController::IsMonthAlreadyFetched(
-    base::Time start_of_month) const {
-  if (non_prunable_months_fetched_.find(start_of_month) !=
-      non_prunable_months_fetched_.end()) {
-    return true;
-  }
-
-  for (auto& month : prunable_months_mru_) {
-    if (month == start_of_month)
-      return true;
-  }
-
-  return false;
-}
-
-void CalendarViewController::MaybeFetchMonth(base::Time start_of_month) {
-  // TODO https://crbug.com/1258002 Don't do any of this if the user is guest,
-  // the screen is locked, or we're in OOBE or any other non-logged-in mode.
-  if (!IsMonthAlreadyFetched(start_of_month)) {
-    // We can't know whether the request will succeed (callback receives actual
-    // events), fail (callback receives an error code), or not receive any
-    // response (no events for that month), so the month is declared "fetched"
-    // when we make the request for its events.
-    MarkMonthAsFetched(start_of_month);
-
-    CalendarClient* client = Shell::Get()->calendar_controller()->GetClient();
-    if (!client)
-      return;
-
-    // TODO https://crbug.com/1258179 the params passed to GetEventList() need
-    // to be stored until the fetch request is complete in case of a failure, so
-    // we know exactly which request failed.
-    base::Time start_of_next_month =
-        calendar_utils::GetStartOfNextMonthUTC(start_of_month);
-    client->GetEventList(
-        base::BindOnce(&CalendarViewController::OnCalendarEventsFetched,
-                       weak_factory_.GetWeakPtr()),
-        start_of_month, start_of_next_month);
-  }
-}
-
-void CalendarViewController::MarkMonthAsFetched(base::Time start_of_month) {
-  if (non_prunable_months_.find(start_of_month) != non_prunable_months_.end())
-    non_prunable_months_fetched_.emplace(start_of_month);
-  else
-    QueuePrunableMonth(start_of_month);
-}
-
-void CalendarViewController::QueuePrunableMonth(base::Time start_of_month) {
-  // For safety, make sure we aren't queuing a non-prunable month.
-  if (non_prunable_months_.find(start_of_month) != non_prunable_months_.end())
-    return;
-
-  // If start_of_month is already most-recently-used, nothing to do.
-  if (!prunable_months_mru_.empty() &&
-      prunable_months_mru_.front() == start_of_month)
-    return;
-
-  // Remove start_of_month from the queue if it's present.
-  for (auto it = prunable_months_mru_.begin(); it != prunable_months_mru_.end();
-       ++it)
-    if (*it == start_of_month) {
-      prunable_months_mru_.erase(it);
-      break;
-    }
-
-  // start_of_month is now the most-recently-used.
-  prunable_months_mru_.push_front(start_of_month);
-}
-
-void CalendarViewController::FetchEvents() {
-  // Fetch the current on-screen month +/-1.  We can fetch more as storage
-  // allows.
-  MaybeFetchMonth(GetPreviousMonthFirstDayUTC(1).UTCMidnight());
-  MaybeFetchMonth(GetOnScreenMonthFirstDayUTC().UTCMidnight());
-  MaybeFetchMonth(GetNextMonthFirstDayUTC(1).UTCMidnight());
-}
-
 SingleDayEventList CalendarViewController::SelectedDateEvents() {
   if (!selected_date_.has_value())
     return std::list<google_apis::calendar::CalendarEvent>();
 
-  base::Time date;
-  const bool result =
-      base::Time::FromLocalExploded(selected_date_.value(), &date);
-  DCHECK(result);
-  return FindEvents(date);
+  return Shell::Get()->system_tray_model()->calendar_model()->FindEvents(
+      ApplyTimeDifference(selected_date_.value()));
 }
 
-bool CalendarViewController::IsDayWithEventsInternal(
-    base::Time day,
-    SingleDayEventList* events) const {
-  const SingleDayEventList& list = FindEvents(day);
-  if (list.empty())
-    return false;
-
-  // We have events, and we assume the destination is empty.
-  if (events) {
-    DCHECK(events->empty());
-    *events = list;
-  }
-
-  return true;
-}
-
-bool CalendarViewController::IsDayWithEvents(base::Time day,
-                                             SingleDayEventList* events) {
-  bool has_events = IsDayWithEventsInternal(day, events);
-  if (has_events) {
-    QueuePrunableMonth(calendar_utils::GetStartOfMonthUTC(day));
-  }
-  return has_events;
+int CalendarViewController::GetEventNumber(base::Time date) {
+  return Shell::Get()->system_tray_model()->calendar_model()->EventsNumberOfDay(
+      ApplyTimeDifference(date),
+      /*events =*/nullptr);
 }
 
 void CalendarViewController::ShowEventListView(
-    base::Time::Exploded selected_date,
+    CalendarDateCellView* selected_calendar_date_cell_view,
+    base::Time selected_date,
     int row_index) {
   // Do nothing if selecting on the same date.
   if (is_event_list_showing_ &&
-      calendar_utils::IsTheSameDay(selected_date, selected_date_)) {
+      selected_calendar_date_cell_view == selected_date_cell_view_) {
     return;
   }
   selected_date_ = selected_date;
+  set_selected_date_cell_view(selected_calendar_date_cell_view);
   selected_date_row_index_ = row_index;
   expanded_row_index_ = row_index;
+
+  base::TimeDelta time_difference =
+      calendar_utils::GetTimeDifference(selected_date);
+  selected_date_midnight_ = (selected_date + time_difference).UTCMidnight();
+  selected_date_midnight_utc_ = selected_date_midnight_ - time_difference;
 
   // Notify observers.
   for (auto& observer : observers_)
@@ -311,6 +197,7 @@ void CalendarViewController::ShowEventListView(
 
 void CalendarViewController::CloseEventListView() {
   selected_date_ = absl::nullopt;
+
   for (auto& observer : observers_)
     observer.CloseEventList();
 }
@@ -323,107 +210,37 @@ void CalendarViewController::OnEventListClosed() {
   is_event_list_showing_ = false;
 }
 
+void CalendarViewController::OnCalendarEventWillLaunch() {
+  UmaHistogramMediumTimes("Ash.Calendar.UserJourneyTime.EventLaunched",
+                          base::TimeTicks::Now() - calendar_open_time_);
+  user_journey_time_recorded_ = true;
+}
+
 bool CalendarViewController::IsSelectedDateInCurrentMonth() {
   if (!selected_date_.has_value())
     return false;
 
-  auto current = calendar_utils::GetExplodedLocal(current_date_);
-  return current.month == selected_date_->month &&
-         current.year == selected_date_->year;
+  return calendar_utils::GetMonthNameAndYear(currently_shown_date_) ==
+         calendar_utils::GetMonthNameAndYear(selected_date_.value());
 }
 
-void CalendarViewController::OnCalendarEventsFetched(
-    google_apis::ApiErrorCode error,
-    std::unique_ptr<google_apis::calendar::EventList> events) {
-  // TODO https://crbug.com/1258179 we need to handle the other error codes we
-  // can possibly receive, and know for certain which fetch request failed.
-  base::UmaHistogramSparse("Ash.Calendar.FetchEvents.Result", error);
-  if (error != google_apis::HTTP_SUCCESS) {
-    LOG(ERROR) << __FUNCTION__ << " Event fetch received error: " << error;
-    return;
-  }
-
-  // Keep us within storage limits.
-  PruneEventCache();
-
-  // Store the incoming events.
-  InsertEvents(events);
-
-  // Notify observers.
-  for (auto& observer : observers_)
-    observer.OnEventsFetched(events.get());
+base::Time CalendarViewController::GetOnScreenMonthFirstDayUTC() {
+  base::TimeDelta time_difference =
+      calendar_utils::GetTimeDifference(currently_shown_date_);
+  return calendar_utils::GetFirstDayOfMonth(currently_shown_date_ +
+                                            time_difference) -
+         time_difference;
 }
 
-void CalendarViewController::InsertEvent(
-    const google_apis::calendar::CalendarEvent* event) {
-  base::Time start_day = event->start_time().date_time().UTCMidnight();
-  base::Time start_of_month = calendar_utils::GetStartOfMonthUTC(start_day);
-
-  auto it = event_months_.find(start_of_month);
-  if (it == event_months_.end()) {
-    // No events for this month, so add a map for it and insert.
-    SingleMonthEventMap month;
-    InsertEventInMonth(month, event);
-    event_months_.emplace(start_of_month, month);
-  } else {
-    // Insert in a pre-existing month.
-    SingleMonthEventMap& month = it->second;
-    InsertEventInMonth(month, event);
-  }
+bool CalendarViewController::isSuccessfullyFetched(base::Time start_of_month) {
+  return Shell::Get()
+             ->system_tray_model()
+             ->calendar_model()
+             ->FindFetchingStatus(start_of_month) == CalendarModel::kSuccess;
 }
 
-void CalendarViewController::InsertEventInMonth(
-    SingleMonthEventMap& month,
-    const google_apis::calendar::CalendarEvent* event) {
-  base::Time midnight = event->start_time().date_time().UTCMidnight();
-
-  auto it = month.find(midnight);
-  if (it == month.end()) {
-    // No events stored for this day, so create a new list, add the event to
-    // it, and insert the list in the map.
-    SingleDayEventList list;
-    list.push_back(*event);
-    month.emplace(midnight, list);
-  } else {
-    // Already have some events for this day.
-    SingleDayEventList& list = it->second;
-    list.push_back(*event);
-  }
-}
-
-void CalendarViewController::InsertEvents(
-    const std::unique_ptr<google_apis::calendar::EventList>& events) {
-  for (const auto& event : events->items())
-    InsertEvent(event.get());
-}
-
-SingleDayEventList CalendarViewController::FindEvents(base::Time day) const {
-  SingleDayEventList event_list;
-
-  // Early return if we know we have no events for this month.
-  base::Time start_of_month = calendar_utils::GetStartOfMonthUTC(day);
-  auto it = event_months_.find(start_of_month);
-  if (it == event_months_.end())
-    return event_list;
-
-  // Early return if we know we have no events for this day.
-  base::Time midnight = day.UTCMidnight();
-  const SingleMonthEventMap& month = it->second;
-  auto it2 = month.find(midnight);
-  if (it2 == month.end())
-    return event_list;
-
-  return it2->second;
-}
-
-void CalendarViewController::PruneEventCache() {
-  while (event_months_.size() >= kMaxNumberOfMonthsCached &&
-         !prunable_months_mru_.empty()) {
-    base::Time lru_month = prunable_months_mru_.back();
-    LOG(WARNING) << __FUNCTION__ << " pruning lru_month " << lru_month;
-    event_months_.erase(lru_month);
-    prunable_months_mru_.pop_back();
-  }
+base::Time CalendarViewController::ApplyTimeDifference(base::Time date) {
+  return date + calendar_utils::GetTimeDifference(date);
 }
 
 }  // namespace ash

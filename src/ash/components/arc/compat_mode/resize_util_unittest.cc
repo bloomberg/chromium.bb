@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/components/arc/compat_mode/test/compat_mode_test_base.h"
-#include "ash/public/cpp/toast_manager.h"
+#include "ash/public/cpp/system/toast_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -24,6 +24,15 @@ class FakeToastManager : public ash::ToastManager {
   // ToastManager overrides:
   void Show(const ash::ToastData& data) override { called_show_ = true; }
   void Cancel(const std::string& id) override { called_cancel_ = true; }
+  bool MaybeToggleA11yHighlightOnActiveToastDismissButton(
+      const std::string& id) override {
+    return false;
+  }
+  bool MaybeActivateHighlightedDismissButtonOnActiveToast(
+      const std::string& id) override {
+    return false;
+  }
+  bool IsRunning(const std::string& id) const override { return false; }
 
   void ResetState() {
     called_show_ = false;

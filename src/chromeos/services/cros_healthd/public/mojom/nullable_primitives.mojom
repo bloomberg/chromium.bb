@@ -13,6 +13,24 @@
 
 module chromeos.cros_healthd.mojom;
 
+// Optional uint8 field.
+struct NullableUint8 {
+  // The value of the uint8.
+  uint8 value;
+};
+
+// Optional int16 field.
+struct NullableInt16 {
+  // The value of the int16.
+  int16 value;
+};
+
+// Optional uint16 field.
+struct NullableUint16 {
+  // The value of the uint16.
+  uint16 value;
+};
+
 // Optional uint32 field.
 struct NullableUint32 {
   // The value of the uint32.
@@ -23,4 +41,10 @@ struct NullableUint32 {
 struct NullableUint64 {
   // The value of the uint64.
   uint64 value;
+};
+
+// Optional double field.
+struct NullableDouble {
+  // The value of the double.
+  double value;
 };

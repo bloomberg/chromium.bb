@@ -105,7 +105,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     UI.View.SimpleView) implements UI.SearchableView.Searchable, UI.SearchableView.Replaceable, Transformer {
   private readonly lazyContent: () => Promise<TextUtils.ContentProvider.DeferredContent>;
   private prettyInternal: boolean;
-  private rawContent: string|null;
+  private rawContent: string|CodeMirror.Text|null;
   private formattedContentPromise: Promise<Formatter.ScriptFormatter.FormattedContent>|null;
   private formattedMap: Formatter.ScriptFormatter.FormatterSourceMapping|null;
   private readonly prettyToggle: UI.Toolbar.ToolbarToggle;
@@ -120,7 +120,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
   private delayedFindSearchMatches: (() => void)|null;
   private currentSearchResultIndex: number;
   private searchResults: SearchMatch[];
-  private searchRegex: RegExp|null;
+  private searchRegex: UI.SearchableView.SearchRegexResult|null;
   private loadError: boolean;
   private muteChangeEventsForSetContent: boolean;
   private readonly sourcePosition: UI.Toolbar.ToolbarText;
@@ -150,7 +150,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     this.formattedMap = null;
     this.prettyToggle = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.prettyPrint), 'largeicon-pretty-print');
     this.prettyToggle.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
-      this.setPretty(!this.prettyToggle.toggled());
+      void this.setPretty(!this.prettyToggle.toggled());
     });
     this.shouldAutoPrettyPrint = false;
     this.prettyToggle.setVisible(false);
@@ -203,7 +203,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     });
   }
 
-  protected editorConfiguration(doc: string): CodeMirror.Extension {
+  protected editorConfiguration(doc: string|CodeMirror.Text): CodeMirror.Extension {
     return [
       CodeMirror.EditorView.updateListener.of(update => this.dispatchEventToListeners(Events.EditorUpdate, update)),
       TextEditor.Config.baseConfiguration(doc),
@@ -211,7 +211,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
       TextEditor.Config.sourcesAutocompletion.instance(),
       TextEditor.Config.showWhitespace.instance(),
       TextEditor.Config.allowScrollPastEof.instance(),
-      TextEditor.Config.codeFolding.instance(),
+      CodeMirror.Prec.lowest(TextEditor.Config.codeFolding.instance()),
       TextEditor.Config.autoDetectIndent.instance(),
       sourceFrameTheme,
       CodeMirror.EditorView.domEventHandlers({
@@ -394,7 +394,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
   }
 
   wasShown(): void {
-    this.ensureContentLoaded();
+    void this.ensureContentLoaded();
     this.wasShownOrLoaded();
   }
 
@@ -444,7 +444,13 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
         this.rawContent = deferredContent.error;
       } else {
         content = deferredContent.content;
-        this.rawContent = deferredContent.isEncoded ? window.atob(deferredContent.content) : deferredContent.content;
+        if (deferredContent.isEncoded) {
+          const view = new DataView(Common.Base64.decode(deferredContent.content));
+          const decoder = new TextDecoder();
+          this.rawContent = decoder.decode(view, {stream: true});
+        } else {
+          this.rawContent = deferredContent.content;
+        }
       }
 
       progressIndicator.setWorked(1);
@@ -453,7 +459,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
         const worker = Common.Worker.WorkerWrapper.fromURL(
             new URL('../../../../entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js', import.meta.url));
         const promise = new Promise<{
-          source: string,
+          lines: string[],
           offsets: number[],
           functionBodyOffsets: {
             start: number,
@@ -461,7 +467,6 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
           }[],
         }>((resolve, reject) => {
           worker.onmessage =
-              /** @type {{event:string, params:{percentage:number}}} */
               // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ({data}: MessageEvent<any>): void => {
@@ -487,8 +492,8 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
         });
         worker.postMessage({method: 'disassemble', params: {content}});
         try {
-          const {source, offsets, functionBodyOffsets} = await promise;
-          this.rawContent = content = source;
+          const {lines, offsets, functionBodyOffsets} = await promise;
+          this.rawContent = content = CodeMirror.Text.of(lines);
           this.wasmDisassemblyInternal = new Common.WasmDisassembly.WasmDisassembly(offsets, functionBodyOffsets);
         } catch (e) {
           this.rawContent = content = error = e.message;
@@ -523,8 +528,8 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     if (this.formattedContentPromise) {
       return this.formattedContentPromise;
     }
-    this.formattedContentPromise =
-        Formatter.ScriptFormatter.formatScriptContent(this.contentType, this.rawContent || '');
+    const content = this.rawContent instanceof CodeMirror.Text ? this.rawContent.sliceString(0) : this.rawContent || '';
+    this.formattedContentPromise = Formatter.ScriptFormatter.formatScriptContent(this.contentType, content);
     return this.formattedContentPromise;
   }
 
@@ -579,8 +584,10 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     if (this.lineToScrollTo !== null) {
       if (this.loaded && this.isShowing()) {
         const {textEditor} = this;
-        const position = textEditor.toOffset({lineNumber: this.lineToScrollTo, columnNumber: 0});
-        textEditor.dispatch({effects: CodeMirror.EditorView.scrollTo.of(CodeMirror.EditorSelection.cursor(position))});
+        // DevTools history items are 0-based, but CodeMirror is 1-based, so we have to increment the
+        // line we want to scroll to by 1.
+        const position = textEditor.toOffset({lineNumber: this.lineToScrollTo + 1, columnNumber: 0});
+        textEditor.dispatch({effects: CodeMirror.EditorView.scrollIntoView(position, {y: 'start'})});
         this.lineToScrollTo = null;
       }
     }
@@ -641,7 +648,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     this.prettyToggle.setEnabled(true);
   }
 
-  private simplifyMimeType(content: string, mimeType: string): string {
+  private simplifyMimeType(content: string|CodeMirror.Text, mimeType: string): string {
     if (!mimeType) {
       return '';
     }
@@ -656,8 +663,11 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
       return 'text/jsx';
     }
     // A hack around the fact that files with "php" extension might be either standalone or html embedded php scripts.
-    if (mimeType === 'text/x-php' && content.match(/\<\?.*\?\>/g)) {
-      return 'application/x-httpd-php';
+    if (mimeType === 'text/x-php') {
+      const strContent = typeof content === 'string' ? content : content.sliceString(0);
+      if (strContent.match(/\<\?.*\?\>/g)) {
+        return 'application/x-httpd-php';
+      }
     }
     if (mimeType === 'application/wasm') {
       // text/webassembly is not a proper MIME type, but CodeMirror uses it for WAT syntax highlighting.
@@ -667,7 +677,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     return mimeType;
   }
 
-  protected async getLanguageSupport(content: string): Promise<CodeMirror.Extension> {
+  protected async getLanguageSupport(content: string|CodeMirror.Text): Promise<CodeMirror.Extension> {
     const mimeType = this.simplifyMimeType(content, this.contentType) || '';
     const languageDesc = await CodeHighlighter.CodeHighlighter.languageFromMIME(mimeType);
     if (!languageDesc) {
@@ -687,7 +697,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     this.textEditor.dispatch({effects: config.language.reconfigure(langExtension)});
   }
 
-  async setContent(content: string): Promise<void> {
+  async setContent(content: string|CodeMirror.Text): Promise<void> {
     this.muteChangeEventsForSetContent = true;
     const {textEditor} = this;
     const wasLoaded = this.loadedInternal;
@@ -761,7 +771,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
           this.doFindSearchMatches.bind(this, searchConfig, shouldJump, Boolean(jumpBackwards));
     }
 
-    this.ensureContentLoaded();
+    void this.ensureContentLoaded();
   }
 
   private resetCurrentSearchResultIndex(): void {
@@ -831,7 +841,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
   }
 
   jumpToSearchResult(index: number): void {
-    if (!this.loaded || !this.searchResults.length) {
+    if (!this.loaded || !this.searchResults.length || !this.searchRegex) {
       return;
     }
     this.currentSearchResultIndex = (index + this.searchResults.length) % this.searchResults.length;
@@ -841,7 +851,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     const editor = this.textEditor;
     const range = this.searchResults[this.currentSearchResultIndex];
     editor.dispatch({
-      effects: setActiveSearch.of(new ActiveSearch(this.searchRegex as RegExp, range)),
+      effects: setActiveSearch.of(new ActiveSearch(this.searchRegex, range)),
       selection: {anchor: range.from, head: range.to},
       scrollIntoView: true,
       userEvent: 'select.search',
@@ -854,7 +864,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
       return;
     }
 
-    const insert = (this.searchRegex as RegExp).__fromRegExpQuery ? range.insertPlaceholders(replacement) : replacement;
+    const insert = this.searchRegex?.fromQuery ? range.insertPlaceholders(replacement) : replacement;
     const editor = this.textEditor;
     const changes = editor.state.changes({from: range.from, to: range.to, insert});
     editor.dispatch(
@@ -870,7 +880,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
       return;
     }
 
-    const isRegExp = regex.__fromRegExpQuery;
+    const isRegExp = regex.fromQuery;
     const changes = ranges.map(
         match =>
             ({from: match.from, to: match.to, insert: isRegExp ? match.insertPlaceholders(replacement) : replacement}));
@@ -878,13 +888,13 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     this.textEditor.dispatch({changes, scrollIntoView: true, userEvent: 'input.replace.all'});
   }
 
-  private collectRegexMatches(regexObject: RegExp): SearchMatch[] {
+  private collectRegexMatches({regex}: UI.SearchableView.SearchRegexResult): SearchMatch[] {
     const ranges = [];
     let pos = 0;
     for (const line of this.textEditor.state.doc.iterLines()) {
-      regexObject.lastIndex = 0;
+      regex.lastIndex = 0;
       for (;;) {
-        const match = regexObject.exec(line);
+        const match = regex.exec(line);
         if (!match) {
           break;
         }
@@ -946,7 +956,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     const pos = state.selection.main.from, line = state.doc.lineAt(pos);
     this.populateTextAreaContextMenu(contextMenu, line.number - 1, pos - line.from);
     contextMenu.appendApplicableItems(this);
-    contextMenu.show();
+    void contextMenu.show();
     return true;
   }
 
@@ -960,7 +970,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin<EventTypes,
     const lineNumber = this.textEditor.state.doc.lineAt(position).number - 1;
     this.populateLineGutterContextMenu(contextMenu, lineNumber);
     contextMenu.appendApplicableItems(this);
-    contextMenu.show();
+    void contextMenu.show();
     return true;
   }
 
@@ -1023,7 +1033,8 @@ const config = {
 };
 
 class ActiveSearch {
-  constructor(readonly regexp: RegExp, readonly currentRange: {from: number, to: number}|null) {
+  constructor(
+      readonly regexp: UI.SearchableView.SearchRegexResult, readonly currentRange: {from: number, to: number}|null) {
   }
 
   map(change: CodeMirror.ChangeDesc): ActiveSearch {
@@ -1037,7 +1048,7 @@ class ActiveSearch {
     return Boolean(
         a === b ||
         a && b && a.currentRange?.from === b.currentRange?.from && a.currentRange?.to === b.currentRange?.to &&
-            a.regexp.source === b.regexp.source && a.regexp.flags === b.regexp.flags);
+            a.regexp.regex.source === b.regexp.regex.source && a.regexp.regex.flags === b.regexp.regex.flags);
   }
 }
 
@@ -1085,9 +1096,9 @@ const searchHighlighter = CodeMirror.ViewPlugin.fromClass(class {
       let pos = from;
       for (const part of doc.iterRange(from, to)) {
         if (part !== '\n') {
-          active.regexp.lastIndex = 0;
+          active.regexp.regex.lastIndex = 0;
           for (;;) {
-            const match = active.regexp.exec(part);
+            const match = active.regexp.regex.exec(part);
             if (!match) {
               break;
             }

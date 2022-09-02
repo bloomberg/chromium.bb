@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
+#include "base/test/gtest_util.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -23,6 +24,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
@@ -38,7 +40,7 @@
 #include "ui/views/view_observer.h"
 #include "ui/views/view_test_api.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
 
@@ -83,7 +85,9 @@ class ScrollViewTestApi {
   }
 
   View* corner_view() { return scroll_view_->corner_view_.get(); }
-  View* contents_viewport() { return scroll_view_->contents_viewport_; }
+  View* contents_viewport() {
+    return scroll_view_->GetContentsViewportForTest();
+  }
 
   View* more_content_left() { return scroll_view_->more_content_left_.get(); }
   View* more_content_top() { return scroll_view_->more_content_top_.get(); }
@@ -278,7 +282,7 @@ class ScrollViewTest : public ViewsTestBase {
   }
 
  protected:
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void SetOverlayScrollersEnabled(bool enabled) {
     // Ensure the old scroller override is destroyed before creating a new one.
     // Otherwise, the swizzlers are interleaved and restore incorrect methods.
@@ -326,7 +330,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
   // Adds a ScrollView with the given |contents_view| and does layout.
   ScrollView* AddScrollViewWithContents(std::unique_ptr<View> contents,
                                         bool commit_layers = true) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     scroller_style_ = std::make_unique<ui::test::ScopedPreferredScrollerStyle>(
         use_overlay_scrollers_);
 #endif
@@ -402,7 +406,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
 
   base::RepeatingClosure quit_closure_;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   std::unique_ptr<ui::test::ScopedPreferredScrollerStyle> scroller_style_;
 #endif
 };
@@ -600,8 +604,8 @@ TEST_F(ScrollViewTest, ScrollBars) {
   const int kLeftPadding = 2;
   const int kBottomPadding = 3;
   const int kRightPadding = 4;
-  scroll_view_->SetBorder(CreateEmptyBorder(kTopPadding, kLeftPadding,
-                                            kBottomPadding, kRightPadding));
+  scroll_view_->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(
+      kTopPadding, kLeftPadding, kBottomPadding, kRightPadding)));
   contents->SetBounds(0, 0, 50, 400);
   scroll_view_->Layout();
   EXPECT_EQ(100 - scroll_view_->GetScrollBarLayoutWidth() - kLeftPadding -
@@ -1130,7 +1134,7 @@ TEST_F(ScrollViewTest, ClipHeightToScrollbarUsesWidth) {
 // Verifies ClipHeightTo() updates the ScrollView's preferred size.
 TEST_F(ScrollViewTest, ClipHeightToUpdatesPreferredSize) {
   auto contents_view = std::make_unique<View>();
-  contents_view->SetPreferredSize({100, 100});
+  contents_view->SetPreferredSize(gfx::Size(100, 100));
   scroll_view_->SetContents(std::move(contents_view));
   EXPECT_FALSE(scroll_view_->is_bounded());
 
@@ -1223,7 +1227,7 @@ TEST_F(WidgetScrollViewTest, ChildWithLayerTest) {
 }
 
 // Validates that if a child of a ScrollView adds a layer, then a layer
-// is added to the ScrollView's viewport.
+// is not added to the ScrollView's viewport.
 TEST_F(ScrollViewTest, DontCreateLayerOnViewportIfLayerOnScrollViewCreated) {
   View* contents = InstallContents();
   ScrollViewTestApi test_api(scroll_view_.get());
@@ -1239,7 +1243,146 @@ TEST_F(ScrollViewTest, DontCreateLayerOnViewportIfLayerOnScrollViewCreated) {
   EXPECT_FALSE(test_api.contents_viewport()->layer());
 }
 
-#if defined(OS_MAC)
+// Validates if the contents_viewport uses correct layer type when adding views
+// with different types of layers.
+TEST_F(ScrollViewTest, ContentsViewportLayerUsed_ScrollWithLayersDisabled) {
+  // Disabling scroll_with_layers feature explicitly.
+  ScrollView scroll_view(ScrollView::ScrollWithLayers::kDisabled);
+  ScrollViewTestApi test_api(&scroll_view);
+
+  View* contents = scroll_view.SetContents(std::make_unique<View>());
+
+  ASSERT_FALSE(test_api.contents_viewport()->layer());
+
+  View* child = contents->AddChildView(std::make_unique<View>());
+  child->SetPaintToLayer();
+
+  // When contents does not have a layer, contents_viewport is TEXTURED layer.
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_TEXTURED);
+  contents->SetPaintToLayer();
+  // When contents is a TEXTURED layer.
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_NOT_DRAWN);
+  contents->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+  // When contents is a NOT_DRAWN layer.
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_TEXTURED);
+}
+
+// Validates the layer of contents_viewport_, when contents_ does not have a
+// layer.
+TEST_F(
+    ScrollViewTest,
+    ContentsViewportLayerWhenContentsDoesNotHaveLayer_ScrollWithLayersDisabled) {
+  // Disabling scroll_with_layers feature explicitly.
+  ScrollView scroll_view(ScrollView::ScrollWithLayers::kDisabled);
+  ScrollViewTestApi test_api(&scroll_view);
+
+  auto contents = std::make_unique<View>();
+  View* child = contents->AddChildView(std::make_unique<View>());
+  contents->AddChildView(std::make_unique<View>());
+
+  scroll_view.SetContents(std::move(contents));
+  // No layer needed for contents_viewport since no descendant view has a layer.
+  EXPECT_FALSE(test_api.contents_viewport()->layer());
+  child->SetPaintToLayer();
+  // TEXTURED layer needed for contents_viewport since a descendant view has a
+  // layer.
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_TEXTURED);
+}
+
+// Validates if scroll_with_layers is enabled, we disallow to change the layer
+// of contents_  once the contents of ScrollView are set.
+TEST_F(
+    ScrollViewTest,
+    ContentsLayerCannotBeChangedAfterContentsAreSet_ScrollWithLayersEnabled) {
+  ScrollView scroll_view(ScrollView::ScrollWithLayers::kEnabled);
+  ScrollViewTestApi test_api(&scroll_view);
+
+  View* contents = scroll_view.SetContents(std::make_unique<View>());
+  EXPECT_DCHECK_DEATH(contents->SetPaintToLayer(ui::LAYER_NOT_DRAWN));
+}
+
+// Validates if scroll_with_layers is disabled, we can change the layer of
+// contents_ once the contents of ScrollView are set.
+TEST_F(ScrollViewTest,
+       ContentsLayerCanBeChangedAfterContentsAreSet_ScrollWithLayersDisabled) {
+  ScrollView scroll_view(ScrollView::ScrollWithLayers::kDisabled);
+  ScrollViewTestApi test_api(&scroll_view);
+
+  View* contents = scroll_view.SetContents(std::make_unique<View>());
+  ASSERT_NO_FATAL_FAILURE(contents->SetPaintToLayer());
+}
+
+// Validates if the content of contents_viewport is changed, a correct layer is
+// used for contents_viewport.
+TEST_F(
+    ScrollViewTest,
+    ContentsViewportLayerUsedWhenScrollViewContentsAreChanged_ScrollWithLayersDisabled) {
+  // Disabling scroll_with_layers feature explicitly.
+  ScrollView scroll_view(ScrollView::ScrollWithLayers::kDisabled);
+  ScrollViewTestApi test_api(&scroll_view);
+
+  auto contents = std::make_unique<View>();
+  contents->AddChildView(std::make_unique<View>());
+  scroll_view.SetContents(std::move(contents));
+
+  // Replacing the old contents of scroll view.
+  auto a_view = std::make_unique<View>();
+  a_view->AddChildView(std::make_unique<View>());
+  View* child = a_view->AddChildView(std::make_unique<View>());
+  child->SetPaintToLayer();
+
+  scroll_view.SetContents(std::move(a_view));
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_TEXTURED);
+}
+
+// Validates correct behavior of layers used for contents_viewport used when
+// scroll with layers is enabled.
+TEST_F(ScrollViewTest, ContentsViewportLayerUsed_ScrollWithLayersEnabled) {
+  ScrollView scroll_view(ScrollView::ScrollWithLayers::kEnabled);
+  ScrollViewTestApi test_api(&scroll_view);
+
+  // scroll_with_layer feature ensures that contents_viewport always have a
+  // layer.
+  ASSERT_TRUE(test_api.contents_viewport()->layer());
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_NOT_DRAWN);
+  // scroll_with_layer feature enables a layer on content before adding to
+  // contents_viewport_.
+  View* contents = scroll_view.SetContents(std::make_unique<View>());
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_NOT_DRAWN);
+
+  View* child = contents->AddChildView(std::make_unique<View>());
+  child->SetPaintToLayer();
+
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_NOT_DRAWN);
+}
+
+// Validates if correct layers are used for contents_viewport used when
+// ScrollView enables a NOT_DRAWN layer on contents when scroll with layers in
+// enabled.
+TEST_F(
+    ScrollViewTest,
+    ContentsViewportLayerUsedWhenNotDrawnUsedForContents_ScrollWithLayersEnabled) {
+  ScrollView scroll_view(ScrollView::ScrollWithLayers::kEnabled);
+  ScrollViewTestApi test_api(&scroll_view);
+
+  // scroll_with_layer feature ensures that contents_viewport always have a
+  // layer.
+  ASSERT_TRUE(test_api.contents_viewport()->layer());
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_NOT_DRAWN);
+
+  // changing the layer type that the scrollview enables on contents.
+  scroll_view.SetContentsLayerType(ui::LAYER_NOT_DRAWN);
+
+  View* contents = scroll_view.SetContents(std::make_unique<View>());
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_TEXTURED);
+
+  View* child = contents->AddChildView(std::make_unique<View>());
+  child->SetPaintToLayer();
+
+  EXPECT_EQ(test_api.contents_viewport()->layer()->type(), ui::LAYER_TEXTURED);
+}
+
+#if BUILDFLAG(IS_MAC)
 // Tests the overlay scrollbars on Mac. Ensure that they show up properly and
 // do not overlap each other.
 TEST_F(ScrollViewTest, CocoaOverlayScrollBars) {
@@ -1405,7 +1548,7 @@ TEST_F(WidgetScrollViewTest, ScrollersOnRest) {
   EXPECT_EQ(gfx::PointF(x_offset, y_offset), test_api.CurrentOffset());
 }
 
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
 // Test that increasing the size of the viewport "below" scrolled content causes
 // the content to scroll up so that it still fills the viewport.

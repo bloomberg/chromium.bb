@@ -41,40 +41,47 @@ To organize output in a convenient HTML format use the `--html` option. Executin
 ```
 vulkaninfo --json
 ```
+Produce a json version of vulkaninfo output conforming to the [Vulkan Profiles schema](https://schema.khronos.org/vulkan/), saved as \"VP_VULKANINFO_[DEVICE_NAME]_[DRIVER_VERSION].json\", of the first gpu in the system.
 
- Use the `--json` option to produce [DevSim-schema](https://schema.khronos.org/vulkan/devsim_1_0_0.json)-compatible JSON output for your device. Additionally, JSON output can be specified with the `-j` option and for multi-GPU systems, a single GPU can be targeted using the `--json=`*`GPU-number`* option where the *`GPU-number`* indicates the GPU of interest (e.g., `--json=0`). To determine the GPU number corresponding to a particular GPU, execute `vulkaninfo` with the `--html` option (or none at all) first; doing so will summarize all GPUs in the system.
- The generated configuration information can be used as input for the [`VK_LAYER_LUNARG_device_simulation`](./device_simulation_layer.html) layer.
+JSON output can be specified with the `-j` option and for multi-GPU systems, a single GPU can be targeted using the `--json=`*`GPU-number`* option where the *`GPU-number`* indicates the GPU of interest (e.g., `--json=0`). To determine the GPU number corresponding to a particular GPU, execute `vulkaninfo --summary` option (or none at all) first; doing so will summarize all GPUs in the system.
 
- Use the `--help` or `-h` option to produce a list of all available Vulkan Info options.
+Use the `--help` or `-h` option to produce a list of all available Vulkan Info options.
 
 ```
 vulkaninfo - Summarize Vulkan information in relation to the current environment.
 
-USAGE: ./vulkaninfo [options]
+USAGE:
+    vulkaninfo --summary
+    vulkaninfo -o <filename> | --output <filename>
+    vulkaninfo -j | -j=<gpu-number> | --json | --json=<gpu-number>
+    vulkaninfo --text
+    vulkaninfo --html
+    vulkaninfo --show-formats
+    vulkaninfo --show-tool-props
 
 OPTIONS:
--h, --help          Print this help.
---html              Produce an html version of vulkaninfo output, saved as
-                    "vulkaninfo.html" in the directory in which the command is
-                    run.
--j, --json          Produce a json version of vulkaninfo output to standard
-                    output.
---json=<gpu-number> For a multi-gpu system, a single gpu can be targetted by
+[-h, --help]        Print this help.
+[--summary]         Show a summary of the instance and GPU's on a system.
+[-o <filename>, --output <filename>]
+                    Print output to a new file whose name is specified by filename.
+                    File will be written to the current working directory.
+[--text]            Produce a text version of vulkaninfo output to stdout. This is
+                    the default output.
+[--html]            Produce an html version of vulkaninfo output, saved as
+                    \"vulkaninfo.html\" in the directory in which the command
+                    is run.
+[-j, --json]        Produce a json version of vulkaninfo output conforming to the Vulkan
+                    Profiles schema, saved as
+                    \"VP_VULKANINFO_[DEVICE_NAME]_[DRIVER_VERSION].json\"
+                    of the first gpu in the system.
+[-j=<gpu-number>, --json=<gpu-number>]
+                    For a multi-gpu system, a single gpu can be targetted by
                     specifying the gpu-number associated with the gpu of
                     interest. This number can be determined by running
                     vulkaninfo without any options specified.
---portability       Produce a json version of vulkaninfo to standard output of the first
-                    gpu in the system conforming to the DevSim Portability Subset schema.
---portability=<N>   Produce the json output conforming to the DevSim Portability
-                    Subset Schema for the GPU specified to standard output
-                    where N is the GPU desired.
---show-formats      Display the format properties of each physical device.
-                    Note: This option does not affect html or json output;
-                    they will always print format properties.
--o <filename>, --output<filename>
-                    Print output to a new file whose name is specified by filename.
-                    File will be written to the current working directory.
---summary           Show a summary of the instance and GPU's on a system.
+[--show-tool-props] Show the active VkPhysicalDeviceToolPropertiesEXT that vulkaninfo finds.
+[--show-formats]    Display the format properties of each physical device.
+                    Note: This only affects text output.
 ```
 
 ### Windows

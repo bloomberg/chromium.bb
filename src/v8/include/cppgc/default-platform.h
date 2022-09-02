@@ -6,10 +6,9 @@
 #define INCLUDE_CPPGC_DEFAULT_PLATFORM_H_
 
 #include <memory>
-#include <vector>
 
 #include "cppgc/platform.h"
-#include "v8-default-platform.h"
+#include "libplatform/libplatform.h"
 #include "v8config.h"  // NOLINT(build/include_directory)
 
 namespace cppgc {
@@ -20,15 +19,6 @@ namespace cppgc {
  */
 class V8_EXPORT DefaultPlatform : public Platform {
  public:
-  /**
-   * Use this method instead of 'cppgc::InitializeProcess' when using
-   * 'cppgc::DefaultPlatform'. 'cppgc::DefaultPlatform::InitializeProcess'
-   * will initialize cppgc and v8 if needed (for non-standalone builds).
-   *
-   * \param platform DefaultPlatform instance used to initialize cppgc/v8.
-   */
-  static void InitializeProcess(DefaultPlatform* platform);
-
   // blpwtk2: One of the embedders of blpwtk2 needs to use v8 before blink
   // is initialized. This requires the embedder to call
   // v8::platform::NewDefaultPlatform to manually create the platform instance.
@@ -72,6 +62,8 @@ class V8_EXPORT DefaultPlatform : public Platform {
   TracingController* GetTracingController() override {
     return v8_platform_->GetTracingController();
   }
+
+  v8::Platform* GetV8Platform() const { return v8_platform_.get(); }
 
  protected:
   static constexpr v8::Isolate* kNoIsolate = nullptr;

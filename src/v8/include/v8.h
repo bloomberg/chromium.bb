@@ -19,7 +19,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <vector>
 
 // https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 // MSVC++ 12.0  _MSC_VER == 1800 (Visual Studio 2013 version 12.0)

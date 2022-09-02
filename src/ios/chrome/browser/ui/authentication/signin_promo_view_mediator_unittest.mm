@@ -182,7 +182,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   void ExpectNoAccountsConfiguration() {
     OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeNoAccounts]);
     NSString* title = GetNSString(IDS_IOS_SYNC_PROMO_TURN_ON_SYNC);
-    OCMExpect([signin_promo_view_ setAccessibilityLabel:title]);
     OCMExpect([primary_button_ setTitle:title forState:UIControlStateNormal]);
     image_view_profile_image_ = nil;
   }
@@ -211,9 +210,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
                          ? expected_default_identity_.userGivenName
                          : expected_default_identity_.userEmail;
     std::u16string name16 = SysNSStringToUTF16(name);
-    NSString* accessibilityLabel =
-        GetNSStringF(IDS_IOS_SIGNIN_PROMO_ACCESSIBILITY_LABEL, name16);
-    OCMExpect([signin_promo_view_ setAccessibilityLabel:accessibilityLabel]);
     OCMExpect([primary_button_
         setTitle:GetNSStringF(IDS_IOS_SIGNIN_PROMO_CONTINUE_AS, name16)
         forState:UIControlStateNormal]);
@@ -245,9 +241,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
                          ? expected_default_identity_.userGivenName
                          : expected_default_identity_.userEmail;
     std::u16string name16 = SysNSStringToUTF16(name);
-    NSString* accessibilityLabel =
-        GetNSStringF(IDS_IOS_SIGNIN_PROMO_ACCESSIBILITY_LABEL, name16);
-    OCMExpect([signin_promo_view_ setAccessibilityLabel:accessibilityLabel]);
     OCMExpect([primary_button_
         setTitle:GetNSString(IDS_IOS_SYNC_PROMO_TURN_ON_SYNC)
         forState:UIControlStateNormal]);
@@ -492,7 +485,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoWhileSignedIn) {
                                        name:@"johndoe2"];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       expected_default_identity_);
-  GetAuthenticationService()->SignIn(expected_default_identity_);
+  GetAuthenticationService()->SignIn(expected_default_identity_, nil);
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
   ExpectConfiguratorNotification(NO /* identity changed */);
   [mediator_ signinPromoViewIsVisible];

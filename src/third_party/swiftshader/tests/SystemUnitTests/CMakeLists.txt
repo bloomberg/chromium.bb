@@ -14,7 +14,6 @@
 
 set(ROOT_PROJECT_COMPILE_OPTIONS
     ${SWIFTSHADER_COMPILE_OPTIONS}
-    ${WARNINGS_AS_ERRORS}
 )
 
 set(ROOT_PROJECT_LINK_LIBRARIES
@@ -23,6 +22,7 @@ set(ROOT_PROJECT_LINK_LIBRARIES
 )
 
 set(SYSTEM_UNIT_TESTS_SRC_FILES
+    ConfiguratorTests.cpp
     LRUCacheTests.cpp
     main.cpp
     unittests.cpp

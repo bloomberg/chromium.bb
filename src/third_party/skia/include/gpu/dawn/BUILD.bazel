@@ -1,8 +1,11 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy")
 
-generated_cc_atom(
-    name = "GrDawnTypes_hdr",
-    hdrs = ["GrDawnTypes.h"],
-    visibility = ["//:__subpackages__"],
-    deps = ["//include/gpu:GrTypes_hdr"],
+licenses(["notice"])
+
+exports_files_legacy()
+
+filegroup(
+    name = "public_hdrs",
+    srcs = ["GrDawnTypes.h"],
+    visibility = ["//include/gpu:__pkg__"],
 )

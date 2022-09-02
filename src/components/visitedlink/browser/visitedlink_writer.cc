@@ -6,15 +6,14 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <algorithm>
-#include <utility>
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/stack_container.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -31,11 +30,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <io.h>
 #include <shlobj.h>
 #include <windows.h>
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 using content::BrowserThread;
 
@@ -260,8 +259,7 @@ VisitedLinkWriter::~VisitedLinkWriter() {
     // state. On the next start table will be rebuilt.
     base::FilePath filename;
     GetDatabaseFileName(&filename);
-    PostIOTask(FROM_HERE,
-               base::BindOnce(base::GetDeleteFileCallback(), filename));
+    PostIOTask(FROM_HERE, base::GetDeleteFileCallback(filename));
   }
 }
 
@@ -1001,7 +999,7 @@ uint32_t VisitedLinkWriter::NewTableSizeForCount(int32_t item_count) const {
   int desired = item_count * 3;
 
   // Find the closest prime.
-  for (size_t i = 0; i < base::size(table_sizes); i++) {
+  for (size_t i = 0; i < std::size(table_sizes); i++) {
     if (table_sizes[i] > desired)
       return table_sizes[i];
   }

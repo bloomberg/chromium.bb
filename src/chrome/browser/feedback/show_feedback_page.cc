@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/feedback/feedback_dialog.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -101,9 +103,6 @@ void RequestFeedbackFlow(const GURL& page_url,
                          const std::string& description_placeholder_text,
                          const std::string& category_tag,
                          const std::string& extra_diagnostics) {
-  extensions::FeedbackPrivateAPI* api =
-      extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
-
   feedback_private::FeedbackFlow flow =
       source == kFeedbackSourceSadTabPage
           ? feedback_private::FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH
@@ -111,17 +110,22 @@ void RequestFeedbackFlow(const GURL& page_url,
 
   bool include_bluetooth_logs = false;
   bool show_questionnaire = false;
+  bool use_os_feedback = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (IsGoogleInternalAccount(profile)) {
     flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;
     include_bluetooth_logs = IsFromUserInteraction(source);
-    show_questionnaire = base::FeatureList::IsEnabled(
-                             ash::features::kShowFeedbackReportQuestionnaire) &&
-                         IsFromUserInteraction(source);
+    show_questionnaire = IsFromUserInteraction(source);
   }
+  use_os_feedback = base::FeatureList::IsEnabled(ash::features::kOsFeedback);
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kWebUIFeedback)) {
+  if (use_os_feedback) {
+    web_app::LaunchSystemWebAppAsync(profile,
+                                     ash::SystemWebAppType::OS_FEEDBACK);
+  } else {
+    extensions::FeedbackPrivateAPI* api =
+        extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
     auto info = api->CreateFeedbackInfo(
         description_template, description_placeholder_text, category_tag,
         extra_diagnostics, page_url, flow, source == kFeedbackSourceAssistant,
@@ -129,14 +133,7 @@ void RequestFeedbackFlow(const GURL& page_url,
         source == kFeedbackSourceChromeLabs ||
             source == kFeedbackSourceKaleidoscope);
 
-    FeedbackDialog::CreateOrShow(*info);
-  } else {
-    api->RequestFeedbackForFlow(
-        description_template, description_placeholder_text, category_tag,
-        extra_diagnostics, page_url, flow, source == kFeedbackSourceAssistant,
-        include_bluetooth_logs, show_questionnaire,
-        source == kFeedbackSourceChromeLabs ||
-            source == kFeedbackSourceKaleidoscope);
+    FeedbackDialog::CreateOrShow(profile, *info);
   }
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)

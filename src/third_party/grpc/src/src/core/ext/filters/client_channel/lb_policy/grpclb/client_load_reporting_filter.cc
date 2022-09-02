@@ -20,15 +20,20 @@
 
 #include "src/core/ext/filters/client_channel/lb_policy/grpclb/client_load_reporting_filter.h"
 
-#include <string.h>
+#include <new>
 
-#include <grpc/support/atm.h>
+#include "absl/types/optional.h"
+
 #include <grpc/support/log.h>
 
-#include "src/core/ext/filters/client_channel/lb_policy/grpclb/grpclb.h"
 #include "src/core/ext/filters/client_channel/lb_policy/grpclb/grpclb_client_stats.h"
+#include "src/core/lib/gprpp/debug_location.h"
+#include "src/core/lib/gprpp/ref_counted_ptr.h"
+#include "src/core/lib/iomgr/closure.h"
 #include "src/core/lib/iomgr/error.h"
 #include "src/core/lib/profiling/timers.h"
+#include "src/core/lib/transport/metadata_batch.h"
+#include "src/core/lib/transport/transport.h"
 
 static grpc_error_handle clr_init_channel_elem(
     grpc_channel_element* /*elem*/, grpc_channel_element_args* /*args*/) {
@@ -102,14 +107,10 @@ static void clr_start_transport_stream_op_batch(
   if (batch->send_initial_metadata) {
     // Grab client stats object from metadata.
     auto client_stats_md =
-        batch->payload->send_initial_metadata.send_initial_metadata->Remove(
-            grpc_slice_from_static_string(
-                grpc_core::kGrpcLbClientStatsMetadataKey));
+        batch->payload->send_initial_metadata.send_initial_metadata->Take(
+            grpc_core::GrpcLbClientStatsMetadata());
     if (client_stats_md.has_value()) {
-      grpc_core::GrpcLbClientStats* client_stats =
-          const_cast<grpc_core::GrpcLbClientStats*>(
-              reinterpret_cast<const grpc_core::GrpcLbClientStats*>(
-                  GRPC_SLICE_START_PTR(*client_stats_md)));
+      grpc_core::GrpcLbClientStats* client_stats = *client_stats_md;
       if (client_stats != nullptr) {
         calld->client_stats.reset(client_stats);
         // Intercept completion.
@@ -136,6 +137,7 @@ static void clr_start_transport_stream_op_batch(
 
 const grpc_channel_filter grpc_client_load_reporting_filter = {
     clr_start_transport_stream_op_batch,
+    nullptr,
     grpc_channel_next_op,
     sizeof(call_data),
     clr_init_call_elem,
@@ -143,6 +145,7 @@ const grpc_channel_filter grpc_client_load_reporting_filter = {
     clr_destroy_call_elem,
     0,  // sizeof(channel_data)
     clr_init_channel_elem,
+    grpc_channel_stack_no_post_init,
     clr_destroy_channel_elem,
     grpc_channel_next_get_info,
     "client_load_reporting"};

@@ -7,7 +7,17 @@
  * 'settings-users-add-user-dialog' is the dialog shown for adding new allowed
  * users to a ChromeOS device.
  */
-(function() {
+
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import '../../settings_shared_css.js';
+import '../../settings_vars.css.js';
+
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /**
  * Regular expression for adding a user where the string provided is just
@@ -36,38 +46,54 @@ const UserAddError = {
   USER_EXISTS: 2,
 };
 
-Polymer({
-  is: 'settings-users-add-user-dialog',
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const SettingsUsersAddUserDialogElementBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
 
-  behaviors: [I18nBehavior],
+/** @polymer */
+class SettingsUsersAddUserDialogElement extends
+    SettingsUsersAddUserDialogElementBase {
+  static get is() {
+    return 'settings-users-add-user-dialog';
+  }
 
-  properties: {
+  static get template() {
+    return html`{__html_template__}`;
+  }
+
+  static get properties() {
+    return {
+      /** @private */
+      errorCode_: {
+        type: Number,
+        value: UserAddError.NO_ERROR,
+      },
+
+      /** @private */
+      isEmail_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @private */
+      isEmpty_: {
+        type: Boolean,
+        value: true,
+      },
+
+    };
+  }
+
+  constructor() {
+    super();
+
     /** @private */
-    errorCode_: {
-      type: Number,
-      value: UserAddError.NO_ERROR,
-    },
-
-    /** @private */
-    isEmail_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private */
-    isEmpty_: {
-      type: Boolean,
-      value: true,
-    },
-  },
-
-  usersPrivate_: chrome.usersPrivate,
-
-  /** @override */
-  attached() {
-    // Initialize the announcer once.
-    Polymer.IronA11yAnnouncer.requestAvailability();
-  },
+    this.usersPrivate_ = chrome.usersPrivate;
+  }
 
   open() {
     this.$.addUserInput.value = '';
@@ -75,7 +101,7 @@ Polymer({
     this.$.dialog.showModal();
     // Set to valid initially since the user has not typed anything yet.
     this.$.addUserInput.invalid = false;
-  },
+  }
 
   /** @private */
   addUser_() {
@@ -104,8 +130,7 @@ Polymer({
         return;
       }
 
-      this.fire(
-          'iron-announce', {text: this.i18n('userAddedMessage', userEmail)});
+      getAnnouncerInstance().announce(this.i18n('userAddedMessage', userEmail));
 
       this.$.dialog.close();
       this.usersPrivate_.addUser(
@@ -114,7 +139,7 @@ Polymer({
 
       this.$.addUserInput.value = '';
     });
-  },
+  }
 
   /**
    * @return {boolean}
@@ -122,12 +147,12 @@ Polymer({
    */
   canAddUser_() {
     return this.isEmail_ && !this.isEmpty_;
-  },
+  }
 
   /** @private */
   onCancelTap_() {
     this.$.dialog.cancel();
-  },
+  }
 
   /** @private */
   onInput_() {
@@ -141,7 +166,7 @@ Polymer({
     }
 
     this.errorCode_ = UserAddError.NO_ERROR;
-  },
+  }
 
   /**
    * @private
@@ -149,7 +174,7 @@ Polymer({
    */
   shouldShowError_() {
     return this.errorCode_ !== UserAddError.NO_ERROR;
-  },
+  }
 
   /**
    * @private
@@ -162,6 +187,8 @@ Polymer({
     // TODO errorString for UserAddError.INVALID_EMAIL crbug/1007481
 
     return '';
-  },
-});
-})();
+  }
+}
+
+customElements.define(
+    SettingsUsersAddUserDialogElement.is, SettingsUsersAddUserDialogElement);

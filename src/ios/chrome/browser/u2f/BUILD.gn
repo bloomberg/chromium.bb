@@ -10,7 +10,6 @@ source_set("u2f") {
   deps = [
     ":u2f_internal",
     "//base",
-    "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/web",
     "//net",
     "//url",
@@ -32,6 +31,7 @@ source_set("u2f_internal") {
     "//ios/chrome/common",
     "//ios/web/public",
     "//ios/web/public/deprecated",
+    "//ios/web/public/js_messaging",
     "//net",
     "//url",
   ]
@@ -49,7 +49,6 @@ source_set("unit_tests") {
     ":u2f_internal",
     "//base",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/web/public/deprecated",
     "//ios/web/public/test/fakes",
     "//net",

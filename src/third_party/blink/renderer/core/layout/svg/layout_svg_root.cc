@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -57,9 +58,7 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
       did_screen_scale_factor_change_(false),
       needs_boundaries_or_transform_update_(true),
       has_non_isolated_blending_descendants_(false),
-      has_non_isolated_blending_descendants_dirty_(false),
-      has_descendant_with_compositing_reason_(false),
-      has_descendant_with_compositing_reason_dirty_(false) {
+      has_non_isolated_blending_descendants_dirty_(false) {
   auto* svg = To<SVGSVGElement>(node);
   DCHECK(svg);
 
@@ -189,7 +188,7 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
 
 double LayoutSVGRoot::LogicalSizeScaleFactorForPercentageLengths() const {
   NOT_DESTROYED();
-  if (!IsDocumentElement() || !GetDocument().IsInMainFrame())
+  if (!IsDocumentElement() || !GetDocument().IsInOutermostMainFrame())
     return 1;
   if (GetDocument().GetLayoutView()->ShouldUsePrintingLayout())
     return 1;
@@ -204,6 +203,7 @@ double LayoutSVGRoot::LogicalSizeScaleFactorForPercentageLengths() const {
 void LayoutSVGRoot::UpdateLayout() {
   NOT_DESTROYED();
   DCHECK(NeedsLayout());
+  DeferredShapingDisallowScope disallow_deferred(*GetFrameView());
 
   LayoutSize old_size = Size();
   UpdateLogicalWidth();
@@ -286,7 +286,8 @@ bool LayoutSVGRoot::ShouldApplyViewportClip() const {
   // scrollbars should be hidden if overflow=hidden.
   return StyleRef().OverflowX() == EOverflow::kHidden ||
          StyleRef().OverflowX() == EOverflow::kAuto ||
-         StyleRef().OverflowX() == EOverflow::kScroll || IsDocumentElement();
+         StyleRef().OverflowX() == EOverflow::kScroll ||
+         StyleRef().OverflowX() == EOverflow::kClip || IsDocumentElement();
 }
 
 void LayoutSVGRoot::RecalcVisualOverflow() {
@@ -589,14 +590,6 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
   return false;
 }
 
-void LayoutSVGRoot::NotifyDescendantCompositingReasonsChanged() {
-  NOT_DESTROYED();
-  if (has_descendant_with_compositing_reason_dirty_)
-    return;
-  has_descendant_with_compositing_reason_dirty_ = true;
-  SetNeedsLayout(layout_invalidation_reason::kSvgChanged);
-}
-
 void LayoutSVGRoot::AddSvgTextDescendant(LayoutNGSVGText& svg_text) {
   NOT_DESTROYED();
   DCHECK(!text_set_.Contains(&svg_text));
@@ -613,47 +606,11 @@ PaintLayerType LayoutSVGRoot::LayerTypeRequired() const {
   NOT_DESTROYED();
   auto layer_type_required = LayoutReplaced::LayerTypeRequired();
   if (layer_type_required == kNoPaintLayer) {
-    // Force a paint layer so,
-    // 1) A GraphicsLayer can be created if there are directly-composited
-    // descendants.
-    // 2) The parent layer will know if there are non-isolated descendants with
-    // blend mode.
+    // Force a paint layer so the parent layer will know if there are
+    // non-isolated descendants with blend mode.
     layer_type_required = kForcedPaintLayer;
   }
   return layer_type_required;
-}
-
-CompositingReasons LayoutSVGRoot::AdditionalCompositingReasons() const {
-  NOT_DESTROYED();
-  return !RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-                 HasDescendantWithCompositingReason()
-             ? CompositingReason::kSVGRoot
-             : CompositingReason::kNone;
-}
-
-bool LayoutSVGRoot::HasDescendantWithCompositingReason() const {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (has_descendant_with_compositing_reason_dirty_) {
-    has_descendant_with_compositing_reason_ = false;
-    for (const LayoutObject* object = FirstChild(); object;
-         // Do not consider descendants of <foreignObject>.
-         object = object->IsSVGForeignObject()
-                      ? object->NextInPreOrderAfterChildren(this)
-                      : object->NextInPreOrder(this)) {
-      DCHECK(object->IsSVGChild());
-      if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(
-              *object) != CompositingReason::kNone) {
-        has_descendant_with_compositing_reason_ = true;
-        break;
-      }
-    }
-    has_descendant_with_compositing_reason_dirty_ = false;
-
-    if (has_descendant_with_compositing_reason_)
-      UseCounter::Count(GetDocument(), WebFeature::kCompositedSVG);
-  }
-  return has_descendant_with_compositing_reason_;
 }
 
 }  // namespace blink

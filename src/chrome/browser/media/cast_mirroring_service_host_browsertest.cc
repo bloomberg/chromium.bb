@@ -60,7 +60,7 @@ content::DesktopMediaID BuildMediaIdForTabMirroring(
   DCHECK(target_web_contents);
   content::DesktopMediaID media_id;
   content::RenderFrameHost* const main_frame =
-      target_web_contents->GetMainFrame();
+      target_web_contents->GetPrimaryMainFrame();
   const int process_id = main_frame->GetProcess()->GetID();
   const int frame_id = main_frame->GetRoutingID();
   media_id.type = content::DesktopMediaID::TYPE_WEB_CONTENTS;
@@ -114,7 +114,7 @@ class MockVideoCaptureObserver final
   }
 
   void OnStateChanged(media::mojom::VideoCaptureResultPtr result) override {
-    if (result->which() == media::mojom::VideoCaptureResult::Tag::STATE)
+    if (result->which() == media::mojom::VideoCaptureResult::Tag::kState)
       OnStateChangedCall(result->get_state());
     else
       OnVideoCaptureErrorCall(result->get_error_code());

@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "components/certificate_transparency/ct_features.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "crypto/sha2.h"
 #include "net/cert/ct_policy_status.h"
@@ -93,16 +92,16 @@ base::Value NetLogCertComplianceCheckResultParams(
     net::X509Certificate* cert,
     bool build_timely,
     CTPolicyCompliance compliance) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   // TODO(mattm): This double-wrapping of the certificate list is weird. Remove
   // this (probably requires updates to netlog-viewer).
   base::Value certificate_dict(base::Value::Type::DICTIONARY);
   certificate_dict.SetKey("certificates", net::NetLogX509CertificateList(cert));
   dict.SetKey("certificate", std::move(certificate_dict));
-  dict.SetBoolean("build_timely", build_timely);
-  dict.SetString("ct_compliance_status",
-                 CTPolicyComplianceToString(compliance));
-  return std::move(dict);
+  dict.SetBoolKey("build_timely", build_timely);
+  dict.SetStringKey("ct_compliance_status",
+                    CTPolicyComplianceToString(compliance));
+  return dict;
 }
 
 }  // namespace
@@ -114,7 +113,7 @@ OperatorHistoryEntry::OperatorHistoryEntry(const OperatorHistoryEntry& other) =
 
 ChromeCTPolicyEnforcer::ChromeCTPolicyEnforcer(
     base::Time log_list_date,
-    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs,
+    std::vector<std::pair<std::string, base::Time>> disqualified_logs,
     std::vector<std::string> operated_by_google_logs,
     std::map<std::string, OperatorHistoryEntry> log_operator_history)
     : disqualified_logs_(std::move(disqualified_logs)),
@@ -152,13 +151,20 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCompliance(
 
 void ChromeCTPolicyEnforcer::UpdateCTLogList(
     base::Time update_time,
-    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs,
+    std::vector<std::pair<std::string, base::Time>> disqualified_logs,
     std::vector<std::string> operated_by_google_logs,
     std::map<std::string, OperatorHistoryEntry> log_operator_history) {
   log_list_date_ = update_time;
   disqualified_logs_ = std::move(disqualified_logs);
   operated_by_google_logs_ = std::move(operated_by_google_logs);
   log_operator_history_ = std::move(log_operator_history);
+
+  if (valid_google_log_for_testing_.has_value()) {
+    valid_google_log_for_testing_ = absl::nullopt;
+  }
+  if (disqualified_log_for_testing_.has_value()) {
+    disqualified_log_for_testing_ = absl::nullopt;
+  }
 }
 
 bool ChromeCTPolicyEnforcer::IsLogDisqualified(
@@ -166,18 +172,31 @@ bool ChromeCTPolicyEnforcer::IsLogDisqualified(
     base::Time* disqualification_date) const {
   CHECK_EQ(log_id.size(), crypto::kSHA256Length);
 
+  if (disqualified_log_for_testing_.has_value() &&
+      log_id == disqualified_log_for_testing_.value().first) {
+    *disqualification_date = disqualified_log_for_testing_.value().second;
+    return *disqualification_date < base::Time::Now();
+  }
+
   auto p = std::lower_bound(
       std::begin(disqualified_logs_), std::end(disqualified_logs_), log_id,
       [](const auto& a, base::StringPiece b) { return a.first < b; });
   if (p == std::end(disqualified_logs_) || p->first != log_id) {
     return false;
   }
-  *disqualification_date = base::Time::UnixEpoch() + p->second;
+  *disqualification_date = p->second;
+  if (base::Time::Now() < *disqualification_date) {
+    return false;
+  }
   return true;
 }
 
 bool ChromeCTPolicyEnforcer::IsLogOperatedByGoogle(
     base::StringPiece log_id) const {
+  if (valid_google_log_for_testing_.has_value() &&
+      log_id == valid_google_log_for_testing_.value()) {
+    return true;
+  }
   return std::binary_search(std::begin(operated_by_google_logs_),
                             std::end(operated_by_google_logs_), log_id);
 }
@@ -217,7 +236,7 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCTPolicyCompliance(
     issuance_date = std::min(sct->timestamp, issuance_date);
   }
 
-  // Certificates issued after this date (February 1, 2022, OO:OO:OO GMT)
+  // Certificates issued after this date (April 15, 2022, OO:OO:OO GMT)
   // will be subject to the new CT policy, which:
   // -Removes the One Google log requirement.
   // -Introduces a log operator diversity (at least 2 SCTs that come from
@@ -226,14 +245,12 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCTPolicyCompliance(
   // months.
   // Increases the SCT requirements for certificates with a lifetime between
   // 180 days and 15 months, from 2 to 3.
+  // This conditional, and the pre-2022 policy logic can be removed after June
+  // 1, 2023, since all publicly trusted certificates issued prior to the
+  // policy change date will have expired by then.
   const base::Time kPolicyUpdateDate =
-      base::Time::UnixEpoch() + base::Seconds(1643673600);
-  bool use_2022_policy =
-      base::FeatureList::IsEnabled(
-          features::kCertificateTransparency2022PolicyAllCerts) ||
-      (base::FeatureList::IsEnabled(
-           features::kCertificateTransparency2022Policy) &&
-       issuance_date >= kPolicyUpdateDate);
+      base::Time::UnixEpoch() + base::Seconds(1649980800);
+  bool use_2022_policy = issuance_date >= kPolicyUpdateDate;
 
   bool has_valid_google_sct = false;
   bool has_valid_nongoogle_sct = false;
@@ -343,7 +360,7 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCTPolicyCompliance(
     // ... AND the certificate embeds SCTs from AT LEAST the number of logs
     //   once or currently qualified shown in Table 1 of the CT Policy.
     base::TimeDelta lifetime = cert.valid_expiry() - cert.valid_start();
-    if (lifetime >= base::Days(180)) {
+    if (lifetime > base::Days(180)) {
       num_required_embedded_scts = 3;
     } else {
       num_required_embedded_scts = 2;
@@ -354,18 +371,7 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCTPolicyCompliance(
     // AND there is at least one embedded SCT from a non-Google Log once or
     //   currently qualified;
     // ...
-    //
-    // Note: This policy language is only enforced after the below issuance
-    // date, as that's when the diversity policy first came into effect for
-    // SCTs embedded in certificates.
-    // The date when diverse SCTs requirement is effective from.
-    // 2015-07-01 00:00:00 UTC.
-    // TODO(carlosil): There are no more valid certificates from before this
-    // date, so this date and the associated logic should be cleaned up.
-    const base::Time kDiverseSCTRequirementStartDate =
-        base::Time::UnixEpoch() + base::Seconds(1435708800);
-    if (issuance_date >= kDiverseSCTRequirementStartDate &&
-        !(has_embedded_google_sct && has_embedded_nongoogle_sct)) {
+    if (!(has_embedded_google_sct && has_embedded_nongoogle_sct)) {
       // Note: This also covers the case for non-embedded SCTs, as it's only
       // possible to reach here if both sets are not diverse enough.
       return CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
@@ -415,10 +421,14 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCTPolicyCompliance(
 std::string ChromeCTPolicyEnforcer::GetOperatorForLog(
     std::string log_id,
     base::Time timestamp) const {
+  if (valid_google_log_for_testing_.has_value() &&
+      log_id == valid_google_log_for_testing_.value()) {
+    return "Google";
+  }
   DCHECK(log_operator_history_.find(log_id) != log_operator_history_.end());
   OperatorHistoryEntry log_history = log_operator_history_.at(log_id);
   for (auto operator_entry : log_history.previous_operators_) {
-    if (timestamp - base::Time::UnixEpoch() < operator_entry.second)
+    if (timestamp < operator_entry.second)
       return operator_entry.first;
   }
   // Either the log has only ever had one operator, or the timestamp is after

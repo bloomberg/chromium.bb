@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_worklet_thread.h"
 #include "third_party/blink/renderer/modules/webaudio/realtime_audio_worklet_thread.h"
 #include "third_party/blink/renderer/modules/webaudio/semi_realtime_audio_worklet_thread.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -73,7 +73,7 @@ class AudioWorkletThreadTest : public PageTestBase, public ModuleTestBase {
     return thread;
   }
 
-  // Attempts to run some simple script for |thread|.
+  // Attempts to run some simple script for `thread`.
   void CheckWorkletCanExecuteScript(WorkerThread* thread) {
     base::WaitableEvent wait_event;
     PostCrossThreadTask(
@@ -100,7 +100,7 @@ class AudioWorkletThreadTest : public PageTestBase, public ModuleTestBase {
             window->GetReferrerPolicy(), window->GetSecurityOrigin(),
             window->IsSecureContext(), window->GetHttpsState(),
             nullptr /* worker_clients */, nullptr /* content_settings_client */,
-            window->AddressSpace(), OriginTrialContext::GetTokens(window).get(),
+            OriginTrialContext::GetInheritedTrialFeatures(window).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
             mojom::blink::V8CacheOptions::kDefault,
             MakeGarbageCollected<WorkletModuleResponsesMap>(),
@@ -128,7 +128,7 @@ class AudioWorkletThreadTest : public PageTestBase, public ModuleTestBase {
     ScriptEvaluationResult result =
         JSModuleScript::CreateForTest(Modulator::From(script_state), module,
                                       js_url)
-            ->RunScriptAndReturnValue();
+            ->RunScriptOnScriptStateAndReturnValue(script_state);
     EXPECT_EQ(result.GetResultType(),
               ScriptEvaluationResult::ResultType::kSuccess);
     wait_event->Signal();
@@ -338,10 +338,11 @@ class AudioWorkletThreadPriorityTest
   void InitWithRealtimePrioritySettings(bool is_enabled_by_finch) {
     std::vector<base::Feature> enabled;
     std::vector<base::Feature> disabled;
-    if (is_enabled_by_finch)
+    if (is_enabled_by_finch) {
       enabled.push_back(features::kAudioWorkletThreadRealtimePriority);
-    else
+    } else {
       disabled.push_back(features::kAudioWorkletThreadRealtimePriority);
+    }
     feature_list_.InitWithFeatures(enabled, disabled);
   }
 
@@ -377,7 +378,7 @@ class AudioWorkletThreadPriorityTest
 
     // TODO(crbug.com/1022888): The worklet thread priority is always NORMAL
     // on OS_LINUX and OS_CHROMEOS regardless of the thread priority setting.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     if (expected_priority == base::ThreadPriority::REALTIME_AUDIO ||
         expected_priority == base::ThreadPriority::DISPLAY) {
       EXPECT_EQ(actual_priority, base::ThreadPriority::NORMAL);

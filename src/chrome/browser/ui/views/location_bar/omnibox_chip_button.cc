@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/omnibox_chip_button.h"
 
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -27,26 +28,19 @@ constexpr int kExtraRightPadding = 4;
 
 }  // namespace
 
-OmniboxChipButton::OmniboxChipButton(PressedCallback callback,
-                                     const gfx::VectorIcon& icon_on,
-                                     const gfx::VectorIcon& icon_off,
-                                     std::u16string message,
-                                     bool is_prominent)
+OmniboxChipButton::OmniboxChipButton(PressedCallback callback)
     : MdTextButton(std::move(callback),
                    std::u16string(),
-                   views::style::CONTEXT_BUTTON_MD),
-      icon_on_(icon_on),
-      icon_off_(icon_off) {
+                   views::style::CONTEXT_BUTTON_MD) {
   views::InstallPillHighlightPathGenerator(this);
-  SetText(message);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetElideBehavior(gfx::ElideBehavior::FADE_TAIL);
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   // Equalizing padding on the left, right and between icon and label.
   SetImageLabelSpacing(kChipImagePadding);
-  SetCustomPadding(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
-                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left()));
+  SetCustomPadding(gfx::Insets::VH(
+      GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left()));
 
   constexpr auto kAnimationDuration = base::Milliseconds(350);
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
@@ -70,6 +64,7 @@ void OmniboxChipButton::AnimateExpand() {
 }
 
 void OmniboxChipButton::ResetAnimation(double value) {
+  fully_collapsed_ = value == 0.0;
   animation_->Reset(value);
 }
 
@@ -95,9 +90,13 @@ void OmniboxChipButton::OnThemeChanged() {
 }
 
 void OmniboxChipButton::UpdateBackgroundColor() {
-  SetBackground(
-      CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
-          GetBackgroundColor(), GetIconSize())));
+  if (theme_ == OmniboxChipTheme::kIconStyle) {
+    SetBackground(nullptr);
+  } else {
+    SetBackground(
+        CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
+            GetBackgroundColor(), GetIconSize())));
+  }
 }
 
 void OmniboxChipButton::AnimationEnded(const gfx::Animation* animation) {
@@ -105,7 +104,7 @@ void OmniboxChipButton::AnimationEnded(const gfx::Animation* animation) {
     return;
 
   fully_collapsed_ = animation->GetCurrentValue() != 1.0;
-  if (animation->GetCurrentValue() == 1.0)
+  if (animation->GetCurrentValue() == 1.0 && expand_animation_ended_callback_)
     expand_animation_ended_callback_.Run();
 }
 
@@ -114,9 +113,28 @@ void OmniboxChipButton::AnimationProgressed(const gfx::Animation* animation) {
     PreferredSizeChanged();
 }
 
-void OmniboxChipButton::SetTheme(Theme theme) {
+void OmniboxChipButton::SetTheme(OmniboxChipTheme theme) {
   theme_ = theme;
   UpdateIconAndColors();
+}
+
+void OmniboxChipButton::SetMessage(std::u16string message) {
+  SetText(message);
+  UpdateIconAndColors();
+}
+
+ui::ImageModel OmniboxChipButton::GetIconImageModel() const {
+  return ui::ImageModel::FromVectorIcon(GetIcon(), GetTextAndIconColor(),
+                                        GetIconSize(), nullptr);
+}
+
+const gfx::VectorIcon& OmniboxChipButton::GetIcon() const {
+  if (permission_chip_delegate_.has_value()) {
+    return show_blocked_icon_ ? permission_chip_delegate_.value()->GetIconOff()
+                              : permission_chip_delegate_.value()->GetIconOn();
+  }
+
+  return gfx::kNoneIcon;
 }
 
 int OmniboxChipButton::GetIconSize() const {
@@ -127,42 +145,29 @@ void OmniboxChipButton::UpdateIconAndColors() {
   if (!GetWidget())
     return;
   SetEnabledTextColors(GetTextAndIconColor());
-  SetImageModel(views::Button::STATE_NORMAL,
-                ui::ImageModel::FromVectorIcon(
-                    show_blocked_icon_ ? icon_off_ : icon_on_,
-                    GetTextAndIconColor(), GetIconSize(), nullptr));
+  SetImageModel(views::Button::STATE_NORMAL, GetIconImageModel());
 }
 
-SkColor OmniboxChipButton::GetTextAndIconColor() {
-  switch (theme_) {
-    case Theme::kNormalVisibility: {
-      // TODO(crbug.com/1274118) Instead of using constants or toolbar colors,
-      // add the chip's properties.
-      return color_utils::IsDark(
-                 GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR))
-                 ? gfx::kGoogleBlue300
-                 : gfx::kGoogleBlue600;
-    }
-    case Theme::kLowVisibility: {
-      return GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE);
-    }
+SkColor OmniboxChipButton::GetTextAndIconColor() const {
+  if (theme_ == OmniboxChipTheme::kIconStyle) {
+    // Use ThemeProvider rather than ColorProvider to correctly match the color
+    // used for page action icons.
+    return GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_OMNIBOX_RESULTS_ICON);
   }
+
+  return GetColorProvider()->GetColor(
+      theme_ == OmniboxChipTheme::kLowVisibility
+          ? kColorOmniboxChipForegroundLowVisibility
+          : kColorOmniboxChipForegroundNormalVisibility);
 }
 
-SkColor OmniboxChipButton::GetBackgroundColor() {
-  SkColor active_tab_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
-
-  if (theme_ == Theme::kLowVisibility) {
-    return active_tab_color;
-  }
-
-  // TODO(crbug.com/1274118) Instead of using constants or toolbar colors, add
-  // the chip's properties.
-  return ThemeProperties::GetDefaultColor(
-      ThemeProperties::COLOR_TOOLBAR, false,
-      /*dark_mode=*/color_utils::IsDark(active_tab_color));
+SkColor OmniboxChipButton::GetBackgroundColor() const {
+  DCHECK(theme_ != OmniboxChipTheme::kIconStyle);
+  return GetColorProvider()->GetColor(
+      theme_ == OmniboxChipTheme::kLowVisibility
+          ? kColorOmniboxChipBackgroundLowVisibility
+          : kColorOmniboxChipBackgroundNormalVisibility);
 }
 
 void OmniboxChipButton::SetForceExpandedForTesting(
@@ -173,10 +178,26 @@ void OmniboxChipButton::SetForceExpandedForTesting(
 void OmniboxChipButton::SetShowBlockedIcon(bool show_blocked_icon) {
   if (show_blocked_icon_ != show_blocked_icon) {
     show_blocked_icon_ = show_blocked_icon;
-    theme_ =
-        show_blocked_icon ? Theme::kLowVisibility : Theme::kNormalVisibility;
+    theme_ = show_blocked_icon ? OmniboxChipTheme::kLowVisibility
+                               : OmniboxChipTheme::kNormalVisibility;
     UpdateIconAndColors();
   }
+}
+
+void OmniboxChipButton::SetPermissionChipDelegate(
+    PermissionChipDelegate* permission_chip_delegate) {
+  DCHECK(permission_chip_delegate);
+  permission_chip_delegate_ = permission_chip_delegate;
+
+  UpdateIconAndColors();
+}
+
+void OmniboxChipButton::Finalize() {
+  permission_chip_delegate_.reset();
+  show_blocked_icon_ = false;
+  // It is possible that a chip gets finalized while the animation was in
+  // progress.
+  animation_->Stop();
 }
 
 BEGIN_METADATA(OmniboxChipButton, views::MdTextButton)

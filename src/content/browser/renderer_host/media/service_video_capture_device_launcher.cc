@@ -21,7 +21,7 @@
 #include "services/video_capture/public/cpp/receiver_media_to_mojo_adapter.h"
 #include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "media/base/media_switches.h"
 #endif
 
@@ -146,8 +146,8 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
   // GpuMemoryBuffer-based VideoCapture buffer works only on the Chrome OS
   // and Windows VideoCaptureDevice implementations.
-#if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(media::kMediaFoundationD3D11VideoCapture) &&
+#if BUILDFLAG(IS_WIN)
+  if (media::IsMediaFoundationD3D11VideoCaptureEnabled() &&
       params.requested_format.pixel_format == media::PIXEL_FORMAT_NV12) {
     new_params.buffer_type = media::VideoCaptureBufferType::kGpuMemoryBuffer;
   }
@@ -203,7 +203,7 @@ void ServiceVideoCaptureDeviceLauncher::OnCreatePushSubscriptionCallback(
   callbacks_ = nullptr;
   switch (result_code->which()) {
     case video_capture::mojom::CreatePushSubscriptionResultCode::Tag::
-        SUCCESS_CODE:
+        kSuccessCode:
       if (abort_requested) {
         subscription.reset();
         source.reset();
@@ -217,7 +217,7 @@ void ServiceVideoCaptureDeviceLauncher::OnCreatePushSubscriptionCallback(
           std::move(connection_lost_cb), callbacks, std::move(done_cb_));
       return;
     case video_capture::mojom::CreatePushSubscriptionResultCode::Tag::
-        ERROR_CODE:
+        kErrorCode:
       media::VideoCaptureError error = result_code->get_error_code();
       DCHECK_NE(error, media::VideoCaptureError::kNone);
       ConcludeLaunchDeviceWithFailure(abort_requested, error,

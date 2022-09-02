@@ -20,7 +20,7 @@ group("polymer3_elements") {
   ]
 }
 
-js_type_check("closure_compile_module") {
+js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = default_closure_args
   deps = [
@@ -84,6 +84,7 @@ js_library("gaia_password_changed.m") {
 js_library("lacros_data_migration.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/login/lacros_data_migration.m.js" ]
   deps = [
+    "../../components:oobe_slide.m",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
     "../../components/dialogs:oobe_loading_dialog.m",
@@ -161,7 +162,6 @@ polymer_modulizer("encryption_migration") {
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
-  ignore_imports = [ "//oobe/custom_elements.html" ]
 }
 
 polymer_modulizer("gaia_password_changed") {

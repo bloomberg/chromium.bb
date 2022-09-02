@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
@@ -31,7 +31,7 @@ namespace {
 
 base::Value JobResultParams(bool trial_success) {
   base::Value results(base::Value::Type::DICTIONARY);
-  results.SetBoolKey("trial_success", trial_success);
+  results.GetDict().Set("trial_success", trial_success);
   return results;
 }
 
@@ -87,7 +87,7 @@ class TrialComparisonCertVerifier::Job {
   // Called when the initial trial comparison is completed.
   void OnTrialJobCompleted(int result);
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // On some versions of macOS, revocation checking is always force-enabled
   // for the system. For comparing with the built-in verifier to rule out
   // "expected" differences, it's necessary to retry verification with
@@ -368,7 +368,7 @@ void TrialComparisonCertVerifier::Job::OnTrialJobCompleted(int result) {
     return;
   }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   if (primary_error_ == ERR_CERT_REVOKED && !config_.enable_rev_checking &&
       !(primary_result_.cert_status & CERT_STATUS_REV_CHECKING_ENABLED) &&
       !(trial_result_.cert_status &
@@ -435,7 +435,7 @@ void TrialComparisonCertVerifier::Job::OnTrialJobCompleted(int result) {
   FinishWithError();  // Note: Will delete |this|.
 }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 void TrialComparisonCertVerifier::Job::
     OnMacRevCheckingReverificationJobCompleted(int result) {
   if (result == ERR_CERT_REVOKED) {
@@ -517,17 +517,23 @@ void TrialComparisonCertVerifier::Job::Request::OnJobAborted() {
 
 TrialComparisonCertVerifier::TrialComparisonCertVerifier(
     scoped_refptr<CertVerifyProc> primary_verify_proc,
+    scoped_refptr<CertVerifyProcFactory> primary_verify_proc_factory,
     scoped_refptr<CertVerifyProc> trial_verify_proc,
+    scoped_refptr<CertVerifyProcFactory> trial_verify_proc_factory,
     ReportCallback report_callback)
     : report_callback_(std::move(report_callback)),
-      primary_verifier_(
-          std::make_unique<MultiThreadedCertVerifier>(primary_verify_proc)),
-      primary_reverifier_(
-          std::make_unique<MultiThreadedCertVerifier>(primary_verify_proc)),
-      trial_verifier_(
-          std::make_unique<MultiThreadedCertVerifier>(trial_verify_proc)),
-      revocation_trial_verifier_(
-          std::make_unique<MultiThreadedCertVerifier>(trial_verify_proc)) {
+      primary_verifier_(std::make_unique<MultiThreadedCertVerifier>(
+          primary_verify_proc,
+          primary_verify_proc_factory)),
+      primary_reverifier_(std::make_unique<MultiThreadedCertVerifier>(
+          primary_verify_proc,
+          primary_verify_proc_factory)),
+      trial_verifier_(std::make_unique<MultiThreadedCertVerifier>(
+          trial_verify_proc,
+          trial_verify_proc_factory)),
+      revocation_trial_verifier_(std::make_unique<MultiThreadedCertVerifier>(
+          trial_verify_proc,
+          trial_verify_proc_factory)) {
   CertVerifier::Config config;
   config.enable_rev_checking = true;
   revocation_trial_verifier_->SetConfig(config);
@@ -568,6 +574,23 @@ void TrialComparisonCertVerifier::SetConfig(const Config& config) {
   revocation_trial_verifier_->SetConfig(config_with_revocation);
 
   // Notify all in-process jobs that the underlying configuration has changed.
+  for (auto& job : jobs_) {
+    job->OnConfigChanged();
+  }
+}
+
+void TrialComparisonCertVerifier::UpdateChromeRootStoreData(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher,
+    const ChromeRootStoreData* root_store_data) {
+  primary_verifier_->UpdateChromeRootStoreData(cert_net_fetcher,
+                                               root_store_data);
+  primary_reverifier_->UpdateChromeRootStoreData(cert_net_fetcher,
+                                                 root_store_data);
+  trial_verifier_->UpdateChromeRootStoreData(cert_net_fetcher, root_store_data);
+  revocation_trial_verifier_->UpdateChromeRootStoreData(
+      std::move(cert_net_fetcher), root_store_data);
+  // Treat a possible proc change as a configuration change. Notify all
+  // in-process jobs that the underlying configuration has changed.
   for (auto& job : jobs_) {
     job->OnConfigChanged();
   }

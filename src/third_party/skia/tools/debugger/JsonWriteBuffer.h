@@ -8,11 +8,27 @@
 #ifndef JsonWriteBuffer_DEFINED
 #define JsonWriteBuffer_DEFINED
 
+#include "include/core/SkColor.h"
+#include "include/core/SkM44.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkTypes.h"
 #include "src/core/SkWriteBuffer.h"
 
+class SkFlattenable;
+class SkImage;
 class SkJSONWriter;
+class SkMatrix;
+class SkPaint;
 class SkPath;
+class SkRegion;
+struct SkSamplingOptions;
+class SkStream;
+class SkTypeface;
 class UrlDataManager;
+struct SkIRect;
+struct SkPoint3;
+struct SkPoint;
+struct SkRect;
 
 class JsonWriteBuffer final : public SkWriteBuffer {
 public:
@@ -43,6 +59,7 @@ public:
     void   writeRect(const SkRect& rect) override;
     void   writeRegion(const SkRegion& region) override;
     void   writePath(const SkPath& path) override;
+    void   writeSampling(const SkSamplingOptions&) override;
     size_t writeStream(SkStream* stream, size_t length) override;
     void   writeImage(const SkImage*) override;
     void   writeTypeface(SkTypeface* typeface) override;

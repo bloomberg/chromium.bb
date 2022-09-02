@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -120,7 +121,7 @@ class AppMatcher {
       : app_id_(app_id), refocus_pattern_(refocus_pattern) {
     DCHECK(profile);
     if (web_app::WebAppProvider* provider =
-            web_app::WebAppProvider::GetDeprecated(profile)) {
+            web_app::WebAppProvider::GetForLocalAppsUnchecked(profile)) {
       if (provider->registrar().IsLocallyInstalled(app_id)) {
         registrar_ = &provider->registrar();
       }
@@ -552,12 +553,12 @@ bool AppShortcutShelfItemController::AllowNextLaunchAttempt() {
 
 bool AppShortcutShelfItemController::IsWindowedWebApp() {
   if (web_app::WebAppProvider* provider =
-          web_app::WebAppProvider::GetDeprecated(
+          web_app::WebAppProvider::GetForLocalAppsUnchecked(
               ChromeShelfController::instance()->profile())) {
     web_app::WebAppRegistrar& registrar = provider->registrar();
     if (registrar.IsLocallyInstalled(app_id())) {
       return registrar.GetAppUserDisplayMode(app_id()) !=
-             web_app::DisplayMode::kBrowser;
+             web_app::UserDisplayMode::kBrowser;
     }
   }
   return false;

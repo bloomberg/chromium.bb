@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -31,9 +30,13 @@ bool AppListTestViewDelegate::KeyboardTraversalEngaged() {
   return true;
 }
 
+void AppListTestViewDelegate::StartZeroStateSearch(base::OnceClosure callback,
+                                                   base::TimeDelta timeout) {
+  std::move(callback).Run();
+}
+
 void AppListTestViewDelegate::OpenSearchResult(
     const std::string& result_id,
-    ash::AppListSearchResultType result_type,
     int event_flags,
     ash::AppListLaunchedFrom launched_from,
     ash::AppListLaunchType launch_type,
@@ -43,8 +46,7 @@ void AppListTestViewDelegate::OpenSearchResult(
   for (size_t i = 0; i < results->item_count(); ++i) {
     if (results->GetItemAt(i)->id() == result_id) {
       open_search_result_counts_[i]++;
-      if (app_list_features::IsAssistantSearchEnabled() &&
-          results->GetItemAt(i)->is_omnibox_search()) {
+      if (results->GetItemAt(i)->is_omnibox_search()) {
         ++open_assistant_ui_count_;
       }
       break;
@@ -110,7 +112,7 @@ void AppListTestViewDelegate::ActivateItem(
 
 void AppListTestViewDelegate::GetContextMenuModel(
     const std::string& id,
-    bool add_sort_options,
+    AppListItemContext item_context,
     GetContextMenuModelCallback callback) {
   AppListItem* item = model_->FindItem(id);
   // TODO(stevenjb/jennyz): Implement this for folder items
@@ -150,6 +152,16 @@ int AppListTestViewDelegate::AdjustAppListViewScrollOffset(int offset,
                                                            ui::EventType type) {
   return offset;
 }
+
+bool AppListTestViewDelegate::HasValidProfile() const {
+  return true;
+}
+
+bool AppListTestViewDelegate::ShouldHideContinueSection() const {
+  return false;
+}
+
+void AppListTestViewDelegate::SetHideContinueSection(bool hide) {}
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(
     const std::string& result_id,

@@ -5,15 +5,16 @@
 #include "chrome/browser/ash/web_applications/demo_mode_web_app_info.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/grit/ash_demo_mode_app_resources.h"
 #include "ash/webui/demo_mode_app_ui/url_constants.h"
+#include "ash/webui/grit/ash_demo_mode_app_resources.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 
-std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForDemoModeApp() {
-  std::unique_ptr<WebApplicationInfo> info =
-      std::make_unique<WebApplicationInfo>();
+std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForDemoModeApp() {
+  std::unique_ptr<WebAppInstallInfo> info =
+      std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL(ash::kChromeUIDemoModeAppURL);
   info->scope = GURL(ash::kChromeUIDemoModeAppURL);
   // TODO(b/185608502): Convert the title to a localized string
@@ -25,18 +26,18 @@ std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForDemoModeApp() {
   info->theme_color = 0xFF4285F4;
   info->background_color = 0xFFFFFFFF;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
+  info->user_display_mode = web_app::UserDisplayMode::kStandalone;
 
   return info;
 }
 
 DemoModeSystemAppDelegate::DemoModeSystemAppDelegate(Profile* profile)
-    : web_app::SystemWebAppDelegate(web_app::SystemAppType::DEMO_MODE,
-                                    "DemoMode",
-                                    GURL("chrome://demo-mode-app"),
-                                    profile) {}
+    : ash::SystemWebAppDelegate(ash::SystemWebAppType::DEMO_MODE,
+                                "DemoMode",
+                                GURL("chrome://demo-mode-app"),
+                                profile) {}
 
-std::unique_ptr<WebApplicationInfo> DemoModeSystemAppDelegate::GetWebAppInfo()
+std::unique_ptr<WebAppInstallInfo> DemoModeSystemAppDelegate::GetWebAppInfo()
     const {
   return CreateWebAppInfoForDemoModeApp();
 }

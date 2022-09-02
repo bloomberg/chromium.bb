@@ -520,7 +520,7 @@
 <translation id="4432896207833262240">Kandungan bertanda</translation>
 <translation id="4437615272777527928">Taip untuk mencari dalam menu. Gunakan anak panah ke atas dan ke bawah untuk pergi ke setiap hasil carian. Gunakan anak panah ke kiri dan ke kanan untuk melaraskan karet teks dan bergerak daripada satu menu kepada menu yang lain.</translation>
 <translation id="4457472090507035117">Pilih suara semasa:</translation>
-<translation id="4476183483923481720">garisan baharu</translation>
+<translation id="4476183483923481720">baris baharu</translation>
 <translation id="4479068155583208887">Merah Bata Api</translation>
 <translation id="4482330759234983253">Jadual sebelumnya</translation>
 <translation id="4491109536499578614">Imej</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">jdl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Mengabaikan tekanan kekunci seterusnya</translation>
 <translation id="4623097797855662355">Kolofon</translation>
+<translation id="4624970070706497034">TalkBack tidak menyediakan penyesuaian untuk Chromebook lagi. Anda masih boleh menggunakan ciri ini tetapi gunakan pintasan papan kekunci lalai TalkBack. Tekan Search+A, kemudian K untuk melihat pintasan yang tersedia. Jika anda masih mahu menggunakan TalkBack, tekan perintah itu lagi.</translation>
 <translation id="463135993322337640">Tekan o, n ChromeVox untuk mengetahui perkara baharu</translation>
 <translation id="4649220074413114917">Tindakan mengetik skrin dengan dua jari boleh digunakan untuk menghentikan sebarang pertuturan semasa. Gerak isyarat ini berguna jika anda tidak mahu ChromeVox membaca sesuatu. Untuk meneruskan, ketik skrin dengan dua jari.</translation>
 <translation id="4660783501463101648">Klasik dialih keluar. Togol papan kekunci untuk menukar kembali kepada ChromeVox Klasik telah dialih keluar.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Kapsyen braille didayakan</translation>
 <translation id="5183440668879371625">Baris braille terdahulu</translation>
 <translation id="5189244881767082992">Baris</translation>
-<translation id="5234747236692380506">taip <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Bulu Jagung</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">End</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Orientasi pantas selesai!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Gainsboro</translation>
+<translation id="554893713779400387">Togol pengimlakan</translation>
 <translation id="5549179427201066174">Hidupkan atau matikan maklum balas bunyi (earkon)</translation>
 <translation id="556042886152191864">Butang</translation>
 <translation id="5561345396546889625">Senarai seterusnya</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Log</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Simbol grafik</translation>
+<translation id="5648939288050772726">Tahniah! Anda telah berjaya mempelajari langkah asas untuk menggunakan ChromeVox. Ingat bahawa anda boleh membuka menu perintah ChromeVox pada bila-bila masa dengan menekan Search+Noktah. Untuk mengetahui lebih lanjut tentang ChromeVox dan Chrome OS, lawati artikel berikut.
+    Jika anda sudah selesai menggunakan tutorial, gunakan ChromeVox untuk mendapatkan butang Tutup dan klik butang itu.</translation>
 <translation id="5653397561111110475">Gunakan ciri kebolehaksesan skrin sentuh Chromebook</translation>
 <translation id="5655682562155942719">Perintah Melangkau</translation>
 <translation id="56637627897541303">Kawasan teks</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{titik bertindih}other{# titik bertindih}}</translation>
 <translation id="6444046323172968959">Dialog makluman</translation>
 <translation id="6452403590345320472">Kandungan</translation>
+<translation id="6457542714329819968">taip</translation>
 <translation id="6468049171101508116">Butang seterusnya</translation>
 <translation id="646954774886932461">Indeks</translation>
 <translation id="6475604559827479857">Warna untuk serlahan perkataan:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Suara semula jadi</translation>
 <translation id="7714340021005120797">Tiada kotak kombo seterusnya</translation>
-<translation id="772146615414628379">Tahniah! Anda telah berjaya mempelajari langkah asas untuk menggunakan ChromeVox. Ingat bahawa anda boleh membuka menu perintah ChromeVox pada bila-bila masa dengan menekan Search+Noktah. Untuk mengetahui lebih lanjut tentang ChromeVox dan OS Chrome, lawati artikel berikut.
-    Jika anda sudah selesai menggunakan tutorial, gunakan ChromeVox untuk mendapatkan butang Tutup dan klik butang itu.</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7731785449856576010">Tiada widget media seterusnya</translation>
 <translation id="7735498529470878067">Penerokaan melalui sentuhan boleh membantu anda mendapatkan gambaran tentang perkara yang dipaparkan pada skrin dengan pantas.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Merah Gelap</translation>
 <translation id="923331726185079994">ChromeVox Dikemas Kini</translation>
 <translation id="93384979447910801">Hijau Laut Gelap</translation>
+<translation id="937605981140327129">TalkBack tidak dipasang pada masa ini. Sila pasang Android Accessibility Suite melalui Play Store dan cuba lagi.</translation>
 <translation id="948171205378458592">Kurangkan kadar pertuturan</translation>
 <translation id="957570623732056069">Leret ke kiri atau kanan dengan satu jari untuk menavigasi pelajaran ini</translation>
 <translation id="958854023026327378">Leret satu jari ke bawah</translation>

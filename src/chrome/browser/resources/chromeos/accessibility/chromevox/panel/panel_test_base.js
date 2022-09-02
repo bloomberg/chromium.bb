@@ -9,6 +9,15 @@ GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
  * Base class for Panel tests.
  */
 ChromeVoxPanelTestBase = class extends ChromeVoxNextE2ETest {
+  /** @override */
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule(
+        ['PanelCommand', 'PanelCommandType'],
+        '/chromevox/common/panel_command.js');
+    await new PanelCommand(PanelCommandType.ENABLE_TEST_HOOKS).send();
+  }
+
   getPanelWindow() {
     let panelWindow = null;
     while (!panelWindow) {

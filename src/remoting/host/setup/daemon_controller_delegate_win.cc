@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
+#include <tuple>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/ignore_result.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -85,7 +85,7 @@ bool ReadConfig(const base::FilePath& filename,
     return false;
   }
 
-  ignore_result(value.release());
+  std::ignore = value.release();
   config_out->reset(dictionary);
   return true;
 }
@@ -383,8 +383,8 @@ void DaemonControllerDelegateWin::UpdateConfig(
     std::unique_ptr<base::DictionaryValue> config,
     DaemonController::CompletionCallback done) {
   // Check for bad keys.
-  for (size_t i = 0; i < base::size(kReadonlyKeys); ++i) {
-    if (config->HasKey(kReadonlyKeys[i])) {
+  for (size_t i = 0; i < std::size(kReadonlyKeys); ++i) {
+    if (config->FindKey(kReadonlyKeys[i])) {
       LOG(ERROR) << "Cannot update config: '" << kReadonlyKeys[i]
                  << "' is read only.";
       InvokeCompletionCallback(std::move(done), false);

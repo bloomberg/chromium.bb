@@ -8,11 +8,11 @@
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/dbus/userdataauth/arc_quota_client.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace arc {
 
@@ -60,7 +60,7 @@ bool ArcDiskQuotaBridge::convertPathForSetProjectId(
   *child_path_out = base::FilePath();
   if (kDownloadPath.IsParent(android_path)) {
     // /storage/emulated/0/Download/* =>
-    //     parent=/home/user/<hash>/Downloads/, child=*
+    //     parent=/home/user/<hash>/MyFiles/Downloads/, child=*
     *parent_path_out =
         user_data_auth::SetProjectIdAllowedPathType::PATH_DOWNLOADS;
     return kDownloadPath.AppendRelativePath(android_path, child_path_out);
@@ -232,6 +232,25 @@ void ArcDiskQuotaBridge::SetProjectId(uint32_t project_id,
             std::move(callback).Run(result);
           },
           std::move(callback), project_id, parent_path, child_path.value()));
+}
+
+void ArcDiskQuotaBridge::GetFreeDiskSpace(GetFreeDiskSpaceCallback callback) {
+  ash::SpacedClient::Get()->GetFreeDiskSpace(
+      "/home", base::BindOnce(&ArcDiskQuotaBridge::OnGetFreeDiskSpace,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ArcDiskQuotaBridge::OnGetFreeDiskSpace(GetFreeDiskSpaceCallback callback,
+                                            absl::optional<int64_t> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "spaced::GetFreeDiskSpace failed";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  mojom::DiskSpacePtr disk_space = mojom::DiskSpace::New();
+  disk_space->space_in_bytes = reply.value();
+  std::move(callback).Run(std::move(disk_space));
 }
 
 }  // namespace arc

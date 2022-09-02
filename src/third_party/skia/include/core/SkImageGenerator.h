@@ -12,8 +12,10 @@
 #include "include/core/SkColor.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageInfo.h"
+#include "include/core/SkSurfaceProps.h"
 #include "include/core/SkYUVAPixmaps.h"
-#include "include/private/SkTOptional.h"
+
+#include <optional>
 
 class GrRecordingContext;
 class GrSurfaceProxyView;
@@ -158,7 +160,7 @@ public:
      *  kOpaque_SkAlphaType is not supported, and will return NULL.
      */
     static std::unique_ptr<SkImageGenerator> MakeFromEncoded(
-            sk_sp<SkData>, skstd::optional<SkAlphaType> = skstd::nullopt);
+            sk_sp<SkData>, std::optional<SkAlphaType> = std::nullopt);
 
     /** Return a new image generator backed by the specified picture.  If the size is empty or
      *  the picture is NULL, this returns NULL.
@@ -168,7 +170,8 @@ public:
     static std::unique_ptr<SkImageGenerator> MakeFromPicture(const SkISize&, sk_sp<SkPicture>,
                                                              const SkMatrix*, const SkPaint*,
                                                              SkImage::BitDepth,
-                                                             sk_sp<SkColorSpace>);
+                                                             sk_sp<SkColorSpace>,
+                                                             SkSurfaceProps props = {});
 
 protected:
     static constexpr int kNeedNewImageUniqueID = 0;
@@ -186,6 +189,12 @@ protected:
     // returns nullptr
     virtual GrSurfaceProxyView onGenerateTexture(GrRecordingContext*, const SkImageInfo&,
                                                  const SkIPoint&, GrMipmapped, GrImageTexGenPolicy);
+
+    // Most internal SkImageGenerators produce textures and views that use kTopLeft_GrSurfaceOrigin.
+    // If the generator may produce textures with different origins (e.g.
+    // GrAHardwareBufferImageGenerator) it should override this function to return the correct
+    // origin.
+    virtual GrSurfaceOrigin origin() const { return kTopLeft_GrSurfaceOrigin; }
 #endif
 
 private:
@@ -198,7 +207,7 @@ private:
     // It is called from NewFromEncoded() after it has checked for any runtime factory.
     // The SkData will never be NULL, as that will have been checked by NewFromEncoded.
     static std::unique_ptr<SkImageGenerator> MakeFromEncodedImpl(sk_sp<SkData>,
-                                                                 skstd::optional<SkAlphaType>);
+                                                                 std::optional<SkAlphaType>);
 
     SkImageGenerator(SkImageGenerator&&) = delete;
     SkImageGenerator(const SkImageGenerator&) = delete;

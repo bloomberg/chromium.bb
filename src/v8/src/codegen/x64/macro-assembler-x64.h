@@ -67,6 +67,11 @@ class V8_EXPORT_PRIVATE TurboAssembler
 
   void Ret();
 
+  // Call incsspq with {number_of_words} only if the cpu supports it.
+  // NOTE: This shouldn't be embedded in optimized code, since the check
+  // for CPU support would be redundant (we could check at compiler time).
+  void IncsspqIfSupported(Register number_of_words, Register scratch);
+
   // Return and drop arguments from stack, where the number of arguments
   // may be bigger than 2^16 - 1.  Requires a scratch register.
   void Ret(int bytes_dropped, Register scratch);
@@ -163,6 +168,9 @@ class V8_EXPORT_PRIVATE TurboAssembler
   void Cvtlsi2ss(XMMRegister dst, Operand src);
   void Cvtlsi2sd(XMMRegister dst, Register src);
   void Cvtlsi2sd(XMMRegister dst, Operand src);
+
+  void Cmpeqss(XMMRegister dst, XMMRegister src);
+  void Cmpeqsd(XMMRegister dst, XMMRegister src);
 
   void PextrdPreSse41(Register dst, XMMRegister src, uint8_t imm8);
   void Pextrq(Register dst, XMMRegister src, int8_t imm8);
@@ -306,8 +314,12 @@ class V8_EXPORT_PRIVATE TurboAssembler
 
   void Move(XMMRegister dst, uint32_t src);
   void Move(XMMRegister dst, uint64_t src);
-  void Move(XMMRegister dst, float src) { Move(dst, bit_cast<uint32_t>(src)); }
-  void Move(XMMRegister dst, double src) { Move(dst, bit_cast<uint64_t>(src)); }
+  void Move(XMMRegister dst, float src) {
+    Move(dst, base::bit_cast<uint32_t>(src));
+  }
+  void Move(XMMRegister dst, double src) {
+    Move(dst, base::bit_cast<uint64_t>(src));
+  }
   void Move(XMMRegister dst, uint64_t high, uint64_t low);
 
   // Move if the registers are not identical.
@@ -365,7 +377,7 @@ class V8_EXPORT_PRIVATE TurboAssembler
 
   void Call(Register reg) { call(reg); }
   void Call(Operand op);
-  void Call(Handle<Code> code_object, RelocInfo::Mode rmode);
+  void Call(Handle<CodeT> code_object, RelocInfo::Mode rmode);
   void Call(Address destination, RelocInfo::Mode rmode);
   void Call(ExternalReference ext);
   void Call(Label* target) { call(target); }
@@ -396,6 +408,7 @@ class V8_EXPORT_PRIVATE TurboAssembler
 
   // Helper functions that dispatch either to Call/JumpCodeObject or to
   // Call/JumpCodeDataContainerObject.
+  // TODO(v8:11880): remove since CodeT targets are now default.
   void LoadCodeTEntry(Register destination, Register code);
   void CallCodeTObject(Register code);
   void JumpCodeTObject(Register code, JumpMode jump_mode = JumpMode::kJump);
@@ -403,9 +416,10 @@ class V8_EXPORT_PRIVATE TurboAssembler
   void Jump(Address destination, RelocInfo::Mode rmode);
   void Jump(const ExternalReference& reference);
   void Jump(Operand op);
-  void Jump(Handle<Code> code_object, RelocInfo::Mode rmode,
-            Condition cc = always);
+  void Jump(Handle<CodeT> code_object, RelocInfo::Mode rmode);
+  void Jump(Handle<CodeT> code_object, RelocInfo::Mode rmode, Condition cc);
 
+  void BailoutIfDeoptimized(Register scratch);
   void CallForDeoptimization(Builtin target, int deopt_id, Label* exit,
                              DeoptimizeKind kind, Label* ret,
                              Label* jump_deoptimization_entry_label);
@@ -468,7 +482,7 @@ class V8_EXPORT_PRIVATE TurboAssembler
 // stack check, do it before calling this function because this function may
 // write into the newly allocated space. It may also overwrite the given
 // register's value, in the version that takes a register.
-#if defined(V8_TARGET_OS_WIN) || defined(V8_TARGET_OS_MACOSX)
+#if defined(V8_TARGET_OS_WIN) || defined(V8_TARGET_OS_MACOS)
   void AllocateStackSpace(Register bytes_scratch);
   void AllocateStackSpace(int bytes);
 #else
@@ -496,12 +510,10 @@ class V8_EXPORT_PRIVATE TurboAssembler
                                SaveFPRegsMode fp_mode);
 
   void CallRecordWriteStubSaveRegisters(
-      Register object, Register slot_address,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Register slot_address, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
   void CallRecordWriteStub(
-      Register object, Register slot_address,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Register slot_address, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
 
 #ifdef V8_IS_TSAN
@@ -593,22 +605,22 @@ class V8_EXPORT_PRIVATE TurboAssembler
   void DecompressAnyTagged(Register destination, Operand field_operand);
 
   // ---------------------------------------------------------------------------
-  // V8 Heap sandbox support
+  // V8 Sandbox support
 
-  // Transform a CagedPointer from/to its encoded form, which is used when the
-  // pointer is stored on the heap and ensures that the pointer will always
-  // point into the virtual memory cage.
-  void EncodeCagedPointer(Register value);
-  void DecodeCagedPointer(Register value);
+  // Transform a SandboxedPointer from/to its encoded form, which is used when
+  // the pointer is stored on the heap and ensures that the pointer will always
+  // point into the sandbox.
+  void EncodeSandboxedPointer(Register value);
+  void DecodeSandboxedPointer(Register value);
 
-  // Load and decode a CagedPointer from the heap.
-  void LoadCagedPointerField(Register destination, Operand field_operand);
-  // Encode and store a CagedPointer to the heap.
-  void StoreCagedPointerField(Operand dst_field_operand, Register value);
+  // Load and decode a SandboxedPointer from the heap.
+  void LoadSandboxedPointerField(Register destination, Operand field_operand);
+  // Encode and store a SandboxedPointer to the heap.
+  void StoreSandboxedPointerField(Operand dst_field_operand, Register value);
 
   enum class IsolateRootLocation { kInScratchRegister, kInRootRegister };
   // Loads a field containing off-heap pointer and does necessary decoding
-  // if V8 heap sandbox is enabled.
+  // if sandboxed external pointers are enabled.
   void LoadExternalPointerField(Register destination, Operand field_operand,
                                 ExternalPointerTag tag, Register scratch,
                                 IsolateRootLocation isolateRootLocation =
@@ -681,22 +693,18 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   // stored.  value and scratch registers are clobbered by the operation.
   // The offset is the offset from the start of the object, not the offset from
   // the tagged HeapObject pointer.  For use with FieldOperand(reg, off).
-  void RecordWriteField(
-      Register object, int offset, Register value, Register slot_address,
-      SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWriteField(Register object, int offset, Register value,
+                        Register slot_address, SaveFPRegsMode save_fp,
+                        SmiCheck smi_check = SmiCheck::kInline);
 
   // For page containing |object| mark region covering |address|
   // dirty. |object| is the object being stored into, |value| is the
   // object being stored. The address and value registers are clobbered by the
   // operation.  RecordWrite filters out smis so it does not update
   // the write barrier if the value is a smi.
-  void RecordWrite(
-      Register object, Register slot_address, Register value,
-      SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWrite(Register object, Register slot_address, Register value,
+                   SaveFPRegsMode save_fp,
+                   SmiCheck smi_check = SmiCheck::kInline);
 
   // Enter specific kind of exit frame; either in normal or
   // debug mode. Expects the number of arguments in register rax and
@@ -801,6 +809,9 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
     }
     andq(reg, Immediate(mask));
   }
+
+  void TestCodeTIsMarkedForDeoptimization(Register codet, Register scratch);
+  Immediate ClearedValue() const;
 
   // Abort execution if argument is not a CodeT, enabled via --debug-code.
   void AssertCodeT(Register object);
@@ -943,6 +954,12 @@ inline Operand StackSpaceOperand(int index) {
 inline Operand StackOperandForReturnAddress(int32_t disp) {
   return Operand(rsp, disp);
 }
+
+struct MoveCycleState {
+  // Whether a move in the cycle needs the scratch or double scratch register.
+  bool pending_scratch_register_use = false;
+  bool pending_double_scratch_register_use = false;
+};
 
 #define ACCESS_MASM(masm) masm->
 

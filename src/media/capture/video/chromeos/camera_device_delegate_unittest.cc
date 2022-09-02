@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
@@ -341,11 +342,11 @@ class CameraDeviceDelegateTest : public ::testing::Test {
 
     cros::mojom::Camera3NotifyMsgPtr msg = cros::mojom::Camera3NotifyMsg::New();
     msg->type = cros::mojom::Camera3MsgType::CAMERA3_MSG_SHUTTER;
-    msg->message = cros::mojom::Camera3NotifyMsgMessage::New();
     cros::mojom::Camera3ShutterMsgPtr shutter_msg =
         cros::mojom::Camera3ShutterMsg::New();
     shutter_msg->timestamp = base::TimeTicks::Now().ToInternalValue();
-    msg->message->set_shutter(std::move(shutter_msg));
+    msg->message = cros::mojom::Camera3NotifyMsgMessage::NewShutter(
+        std::move(shutter_msg));
     callback_ops_->Notify(std::move(msg));
 
     cros::mojom::Camera3CaptureResultPtr result =

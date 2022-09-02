@@ -23,7 +23,7 @@ namespace {
 
 void SuccessCallback(bool* did_respond,
                      ExtensionFunction::ResponseType type,
-                     base::Value results,
+                     base::Value::List results,
                      const std::string& error) {
   EXPECT_EQ(ExtensionFunction::ResponseType::SUCCEEDED, type);
   *did_respond = true;
@@ -31,7 +31,7 @@ void SuccessCallback(bool* did_respond,
 
 void FailCallback(bool* did_respond,
                   ExtensionFunction::ResponseType type,
-                  base::Value results,
+                  base::Value::List results,
                   const std::string& error) {
   EXPECT_EQ(ExtensionFunction::ResponseType::FAILED, type);
   *did_respond = true;
@@ -61,7 +61,7 @@ class ValidationFunction : public ExtensionFunction {
 
 using ChromeExtensionFunctionUnitTest = ExtensionServiceTestBase;
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_SimpleFunctionTest DISABLED_SimpleFunctionTest
 #else
 #define MAYBE_SimpleFunctionTest SimpleFunctionTest

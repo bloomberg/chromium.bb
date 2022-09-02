@@ -12,7 +12,6 @@
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
@@ -30,7 +29,7 @@
 #import "ios/chrome/browser/ui/settings/language/language_settings_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -38,6 +37,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #include "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/chrome/test/earl_grey/test_switches.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #include "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -143,8 +143,6 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
   // app, this policy data will appear under the
   // "com.apple.configuration.managed" key.
   AppLaunchConfiguration config;
-  config.additional_args.push_back(std::string("--") +
-                                   switches::kEnableEnterprisePolicy);
   config.relaunch_policy = NoForceRelaunchAndResetState;
   return config;
 }
@@ -420,7 +418,7 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
   // Open the menu and click on the item.
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI
-      tapToolsMenuButton:grey_accessibilityID(kTextMenuEnterpriseInfo)];
+      tapToolsMenuAction:grey_accessibilityID(kTextMenuEnterpriseInfo)];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   // Check the navigation.
@@ -457,7 +455,7 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
 // Tests that when the BrowserSignin policy is updated while the app is not
 // launched, a policy screen is displayed at startup.
 - (void)testBrowserSignInDisabledAtStartup {
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Create the config to relaunch Chrome.
@@ -501,7 +499,7 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
 // Tests that the UI notifying the user of their sign out is displayed when the
 // policy changes while the app is launched.
 - (void)testBrowserSignInDisabledWhileAppVisible {
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Force sign out.
@@ -525,7 +523,7 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
 // Tests that the UI notifying the user of their sign out is displayed when the
 // primary account is restricted.
 - (void)testBrowserAccountRestrictedAlert {
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Set restrictions.
@@ -547,6 +545,30 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
   bool promptPresented = base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, condition);
   GREYAssertTrue(promptPresented, @"'Signed Out' prompt not shown");
+}
+
+// Tests that the UI notifying the user is displayed when sync is disabled by an
+// administrator while the app is launched.
+- (void)testSyncDisabledPromptWhileAppVisible {
+  FakeChromeIdentity* fakeIdentity = [FakeChromeIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Enable SyncDisabled policy.
+  SetPolicy(true, policy::key::kSyncDisabled);
+
+  // Check that the prompt is presented.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                     IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE))]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  bool promptPresented = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, condition);
+  GREYAssertTrue(promptPresented, @"'Sync Disabled' prompt not shown");
 }
 
 @end

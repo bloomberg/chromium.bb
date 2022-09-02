@@ -13,7 +13,7 @@
 #include "media/base/test_data_util.h"
 #include "media/mojo/buildflags.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
 #include "base/system/sys_info.h"
 #endif
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                        VerifyCanvasWebGLCaptureColor) {
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // TODO(crbug.com/706009): Make this test pass on mac.  Behavior is not buggy
   // (verified manually) on mac, but for some reason this test fails on the mac
   // bot.
@@ -104,8 +104,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   MakeTypicalCall("testCanvasCapture(draw2d);", kCanvasCaptureTestHtmlFile);
 }
 
+#if BUILDFLAG(IS_MAC)
+// https://crbug.com/1335032
+#define MAYBE_VerifyCanvasCaptureWebGLFrames \
+  DISABLED_VerifyCanvasCaptureWebGLFrames
+#else
+#define MAYBE_VerifyCanvasCaptureWebGLFrames VerifyCanvasCaptureWebGLFrames
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       VerifyCanvasCaptureWebGLFrames) {
+                       MAYBE_VerifyCanvasCaptureWebGLFrames) {
   MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
 }
 
@@ -119,8 +126,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                   kCanvasCaptureTestHtmlFile);
 }
 
+// TODO(crbug.com/1334909): Fix and re-enable.
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       VerifyCanvasCaptureBitmapRendererFrames) {
+                       DISABLED_VerifyCanvasCaptureBitmapRendererFrames) {
   MakeTypicalCall("testCanvasCapture(drawBitmapRenderer);",
                   kCanvasCaptureTestHtmlFile);
 }

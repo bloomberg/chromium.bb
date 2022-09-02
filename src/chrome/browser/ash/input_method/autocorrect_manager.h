@@ -7,9 +7,10 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "chrome/browser/ash/input_method/assistive_window_controller.h"
 #include "chrome/browser/ash/input_method/diacritics_insensitive_string_comparator.h"
-#include "chrome/browser/ash/input_method/input_method_engine_base.h"
+#include "chrome/browser/ash/input_method/input_method_engine.h"
 #include "chrome/browser/ash/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/ash/input_method/text_field_contextual_info_fetcher.h"
 

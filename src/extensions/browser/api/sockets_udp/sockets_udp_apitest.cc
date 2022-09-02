@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpCreateGood) {
 // Disable SocketsUdpExtension on Mac due to time out.
 // See https://crbug.com/844402.
 // Disable on Linux for flakiness. See https://crbug.com/875920.
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_SocketsUdpExtension DISABLED_SocketsUdpExtension
 #else
 #define MAYBE_SocketsUdpExtension SocketsUdpExtension
@@ -72,7 +72,8 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, MAYBE_SocketsUdpExtension) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser_context());
 
-  ExtensionTestMessageListener listener("info_please", true);
+  ExtensionTestMessageListener listener("info_please",
+                                        ReplyBehavior::kWillReply);
 
   ASSERT_TRUE(LoadApp("sockets_udp/api"));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -86,7 +87,8 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, MAYBE_SocketsUdpExtension) {
 IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, DISABLED_SocketsUdpMulticast) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser_context());
-  ExtensionTestMessageListener listener("info_please", true);
+  ExtensionTestMessageListener listener("info_please",
+                                        ReplyBehavior::kWillReply);
   ASSERT_TRUE(LoadApp("sockets_udp/api"));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply(base::StringPrintf("multicast:%s:%d", kHostname, kPort));

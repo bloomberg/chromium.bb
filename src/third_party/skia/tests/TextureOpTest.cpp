@@ -7,13 +7,13 @@
 
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "src/gpu/GrColorSpaceXform.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/geometry/GrQuad.h"
-#include "src/gpu/ops/OpsTask.h"
-#include "src/gpu/ops/TextureOp.h"
+#include "src/gpu/ganesh/GrColorSpaceXform.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/geometry/GrQuad.h"
+#include "src/gpu/ganesh/ops/OpsTask.h"
+#include "src/gpu/ganesh/ops/TextureOp.h"
 #include "tests/Test.h"
 
 class OpsTaskTestingAccess {
@@ -46,7 +46,8 @@ static sk_sp<GrSurfaceProxy> create_proxy(GrRecordingContext* rContext) {
                                                                  GrRenderable::kYes);
     return rContext->priv().proxyProvider()->createProxy(
             format, kDimensions, GrRenderable::kYes, 1, GrMipmapped::kNo, SkBackingFit::kExact,
-            SkBudgeted::kNo, GrProtected::kNo, GrInternalSurfaceFlags::kNone);
+            SkBudgeted::kNo, GrProtected::kNo, /*label=*/"TextureOpTest",
+            GrInternalSurfaceFlags::kNone);
 }
 
 static GrOp::Owner create_op(GrDirectContext* dContext, SkRect rect,
@@ -87,13 +88,13 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(TextureOpTest, reporter, ctxInfo) {
 
     GrSurfaceProxyView proxyViewA(create_proxy(dContext),
                                   kTopLeft_GrSurfaceOrigin,
-                                  GrSwizzle::RGBA());
+                                  skgpu::Swizzle::RGBA());
     GrSurfaceProxyView proxyViewB(create_proxy(dContext),
                                   kTopLeft_GrSurfaceOrigin,
-                                  GrSwizzle::RGBA());
+                                  skgpu::Swizzle::RGBA());
     GrSurfaceProxyView proxyViewC(create_proxy(dContext),
                                   kTopLeft_GrSurfaceOrigin,
-                                  GrSwizzle::RGBA());
+                                  skgpu::Swizzle::RGBA());
 
     static const SkRect kOpARect{  0,  0, 16, 16 };
     static const SkRect kOpBRect{ 32,  0, 48, 16 };

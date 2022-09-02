@@ -36,7 +36,7 @@ class TrackEvent_Decoder;
 
 // A helper for keeping track of incremental state when intercepting track
 // events.
-class PERFETTO_EXPORT TrackEventStateTracker {
+class PERFETTO_EXPORT_COMPONENT TrackEventStateTracker {
  public:
   ~TrackEventStateTracker();
 
@@ -80,6 +80,10 @@ class PERFETTO_EXPORT TrackEventStateTracker {
     std::map<uint64_t /*iid*/, std::string> event_names;
     std::map<uint64_t /*iid*/, std::string> event_categories;
     std::map<uint64_t /*iid*/, std::string> debug_annotation_names;
+    // Current absolute timestamp of the incremental clock.
+    uint64_t most_recent_absolute_time_ns = 0;
+    // default_clock_id == 0 means, no default clock_id is set.
+    uint32_t default_clock_id = 0;
   };
 
   // State for the entire tracing session. Shared by all trace writer sequences

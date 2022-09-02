@@ -67,6 +67,7 @@ static unordered_map<VkDeviceMemory, VkDeviceSize> allocated_memory_size_map;
 static unordered_map<VkDevice, unordered_map<uint32_t, unordered_map<uint32_t, VkQueue>>> queue_map;
 static unordered_map<VkDevice, unordered_map<VkBuffer, VkBufferCreateInfo>> buffer_map;
 static unordered_map<VkDevice, unordered_map<VkImage, VkDeviceSize>> image_memory_size_map;
+static unordered_map<VkCommandPool, std::vector<VkCommandBuffer>> command_pool_buffer_map;
 
 static constexpr uint32_t icd_swapchain_image_count = 1;
 static unordered_map<VkSwapchainKHR, VkImage[icd_swapchain_image_count]> swapchain_image_map;
@@ -444,6 +445,43 @@ CUSTOM_C_INTERCEPTS = {
         DestroyDispObjHandle((void*)instance);
     }
 ''',
+'vkAllocateCommandBuffers': '''
+    unique_lock_t lock(global_lock);
+    for (uint32_t i = 0; i < pAllocateInfo->commandBufferCount; ++i) {
+        pCommandBuffers[i] = (VkCommandBuffer)CreateDispObjHandle();
+        command_pool_buffer_map[pAllocateInfo->commandPool].push_back(pCommandBuffers[i]);
+    }
+    return VK_SUCCESS;
+''',
+'vkFreeCommandBuffers': '''
+    unique_lock_t lock(global_lock);
+    for (auto i = 0u; i < commandBufferCount; ++i) {
+        if (!pCommandBuffers[i]) {
+            continue;
+        }
+
+        for (auto& pair : command_pool_buffer_map) {
+            auto& cbs = pair.second;
+            auto it = std::find(cbs.begin(), cbs.end(), pCommandBuffers[i]);
+            if (it != cbs.end()) {
+                cbs.erase(it);
+            }
+        }
+
+        DestroyDispObjHandle((void*) pCommandBuffers[i]);
+    }
+''',
+'vkDestroyCommandPool': '''
+    // destroy command buffers for this pool
+    unique_lock_t lock(global_lock);
+    auto it = command_pool_buffer_map.find(commandPool);
+    if (it != command_pool_buffer_map.end()) {
+        for (auto& cb : it->second) {
+            DestroyDispObjHandle((void*) cb);
+        }
+        command_pool_buffer_map.erase(it);
+    }
+''',
 'vkEnumeratePhysicalDevices': '''
     VkResult result_code = VK_SUCCESS;
     if (pPhysicalDevices) {
@@ -465,14 +503,13 @@ CUSTOM_C_INTERCEPTS = {
     unique_lock_t lock(global_lock);
     // First destroy sub-device objects
     // Destroy Queues
-    for (auto dev_queue_map_pair : queue_map) {
-        for (auto queue_family_map_pair : queue_map[dev_queue_map_pair.first]) {
-            for (auto index_queue_pair : queue_map[dev_queue_map_pair.first][queue_family_map_pair.first]) {
-                DestroyDispObjHandle((void*)index_queue_pair.second);
-            }
+    for (auto queue_family_map_pair : queue_map[device]) {
+        for (auto index_queue_pair : queue_map[device][queue_family_map_pair.first]) {
+            DestroyDispObjHandle((void*)index_queue_pair.second);
         }
     }
-    queue_map.clear();
+
+    queue_map.erase(device);
     buffer_map.erase(device);
     image_memory_size_map.erase(device);
     // Now destroy device
@@ -557,27 +594,12 @@ CUSTOM_C_INTERCEPTS = {
     if (!pPresentModes) {
         *pPresentModeCount = 6;
     } else {
-        // Intentionally falling through and just filling however many modes are requested
-        switch(*pPresentModeCount) {
-        case 6:
-            pPresentModes[5] = VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR;
-            // fall through
-        case 5:
-            pPresentModes[4] = VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR;
-            // fall through
-        case 4:
-            pPresentModes[3] = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-            // fall through
-        case 3:
-            pPresentModes[2] = VK_PRESENT_MODE_FIFO_KHR;
-            // fall through
-        case 2:
-            pPresentModes[1] = VK_PRESENT_MODE_MAILBOX_KHR;
-            // fall through
-        default:
-            pPresentModes[0] = VK_PRESENT_MODE_IMMEDIATE_KHR;
-            break;
-        }
+        if (*pPresentModeCount >= 6) pPresentModes[5] = VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR;
+        if (*pPresentModeCount >= 5) pPresentModes[4] = VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR;
+        if (*pPresentModeCount >= 4) pPresentModes[3] = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+        if (*pPresentModeCount >= 3) pPresentModes[2] = VK_PRESENT_MODE_FIFO_KHR;
+        if (*pPresentModeCount >= 2) pPresentModes[1] = VK_PRESENT_MODE_MAILBOX_KHR;
+        if (*pPresentModeCount >= 1) pPresentModes[0] = VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
     return VK_SUCCESS;
 ''',
@@ -586,16 +608,13 @@ CUSTOM_C_INTERCEPTS = {
     if (!pSurfaceFormats) {
         *pSurfaceFormatCount = 2;
     } else {
-        // Intentionally falling through and just filling however many types are requested
-        switch(*pSurfaceFormatCount) {
-        case 2:
+        if (*pSurfaceFormatCount >= 2) {
             pSurfaceFormats[1].format = VK_FORMAT_R8G8B8A8_UNORM;
             pSurfaceFormats[1].colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-            // fall through
-        default:
+        }
+        if (*pSurfaceFormatCount >= 1) {
             pSurfaceFormats[0].format = VK_FORMAT_B8G8R8A8_UNORM;
             pSurfaceFormats[0].colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-            break;
         }
     }
     return VK_SUCCESS;
@@ -605,18 +624,15 @@ CUSTOM_C_INTERCEPTS = {
     if (!pSurfaceFormats) {
         *pSurfaceFormatCount = 2;
     } else {
-        // Intentionally falling through and just filling however many types are requested
-        switch(*pSurfaceFormatCount) {
-        case 2:
+        if (*pSurfaceFormatCount >= 2) {
             pSurfaceFormats[1].pNext = nullptr;
             pSurfaceFormats[1].surfaceFormat.format = VK_FORMAT_R8G8B8A8_UNORM;
             pSurfaceFormats[1].surfaceFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-            // fall through
-        default:
+        }
+        if (*pSurfaceFormatCount >= 1) {
             pSurfaceFormats[1].pNext = nullptr;
             pSurfaceFormats[0].surfaceFormat.format = VK_FORMAT_B8G8R8A8_UNORM;
             pSurfaceFormats[0].surfaceFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-            break;
         }
     }
     return VK_SUCCESS;
@@ -761,6 +777,12 @@ CUSTOM_C_INTERCEPTS = {
 ''',
 'vkGetPhysicalDeviceFormatProperties2KHR': '''
     GetPhysicalDeviceFormatProperties(physicalDevice, format, &pFormatProperties->formatProperties);
+    VkFormatProperties3KHR *props_3 = lvl_find_mod_in_chain<VkFormatProperties3KHR>(pFormatProperties->pNext);
+    if (props_3) {
+        props_3->linearTilingFeatures = pFormatProperties->formatProperties.linearTilingFeatures;
+        props_3->optimalTilingFeatures = pFormatProperties->formatProperties.optimalTilingFeatures;
+        props_3->bufferFeatures = pFormatProperties->formatProperties.bufferFeatures;
+    }
 ''',
 'vkGetPhysicalDeviceImageFormatProperties': '''
     // A hardcoded unsupported format
@@ -1354,6 +1376,9 @@ class MockICDOutputGenerator(OutputGenerator):
             'vkDestroyDevice',
             'vkCreateInstance',
             'vkDestroyInstance',
+            'vkFreeCommandBuffers',
+            'vkAllocateCommandBuffers',
+            'vkDestroyCommandPool',
             #'vkCreateDebugReportCallbackEXT',
             #'vkDestroyDebugReportCallbackEXT',
             'vkEnumerateInstanceLayerProperties',

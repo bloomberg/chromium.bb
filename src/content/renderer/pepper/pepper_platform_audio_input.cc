@@ -13,7 +13,6 @@
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_source_parameters.h"
@@ -82,7 +81,7 @@ void PepperPlatformAudioInput::OnStreamCreated(
     base::SyncSocket::ScopedHandle socket_handle,
     bool initially_muted) {
   DCHECK(shared_memory_region.IsValid());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   DCHECK(socket_handle.IsValid());
 #else
   DCHECK(socket_handle.is_valid());

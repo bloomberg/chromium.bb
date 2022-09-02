@@ -382,7 +382,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
       Status Initialize(IteratorContext* ctx) override {
         mutex_lock l(*mu_);
         if (num_parallel_calls_->value == model::kAutotune) {
-          num_parallel_calls_->value = ctx->runner_threadpool_size();
+          num_parallel_calls_->value = GetAutotuneDefaultParallelism(ctx);
         }
         TF_RETURN_IF_ERROR(RegisterCancellationCallback(
             ctx->cancellation_manager(),
@@ -907,10 +907,10 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
       // Buffer for storing the invocation results.
       std::deque<std::shared_ptr<InvocationResult>> invocation_results_
           TF_GUARDED_BY(*mu_);
+      bool cancelled_ TF_GUARDED_BY(*mu_) = false;
 
       std::unique_ptr<Thread> runner_thread_ TF_GUARDED_BY(*mu_);
       std::unique_ptr<Thread> stats_thread_ TF_GUARDED_BY(*mu_);
-      bool cancelled_ TF_GUARDED_BY(*mu_) = false;
 
       // Method for deregistering the cancellation callback.
       std::function<void()> deregister_fn_;

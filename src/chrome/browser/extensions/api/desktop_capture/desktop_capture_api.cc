@@ -27,6 +27,8 @@ const char kDesktopCaptureApiInvalidOriginError[] =
 const char kDesktopCaptureApiInvalidTabIdError[] = "Invalid tab specified.";
 const char kDesktopCaptureApiTabUrlNotSecure[] =
     "URL scheme for the specified tab is not secure.";
+const char kTargetTabRequiredFromServiceWorker[] =
+    "A target tab is required when called from a service worker context.";
 }  // namespace
 
 DesktopCaptureChooseDesktopMediaFunction::
@@ -52,9 +54,9 @@ DesktopCaptureChooseDesktopMediaFunction::Run() {
       api::desktop_capture::ChooseDesktopMedia::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // |web_contents| is the WebContents for which the stream is created, and will
-  // also be used to determine where to show the picker's UI.
-  content::WebContents* web_contents = NULL;
+  // |target_render_frame_host| is the RenderFrameHost for which the stream is
+  // created, and will also be used to determine where to show the picker's UI.
+  content::RenderFrameHost* target_render_frame_host = nullptr;
   std::u16string target_name;
   GURL origin;
   if (params->target_tab) {
@@ -81,21 +83,27 @@ DesktopCaptureChooseDesktopMediaFunction::Run() {
       return RespondNow(Error(kDesktopCaptureApiNoTabIdError));
     }
 
+    content::WebContents* web_contents = nullptr;
     if (!ExtensionTabUtil::GetTabById(
             *(params->target_tab->id),
             Profile::FromBrowserContext(browser_context()), true,
             &web_contents)) {
       return RespondNow(Error(kDesktopCaptureApiInvalidTabIdError));
     }
-    DCHECK(web_contents);
+    // The |target_render_frame_host| is the main frame of the tab that
+    // was requested for capture.
+    target_render_frame_host = web_contents->GetPrimaryMainFrame();
   } else {
     origin = extension()->url();
     target_name = base::UTF8ToUTF16(GetExtensionTargetName());
-    web_contents = GetSenderWebContents();
-    DCHECK(web_contents);
+    target_render_frame_host = render_frame_host();
   }
 
-  return Execute(params->sources, web_contents, origin, target_name);
+  if (!target_render_frame_host)
+    return RespondNow(Error(kTargetTabRequiredFromServiceWorker));
+
+  return Execute(params->sources, target_render_frame_host, origin,
+                 target_name);
 }
 
 std::string DesktopCaptureChooseDesktopMediaFunction::GetExtensionTargetName()

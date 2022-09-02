@@ -5,15 +5,16 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkColorSpace.h"
 #include "include/gpu/GrDirectContext.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrShaderCaps.h"
-#include "src/gpu/GrTexture.h"
-#include "src/gpu/GrTextureProxyPriv.h"
-#include "src/gpu/SurfaceFillContext.h"
-#include "src/gpu/gl/GrGLGpu.h"
-#include "src/gpu/gl/GrGLUtil.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrShaderCaps.h"
+#include "src/gpu/ganesh/GrTexture.h"
+#include "src/gpu/ganesh/GrTextureProxyPriv.h"
+#include "src/gpu/ganesh/SurfaceFillContext.h"
+#include "src/gpu/ganesh/gl/GrGLGpu.h"
+#include "src/gpu/ganesh/gl/GrGLUtil.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
 #include "tools/gpu/GrContextFactory.h"
@@ -53,7 +54,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
         return;
     }
     GrGLGpu* gpu0 = static_cast<GrGLGpu*>(context0->priv().getGpu());
-    if (!gpu0->glCaps().shaderCaps()->externalTextureSupport()) {
+    if (!gpu0->glCaps().shaderCaps()->fExternalTextureSupport) {
         return;
     }
 
@@ -162,8 +163,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
         cleanup(glCtx0, externalTexture.fID, glCtx1.get(), context1, image);
         return;
     }
-    GrSwizzle swizzle = context0->priv().caps()->getReadSwizzle(texProxy->backendFormat(),
-                                                                colorInfo.colorType());
+    skgpu::Swizzle swizzle = context0->priv().caps()->getReadSwizzle(texProxy->backendFormat(),
+                                                                     colorInfo.colorType());
     GrSurfaceProxyView view(std::move(texProxy), origin, swizzle);
     auto surfaceContext = context0->priv().makeSC(std::move(view), colorInfo);
 

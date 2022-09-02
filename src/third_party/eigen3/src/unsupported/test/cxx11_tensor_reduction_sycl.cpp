@@ -16,7 +16,6 @@
 
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int64_t
 #define EIGEN_USE_SYCL
-#define EIGEN_HAS_CONSTEXPR 1
 
 #include "main.h"
 

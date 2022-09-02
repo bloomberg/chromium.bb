@@ -36,7 +36,18 @@ enum DurationPrecision {
 }
 
 message SiteDescription {
+  // The name of the site, e.g. "The New York Times".
+  // May not be present.
   optional string name = 1;
+
+  // The subtitle for the site.
+  // May not be present.
+  // If title is missing, subtitle will not be present either, but even for
+  // cases where there is a title there may not be a subtitle.
+  optional string subtitle = 5;
+
+  // The description of the site, e.g. "The New York Times is an American daily
+  // newspaper based in New York City..."
   optional string description = 2;
 
   // Information about the source of the description. Note that if your product
@@ -54,6 +65,13 @@ message Hyperlink {
   optional string url = 2;
 }
 
+// Link to learn more about the input url.
+message MoreAbout {
+  // The absolute url for the link.
+  optional string url = 1;
+}
+
+// Info that is shown in PageInfo.
 message SiteInfo {
   // First-seen date information related to this host/domain.
   // When Google first indexed this site.
@@ -61,12 +79,28 @@ message SiteInfo {
 
   // Description for this site.
   optional SiteDescription description = 2;
+
+  // A link to a page with more information about the page, if available.
+  optional MoreAbout more_about = 3;
+}
+
+// Info for a site-specific banner.
+message BannerInfo {
+  // Optional title of a banner.
+  optional string title = 1;
+  // Label of a banner.
+  optional string label = 2;
+  // Source URL of the banner.
+  optional Hyperlink url = 3;
 }
 
 // Optimization metadata associated with SiteInfo.
 //
 // This is only populated for the ABOUT_THIS_SITE optimization type.
 message AboutThisSiteMetadata {
-  // A SiteInfo hint.
+  // A SiteInfo hint that will be shown in PageInfo.
   optional SiteInfo site_info = 1;
+
+  // Info for a site-specific banner.
+  optional BannerInfo banner_info = 2;
 }

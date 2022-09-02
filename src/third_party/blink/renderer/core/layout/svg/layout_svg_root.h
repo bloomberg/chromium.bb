@@ -23,8 +23,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_ROOT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_ROOT_H_
 
+#include "base/check_op.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_content_container.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 
 namespace blink {
 
@@ -88,6 +91,11 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
     container_size_ = container_size;
   }
 
+  LayoutSize GetContainerSize() const {
+    NOT_DESTROYED();
+    return container_size_;
+  }
+
   // localToBorderBoxTransform maps local SVG viewport coordinates to local CSS
   // box coordinates.
   const AffineTransform& LocalToBorderBoxTransform() const {
@@ -100,12 +108,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   void RecalcVisualOverflow() override;
 
   bool HasNonIsolatedBlendingDescendants() const final;
-
-  bool HasDescendantCompositingReasons() const {
-    NOT_DESTROYED();
-    return AdditionalCompositingReasons() != CompositingReason::kNone;
-  }
-  void NotifyDescendantCompositingReasonsChanged();
 
   void AddSvgTextDescendant(LayoutNGSVGText& svg_text);
   void RemoveSvgTextDescendant(LayoutNGSVGText& svg_text);
@@ -202,12 +204,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   double LogicalSizeScaleFactorForPercentageLengths() const;
 
   PaintLayerType LayerTypeRequired() const override;
-  bool CanHaveAdditionalCompositingReasons() const override {
-    NOT_DESTROYED();
-    return true;
-  }
-  CompositingReasons AdditionalCompositingReasons() const override;
-  bool HasDescendantWithCompositingReason() const;
 
   SVGContentContainer content_;
   LayoutSize container_size_;
@@ -218,8 +214,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   bool needs_boundaries_or_transform_update_ : 1;
   mutable bool has_non_isolated_blending_descendants_ : 1;
   mutable bool has_non_isolated_blending_descendants_dirty_ : 1;
-  mutable bool has_descendant_with_compositing_reason_ : 1;
-  mutable bool has_descendant_with_compositing_reason_dirty_ : 1;
 };
 
 template <>

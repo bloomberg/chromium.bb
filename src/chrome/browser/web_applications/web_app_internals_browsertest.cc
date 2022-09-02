@@ -11,18 +11,21 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/commands/fetch_manifest_and_install_command.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -36,7 +39,7 @@ namespace {
 constexpr char kBadIconErrorTemplate[] = R"({
    "!url": "$1banners/manifest_test_page.html",
    "background_installation": false,
-   "install_source": 15,
+   "install_surface": 15,
    "stages": [ {
       "!stage": "OnIconsRetrieved",
       "icons_downloaded_result": "Completed",
@@ -68,15 +71,12 @@ class WebAppInternalsBrowserTest : public InProcessBrowserTest {
   ~WebAppInternalsBrowserTest() override = default;
 
   void SetUp() override {
-    embedded_test_server_.AddDefaultHandlers(GetChromeTestDataDir());
-    embedded_test_server_.RegisterRequestHandler(
+    embedded_test_server()->AddDefaultHandlers(GetChromeTestDataDir());
+    embedded_test_server()->RegisterRequestHandler(
         base::BindRepeating(&WebAppInternalsBrowserTest::RequestHandlerOverride,
                             base::Unretained(this)));
-    ASSERT_TRUE(embedded_test_server_.Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
-    // Suppress globally to avoid OS hooks deployed.
-    os_hooks_suppress_ =
-        OsIntegrationManager::ScopedSuppressOsHooksForTesting();
     InProcessBrowserTest::SetUp();
   }
 
@@ -91,17 +91,21 @@ class WebAppInternalsBrowserTest : public InProcessBrowserTest {
 
     AppId app_id;
     base::RunLoop run_loop;
-    GetProvider().install_manager().InstallWebAppFromManifestWithFallback(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        /*force_shortcut_app=*/false,
-        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-        base::BindOnce(test::TestAcceptDialogCallback),
-        base::BindLambdaForTesting(
-            [&](const AppId& new_app_id, InstallResultCode code) {
-              EXPECT_EQ(code, InstallResultCode::kSuccessNewInstall);
+    GetProvider().command_manager().ScheduleCommand(
+        std::make_unique<FetchManifestAndInstallCommand>(
+            &GetProvider().install_finalizer(), &GetProvider().registrar(),
+            webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+            /*bypass_service_worker_check=*/false,
+            base::BindOnce(test::TestAcceptDialogCallback),
+            base::BindLambdaForTesting([&](const AppId& new_app_id,
+                                           webapps::InstallResultCode code) {
+              EXPECT_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
               app_id = new_app_id;
               run_loop.Quit();
-            }));
+            }),
+            /*use_fallback=*/true, WebAppInstallFlow::kInstallSite));
+
     run_loop.Run();
     return app_id;
   }
@@ -131,15 +135,10 @@ class WebAppInternalsBrowserTest : public InProcessBrowserTest {
         });
   }
 
-  net::EmbeddedTestServer& embedded_test_server() {
-    return embedded_test_server_;
-  }
-
  private:
-  net::EmbeddedTestServer embedded_test_server_;
   net::EmbeddedTestServer::HandleRequestCallback request_override_;
 
-  ScopedOsHooksSuppress os_hooks_suppress_;
+  OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
 
   base::test::ScopedFeatureList scoped_feature_list_{
       features::kRecordWebAppDebugInfo};
@@ -147,10 +146,10 @@ class WebAppInternalsBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(WebAppInternalsBrowserTest,
                        PRE_InstallManagerErrorsPersist) {
-  OverrideHttpRequest(embedded_test_server().GetURL("/banners/bad_icon.png"),
+  OverrideHttpRequest(embedded_test_server()->GetURL("/banners/bad_icon.png"),
                       net::HTTP_NOT_FOUND);
 
-  AppId app_id = InstallWebApp(embedded_test_server().GetURL(
+  AppId app_id = InstallWebApp(embedded_test_server()->GetURL(
       "/banners/manifest_test_page.html?manifest=manifest_bad_icon.json"));
 
   const WebApp* web_app = GetProvider().registrar().GetAppById(app_id);
@@ -158,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(WebAppInternalsBrowserTest,
   EXPECT_TRUE(web_app->is_generated_icon());
 
   const std::string expected_error = base::ReplaceStringPlaceholders(
-      kBadIconErrorTemplate, {embedded_test_server().base_url().spec()},
+      kBadIconErrorTemplate, {embedded_test_server()->base_url().spec()},
       nullptr);
 
   ASSERT_TRUE(GetProvider().install_manager().error_log());

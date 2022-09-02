@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/components/tpm/install_attributes.h"
 #include "base/at_exit.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/policy_conversions_client.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -98,7 +98,7 @@ struct PerInputEnvironment {
 
   ~PerInputEnvironment() {
     ash::ShutdownDBus();
-    chromeos::InstallAttributes::Shutdown();
+    ash::InstallAttributes::Shutdown();
     ash::DeviceSettingsService::Shutdown();
   }
 
@@ -112,7 +112,8 @@ void CheckPolicyMap(const PolicyMap& policy_map,
   for (const auto& it : policy_map) {
     const std::string& policy_name = it.first;
     const PolicyMap::Entry& entry = it.second;
-    CHECK(entry.value()) << "Policy " << policy_name << " has an empty value";
+    CHECK(entry.value_unsafe())
+        << "Policy " << policy_name << " has an empty value";
     CHECK_EQ(entry.scope, expected_policy_scope)
         << "Policy " << policy_name << " has wrong scope";
 

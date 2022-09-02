@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <map>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
@@ -36,10 +38,10 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/window_features_converter.h"
-#include "extensions/common/constants.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "skia/ext/image_operations.h"
@@ -61,9 +63,9 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/renderer/searchbox/searchbox_extension.h"
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 #include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier_delegate.h"
@@ -106,7 +108,7 @@ const char kGifExtension[] = ".gif";
 const char kPngExtension[] = ".png";
 const char kJpgExtension[] = ".jpg";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 base::Lock& GetFrameHeaderMapLock() {
   static base::NoDestructor<base::Lock> s;
   return *s;
@@ -120,6 +122,52 @@ FrameHeaderMap& GetFrameHeaderMap() {
   return *s;
 }
 #endif
+
+// Renderers can handle multiple pages, especially in low-memory conditions.
+// Record crash keys for a few origins, in the hope of finding more culprit
+// origins for OOM crashes. Keys are recorded here and not via
+// ChromeContentClient::SetActiveURL() because that method is only invoked in
+// response to IPC messages and most OOMs do not occur in response to an IPC.
+// https://crbug.com/1310046
+void UpdateLoadedOriginCrashKeys() {
+  // Capture the origin for each RenderFrame.
+  struct Visitor : public content::RenderFrameVisitor {
+    bool Visit(RenderFrame* render_frame) override {
+      if (render_frame) {
+        WebLocalFrame* web_frame = render_frame->GetWebFrame();
+        if (web_frame) {
+          frame_count_++;
+          origins_.insert(web_frame->GetSecurityOrigin().ToString().Utf8());
+        }
+      }
+      return true;  // Keep going.
+    }
+    int frame_count_ = 0;
+    std::set<std::string> origins_;  // Use set to collapse duplicate origins.
+  } visitor;
+  RenderFrame::ForEach(&visitor);
+
+  static crash_reporter::CrashKeyString<8> frame_count("web-frame-count");
+  frame_count.Set(base::NumberToString(visitor.frame_count_));
+
+  // Record 3 recently-loaded origins in crash keys (which 3 is arbitrary).
+  using ArrayItemKey = crash_reporter::CrashKeyString<64>;
+  static ArrayItemKey crash_keys[] = {
+      {"loaded-origin-0", ArrayItemKey::Tag::kArray},
+      {"loaded-origin-1", ArrayItemKey::Tag::kArray},
+      {"loaded-origin-2", ArrayItemKey::Tag::kArray},
+  };
+  for (auto& crash_key : crash_keys) {
+    if (!visitor.origins_.empty()) {
+      auto origin_it = visitor.origins_.begin();
+      crash_key.Set(*origin_it);
+      visitor.origins_.erase(origin_it);
+    } else {
+      // If there are fewer than 3 origins, clear the remaining keys.
+      crash_key.Clear();
+    }
+  }
+}
 
 }  // namespace
 
@@ -140,26 +188,23 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
     return;
 
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
-    SetClientSidePhishingDetection();
+  SetClientSidePhishingDetection();
 #endif
+
   if (!translate::IsSubFrameTranslationEnabled()) {
-    translate_agent_ =
-        new translate::TranslateAgent(render_frame, ISOLATED_WORLD_ID_TRANSLATE,
-                                      extensions::kExtensionScheme);
+    translate_agent_ = new translate::TranslateAgent(
+        render_frame, ISOLATED_WORLD_ID_TRANSLATE);
   }
 }
 
 ChromeRenderFrameObserver::~ChromeRenderFrameObserver() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::AutoLock auto_lock(GetFrameHeaderMapLock());
   GetFrameHeaderMap().erase(routing_id());
 #endif
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 std::string ChromeRenderFrameObserver::GetCCTClientHeader(int render_frame_id) {
   base::AutoLock auto_lock(GetFrameHeaderMapLock());
   auto frame_map = GetFrameHeaderMap();
@@ -242,6 +287,9 @@ void ChromeRenderFrameObserver::DidCreateNewDocument() {
 
 void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
     ui::PageTransition transition) {
+  // Update crash keys on any frame transition, not just the main frame.
+  UpdateLoadedOriginCrashKeys();
+
   WebLocalFrame* frame = render_frame()->GetWebFrame();
 
   // Don't do anything for subframes.
@@ -251,7 +299,7 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
   static crash_reporter::CrashKeyString<8> view_count_key("view-count");
   view_count_key.Set(base::NumberToString(blink::WebView::GetWebViewCount()));
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (render_frame()->GetEnabledBindings() &
       content::kWebUIBindingsPolicyMask) {
     for (const auto& script : webui_javascript_)
@@ -262,12 +310,12 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
 }
 
 void ChromeRenderFrameObserver::DidClearWindowObject() {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kInstantProcess))
     SearchBoxExtension::Install(render_frame()->GetWebFrame());
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 void ChromeRenderFrameObserver::DidMeaningfulLayout(
@@ -280,8 +328,8 @@ void ChromeRenderFrameObserver::OnDestruct() {
 }
 
 void ChromeRenderFrameObserver::DraggableRegionsChanged() {
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
   // Only the main frame is allowed to control draggable regions, to avoid other
   // frames manipulate the regions in the browser process.
   if (!render_frame()->IsMainFrame())
@@ -314,7 +362,7 @@ void ChromeRenderFrameObserver::SetWindowFeatures(
 
 void ChromeRenderFrameObserver::ExecuteWebUIJavaScript(
     const std::u16string& javascript) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   webui_javascript_.push_back(javascript);
 #endif
 }
@@ -403,7 +451,7 @@ void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
   }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void ChromeRenderFrameObserver::SetCCTClientHeader(const std::string& header) {
   base::AutoLock auto_lock(GetFrameHeaderMapLock());
   GetFrameHeaderMap()[routing_id()] = header;
@@ -500,7 +548,7 @@ bool ChromeRenderFrameObserver::ShouldCapturePageTextForTranslateOrPhishing(
   bool should_capture_for_phishing = false;
 
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
-  should_capture_for_phishing = !!phishing_classifier_;
+  should_capture_for_phishing = phishing_classifier_->is_ready();
 #endif
 
   return should_capture_for_translate || should_capture_for_phishing;

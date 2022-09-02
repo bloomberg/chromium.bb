@@ -8,13 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/values.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/url_matcher/url_matcher_export.h"
-
-namespace base {
-class DictionaryValue;
-class Value;
-}
 
 namespace url_matcher {
 
@@ -36,8 +32,8 @@ class URL_MATCHER_EXPORT URLMatcherFactory {
   // URLMatcherFactory. Otherwise you leak memory.
   static scoped_refptr<URLMatcherConditionSet> CreateFromURLFilterDictionary(
       URLMatcherConditionFactory* url_matcher_condition_factory,
-      const base::DictionaryValue* url_filter_dict,
-      URLMatcherConditionSet::ID id,
+      const base::Value::Dict& url_filter_dict,
+      base::MatcherStringPattern::ID id,
       std::string* error);
 
  private:

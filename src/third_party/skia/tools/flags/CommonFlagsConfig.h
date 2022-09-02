@@ -69,6 +69,7 @@ public:
                            bool                      testPrecompile,
                            bool                      useDDLSink,
                            bool                      OOPRish,
+                           bool                      slug,
                            bool                      reducedShaders,
                            SurfType);
 
@@ -84,6 +85,7 @@ public:
     bool          getTestPrecompile() const { return fTestPrecompile; }
     bool          getUseDDLSink() const { return fUseDDLSink; }
     bool          getOOPRish() const { return fOOPRish; }
+    bool          getSlug() const { return fSlug; }
     bool          getReducedShaders() const { return fReducedShaders; }
     SurfType      getSurfType() const { return fSurfType; }
 
@@ -99,6 +101,7 @@ private:
     bool                fTestPrecompile;
     bool                fUseDDLSink;
     bool                fOOPRish;
+    bool                fSlug;
     bool                fReducedShaders;
     SurfType            fSurfType;
 };
@@ -115,26 +118,22 @@ public:
                                 const SkTArray<SkString>& viaParts,
                                 ContextType               contextType,
                                 SkColorType               colorType,
-                                SkAlphaType               alphaType,
-                                bool                      testPrecompile)
+                                SkAlphaType               alphaType)
             : SkCommandLineConfig(tag, SkString("graphite"), viaParts)
             , fContextType(contextType)
             , fColorType(colorType)
-            , fAlphaType(alphaType)
-            , fTestPrecompile(testPrecompile) {
+            , fAlphaType(alphaType) {
     }
     const SkCommandLineConfigGraphite* asConfigGraphite() const override { return this; }
 
     ContextType getContextType() const { return fContextType; }
     SkColorType getColorType() const { return fColorType; }
     SkAlphaType getAlphaType() const { return fAlphaType; }
-    bool getTestPrecompile() const { return fTestPrecompile; }
 
 private:
     ContextType         fContextType;
     SkColorType         fColorType;
     SkAlphaType         fAlphaType;
-    bool                fTestPrecompile;
 };
 
 #endif // SK_GRAPHITE_ENABLED

@@ -38,7 +38,7 @@ class ClampedNumeric {
   template <typename Src>
   constexpr ClampedNumeric(Src value)  // NOLINT(runtime/explicit)
       : value_(saturated_cast<T>(value)) {
-    static_assert(std::is_arithmetic<Src>::value, "Argument must be numeric.");
+    static_assert(UnderlyingType<Src>::is_numeric, "Argument must be numeric.");
   }
 
   // This is not an explicit constructor because we want a seamless conversion
@@ -178,14 +178,14 @@ class ClampedNumeric {
   // ClampedNumeric and POD arithmetic types.
   template <typename Src>
   struct Wrapper {
-    static constexpr Src value(Src value) {
-      return static_cast<typename UnderlyingType<Src>::type>(value);
+    static constexpr typename UnderlyingType<Src>::type value(Src value) {
+      return value;
     }
   };
 };
 
-// Convience wrapper to return a new ClampedNumeric from the provided arithmetic
-// or ClampedNumericType.
+// Convenience wrapper to return a new ClampedNumeric from the provided
+// arithmetic or ClampedNumericType.
 template <typename T>
 constexpr ClampedNumeric<typename UnderlyingType<T>::type> MakeClampedNum(
     const T value) {
@@ -234,20 +234,20 @@ BASE_NUMERIC_COMPARISON_OPERATORS(Clamped, IsNotEqual, !=)
 
 }  // namespace internal
 
+using internal::ClampAdd;
+using internal::ClampAnd;
+using internal::ClampDiv;
 using internal::ClampedNumeric;
-using internal::MakeClampedNum;
+using internal::ClampLsh;
 using internal::ClampMax;
 using internal::ClampMin;
-using internal::ClampAdd;
-using internal::ClampSub;
-using internal::ClampMul;
-using internal::ClampDiv;
 using internal::ClampMod;
-using internal::ClampLsh;
-using internal::ClampRsh;
-using internal::ClampAnd;
+using internal::ClampMul;
 using internal::ClampOr;
+using internal::ClampRsh;
+using internal::ClampSub;
 using internal::ClampXor;
+using internal::MakeClampedNum;
 
 }  // namespace base
 

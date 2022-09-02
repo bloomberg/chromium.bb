@@ -55,7 +55,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
       base::RepeatingCallback<std::unique_ptr<ImageProcessorBackend>(
           const PortConfig& input_config,
           const PortConfig& output_config,
-          const std::vector<OutputMode>& preferred_output_modes,
+          OutputMode output_mode,
           VideoRotation relative_rotation,
           ErrorCB error_cb,
           scoped_refptr<base::SequencedTaskRunner> backend_task_runner)>;
@@ -64,7 +64,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
       CreateBackendCB create_backend_cb,
       const PortConfig& input_config,
       const PortConfig& output_config,
-      const std::vector<OutputMode>& preferred_output_modes,
+      OutputMode output_mode,
       VideoRotation relative_rotation,
       ErrorCB error_cb,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner);
@@ -104,6 +104,12 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   // will be invoked. ImageProcessor is ready to process more frames.
   // Reset() must be called on |client_task_runner_|.
   bool Reset();
+
+  // Returns true if and only if, in IMPORT mode, the image processor requires
+  // the output video frames to be CPU-readable with a linear view of the data.
+  bool needs_linear_output_buffers() const {
+    return needs_linear_output_buffers_;
+  }
 
  protected:
   // Container for both FrameReadyCB and LegacyFrameReadyCB. With this class,
@@ -161,6 +167,8 @@ class MEDIA_GPU_EXPORT ImageProcessor {
 
   // The sequence for interacting with |backend_|.
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
+
+  const bool needs_linear_output_buffers_;
 
   // The weak pointer of this, bound to |client_task_runner_|.
   base::WeakPtr<ImageProcessor> weak_this_;

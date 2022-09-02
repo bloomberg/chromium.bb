@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
 
+#include <vector>
+
 #include "ash/constants/ash_features.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
@@ -74,6 +76,10 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"qrCodeRetry", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_RETRY},
     {"scanQrCodeLoading", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_LOADING},
     {"scanQrCodeInvalid", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INVALID},
+    {"scanQrCodeInputSubtitle",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INPUT_SUBTITLE},
+    {"scanQrCodeInputError",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INPUT_ERROR},
     {"profileListPageMessage", IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE},
     {"eidPopupTitle", IDS_CELLULAR_SETUP_EID_POPUP_TITLE},
     {"eidPopupDescription", IDS_CELLULAR_SETUP_EID_POPUP_DESCRIPTION},
@@ -101,15 +107,16 @@ struct NamedResourceId {
 
 const std::vector<const NamedBoolean>& GetBooleanValues() {
   static const base::NoDestructor<std::vector<const NamedBoolean>> named_bools(
-      {{"useExternalEuicc",
-        base::FeatureList::IsEnabled(
-            chromeos::features::kCellularUseExternalEuicc)}});
+      {{"useSecondEuicc", base::FeatureList::IsEnabled(
+                              chromeos::features::kCellularUseSecondEuicc)}});
   return *named_bools;
 }
 
 const std::vector<const NamedResourceId>& GetResourceIdValues() {
   static const base::NoDestructor<std::vector<const NamedResourceId>>
-      named_resource_ids({{"spinner.json", IDR_LOGIN_SPINNER_ANIMATION}});
+      named_resource_ids(
+          {{"spinner.json", IDR_LOGIN_SPINNER_ANIMATION},
+           {"spinner_dark.json", IDR_LOGIN_SPINNER_DARK_ANIMATION}});
   return *named_resource_ids;
 }
 
@@ -132,12 +139,12 @@ void AddNonStringLoadTimeData(content::WebUIDataSource* html_source) {
     html_source->AddResourcePath(entry.name, entry.value);
 }
 
-void AddNonStringLoadTimeDataToDict(base::DictionaryValue* dict) {
+void AddNonStringLoadTimeDataToDict(base::Value::Dict* dict) {
   for (const auto& entry : GetBooleanValues())
-    dict->SetBoolean(entry.name, entry.value);
+    dict->SetByDottedPath(entry.name, entry.value);
 
   for (const auto& entry : GetResourceIdValues())
-    dict->SetInteger(entry.name, entry.value);
+    dict->SetByDottedPath(entry.name, entry.value);
 }
 
 }  // namespace cellular_setup

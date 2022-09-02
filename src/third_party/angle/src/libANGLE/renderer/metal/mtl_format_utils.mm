@@ -121,15 +121,10 @@ bool OverrideTextureCaps(const DisplayMtl *display, angle::FormatID formatId, gl
 void GenerateTextureCapsMap(const FormatTable &formatTable,
                             const DisplayMtl *display,
                             gl::TextureCapsMap *capsMapOut,
-                            std::vector<GLenum> *compressedFormatsOut,
                             uint32_t *maxSamplesOut)
 {
-    auto &textureCapsMap    = *capsMapOut;
-    auto &compressedFormats = *compressedFormatsOut;
-
-    compressedFormats.clear();
-
-    auto formatVerifier = [&](const gl::InternalFormat &internalFormatInfo) {
+    auto &textureCapsMap = *capsMapOut;
+    auto formatVerifier  = [&](const gl::InternalFormat &internalFormatInfo) {
         angle::FormatID angleFormatId =
             angle::Format::InternalFormatToID(internalFormatInfo.sizedInternalFormat);
         const Format &mtlFormat = formatTable.getPixelFormat(angleFormatId);
@@ -139,7 +134,6 @@ void GenerateTextureCapsMap(const FormatTable &formatTable,
         }
         const FormatCaps &formatCaps = mtlFormat.getCaps();
 
-        const angle::Format &intendedAngleFormat = mtlFormat.intendedAngleFormat();
         gl::TextureCaps textureCaps;
 
         // First let check whether we can override certain special cases.
@@ -168,11 +162,6 @@ void GenerateTextureCapsMap(const FormatTable &formatTable,
         }
 
         textureCapsMap.set(mtlFormat.intendedFormatId, textureCaps);
-
-        if (intendedAngleFormat.isBlock)
-        {
-            compressedFormats.push_back(intendedAngleFormat.glInternalFormat);
-        }
     };
 
     // Texture caps map.
@@ -229,7 +218,7 @@ bool Format::isPVRTC() const
     switch (metalFormat)
     {
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) || \
-    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101600))
+    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000))
         case MTLPixelFormatPVRTC_RGB_2BPP:
         case MTLPixelFormatPVRTC_RGB_2BPP_sRGB:
         case MTLPixelFormatPVRTC_RGB_4BPP:
@@ -277,11 +266,9 @@ angle::Result FormatTable::initialize(const DisplayMtl *display)
     return angle::Result::Continue;
 }
 
-void FormatTable::generateTextureCaps(const DisplayMtl *display,
-                                      gl::TextureCapsMap *capsMapOut,
-                                      std::vector<GLenum> *compressedFormatsOut)
+void FormatTable::generateTextureCaps(const DisplayMtl *display, gl::TextureCapsMap *capsMapOut)
 {
-    GenerateTextureCapsMap(*this, display, capsMapOut, compressedFormatsOut, &mMaxSamples);
+    GenerateTextureCapsMap(*this, display, capsMapOut, &mMaxSamples);
 }
 
 const Format &FormatTable::getPixelFormat(angle::FormatID angleFormatId) const
@@ -367,7 +354,7 @@ void FormatTable::setCompressedFormatCaps(MTLPixelFormat formatId, bool filterab
     setFormatCaps(formatId, filterable, false, false, false, false, false, false);
 }
 
-void FormatTable::adjustFormatCapsForDevice(id<MTLDevice> device,
+void FormatTable::adjustFormatCapsForDevice(const mtl::ContextDevice &device,
                                             MTLPixelFormat id,
                                             bool supportsiOS2,
                                             bool supportsiOS4)

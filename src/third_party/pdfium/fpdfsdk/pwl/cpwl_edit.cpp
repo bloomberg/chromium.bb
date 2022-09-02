@@ -31,10 +31,10 @@
 
 CPWL_Edit::CPWL_Edit(
     const CreateParams& cp,
-    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
+    std::unique_ptr<IPWL_FillerNotify::PerWindowData> pAttachedData)
     : CPWL_Wnd(cp, std::move(pAttachedData)),
       m_pEditImpl(std::make_unique<CPWL_EditImpl>()) {
-  GetCreationParams()->eCursorType = IPWL_SystemHandler::CursorStyle::kVBeam;
+  GetCreationParams()->eCursorType = IPWL_FillerNotify::CursorStyle::kVBeam;
 }
 
 CPWL_Edit::~CPWL_Edit() {
@@ -213,7 +213,7 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
   }
   m_pEditImpl->DrawEdit(
       pDevice, mtUser2Device, GetTextColor().ToFXColor(GetTransparency()),
-      rcClip, CFX_PointF(), pRange, GetSystemHandler(), GetAttachedData());
+      rcClip, CFX_PointF(), pRange, GetFillerNotify(), GetAttachedData());
 }
 
 void CPWL_Edit::OnSetFocus() {
@@ -223,8 +223,9 @@ void CPWL_Edit::OnSetFocus() {
     return;
 
   if (!IsReadOnly()) {
-    if (CPWL_Wnd::FocusHandlerIface* pFocusHandler = GetFocusHandler()) {
-      pFocusHandler->OnSetFocus(this);
+    CPWL_Wnd::ProviderIface* pProvider = GetProvider();
+    if (pProvider) {
+      pProvider->OnSetFocusForEdit(this);
       if (!observed_ptr)
         return;
     }
@@ -331,33 +332,31 @@ bool CPWL_Edit::OnKeyDown(FWL_VKEYCODE nKeyCode, Mask<FWL_EVENTFLAG> nFlag) {
     return true;
 
   if (nKeyCode == FWL_VKEY_Delete) {
-    if (m_pFillerNotify) {
-      WideString strChange;
-      WideString strChangeEx;
+    WideString strChange;
+    WideString strChangeEx;
 
-      int nSelStart;
-      int nSelEnd;
-      std::tie(nSelStart, nSelEnd) = GetSelection();
+    int nSelStart;
+    int nSelEnd;
+    std::tie(nSelStart, nSelEnd) = GetSelection();
 
-      if (nSelStart == nSelEnd)
-        nSelEnd = nSelStart + 1;
+    if (nSelStart == nSelEnd)
+      nSelEnd = nSelStart + 1;
 
-      ObservedPtr<CPWL_Wnd> thisObserved(this);
+    ObservedPtr<CPWL_Wnd> thisObserved(this);
 
-      bool bRC;
-      bool bExit;
-      std::tie(bRC, bExit) = m_pFillerNotify->OnBeforeKeyStroke(
-          GetAttachedData(), strChange, strChangeEx, nSelStart, nSelEnd, true,
-          nFlag);
+    bool bRC;
+    bool bExit;
+    std::tie(bRC, bExit) = GetFillerNotify()->OnBeforeKeyStroke(
+        GetAttachedData(), strChange, strChangeEx, nSelStart, nSelEnd, true,
+        nFlag);
 
-      if (!thisObserved)
-        return false;
+    if (!thisObserved)
+      return false;
 
-      if (!bRC)
-        return false;
-      if (bExit)
-        return false;
-    }
+    if (!bRC)
+      return false;
+    if (bExit)
+      return false;
   }
 
   bool bRet = OnKeyDownInternal(nKeyCode, nFlag);
@@ -407,35 +406,32 @@ bool CPWL_Edit::OnChar(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) {
   bool bExit = false;
 
   if (!IsCTRLKeyDown(nFlag)) {
-    if (m_pFillerNotify) {
-      WideString swChange;
+    WideString swChange;
+    int nSelStart;
+    int nSelEnd;
+    std::tie(nSelStart, nSelEnd) = GetSelection();
 
-      int nSelStart;
-      int nSelEnd;
-      std::tie(nSelStart, nSelEnd) = GetSelection();
-
-      switch (nChar) {
-        case pdfium::ascii::kBackspace:
-          if (nSelStart == nSelEnd)
-            nSelStart = nSelEnd - 1;
-          break;
-        case pdfium::ascii::kReturn:
-          break;
-        default:
-          swChange += nChar;
-          break;
-      }
-
-      ObservedPtr<CPWL_Wnd> thisObserved(this);
-
-      WideString strChangeEx;
-      std::tie(bRC, bExit) = m_pFillerNotify->OnBeforeKeyStroke(
-          GetAttachedData(), swChange, strChangeEx, nSelStart, nSelEnd, true,
-          nFlag);
-
-      if (!thisObserved)
-        return false;
+    switch (nChar) {
+      case pdfium::ascii::kBackspace:
+        if (nSelStart == nSelEnd)
+          nSelStart = nSelEnd - 1;
+        break;
+      case pdfium::ascii::kReturn:
+        break;
+      default:
+        swChange += nChar;
+        break;
     }
+
+    ObservedPtr<CPWL_Wnd> thisObserved(this);
+
+    WideString strChangeEx;
+    std::tie(bRC, bExit) = GetFillerNotify()->OnBeforeKeyStroke(
+        GetAttachedData(), swChange, strChangeEx, nSelStart, nSelEnd, true,
+        nFlag);
+
+    if (!thisObserved)
+      return false;
   }
 
   if (!bRC)
@@ -481,9 +477,9 @@ bool CPWL_Edit::IsWndHorV() const {
 
 void CPWL_Edit::SetCursor() {
   if (IsValid()) {
-    GetSystemHandler()->SetCursor(
-        IsWndHorV() ? IPWL_SystemHandler::CursorStyle::kVBeam
-                    : IPWL_SystemHandler::CursorStyle::kHBeam);
+    GetFillerNotify()->SetCursor(IsWndHorV()
+                                     ? IPWL_FillerNotify::CursorStyle::kVBeam
+                                     : IPWL_FillerNotify::CursorStyle::kHBeam);
   }
 }
 
@@ -584,16 +580,16 @@ bool CPWL_Edit::OnKeyDownInternal(FWL_VKEYCODE nKeyCode,
         PasteText();
       return true;
     case FWL_VKEY_Up:
-      m_pEditImpl->OnVK_UP(IsSHIFTKeyDown(nFlag), false);
+      m_pEditImpl->OnVK_UP(IsSHIFTKeyDown(nFlag));
       return true;
     case FWL_VKEY_Down:
-      m_pEditImpl->OnVK_DOWN(IsSHIFTKeyDown(nFlag), false);
+      m_pEditImpl->OnVK_DOWN(IsSHIFTKeyDown(nFlag));
       return true;
     case FWL_VKEY_Left:
-      m_pEditImpl->OnVK_LEFT(IsSHIFTKeyDown(nFlag), false);
+      m_pEditImpl->OnVK_LEFT(IsSHIFTKeyDown(nFlag));
       return true;
     case FWL_VKEY_Right:
-      m_pEditImpl->OnVK_RIGHT(IsSHIFTKeyDown(nFlag), false);
+      m_pEditImpl->OnVK_RIGHT(IsSHIFTKeyDown(nFlag));
       return true;
     case FWL_VKEY_Home:
       m_pEditImpl->OnVK_HOME(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));

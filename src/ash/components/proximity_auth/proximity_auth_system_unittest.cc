@@ -6,21 +6,22 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/components/proximity_auth/fake_lock_handler.h"
 #include "ash/components/proximity_auth/fake_remote_device_life_cycle.h"
 #include "ash/components/proximity_auth/mock_proximity_auth_client.h"
 #include "ash/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "ash/components/proximity_auth/unlock_manager.h"
+#include "ash/constants/ash_features.h"
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,21 +42,21 @@ const char kUser1[] = "user1";
 const char kUser2[] = "user2";
 
 void CompareRemoteDeviceRefLists(
-    const chromeos::multidevice::RemoteDeviceRefList& list1,
-    const chromeos::multidevice::RemoteDeviceRefList& list2) {
+    const ash::multidevice::RemoteDeviceRefList& list1,
+    const ash::multidevice::RemoteDeviceRefList& list2) {
   ASSERT_EQ(list1.size(), list2.size());
   for (size_t i = 0; i < list1.size(); ++i) {
-    chromeos::multidevice::RemoteDeviceRef device1 = list1[i];
-    chromeos::multidevice::RemoteDeviceRef device2 = list2[i];
+    ash::multidevice::RemoteDeviceRef device1 = list1[i];
+    ash::multidevice::RemoteDeviceRef device2 = list2[i];
     EXPECT_EQ(device1.public_key(), device2.public_key());
   }
 }
 
 // Creates a RemoteDeviceRef object for |user_id| with |name|.
-chromeos::multidevice::RemoteDeviceRef CreateRemoteDevice(
+ash::multidevice::RemoteDeviceRef CreateRemoteDevice(
     const std::string& user_email,
     const std::string& name) {
-  return chromeos::multidevice::RemoteDeviceRefBuilder()
+  return ash::multidevice::RemoteDeviceRefBuilder()
       .SetUserEmail(user_email)
       .SetName(name)
       .Build();
@@ -81,7 +82,7 @@ class MockUnlockManager : public UnlockManager {
 class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
  public:
   MockProximityAuthPrefManager(
-      chromeos::multidevice_setup::FakeMultiDeviceSetupClient*
+      ash::multidevice_setup::FakeMultiDeviceSetupClient*
           fake_multidevice_setup_client)
       : ProximityAuthProfilePrefManager(nullptr,
                                         fake_multidevice_setup_client) {}
@@ -98,7 +99,7 @@ class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
 class TestableProximityAuthSystem : public ProximityAuthSystem {
  public:
   TestableProximityAuthSystem(
-      chromeos::secure_channel::SecureChannelClient* secure_channel_client,
+      ash::secure_channel::SecureChannelClient* secure_channel_client,
       std::unique_ptr<UnlockManager> unlock_manager,
       ProximityAuthPrefManager* pref_manager)
       : ProximityAuthSystem(secure_channel_client, std::move(unlock_manager)),
@@ -114,9 +115,8 @@ class TestableProximityAuthSystem : public ProximityAuthSystem {
 
  private:
   std::unique_ptr<RemoteDeviceLifeCycle> CreateRemoteDeviceLifeCycle(
-      chromeos::multidevice::RemoteDeviceRef remote_device,
-      absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device)
-      override {
+      ash::multidevice::RemoteDeviceRef remote_device,
+      absl::optional<ash::multidevice::RemoteDeviceRef> local_device) override {
     std::unique_ptr<FakeRemoteDeviceLifeCycle> life_cycle(
         new FakeRemoteDeviceLifeCycle(remote_device, local_device));
     life_cycle_ = life_cycle.get();
@@ -146,8 +146,8 @@ class ProximityAuthSystemTest : public testing::Test {
   }
 
   void SetUp() override {
-    fake_multidevice_setup_client_ = std::make_unique<
-        chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
+    fake_multidevice_setup_client_ =
+        std::make_unique<ash::multidevice_setup::FakeMultiDeviceSetupClient>();
     pref_manager_ = std::make_unique<NiceMock<MockProximityAuthPrefManager>>(
         fake_multidevice_setup_client_.get());
 
@@ -168,7 +168,7 @@ class ProximityAuthSystemTest : public testing::Test {
     unlock_manager_ = unlock_manager.get();
 
     fake_secure_channel_client_ =
-        std::make_unique<chromeos::secure_channel::FakeSecureChannelClient>();
+        std::make_unique<ash::secure_channel::FakeSecureChannelClient>();
 
     proximity_auth_system_ = std::make_unique<TestableProximityAuthSystem>(
         fake_secure_channel_client_.get(), std::move(unlock_manager),
@@ -199,32 +199,37 @@ class ProximityAuthSystemTest : public testing::Test {
     task_runner_->RunUntilIdle();
   }
 
+  void SimulateScreenOff() {
+    proximity_auth_system_->OnScreenOff();
+    proximity_auth_system_->OnScreenOffDone();
+    task_runner_->RunUntilIdle();
+  }
+
   FakeRemoteDeviceLifeCycle* life_cycle() {
     return proximity_auth_system_->life_cycle();
   }
 
   FakeLockHandler lock_handler_;
   NiceMock<MockProximityAuthClient> proximity_auth_client_;
-  std::unique_ptr<chromeos::secure_channel::FakeSecureChannelClient>
+  std::unique_ptr<ash::secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
   std::unique_ptr<TestableProximityAuthSystem> proximity_auth_system_;
   MockUnlockManager* unlock_manager_;
   std::unique_ptr<MockProximityAuthPrefManager> pref_manager_;
-  std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
+  std::unique_ptr<ash::multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
 
-  chromeos::multidevice::RemoteDeviceRef user1_local_device_;
-  chromeos::multidevice::RemoteDeviceRef user2_local_device_;
+  ash::multidevice::RemoteDeviceRef user1_local_device_;
+  ash::multidevice::RemoteDeviceRef user2_local_device_;
 
-  chromeos::multidevice::RemoteDeviceRefList user1_remote_devices_;
-  chromeos::multidevice::RemoteDeviceRefList user2_remote_devices_;
+  ash::multidevice::RemoteDeviceRefList user1_remote_devices_;
+  ash::multidevice::RemoteDeviceRefList user2_remote_devices_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 
  private:
-  chromeos::multidevice::ScopedDisableLoggingForTesting disable_logging_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  ash::multidevice::ScopedDisableLoggingForTesting disable_logging_;
 };
 
 TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_NotStarted) {
@@ -244,7 +249,7 @@ TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_NotStarted) {
       proximity_auth_system_->GetRemoteDevicesForUser(account2));
 
   CompareRemoteDeviceRefLists(
-      chromeos::multidevice::RemoteDeviceRefList(),
+      ash::multidevice::RemoteDeviceRefList(),
       proximity_auth_system_->GetRemoteDevicesForUser(
           AccountId::FromUserEmail("non_existent_user@google.com")));
 }
@@ -431,6 +436,41 @@ TEST_F(ProximityAuthSystemTest, Suspend_RegisteredUserFocused) {
         .Times(AtLeast(1));
     EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(NotNull()));
     SimulateSuspend();
+  }
+
+  EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_email());
+
+  EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
+      .Times(AtLeast(1));
+}
+
+TEST_F(ProximityAuthSystemTest, ScreenOff_ScreenUnlocked) {
+  base::test::ScopedFeatureList feature_list(
+      ash::features::kSmartLockBluetoothScreenOffFix);
+  UnlockScreen();
+  EXPECT_FALSE(life_cycle());
+  SimulateScreenOff();
+  EXPECT_FALSE(life_cycle());
+}
+
+TEST_F(ProximityAuthSystemTest, ScreenOff_UnregisteredUserFocused) {
+  base::test::ScopedFeatureList feature_list(
+      ash::features::kSmartLockBluetoothScreenOffFix);
+  SimulateScreenOff();
+  EXPECT_FALSE(life_cycle());
+}
+
+TEST_F(ProximityAuthSystemTest, ScreenOff_RegisteredUserFocused) {
+  base::test::ScopedFeatureList feature_list(
+      ash::features::kSmartLockBluetoothScreenOffFix);
+  FocusUser(kUser1);
+
+  {
+    InSequence sequence;
+    EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
+        .Times(AtLeast(1));
+    EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(NotNull()));
+    SimulateScreenOff();
   }
 
   EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_email());

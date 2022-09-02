@@ -30,7 +30,6 @@ import org.chromium.base.FeatureList;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -42,7 +41,7 @@ import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.NightModeTestUtils.NightModeParams;
 
@@ -54,7 +53,7 @@ import java.util.List;
  */
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestCase {
+public class PowerBookmarkShoppingItemRowRenderTest extends BlankUiTestActivityTestCase {
     @ParameterAnnotations.ClassParameter
     private static List<ParameterSet> sClassParams = new NightModeParams().getParameters();
 
@@ -62,7 +61,9 @@ public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestC
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_BOOKMARKS)
+                    .build();
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -84,11 +85,11 @@ public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestC
 
     public PowerBookmarkShoppingItemRowRenderTest(boolean nightModeEnabled) {
         // Sets a fake background color to make the screenshots easier to compare with bare eyes.
-        NightModeTestUtils.setUpNightModeForDummyUiActivity(nightModeEnabled);
+        NightModeTestUtils.setUpNightModeForBlankUiTestActivity(nightModeEnabled);
         mRenderTestRule.setNightModeEnabled(nightModeEnabled);
     }
 
-    public void setupFeatureOverrides() {
+    public void enableBookmarksVisualRefresh() {
         FeatureList.TestValues testValuesOverride = new FeatureList.TestValues();
         testValuesOverride.addFeatureFlagOverride(ChromeFeatureList.BOOKMARKS_REFRESH, true);
         testValuesOverride.addFieldTrialParamOverride(ChromeFeatureList.BOOKMARKS_REFRESH,
@@ -96,12 +97,21 @@ public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestC
         FeatureList.setTestValues(testValuesOverride);
     }
 
+    public void setupFeatureVariations(boolean useCompactVisuals) {
+        FeatureList.TestValues testValuesOverride = new FeatureList.TestValues();
+        testValuesOverride.addFeatureFlagOverride(ChromeFeatureList.BOOKMARKS_REFRESH, true);
+        testValuesOverride.addFieldTrialParamOverride(ChromeFeatureList.BOOKMARKS_REFRESH,
+                BookmarkFeatures.BOOKMARK_VISUALS_ENABLED, "true");
+        testValuesOverride.addFieldTrialParamOverride(ChromeFeatureList.BOOKMARKS_REFRESH,
+                BookmarkFeatures.BOOKMARK_COMPACT_VISUALS_ENABLED,
+                useCompactVisuals ? "true" : "false");
+        FeatureList.setTestValues(testValuesOverride);
+    }
+
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
-        setupFeatureOverrides();
-
         mBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
         mBitmap.eraseColor(Color.GREEN);
 
@@ -120,6 +130,7 @@ public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestC
                 .when(mCurrencyFormatter)
                 .format(currencyCaptor.capture());
 
+        enableBookmarksVisualRefresh();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContentView = new LinearLayout(getActivity());
             mContentView.setBackgroundColor(Color.WHITE);
@@ -149,8 +160,10 @@ public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestC
     @MediumTest
     @Feature({"RenderTest"})
     public void testShoppingNormalPriceWithTrackingEnabled() throws IOException {
+        setupFeatureVariations(/*useCompactVisuals=*/false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mPowerBookmarkShoppingItemRow.initPriceTrackingUI("http://foo.com/img", true, 100, 100);
+            mPowerBookmarkShoppingItemRow.initPriceTrackingUI("http://foo.com/img", true,
+                    100 * CURRENCY_MUTLIPLIER, 100 * CURRENCY_MUTLIPLIER);
         });
         mRenderTestRule.render(mContentView, "shopping_normal_price_with_tracking_enabled");
     }
@@ -158,7 +171,21 @@ public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestC
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    public void testShoppingNormalPriceWithTrackingEnabled_compactVisuals() throws IOException {
+        setupFeatureVariations(/*useCompactVisuals=*/true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPowerBookmarkShoppingItemRow.initPriceTrackingUI("http://foo.com/img", true,
+                    100 * CURRENCY_MUTLIPLIER, 100 * CURRENCY_MUTLIPLIER);
+        });
+        mRenderTestRule.render(
+                mContentView, "shopping_normal_price_with_tracking_enabled_compact_visuals");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
     public void testShoppingNormalPriceWithTrackingDisabled() throws IOException {
+        setupFeatureVariations(/*useCompactVisuals=*/false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mPowerBookmarkShoppingItemRow.initPriceTrackingUI("http://foo.com/img", false,
                     100 * CURRENCY_MUTLIPLIER, 100 * CURRENCY_MUTLIPLIER);
@@ -169,7 +196,21 @@ public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestC
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    public void testShoppingNormalPriceWithTrackingDisabled_compactVisuals() throws IOException {
+        setupFeatureVariations(/*useCompactVisuals=*/true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPowerBookmarkShoppingItemRow.initPriceTrackingUI("http://foo.com/img", false,
+                    100 * CURRENCY_MUTLIPLIER, 100 * CURRENCY_MUTLIPLIER);
+        });
+        mRenderTestRule.render(
+                mContentView, "shopping_normal_price_with_tracking_disabled_compact_visuals");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
     public void testShoppingPriceDrop() throws IOException {
+        setupFeatureVariations(/*useCompactVisuals=*/false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mPowerBookmarkShoppingItemRow.initPriceTrackingUI("http://foo.com/img", false,
                     100 * CURRENCY_MUTLIPLIER, 50 * CURRENCY_MUTLIPLIER);
@@ -180,8 +221,20 @@ public class PowerBookmarkShoppingItemRowRenderTest extends DummyUiActivityTestC
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @DisabledTest(message = "crbug.com/1282173")
+    public void testShoppingPriceDrop_compactVisuals() throws IOException {
+        setupFeatureVariations(/*useCompactVisuals=*/true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPowerBookmarkShoppingItemRow.initPriceTrackingUI("http://foo.com/img", false,
+                    100 * CURRENCY_MUTLIPLIER, 50 * CURRENCY_MUTLIPLIER);
+        });
+        mRenderTestRule.render(mContentView, "shopping_price_drop_compact_visuals");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
     public void testShoppingRebindUI() throws IOException {
+        setupFeatureVariations(/*useCompactVisuals=*/false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mPowerBookmarkShoppingItemRow.initPriceTrackingUI("http://foo.com/img", false,
                     100 * CURRENCY_MUTLIPLIER, 100 * CURRENCY_MUTLIPLIER);

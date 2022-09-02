@@ -1422,6 +1422,551 @@ void Init10bpp() {
 }  // NOLINT(readability/fn_size)
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using Defs12bpp = IntraPredBppDefs<12, uint16_t>;
+
+void Init12bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(12);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  INIT_INTRAPREDICTORS(DefsHbd, Defs12bpp);
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorDcFill] =
+      Defs12bpp::_4x4::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorDcTop] =
+      DefsHbd::_4x4::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorDcLeft] =
+      DefsHbd::_4x4::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorDc] =
+      DefsHbd::_4x4::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorVertical] =
+      DefsHbd::_4x4::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorHorizontal] =
+      DefsHbd::_4x4::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorPaeth] =
+      DefsHbd::_4x4::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorDcFill] =
+      Defs12bpp::_4x8::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorDcTop] =
+      DefsHbd::_4x8::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorDcLeft] =
+      DefsHbd::_4x8::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorDc] =
+      DefsHbd::_4x8::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorVertical] =
+      DefsHbd::_4x8::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorHorizontal] =
+      DefsHbd::_4x8::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorPaeth] =
+      DefsHbd::_4x8::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorDcFill] =
+      Defs12bpp::_4x16::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorDcTop] =
+      DefsHbd::_4x16::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorDcLeft] =
+      DefsHbd::_4x16::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorDc] =
+      DefsHbd::_4x16::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorVertical] =
+      DefsHbd::_4x16::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorHorizontal] =
+      DefsHbd::_4x16::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorPaeth] =
+      DefsHbd::_4x16::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorDcFill] =
+      Defs12bpp::_8x4::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorDcTop] =
+      DefsHbd::_8x4::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorDcLeft] =
+      DefsHbd::_8x4::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorDc] =
+      DefsHbd::_8x4::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorVertical] =
+      DefsHbd::_8x4::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorHorizontal] =
+      DefsHbd::_8x4::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorPaeth] =
+      DefsHbd::_8x4::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorDcFill] =
+      Defs12bpp::_8x8::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorDcTop] =
+      DefsHbd::_8x8::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorDcLeft] =
+      DefsHbd::_8x8::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorDc] =
+      DefsHbd::_8x8::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorVertical] =
+      DefsHbd::_8x8::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorHorizontal] =
+      DefsHbd::_8x8::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorPaeth] =
+      DefsHbd::_8x8::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorDcFill] =
+      Defs12bpp::_8x16::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorDcTop] =
+      DefsHbd::_8x16::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorDcLeft] =
+      DefsHbd::_8x16::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorDc] =
+      DefsHbd::_8x16::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorVertical] =
+      DefsHbd::_8x16::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorHorizontal] =
+      DefsHbd::_8x16::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorPaeth] =
+      DefsHbd::_8x16::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorDcFill] =
+      Defs12bpp::_8x32::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorDcTop] =
+      DefsHbd::_8x32::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorDcLeft] =
+      DefsHbd::_8x32::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorDc] =
+      DefsHbd::_8x32::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorVertical] =
+      DefsHbd::_8x32::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorHorizontal] =
+      DefsHbd::_8x32::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorPaeth] =
+      DefsHbd::_8x32::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorDcFill] =
+      Defs12bpp::_16x4::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorDcTop] =
+      DefsHbd::_16x4::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorDcLeft] =
+      DefsHbd::_16x4::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorDc] =
+      DefsHbd::_16x4::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorVertical] =
+      DefsHbd::_16x4::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorHorizontal] =
+      DefsHbd::_16x4::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorPaeth] =
+      DefsHbd::_16x4::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorDcFill] =
+      Defs12bpp::_16x8::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorDcTop] =
+      DefsHbd::_16x8::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorDcLeft] =
+      DefsHbd::_16x8::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorDc] =
+      DefsHbd::_16x8::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorVertical] =
+      DefsHbd::_16x8::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorHorizontal] =
+      DefsHbd::_16x8::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorPaeth] =
+      DefsHbd::_16x8::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorDcFill] =
+      Defs12bpp::_16x16::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorDcTop] =
+      DefsHbd::_16x16::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorDcLeft] =
+      DefsHbd::_16x16::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorDc] =
+      DefsHbd::_16x16::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorVertical] =
+      DefsHbd::_16x16::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorHorizontal] =
+      DefsHbd::_16x16::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorPaeth] =
+      DefsHbd::_16x16::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorDcFill] =
+      Defs12bpp::_16x32::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorDcTop] =
+      DefsHbd::_16x32::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorDcLeft] =
+      DefsHbd::_16x32::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorDc] =
+      DefsHbd::_16x32::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorVertical] =
+      DefsHbd::_16x32::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorHorizontal] =
+      DefsHbd::_16x32::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorPaeth] =
+      DefsHbd::_16x32::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x64_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorDcFill] =
+      Defs12bpp::_16x64::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x64_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorDcTop] =
+      DefsHbd::_16x64::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x64_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorDcLeft] =
+      DefsHbd::_16x64::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x64_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorDc] =
+      DefsHbd::_16x64::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x64_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorVertical] =
+      DefsHbd::_16x64::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x64_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorHorizontal] =
+      DefsHbd::_16x64::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x64_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorPaeth] =
+      DefsHbd::_16x64::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorDcFill] =
+      Defs12bpp::_32x8::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorDcTop] =
+      DefsHbd::_32x8::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorDcLeft] =
+      DefsHbd::_32x8::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorDc] =
+      DefsHbd::_32x8::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorVertical] =
+      DefsHbd::_32x8::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorHorizontal] =
+      DefsHbd::_32x8::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorPaeth] =
+      DefsHbd::_32x8::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorDcFill] =
+      Defs12bpp::_32x16::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorDcTop] =
+      DefsHbd::_32x16::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorDcLeft] =
+      DefsHbd::_32x16::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorDc] =
+      DefsHbd::_32x16::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorVertical] =
+      DefsHbd::_32x16::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorHorizontal] =
+      DefsHbd::_32x16::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorPaeth] =
+      DefsHbd::_32x16::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorDcFill] =
+      Defs12bpp::_32x32::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorDcTop] =
+      DefsHbd::_32x32::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorDcLeft] =
+      DefsHbd::_32x32::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorDc] =
+      DefsHbd::_32x32::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorVertical] =
+      DefsHbd::_32x32::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorHorizontal] =
+      DefsHbd::_32x32::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorPaeth] =
+      DefsHbd::_32x32::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x64_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorDcFill] =
+      Defs12bpp::_32x64::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x64_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorDcTop] =
+      DefsHbd::_32x64::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x64_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorDcLeft] =
+      DefsHbd::_32x64::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x64_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorDc] =
+      DefsHbd::_32x64::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x64_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorVertical] =
+      DefsHbd::_32x64::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x64_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorHorizontal] =
+      DefsHbd::_32x64::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x64_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorPaeth] =
+      DefsHbd::_32x64::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x16_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorDcFill] =
+      Defs12bpp::_64x16::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x16_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorDcTop] =
+      DefsHbd::_64x16::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x16_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorDcLeft] =
+      DefsHbd::_64x16::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x16_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorDc] =
+      DefsHbd::_64x16::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x16_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorVertical] =
+      DefsHbd::_64x16::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x16_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorHorizontal] =
+      DefsHbd::_64x16::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x16_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorPaeth] =
+      DefsHbd::_64x16::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x32_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorDcFill] =
+      Defs12bpp::_64x32::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x32_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorDcTop] =
+      DefsHbd::_64x32::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x32_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorDcLeft] =
+      DefsHbd::_64x32::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x32_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorDc] =
+      DefsHbd::_64x32::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x32_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorVertical] =
+      DefsHbd::_64x32::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x32_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorHorizontal] =
+      DefsHbd::_64x32::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x32_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorPaeth] =
+      DefsHbd::_64x32::Paeth;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x64_IntraPredictorDcFill
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorDcFill] =
+      Defs12bpp::_64x64::DcFill;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x64_IntraPredictorDcTop
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorDcTop] =
+      DefsHbd::_64x64::DcTop;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x64_IntraPredictorDcLeft
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorDcLeft] =
+      DefsHbd::_64x64::DcLeft;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x64_IntraPredictorDc
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorDc] =
+      DefsHbd::_64x64::Dc;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x64_IntraPredictorVertical
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorVertical] =
+      DefsHbd::_64x64::Vertical;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x64_IntraPredictorHorizontal
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorHorizontal] =
+      DefsHbd::_64x64::Horizontal;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize64x64_IntraPredictorPaeth
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorPaeth] =
+      DefsHbd::_64x64::Paeth;
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}  // NOLINT(readability/fn_size)
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 #undef INIT_INTRAPREDICTORS_WxH
 #undef INIT_INTRAPREDICTORS
 }  // namespace
@@ -1430,6 +1975,9 @@ void IntraPredInit_C() {
   Init8bpp();
 #if LIBGAV1_MAX_BITDEPTH >= 10
   Init10bpp();
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  Init12bpp();
 #endif
 }
 

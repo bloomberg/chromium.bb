@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "experimental/graphite/src/geom/IntersectionTree.h"
 #include "include/utils/SkRandom.h"
+#include "src/gpu/graphite/geom/IntersectionTree.h"
 #include "tests/Test.h"
 
-namespace skgpu {
+namespace skgpu::graphite {
 
 class SimpleIntersectionTree {
 public:
@@ -36,9 +36,9 @@ DEF_GRAPHITE_TEST(skgpu_IntersectionTree, reporter) {
         IntersectionTree tree;
         for (int i = 0; i < 1000; ++i) {
             Rect rect = Rect::XYWH(rand.nextRangeF(0, 500),
-                                   rand.nextRangeF(0, 500),
-                                   rand.nextRangeF(0, 70),
-                                   rand.nextRangeF(0, 70));
+                                                       rand.nextRangeF(0, 500),
+                                                       rand.nextRangeF(0, 70),
+                                                       rand.nextRangeF(0, 70));
             CHECK(tree.add(rect) == simpleTree.add({rect.left(),
                                                    rect.top(),
                                                    rect.right(),
@@ -62,8 +62,7 @@ DEF_GRAPHITE_TEST(skgpu_IntersectionTree, reporter) {
     {
         SimpleIntersectionTree simpleTree;
         IntersectionTree tree;
-        CHECK(tree.add(Rect(float2(-std::numeric_limits<float>::infinity()),
-                                   float2(std::numeric_limits<float>::infinity()))));
+        CHECK(tree.add(Rect::Infinite()));
         CHECK(!tree.add(Rect::WH(1,1)));
         CHECK(!tree.add(Rect::WH(1,std::numeric_limits<float>::infinity())));
         CHECK(tree.add(Rect::WH(0, 0)));
@@ -72,4 +71,4 @@ DEF_GRAPHITE_TEST(skgpu_IntersectionTree, reporter) {
     }
 }
 
-}  // namespace skgpu
+}  // namespace skgpu::graphite

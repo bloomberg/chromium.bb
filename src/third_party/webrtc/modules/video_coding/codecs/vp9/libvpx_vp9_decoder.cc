@@ -96,7 +96,7 @@ ColorSpace ExtractVP9ColorSpace(vpx_color_space_t space_t,
 
 LibvpxVp9Decoder::LibvpxVp9Decoder()
     : LibvpxVp9Decoder(FieldTrialBasedConfig()) {}
-LibvpxVp9Decoder::LibvpxVp9Decoder(const WebRtcKeyValueConfig& trials)
+LibvpxVp9Decoder::LibvpxVp9Decoder(const FieldTrialsView& trials)
     : decode_complete_callback_(nullptr),
       inited_(false),
       decoder_(nullptr),
@@ -275,8 +275,8 @@ int LibvpxVp9Decoder::ReturnFrame(
   // This buffer contains all of `img`'s image data, a reference counted
   // Vp9FrameBuffer. (libvpx is done with the buffers after a few
   // vpx_codec_decode calls or vpx_codec_destroy).
-  rtc::scoped_refptr<Vp9FrameBufferPool::Vp9FrameBuffer> img_buffer =
-      static_cast<Vp9FrameBufferPool::Vp9FrameBuffer*>(img->fb_priv);
+  rtc::scoped_refptr<Vp9FrameBufferPool::Vp9FrameBuffer> img_buffer(
+      static_cast<Vp9FrameBufferPool::Vp9FrameBuffer*>(img->fb_priv));
 
   // The buffer can be used directly by the VideoFrame (without copy) by
   // using a Wrapped*Buffer.

@@ -1,4 +1,7 @@
+load("//bazel:macros.bzl", "selects")
 load(":defs.bzl", "bool_flag", "string_flag_with_values")
+
+licenses(["notice"])
 
 # @platforms is found at https://github.com/bazelbuild/platforms
 package(default_visibility = ["//:__subpackages__"])
@@ -8,6 +11,17 @@ config_setting(
     constraint_values = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
+    ],
+)
+
+# Apple devices with intel processors released before the shift to the M1 chip
+# will use this config setting. Because M1 chips use the arm cpu instruction set,
+# this flag will not be used.
+config_setting(
+    name = "mac_x64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:macos",
     ],
 )
 
@@ -59,6 +73,31 @@ config_setting(
     },
 )
 
+selects.config_setting_group(
+    name = "has_gpu_backend",
+    match_any = [
+        ":gl_backend",
+        ":dawn_backend",
+        ":vulkan_backend",
+    ],
+)
+
+selects.config_setting_group(
+    name = "needs_sksl",
+    match_any = [
+        ":has_gpu_backend",
+        ":enable_sksl_true",
+    ],
+)
+
+selects.config_setting_group(
+    name = "vulkan_with_vma",
+    match_all = [
+        ":vulkan_backend",
+        ":use_vulkan_memory_allocator_true",
+    ],
+)
+
 # =============================================================================
 #                     Configurable Skia Features
 # =============================================================================
@@ -81,6 +120,7 @@ string_flag_with_values(
     values = [
         "gl_backend",
         "vulkan_backend",
+        "dawn_backend",
     ],
 )
 
@@ -97,17 +137,35 @@ string_flag_with_values(
     default = "empty_fontmgr_factory",
     flag_name = "fontmgr_factory",
     values = [
-        "empty_fontmgr_factory",
+        # Makes the default SkFontMgr load fonts from a hard-coded directory on disk.
+        "custom_directory_fontmgr_factory",
+        # Makes the default SkFontMgr load fonts from an SkEmbeddedResource that has been compiled
+        # into the binary, e.g. with //tools/embed_resources.py
         "custom_embedded_fontmgr_factory",
+        # Makes the default SkFontMgr return empty fonts (e.g. SkTypeface_Empty). This is typically
+        # used when someone wants to make their own custom SkFontMgr objects, but does not want the
+        # default SkFontMgr to do anything (e.g. force usage of the custom one).
+        "custom_empty_fontmgr_factory",
+        # Makes the default SkFontMgr return null. Typically used when font support is not desired.
+        "empty_fontmgr_factory",
     ],
 )
 
+# These flags need only be set if additional functionality beyond the fontmgr_factory flag is
+# required. For example, the setting fontmgr_factory to custom_embedded_fontmgr_factory does not
+# require setting include_fontmgr to custom_embedded_fontmgr, because those sources and settings
+# will already be compiled in due to the _factory flag.
 string_flag_with_values(
     flag_name = "include_fontmgr",
     multiple = True,
     values = [
+        # Allows the construction of an SkFontMgr that loads files from a programmatically
+        # defined directory on disk.
         "custom_directory_fontmgr",
+        # Allows the construction of an SkFontMgr which can load fonts from an SkEmbeddedResource
+        # or from another source of raw bytes.
         "custom_embedded_fontmgr",
+        # Allows the construction of an SkFontMgr which returns empty fonts.
         "custom_empty_fontmgr",
     ],
 )
@@ -144,6 +202,43 @@ string_flag_with_values(
 )
 
 bool_flag(
+    default = True,
+    flag_name = "enable_effect_serialization",
+)
+
+bool_flag(
+    default = False,
+    flag_name = "enable_sksl",
+)
+
+bool_flag(
+    default = False,
+    flag_name = "enable_skslc",
+)
+
+bool_flag(
+    default = False,
+    flag_name = "enable_sksl_tracing",
+)
+
+bool_flag(
+    # See SkTraceEventCommon.h for more on this type of tracing.
+    default = True,
+    flag_name = "enable_tracing",
+)
+
+bool_flag(
+    default = False,
+    flag_name = "is_skia_dev_build",
+)
+
+bool_flag(
     default = False,
     flag_name = "use_icu",
+)
+
+bool_flag(
+    default = True,
+    flag_name = "use_vulkan_memory_allocator",
+    public = False,  # Users should use :vulkan_with_vma
 )

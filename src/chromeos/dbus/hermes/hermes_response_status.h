@@ -29,7 +29,14 @@ enum class HermesResponseStatus {
   kErrorWrongState = 11,
   kErrorInvalidResponse = 12,
   kErrorNoResponse = 13,
-  kMaxValue = kErrorNoResponse
+  kErrorMalformedResponse = 14,
+  kErrorInternalLpaFailure = 15,
+  kErrorBadRequest = 16,
+  kErrorBadNotification = 17,
+  kErrorPendingProfile = 18,
+  kErrorSendApduFailure = 19,
+  kErrorSendHttpsFailure = 20,
+  kMaxValue = kErrorSendHttpsFailure
 };
 
 // Callback that receives only a HermesResponseStatus.
@@ -42,5 +49,10 @@ HermesResponseStatus HermesResponseStatusFromErrorName(
     const std::string& error_name);
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace ash {
+using ::chromeos::HermesResponseStatus;
+}
 
 #endif  // CHROMEOS_DBUS_HERMES_HERMES_RESPONSE_STATUS_H_

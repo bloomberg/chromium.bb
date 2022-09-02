@@ -34,6 +34,7 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
         property_name: revisions[project_name]
         for property_name, project_name in revision_mapping.items()
     }
+    properties.setdefault('got_revision', self.gen_revision(first_sln))
     if commit_positions:
 
       def get_ref(project_name):

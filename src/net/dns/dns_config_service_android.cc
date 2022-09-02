@@ -102,7 +102,7 @@ class DnsConfigServiceAndroid::ConfigReader : public SerialWorker {
     return std::make_unique<WorkItem>(dns_server_getter_);
   }
 
-  void OnWorkFinished(std::unique_ptr<SerialWorker::WorkItem>
+  bool OnWorkFinished(std::unique_ptr<SerialWorker::WorkItem>
                           serial_worker_work_item) override {
     DCHECK(serial_worker_work_item);
     DCHECK(!IsCancelled());
@@ -110,8 +110,10 @@ class DnsConfigServiceAndroid::ConfigReader : public SerialWorker {
     WorkItem* work_item = static_cast<WorkItem*>(serial_worker_work_item.get());
     if (work_item->dns_config_.has_value()) {
       service_->OnConfigRead(std::move(work_item->dns_config_).value());
+      return true;
     } else {
       LOG(WARNING) << "Failed to read DnsConfig.";
+      return false;
     }
   }
 
@@ -187,7 +189,7 @@ DnsConfigServiceAndroid::DnsConfigServiceAndroid()
     : DnsConfigService(kFilePathHosts, kConfigChangeDelay) {
   // Allow constructing on one thread and living on another.
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  dns_server_getter_ = base::BindRepeating(&android::GetDnsServers);
+  dns_server_getter_ = base::BindRepeating(&android::GetCurrentDnsServers);
 }
 
 DnsConfigServiceAndroid::~DnsConfigServiceAndroid() {

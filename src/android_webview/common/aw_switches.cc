@@ -64,9 +64,28 @@ const char kWebViewEnableModernCookieSameSite[] =
 const char kWebViewDisableAppsPackageNamesAllowlistComponent[] =
     "webview-disable-apps-package-names-allowlist-component";
 
+// Disables throttling querying apps package names allowlist components in
+// WebView clients.
+const char kWebViewDisablePackageAllowlistThrottling[] =
+    "webview-disable-package-allowlist-throttling";
+
 // Enables use selective image inversion to automatically darken page, it will
 // be used when WebView is in dark mode, but website doesn't provide dark style.
 const char kWebViewSelectiveImageInversionDarkening[] =
     "webview-selective-image-inversion-darkening";
+
+// Enables MPArch-based FencedFrames. This also implies
+// PrivacySandboxAdsAPIsOverride and SharedStorageAPI.
+const char kWebViewMPArchFencedFrames[] = "webview-mparch-fenced-frames";
+
+// Enables ShadowDOM-based FencedFrames. This also implies
+// PrivacySandboxAdsAPIsOverride and SharedStorageAPI.
+const char kWebViewShadowDOMFencedFrames[] = "webview-shadow-dom-fenced-frames";
+
+// Disables WebView from checking for app recovery mitigations.
+const char kWebViewDisableAppRecovery[] = "webview-disable-app-recovery";
+
+// Enables WebView to check for app recovery mitigations.
+const char kWebViewEnableAppRecovery[] = "webview-enable-app-recovery";
 
 }  // namespace switches

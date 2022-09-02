@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequence_manager/sequence_manager.h"
@@ -67,6 +68,8 @@ const char* GetUITaskQueueName(BrowserTaskQueues::QueueType queue_type) {
       return "ui_user_input_tq";
     case BrowserTaskQueues::QueueType::kNavigationNetworkResponse:
       return "ui_navigation_network_response_tq";
+    case BrowserTaskQueues::QueueType::kServiceWorkerStorageControlResponse:
+      return "ui_service_worker_storage_control_response_tq";
   }
 }
 
@@ -88,6 +91,8 @@ const char* GetIOTaskQueueName(BrowserTaskQueues::QueueType queue_type) {
       return "io_user_input_tq";
     case BrowserTaskQueues::QueueType::kNavigationNetworkResponse:
       return "io_navigation_network_response_tq";
+    case BrowserTaskQueues::QueueType::kServiceWorkerStorageControlResponse:
+      return "io_service_worker_storage_control_response_tq";
   }
 }
 
@@ -118,6 +123,12 @@ const char* GetDefaultQueueName(BrowserThread::ID thread_id) {
   return "";
 }
 
+// When GivePreconnectTasksHighestPriority is enabled, the browser will give the
+// dedicated preconnect task queue highest priority rather than its default high
+// priority.
+const base::Feature kGivePreconnectTasksHighestPriority{
+    "GivePreconnectTasksHighestPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace
 
 BrowserTaskQueues::Handle::~Handle() = default;
@@ -135,9 +146,9 @@ void BrowserTaskQueues::Handle::PostFeatureListInitializationSetup() {
                      base::Unretained(outer_)));
 }
 
-void BrowserTaskQueues::Handle::EnableAllQueues() {
+void BrowserTaskQueues::Handle::OnStartupComplete() {
   control_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserTaskQueues::EnableAllQueues,
+      FROM_HERE, base::BindOnce(&BrowserTaskQueues::OnStartupComplete,
                                 base::Unretained(outer_)));
 }
 
@@ -190,6 +201,9 @@ BrowserTaskQueues::BrowserTaskQueues(
   GetBrowserTaskQueue(QueueType::kNavigationNetworkResponse)
       ->SetQueuePriority(QueuePriority::kHighPriority);
 
+  GetBrowserTaskQueue(QueueType::kServiceWorkerStorageControlResponse)
+      ->SetQueuePriority(QueuePriority::kHighestPriority);
+
   // Control queue
   control_queue_ =
       sequence_manager->CreateTaskQueue(base::sequence_manager::TaskQueue::Spec(
@@ -236,14 +250,26 @@ void BrowserTaskQueues::PostFeatureListInitializationSetup() {
   // queue too. NOTE: This queue will not be used if the
   // |kTreatPreconnectAsDefault| feature is enabled (see
   // browser_task_executor.cc).
+  QueuePriority preconnect_queue_priority =
+      (base::FeatureList::IsEnabled(kGivePreconnectTasksHighestPriority))
+          ? QueuePriority::kHighestPriority
+          : QueuePriority::kHighPriority;
   GetBrowserTaskQueue(QueueType::kPreconnection)
-      ->SetQueuePriority(QueuePriority::kHighPriority);
+      ->SetQueuePriority(preconnect_queue_priority);
 }
 
-void BrowserTaskQueues::EnableAllQueues() {
-  for (size_t i = 0; i < queue_data_.size(); ++i) {
-    queue_data_[i].voter->SetVoteToEnable(true);
+void BrowserTaskQueues::OnStartupComplete() {
+  // Enable all queues
+  for (const auto& queue : queue_data_) {
+    queue.voter->SetVoteToEnable(true);
   }
+
+  // Update ServiceWorker task queue priority.
+  DCHECK_EQ(GetBrowserTaskQueue(QueueType::kServiceWorkerStorageControlResponse)
+                ->GetQueuePriority(),
+            QueuePriority::kHighestPriority);
+  GetBrowserTaskQueue(QueueType::kServiceWorkerStorageControlResponse)
+      ->SetQueuePriority(QueuePriority::kNormalPriority);
 }
 
 void BrowserTaskQueues::EnableAllExceptBestEffortQueues() {

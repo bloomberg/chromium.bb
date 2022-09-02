@@ -4,15 +4,15 @@
 
 #include "cast/common/certificate/cast_crl.h"
 
-#include <openssl/digest.h>
 #include <time.h>
 
 #include <memory>
 
 #include "absl/strings/string_view.h"
-#include "cast/common/certificate/cast_cert_validator_internal.h"
+#include "cast/common/certificate/date_time.h"
+#include "cast/common/public/parsed_certificate.h"
+#include "cast/common/public/trust_store.h"
 #include "platform/base/macros.h"
-#include "util/crypto/certificate_utils.h"
 #include "util/crypto/sha2.h"
 #include "util/osp_logging.h"
 
@@ -24,39 +24,6 @@ enum CrlVersion {
   // version 0: Spki Hash Algorithm = SHA-256
   //            Signature Algorithm = RSA-PKCS1 V1.5 with SHA-256
   kCrlVersion0 = 0,
-};
-
-// -------------------------------------------------------------------------
-// Cast CRL trust anchors.
-// -------------------------------------------------------------------------
-
-// There is one trusted root for Cast CRL certificate chains:
-//
-//   (1) CN=Cast CRL Root CA    (kCastCRLRootCaDer)
-//
-// These constants are defined by the file included next:
-
-#include "cast/common/certificate/cast_crl_root_ca_cert_der-inc.h"
-
-// Singleton for the trust store using the default Cast CRL root.
-class CastCRLTrustStore {
- public:
-  static CastCRLTrustStore* GetInstance() {
-    static CastCRLTrustStore* store = new CastCRLTrustStore();
-    return store;
-  }
-
-  TrustStore* trust_store() { return &trust_store_; }
-
-  ~CastCRLTrustStore() = default;
-
- private:
-  CastCRLTrustStore() {
-    trust_store_.certs.emplace_back(MakeTrustAnchor(kCastCRLRootCaDer));
-  }
-
-  TrustStore trust_store_;
-  OSP_DISALLOW_COPY_AND_ASSIGN(CastCRLTrustStore);
 };
 
 ConstDataSpan ConstDataSpanFromString(const std::string& s) {
@@ -75,18 +42,17 @@ bool VerifyCRL(const Crl& crl,
                const DateTime& time,
                TrustStore* trust_store,
                DateTime* overall_not_after) {
-  CertificatePathResult result_path = {};
-  Error error =
-      FindCertificatePath({crl.signer_cert()}, time, &result_path, trust_store);
-  if (!error.ok()) {
+  ErrorOr<TrustStore::CertificatePathResult> maybe_result_path =
+      trust_store->FindCertificatePath({crl.signer_cert()}, time);
+  if (!maybe_result_path) {
     return false;
   }
+  auto& result_path = maybe_result_path.value();
+  ParsedCertificate* target_cert = result_path[0].get();
 
-  bssl::UniquePtr<EVP_PKEY> public_key{
-      X509_get_pubkey(result_path.target_cert.get())};
-  if (!VerifySignedData(EVP_sha256(), public_key.get(),
-                        ConstDataSpanFromString(crl.tbs_crl()),
-                        ConstDataSpanFromString(crl.signature()))) {
+  if (!target_cert->VerifySignedData(
+          DigestAlgorithm::kSha256, ConstDataSpanFromString(crl.tbs_crl()),
+          ConstDataSpanFromString(crl.signature()))) {
     return false;
   }
 
@@ -107,18 +73,11 @@ bool VerifyCRL(const Crl& crl,
   // (excluding trust anchor).  No intermediates are provided above, so this
   // just amounts to |signer_cert| vs. |not_after_seconds|.
   *overall_not_after = not_after;
-  bssl::UniquePtr<ASN1_GENERALIZEDTIME> not_after_asn1{
-      ASN1_TIME_to_generalizedtime(
-          X509_get0_notAfter(result_path.target_cert.get()), nullptr)};
-  if (!not_after_asn1) {
+  ErrorOr<DateTime> maybe_not_after = target_cert->GetNotAfterTime();
+  if (!maybe_not_after) {
     return false;
   }
-  DateTime cert_not_after;
-  bool time_valid =
-      ParseAsn1GeneralizedTime(not_after_asn1.get(), &cert_not_after);
-  if (!time_valid) {
-    return false;
-  }
+  DateTime& cert_not_after = maybe_not_after.value();
   if (cert_not_after < *overall_not_after) {
     *overall_not_after = cert_not_after;
   }
@@ -167,8 +126,9 @@ CastCRL::~CastCRL() {}
 
 // Verifies the revocation status of the certificate chain, at the specified
 // time.
-bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
-                              const DateTime& time) const {
+bool CastCRL::CheckRevocation(
+    const std::vector<const ParsedCertificate*>& trusted_chain,
+    const DateTime& time) const {
   if (trusted_chain.empty())
     return false;
 
@@ -176,10 +136,10 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
     return false;
   }
 
-  // Check revocation. This loop iterates over both certificates AND then the
-  // trust anchor after exhausting the certs.
-  for (size_t i = 0; i < trusted_chain.size(); ++i) {
-    std::string spki_tlv = GetSpkiTlv(trusted_chain[i]);
+  // Check revocation, starting from the trust anchor.
+  for (size_t i = trusted_chain.size(); i > 0; --i) {
+    size_t subject_index = i - 1;
+    std::string spki_tlv = trusted_chain[subject_index]->GetSpkiTlv();
     if (spki_tlv.empty()) {
       return false;
     }
@@ -191,16 +151,15 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
     }
 
     // Check if the subordinate certificate was revoked by serial number.
-    if (i < (trusted_chain.size() - 1)) {
+    if (subject_index > 0) {
       const auto issuer_iter = revoked_serial_numbers_.find(spki_hash.value());
       if (issuer_iter != revoked_serial_numbers_.end()) {
-        const auto& subordinate = trusted_chain[i + 1];
+        const auto& subordinate = trusted_chain[subject_index - 1];
         uint64_t serial_number;
 
         // Only Google generated device certificates will be revoked by range.
         // These will always be less than 64 bits in length.
-        ErrorOr<uint64_t> maybe_serial =
-            ParseDerUint64(X509_get0_serialNumber(subordinate));
+        ErrorOr<uint64_t> maybe_serial = subordinate->GetSerialNumber();
         if (!maybe_serial) {
           continue;
         }
@@ -220,9 +179,6 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
 std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
                                            const DateTime& time,
                                            TrustStore* trust_store) {
-  if (!trust_store)
-    trust_store = CastCRLTrustStore::GetInstance()->trust_store();
-
   CrlBundle crl_bundle;
   if (!crl_bundle.ParseFromString(crl_proto)) {
     return nullptr;

@@ -4,8 +4,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+#include "include/core/SkPath.h"
+#include "include/core/SkPathTypes.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
 #include "include/utils/SkParse.h"
 #include "include/utils/SkParsePath.h"
+#include "src/core/SkGeometry.h"
+
+#include <stdio.h>
 
 static inline bool is_between(int c, int min, int max) {
     return (unsigned)(c - min) <= (unsigned)(max - min);
@@ -69,6 +80,22 @@ static const char* find_scalar(const char str[], SkScalar* value,
         *value += relative;
     }
     str = skip_sep(str);
+    return str;
+}
+
+// https://www.w3.org/TR/SVG11/paths.html#PathDataBNF
+//
+// flag:
+//    "0" | "1"
+static const char* find_flag(const char str[], bool* value) {
+    if (!str) {
+        return nullptr;
+    }
+    if (str[0] != '1' && str[0] != '0') {
+        return nullptr;
+    }
+    *value = str[0] != '0';
+    str = skip_sep(str + 1);
     return str;
 }
 
@@ -164,18 +191,19 @@ bool SkParsePath::FromSVGString(const char data[], SkPath* result) {
                 break;
             case 'A': {
                 SkPoint radii;
-                SkScalar angle, largeArc, sweep;
+                SkScalar angle;
+                bool largeArc, sweep;
                 if ((data = find_points(data, &radii, 1, false, nullptr))
                         && (data = skip_sep(data))
                         && (data = find_scalar(data, &angle, false, 0))
                         && (data = skip_sep(data))
-                        && (data = find_scalar(data, &largeArc, false, 0))
+                        && (data = find_flag(data, &largeArc))
                         && (data = skip_sep(data))
-                        && (data = find_scalar(data, &sweep, false, 0))
+                        && (data = find_flag(data, &sweep))
                         && (data = skip_sep(data))
                         && (data = find_points(data, &points[0], 1, relative, &c))) {
-                    path.arcTo(radii, angle, (SkPath::ArcSize) SkToBool(largeArc),
-                            (SkPathDirection) !SkToBool(sweep), points[0]);
+                    path.arcTo(radii, angle, (SkPath::ArcSize) largeArc,
+                            (SkPathDirection) !sweep, points[0]);
                     path.getLastPt(&c);
                 }
                 } break;
@@ -203,10 +231,6 @@ bool SkParsePath::FromSVGString(const char data[], SkPath* result) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#include "include/core/SkStream.h"
-#include "include/core/SkString.h"
-#include "src/core/SkGeometry.h"
 
 static void write_scalar(SkWStream* stream, SkScalar value) {
     char buffer[64];

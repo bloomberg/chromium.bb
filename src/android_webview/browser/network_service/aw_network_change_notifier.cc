@@ -44,6 +44,8 @@ AwNetworkChangeNotifier::GetCurrentDefaultNetwork() const {
 
 void AwNetworkChangeNotifier::OnConnectionTypeChanged() {}
 
+void AwNetworkChangeNotifier::OnConnectionCostChanged() {}
+
 void AwNetworkChangeNotifier::OnMaxBandwidthChanged(
     double max_bandwidth_mbps,
     ConnectionType type) {
@@ -59,6 +61,8 @@ void AwNetworkChangeNotifier::OnNetworkSoonToDisconnect(
 void AwNetworkChangeNotifier::OnNetworkDisconnected(
     NetworkHandle network) {}
 void AwNetworkChangeNotifier::OnNetworkMadeDefault(NetworkHandle network) {}
+
+void AwNetworkChangeNotifier::OnDefaultNetworkActive() {}
 
 AwNetworkChangeNotifier::AwNetworkChangeNotifier(
     net::NetworkChangeNotifierDelegateAndroid* delegate)

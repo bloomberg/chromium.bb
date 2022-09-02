@@ -18,9 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config.h"
 #include "libavutil/attributes.h"
 #include "libavutil/avassert.h"
-#include "libavutil/common.h"
+#include "libavutil/macros.h"
 #include "videodsp.h"
 
 #define BIT_DEPTH 8
@@ -54,4 +55,6 @@ av_cold void ff_videodsp_init(VideoDSPContext *ctx, int bpc)
         ff_videodsp_init_x86(ctx, bpc);
     if (ARCH_MIPS)
         ff_videodsp_init_mips(ctx, bpc);
+    if (ARCH_LOONGARCH64)
+        ff_videodsp_init_loongarch(ctx, bpc);
 }

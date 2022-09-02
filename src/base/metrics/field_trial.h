@@ -74,9 +74,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/persistent_memory_allocator.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/pickle.h"
-#include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
@@ -141,10 +139,10 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // base::Pickle object that we unpickle and read from.
   struct BASE_EXPORT FieldTrialEntry {
     // SHA1(FieldTrialEntry): Increment this if structure changes!
-    static constexpr uint32_t kPersistentTypeId = 0xABA17E13 + 2;
+    static constexpr uint32_t kPersistentTypeId = 0xABA17E13 + 3;
 
     // Expected size for 32/64-bit check.
-    static constexpr size_t kExpectedInstanceSize = 8;
+    static constexpr size_t kExpectedInstanceSize = 16;
 
     // Whether or not this field trial is activated. This is really just a
     // boolean but using a 32 bit value for portability reasons. It should be
@@ -153,8 +151,12 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
     // thread is accessing the memory location.
     subtle::Atomic32 activated;
 
+    // On e.g. x86, alignof(uint64_t) is 4.  Ensure consistent size and
+    // alignment of `pickle_size` across platforms.
+    uint32_t padding;
+
     // Size of the pickled structure, NOT the total size of this entry.
-    uint32_t pickle_size;
+    uint64_t pickle_size;
 
     // Calling this is only valid when the entry is initialized. That is, it
     // resides in shared memory and has a pickle containing the trial name and
@@ -565,23 +567,22 @@ class BASE_EXPORT FieldTrialList {
   static void CreateFeaturesFromCommandLine(const CommandLine& command_line,
                                             FeatureList* feature_list);
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   // Populates |command_line| and |launch_options| with the handles and command
   // line arguments necessary for a child process to inherit the shared-memory
   // object containing the FieldTrial configuration.
   static void PopulateLaunchOptionsWithFieldTrialState(
       CommandLine* command_line,
-      LaunchOptions* launch_options,
-      base::ProcessHandle child_process = 0);
-#endif  // !defined(OS_IOS)
+      LaunchOptions* launch_options);
+#endif  // !BUILDFLAG(IS_IOS)
 
-#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_NACL)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_NACL)
   // On POSIX, we also need to explicitly pass down this file descriptor that
   // should be shared with the child process. Returns -1 if it was not
   // initialized properly. The current process remains the onwer of the passed
   // descriptor.
   static int GetFieldTrialDescriptor();
-#endif  // defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_NACL)
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_NACL)
 
   static ReadOnlySharedMemoryRegion DuplicateFieldTrialSharedMemoryForTesting();
 
@@ -666,7 +667,7 @@ class BASE_EXPORT FieldTrialList {
   friend int SerializeSharedMemoryRegionMetadata();
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, CheckReadOnlySharedMemoryRegion);
 
-#if !defined(OS_NACL) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
   // Serialization is used to pass information about the shared memory handle
   // to child processes. This is achieved by passing a stringified reference to
   // the relevant OS resources to the child process.
@@ -679,8 +680,7 @@ class BASE_EXPORT FieldTrialList {
   // GetFieldTrialDescriptor() API.
   static std::string SerializeSharedMemoryRegionMetadata(
       const ReadOnlySharedMemoryRegion& shm,
-      LaunchOptions* launch_options,
-      base::ProcessHandle child_process = 0);
+      LaunchOptions* launch_options);
 
   // Deserialization instantiates the shared memory region for FieldTrials from
   // the serialized information contained in |switch_value|. Returns an invalid
@@ -699,7 +699,7 @@ class BASE_EXPORT FieldTrialList {
   // down to the child process for the shared memory region.
   static bool CreateTrialsFromSwitchValue(const std::string& switch_value,
                                           int fd_key);
-#endif  // !defined(OS_NACL) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
 
   // Takes an unmapped ReadOnlySharedMemoryRegion, maps it with the correct size
   // and creates field trials via CreateTrialsFromSharedMemoryMapping(). Returns

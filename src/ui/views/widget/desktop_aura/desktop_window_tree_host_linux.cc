@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
-#include <algorithm>
 #include <list>
 #include <memory>
 #include <string>
@@ -28,18 +27,15 @@
 #include "ui/platform_window/wm/wm_move_resize_handler.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(USE_ATK)
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #endif
 
+#include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
+
 namespace views {
-
-std::list<gfx::AcceleratedWidget>* DesktopWindowTreeHostLinux::open_windows_ =
-    nullptr;
-
 namespace {
 
 class SwapWithNewSizeObserverHelper : public ui::CompositorObserver {
@@ -87,47 +83,6 @@ DesktopWindowTreeHostLinux::DesktopWindowTreeHostLinux(
 
 DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() = default;
 
-// static
-std::vector<aura::Window*> DesktopWindowTreeHostLinux::GetAllOpenWindows() {
-  std::vector<aura::Window*> windows(open_windows().size());
-  std::transform(open_windows().begin(), open_windows().end(), windows.begin(),
-                 DesktopWindowTreeHostPlatform::GetContentWindowForWidget);
-  return windows;
-}
-
-// static
-void DesktopWindowTreeHostLinux::CleanUpWindowList(
-    void (*func)(aura::Window* window)) {
-  if (!open_windows_)
-    return;
-  while (!open_windows_->empty()) {
-    gfx::AcceleratedWidget widget = open_windows_->front();
-    func(DesktopWindowTreeHostPlatform::GetContentWindowForWidget(widget));
-    if (!open_windows_->empty() && open_windows_->front() == widget)
-      open_windows_->erase(open_windows_->begin());
-  }
-
-  delete open_windows_;
-  open_windows_ = nullptr;
-}
-
-// static
-DesktopWindowTreeHostLinux* DesktopWindowTreeHostLinux::From(
-    WindowTreeHost* wth) {
-  DCHECK(open_windows_) << "Calling this method from non-Linux based "
-                           "platform.";
-
-  for (auto widget : *open_windows_) {
-    DesktopWindowTreeHostPlatform* wth_platform =
-        DesktopWindowTreeHostPlatform::GetHostForWidget(widget);
-    if (wth_platform != wth)
-      continue;
-
-    return static_cast<views::DesktopWindowTreeHostLinux*>(wth_platform);
-  }
-  return nullptr;
-}
-
 gfx::Rect DesktopWindowTreeHostLinux::GetXRootWindowOuterBounds() const {
   // TODO(msisov): must be removed as soon as all X11 low-level bits are moved
   // to Ozone.
@@ -135,19 +90,11 @@ gfx::Rect DesktopWindowTreeHostLinux::GetXRootWindowOuterBounds() const {
   return GetX11Extension()->GetXRootWindowOuterBounds();
 }
 
-bool DesktopWindowTreeHostLinux::ContainsPointInXRegion(
-    const gfx::Point& point) const {
-  // TODO(msisov): must be removed as soon as all X11 low-level bits are moved
-  // to Ozone.
-  DCHECK(GetX11Extension());
-  return GetX11Extension()->ContainsPointInXRegion(point);
-}
-
-void DesktopWindowTreeHostLinux::LowerXWindow() {
-  // TODO(msisov): must be removed as soon as all X11 low-level bits are moved
-  // to Ozone.
-  DCHECK(GetX11Extension());
-  GetX11Extension()->LowerXWindow();
+void DesktopWindowTreeHostLinux::LowerWindow() {
+  if (GetX11Extension())
+    GetX11Extension()->LowerXWindow();
+  else
+    NOTIMPLEMENTED_LOG_ONCE();
 }
 
 base::OnceClosure DesktopWindowTreeHostLinux::DisableEventListening() {
@@ -162,34 +109,6 @@ base::OnceClosure DesktopWindowTreeHostLinux::DisableEventListening() {
 
   return base::BindOnce(&DesktopWindowTreeHostLinux::EnableEventListening,
                         weak_factory_.GetWeakPtr());
-}
-
-ui::WaylandExtension* DesktopWindowTreeHostLinux::GetWaylandExtension() {
-  return platform_window() ? ui::GetWaylandExtension(*(platform_window()))
-                           : nullptr;
-}
-
-const ui::WaylandExtension* DesktopWindowTreeHostLinux::GetWaylandExtension()
-    const {
-  return platform_window() ? ui::GetWaylandExtension(*(platform_window()))
-                           : nullptr;
-}
-
-ui::DeskExtension* DesktopWindowTreeHostLinux::GetDeskExtension() {
-  return ui::GetDeskExtension(*(platform_window()));
-}
-
-const ui::DeskExtension* DesktopWindowTreeHostLinux::GetDeskExtension() const {
-  return ui::GetDeskExtension(*(platform_window()));
-}
-
-ui::PinnedModeExtension* DesktopWindowTreeHostLinux::GetPinnedModeExtension() {
-  return ui::GetPinnedModeExtension(*(platform_window()));
-}
-
-const ui::PinnedModeExtension*
-DesktopWindowTreeHostLinux::GetPinnedModeExtension() const {
-  return ui::GetPinnedModeExtension(*(platform_window()));
 }
 
 void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
@@ -227,8 +146,21 @@ Widget::MoveLoopResult DesktopWindowTreeHostLinux::RunMoveLoop(
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
   GetContentWindow()->SetCapture();
-  return DesktopWindowTreeHostPlatform::RunMoveLoop(drag_offset, source,
-                                                    escape_behavior);
+
+  // DesktopWindowTreeHostLinux::RunMoveLoop() may result in |this| being
+  // deleted. As an extra safity guard, keep track of |this| with a weak
+  // pointer, and only call ReleaseCapture() if it still exists.
+  //
+  // TODO(https://crbug.com/1289682): Consider removing capture set/unset
+  // during window drag 'n drop (detached).
+  auto weak_this = weak_factory_.GetWeakPtr();
+
+  Widget::MoveLoopResult result = DesktopWindowTreeHostPlatform::RunMoveLoop(
+      drag_offset, source, escape_behavior);
+  if (weak_this.get())
+    GetContentWindow()->ReleaseCapture();
+
+  return result;
 }
 
 void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
@@ -285,24 +217,8 @@ void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
 }
 
 void DesktopWindowTreeHostLinux::OnClosed() {
-  open_windows().remove(GetAcceleratedWidget());
   DestroyNonClientEventFilter();
   DesktopWindowTreeHostPlatform::OnClosed();
-}
-
-void DesktopWindowTreeHostLinux::OnAcceleratedWidgetAvailable(
-    gfx::AcceleratedWidget widget) {
-  open_windows().push_front(widget);
-  DesktopWindowTreeHostPlatform::OnAcceleratedWidgetAvailable(widget);
-}
-
-void DesktopWindowTreeHostLinux::OnActivationChanged(bool active) {
-  if (active) {
-    auto widget = GetAcceleratedWidget();
-    open_windows().remove(widget);
-    open_windows().insert(open_windows().begin(), widget);
-  }
-  DesktopWindowTreeHostPlatform::OnActivationChanged(active);
 }
 
 ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() {
@@ -370,6 +286,8 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_class_class = params.wm_class_class;
   properties->wm_role_name = params.wm_role_name;
 
+  properties->wayland_app_id = params.wayland_app_id;
+
   DCHECK(!properties->x11_extension_delegate);
   properties->x11_extension_delegate = this;
 }
@@ -389,7 +307,7 @@ void DesktopWindowTreeHostLinux::OnCompleteSwapWithNewSize(
 
 void DesktopWindowTreeHostLinux::CreateNonClientEventFilter() {
   DCHECK(!non_client_window_event_filter_);
-  non_client_window_event_filter_ = std::make_unique<WindowEventFilterLinux>(
+  non_client_window_event_filter_ = std::make_unique<WindowEventFilterClass>(
       this, GetWmMoveResizeHandler(*platform_window()));
 }
 
@@ -405,12 +323,6 @@ void DesktopWindowTreeHostLinux::EnableEventListening() {
   DCHECK_GT(modal_dialog_counter_, 0UL);
   if (!--modal_dialog_counter_)
     targeter_for_modal_.reset();
-}
-
-std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostLinux::open_windows() {
-  if (!open_windows_)
-    open_windows_ = new std::list<gfx::AcceleratedWidget>();
-  return *open_windows_;
 }
 
 // static

@@ -85,7 +85,6 @@
   height: 25px;
   border-radius: 3px;
   margin-right: 16px;
-  cursor: pointer;
 }
 
 .block-title {
@@ -94,6 +93,11 @@
   color: var(--color-text-primary);
   text-transform: uppercase;
   letter-spacing: 0;
+}
+
+.color-text {
+  cursor: text;
+  user-select: text;
 }
 
 .results-section {
@@ -330,6 +334,10 @@
   align-items: center;
   display: flex;
   height: 20px;
+}
+
+.nodeId-column .monospace {
+  overflow: hidden;
 }
 
 .show-element {

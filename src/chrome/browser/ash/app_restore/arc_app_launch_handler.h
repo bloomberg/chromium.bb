@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/scheduler_configuration_manager.h"
 #include "chromeos/dbus/resourced/resourced_client.h"
@@ -133,6 +134,8 @@ class ArcAppLaunchHandler
 
   void LaunchApp(const std::string& app_id);
 
+  bool IsAppPendingRestore(const std::string& app_id) const;
+
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
@@ -151,6 +154,10 @@ class ArcAppLaunchHandler
 
   // chromeos::SchedulerConfigurationManagerBase::Observer:
   void OnConfigurationSet(bool success, size_t num_cores_disabled) override;
+
+  void set_desk_template_launch_id(int32_t desk_template_launch_id) {
+    desk_template_launch_id_ = desk_template_launch_id;
+  }
 
  private:
   friend class full_restore::ArcAppLaunchHandlerArcAppBrowserTest;
@@ -265,6 +272,10 @@ class ArcAppLaunchHandler
   bool is_shelf_ready_ = false;
 
   bool is_app_connection_ready_ = false;
+
+  // If nonzero, identifies the desk template launch that this handler is used
+  // for.
+  int32_t desk_template_launch_id_ = 0;
 
   // A repeating timer to check whether we can restore the ARC apps.
   std::unique_ptr<base::RepeatingTimer> app_launch_timer_;

@@ -19,6 +19,21 @@ class SearchResult;
 // fullscreen. Exposed in this header because it is recorded in multiple files.
 ASH_EXPORT extern const char kAppListPeekingToFullscreenHistogram[];
 
+// UMA histograms that record app list reorder animation smoothness. Exposed
+// in this header because it is needed in tests.
+ASH_EXPORT extern const char kClamshellReorderAnimationSmoothnessHistogram[];
+ASH_EXPORT extern const char kTabletReorderAnimationSmoothnessHistogram[];
+
+// UMA histograms that record app list reorder actions. Exposed in this header
+// because it is needed in tests.
+ASH_EXPORT extern const char kClamshellReorderActionHistogram[];
+ASH_EXPORT extern const char kTabletReorderActionHistogram[];
+
+// UMA histograms that records the number of files removed per user per session
+// from the launcher continue section. Exposed in this header because it is
+// needed in tests.
+ASH_EXPORT extern const char kContinueSectionFilesRemovedInSessionHistogram[];
+
 // The different ways to create a new page in the apps grid. These values are
 // written to logs. New enum values can be added, but existing enums must never
 // be renumbered or deleted and reused.
@@ -41,9 +56,9 @@ enum class ZeroStateSearchResultUserActionType {
 
 // These are used in histograms, do not remove/renumber entries. If you're
 // adding to this enum with the intention that it will be logged, update the
-// AppListZeroStateResultRemovalConfirmation enum listing in
+// AppListResultRemovalConfirmation enum listing in
 // tools/metrics/histograms/enums.xml.
-enum class ZeroStateSearchResutRemovalConfirmation {
+enum class SearchResultRemovalConfirmation {
   kRemovalConfirmed = 0,
   kRemovalCanceled = 1,
   kMaxValue = kRemovalCanceled,
@@ -236,11 +251,15 @@ void RecordZeroStateSearchResultUserActionHistogram(
     ZeroStateSearchResultUserActionType action);
 
 void RecordZeroStateSearchResultRemovalHistogram(
-    ZeroStateSearchResutRemovalConfirmation removal_decision);
+    SearchResultRemovalConfirmation removal_decision);
+
+void RecordSearchResultRemovalDialogDecision(
+    SearchResultRemovalConfirmation removal_decision);
 
 void RecordAppListUserJourneyTime(AppListShowSource source,
                                   base::TimeDelta time);
 
+// Records metrics periodically (see interval in UserMetricsRecorder).
 void RecordPeriodicAppListMetrics();
 
 ASH_EXPORT void RecordSearchResultOpenSource(const SearchResult* result,
@@ -268,6 +287,26 @@ ASH_EXPORT void ReportPaginationSmoothness(bool is_tablet_mode, int smoothness);
 
 ASH_EXPORT void ReportCardifiedSmoothness(bool is_entering_cardified,
                                           int smoothness);
+
+void ReportReorderAnimationSmoothness(bool in_tablet, int smoothness);
+
+void RecordAppListSortAction(AppListSortOrder new_order, bool in_tablet);
+
+// Invoked when the app list session ends, records metrics of interest during
+// the session.
+void RecordMetricsOnSessionEnd();
+
+// Records the number of files that have been removed from the Launcher Continue
+// Section in the session. This also increments the internal counter to keep
+// track of the number of files that have been removed.
+void RecordCumulativeContinueSectionResultRemovedNumber();
+
+// Resets the count for the number of files that have been removed from the
+// Launcher Continue Section in the session.
+void ResetContinueSectionFileRemovedCountForTest();
+
+// Records a metric for whether the user has hidden the continue section.
+void RecordHideContinueSectionMetric();
 
 }  // namespace ash
 

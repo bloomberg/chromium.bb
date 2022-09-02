@@ -82,7 +82,7 @@ void check_random_matrix(const MatrixType &m)
     enum {
         Rows = MatrixType::RowsAtCompileTime,
         Cols = MatrixType::ColsAtCompileTime,
-        DiagSize = EIGEN_SIZE_MIN_PREFER_DYNAMIC(Rows, Cols)
+        DiagSize = internal::min_size_prefer_dynamic(Rows, Cols)
     };
     typedef typename MatrixType::Scalar Scalar;
     typedef typename NumTraits<Scalar>::Real RealScalar;

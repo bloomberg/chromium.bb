@@ -39,7 +39,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
 #else
 #include "chrome/browser/ui/browser.h"
@@ -83,7 +83,7 @@ std::u16string CoreTabHelper::GetStatusText() const {
 
 void CoreTabHelper::UpdateContentRestrictions(int content_restrictions) {
   content_restrictions_ = content_restrictions;
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser)
     return;
@@ -183,7 +183,8 @@ void CoreTabHelper::SearchByImageInNewTabImpl(
   auto* thumbnail_capturer_proxy = chrome_render_frame.get();
   thumbnail_capturer_proxy->RequestImageForContextNode(
       thumbnail_min_size, gfx::Size(thumbnail_max_width, thumbnail_max_height),
-      chrome::mojom::ImageFormat::JPEG,
+      lens::features::GetSendImagesAsPng() ? chrome::mojom::ImageFormat::PNG
+                                           : chrome::mojom::ImageFormat::JPEG,
       base::BindOnce(&CoreTabHelper::DoSearchByImageInNewTab,
                      weak_factory_.GetWeakPtr(), std::move(chrome_render_frame),
                      src_url, additional_query_params, use_side_panel));
@@ -193,7 +194,7 @@ std::unique_ptr<content::WebContents> CoreTabHelper::SwapWebContents(
     std::unique_ptr<content::WebContents> new_contents,
     bool did_start_load,
     bool did_finish_load) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
   return tab->SwapWebContents(std::move(new_contents), did_start_load,
                               did_finish_load);
@@ -244,10 +245,6 @@ bool CoreTabHelper::GetStatusTextForWebContents(std::u16string* status_text,
       *status_text =
           l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
       return true;
-    case net::LOAD_STATE_WAITING_FOR_APPCACHE:
-      *status_text =
-          l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_APPCACHE);
-      return true;
     case net::LOAD_STATE_ESTABLISHING_PROXY_TUNNEL:
       *status_text =
           l10n_util::GetStringUTF16(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
@@ -290,9 +287,11 @@ bool CoreTabHelper::GetStatusTextForWebContents(std::u16string* status_text,
           l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
                                      source->GetLoadStateHost());
       return true;
-    // Ignore net::LOAD_STATE_READING_RESPONSE and net::LOAD_STATE_IDLE
+    // Ignore net::LOAD_STATE_READING_RESPONSE, net::LOAD_STATE_IDLE and
+    // net::LOAD_STATE_OBSOLETE_WAITING_FOR_APPCACHE
     case net::LOAD_STATE_IDLE:
     case net::LOAD_STATE_READING_RESPONSE:
+    case net::LOAD_STATE_OBSOLETE_WAITING_FOR_APPCACHE:
       break;
   }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -315,16 +314,15 @@ void CoreTabHelper::DidStartLoading() {
 }
 
 void CoreTabHelper::OnVisibilityChanged(content::Visibility visibility) {
-  // TODO(jochen): Consider handling OCCLUDED tabs the same way as HIDDEN tabs.
-  if (visibility != content::Visibility::HIDDEN) {
+  if (visibility == content::Visibility::VISIBLE) {
     web_cache::WebCacheManager::GetInstance()->ObserveActivity(
-        web_contents()->GetMainFrame()->GetProcess()->GetID());
+        web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID());
   }
 }
 
 // Update back/forward buttons for web_contents that are active.
 void CoreTabHelper::NavigationEntriesDeleted() {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   for (Browser* browser : *BrowserList::GetInstance()) {
     if (web_contents() == browser->tab_strip_model()->GetActiveWebContents())
       browser->command_controller()->TabStateChanged();
@@ -336,20 +334,20 @@ void CoreTabHelper::NavigationEntriesDeleted() {
 // web contents or not.
 void CoreTabHelper::OnWebContentsFocused(
     content::RenderWidgetHost* render_widget_host) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser)
     browser->command_controller()->WebContentsFocusChanged();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void CoreTabHelper::OnWebContentsLostFocus(
     content::RenderWidgetHost* render_widget_host) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser)
     browser->command_controller()->WebContentsFocusChanged();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 // Handles the image thumbnail for the context node, composes a image search
@@ -408,12 +406,12 @@ void CoreTabHelper::PostContentToURL(TemplateURLRef::PostContent post_content,
         content_type.c_str());
   }
   if (use_side_panel) {
-#if !defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     lens::OpenLensSidePanel(chrome::FindBrowserWithWebContents(web_contents()),
                             open_url_params);
 #else
     web_contents()->OpenURL(open_url_params);
-#endif  // !defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   } else {
     web_contents()->OpenURL(open_url_params);
   }

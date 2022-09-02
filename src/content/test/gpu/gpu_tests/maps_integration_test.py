@@ -2,27 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
 
 import json
 import os
 import sys
+import typing
+import unittest
 
-from gpu_tests import common_browser_args as cba
 from gpu_tests import color_profile_manager
+from gpu_tests import common_browser_args as cba
+from gpu_tests import common_typing as ct
 from gpu_tests import gpu_integration_test
-from gpu_tests import path_util
 from gpu_tests import pixel_test_pages
 from gpu_tests import expected_color_test
+
+import gpu_path_util
 
 from py_utils import cloud_storage
 from telemetry.util import image_util
 
-_MAPS_PERF_TEST_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
-                                    'perf', 'page_sets', 'maps_perf_test')
+_MAPS_PERF_TEST_PATH = os.path.join(gpu_path_util.TOOLS_PERF_DIR, 'page_sets',
+                                    'maps_perf_test')
 
-_DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test',
-                          'gpu', 'gpu_tests')
+_DATA_PATH = os.path.join(gpu_path_util.GPU_DIR, 'gpu_tests')
 
 _TEST_NAME = 'Maps_maps'
 
@@ -39,11 +41,11 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
   """
 
   @classmethod
-  def Name(cls):
+  def Name(cls) -> str:
     return 'maps'
 
   @classmethod
-  def SetUpProcess(cls):
+  def SetUpProcess(cls) -> None:
     options = cls.GetParsedCommandLineOptions()
     color_profile_manager.ForceUntilExitSRGB(
         options.dont_restore_color_profile_after_test)
@@ -60,12 +62,12 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
     cls.StartBrowser()
 
   @classmethod
-  def TearDownProcess(cls):
+  def TearDownProcess(cls) -> None:
     super(cls, MapsIntegrationTest).TearDownProcess()
     cls.StopWPRServer()
 
   @classmethod
-  def GenerateGpuTests(cls, options):
+  def GenerateGpuTests(cls, options: ct.ParsedCmdArgs) -> ct.TestGenerator:
     cls.SetParsedCommandLineOptions(options)
     # The maps_pixel_expectations.json contain the actual image expectations. If
     # the test fails, with errors greater than the tolerance for the run, then
@@ -75,26 +77,26 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
     # artifact of the failure to help with debugging. There are no accepted
     # positive baselines recorded in Skia Gold, so its diff will not be
     # sufficient to debugging the failure.
-    yield ('Maps_maps', 'file://performance.html', ())
+    yield ('Maps_maps', 'file://performance.html', [])
 
-  def RunActualGpuTest(self, url, *_):
+  def RunActualGpuTest(self, test_path: str, args: ct.TestArgs) -> None:
     tab = self.tab
     action_runner = tab.action_runner
-    action_runner.Navigate(url)
+    action_runner.Navigate(test_path)
     action_runner.WaitForJavaScriptCondition('window.startTest != undefined')
     action_runner.EvaluateJavaScript('window.startTest()')
     action_runner.WaitForJavaScriptCondition('window.testDone', timeout=320)
 
     # Wait for the page to process immediate work and load tiles.
-    action_runner.EvaluateJavaScript('''
+    action_runner.EvaluateJavaScript("""
         window.testCompleted = false;
         requestIdleCallback(
             () => window.testCompleted = true,
-            { timeout : 10000 })''')
+            { timeout : 10000 })""")
     action_runner.WaitForJavaScriptCondition('window.testCompleted', timeout=30)
 
     expected = _ReadPixelExpectations('maps_pixel_expectations.json')
-    page = _GetMapsPageForUrl(url, expected)
+    page = _GetMapsPageForUrl(test_path, expected)
 
     # Special case some tests on Fuchsia that need to grab the entire contents
     # in the screenshot instead of just the visible portion due to small screen
@@ -108,7 +110,7 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
       self.fail('Could not capture screenshot')
 
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
-    print('Maps\' devicePixelRatio is ' + str(dpr))
+    print("Maps' devicePixelRatio is %s" % dpr)
 
     # The bottom corners of Mac screenshots have black triangles due to the
     # rounded corners of Mac windows. So, crop the bottom few rows off now to
@@ -126,7 +128,7 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
     self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr)
 
   @classmethod
-  def ExpectationsFiles(cls):
+  def ExpectationsFiles(cls) -> typing.List[str]:
     return [
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
@@ -134,14 +136,17 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
     ]
 
 
-def _ReadPixelExpectations(expectations_file):
+def _ReadPixelExpectations(expectations_file: str) -> typing.List[dict]:
   expectations_path = os.path.join(_DATA_PATH, expectations_file)
   with open(expectations_path, 'r') as f:
     json_contents = json.load(f)
   return json_contents
 
 
-def _GetMapsPageForUrl(url, expected_colors):
+def _GetMapsPageForUrl(
+    url: str,
+    expected_colors: typing.List[expected_color_test.ExpectedColorExpectation]
+) -> expected_color_test.ExpectedColorPixelTestPage:
   page = expected_color_test.ExpectedColorPixelTestPage(
       url=url,
       name=_TEST_NAME,
@@ -153,7 +158,8 @@ def _GetMapsPageForUrl(url, expected_colors):
   return page
 
 
-def _GetCropBoundaries(screenshot):
+def _GetCropBoundaries(screenshot: ct.Screenshot
+                       ) -> typing.Tuple[int, int, int, int]:
   """Returns the boundaries to crop the screenshot to.
 
   Specifically, we look for the boundaries where the white background
@@ -208,6 +214,7 @@ def _GetCropBoundaries(screenshot):
   return x1, y1, x2, y2
 
 
-def load_tests(loader, tests, pattern):
+def load_tests(loader: unittest.TestLoader, tests: typing.Any,
+               pattern: typing.Any) -> unittest.TestSuite:
   del loader, tests, pattern  # Unused.
   return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

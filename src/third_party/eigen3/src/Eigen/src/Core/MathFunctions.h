@@ -21,15 +21,6 @@
 
 namespace Eigen {
 
-// On WINCE, std::abs is defined for int only, so let's defined our own overloads:
-// This issue has been confirmed with MSVC 2008 only, but the issue might exist for more recent versions too.
-#if EIGEN_OS_WINCE && EIGEN_COMP_MSVC && EIGEN_COMP_MSVC<=1500
-long        abs(long        x) { return (labs(x));  }
-double      abs(double      x) { return (fabs(x));  }
-float       abs(float       x) { return (fabsf(x)); }
-long double abs(long double x) { return (fabsl(x)); }
-#endif
-
 namespace internal {
 
 /** \internal \class global_math_functions_filtering_base
@@ -443,9 +434,9 @@ struct cast_impl
 // generating warnings on clang.  Here we explicitly cast the real component.
 template<typename OldType, typename NewType>
 struct cast_impl<OldType, NewType,
-  typename internal::enable_if<
+  typename std::enable_if_t<
     !NumTraits<OldType>::IsComplex && NumTraits<NewType>::IsComplex
-  >::type>
+  >>
 {
   EIGEN_DEVICE_FUNC
   static inline NewType run(const OldType& x)
@@ -900,7 +891,7 @@ struct random_default_impl<Scalar, false, true>
     // ScalarX is the widest of ScalarU and unsigned int.
     // We'll deal only with ScalarX and unsigned int below thus avoiding signed
     // types and arithmetic and signed overflows (which are undefined behavior).
-    typedef typename conditional<(ScalarU(-1) > unsigned(-1)), ScalarU, unsigned>::type ScalarX;
+    typedef std::conditional_t<(ScalarU(-1) > unsigned(-1)), ScalarU, unsigned> ScalarX;
     // The following difference doesn't overflow, provided our integer types are two's
     // complement and have the same number of padding bits in signed and unsigned variants.
     // This is the case in most modern implementations of C++.
@@ -925,8 +916,8 @@ struct random_default_impl<Scalar, false, true>
 #else
     enum { rand_bits = meta_floor_log2<(unsigned int)(RAND_MAX)+1>::value,
            scalar_bits = sizeof(Scalar) * CHAR_BIT,
-           shift = EIGEN_PLAIN_ENUM_MAX(0, int(rand_bits) - int(scalar_bits)),
-           offset = NumTraits<Scalar>::IsSigned ? (1 << (EIGEN_PLAIN_ENUM_MIN(rand_bits,scalar_bits)-1)) : 0
+           shift = plain_enum_max(0, int(rand_bits) - int(scalar_bits)),
+           offset = NumTraits<Scalar>::IsSigned ? (1 << (plain_enum_min(rand_bits, scalar_bits)-1)) : 0
     };
     return Scalar((std::rand() >> shift) - offset);
 #endif
@@ -963,7 +954,7 @@ inline EIGEN_MATHFUNC_RETVAL(random, Scalar) random()
 // Implementation of is* functions
 
 // std::is* do not work with fast-math and gcc, std::is* are available on MSVC 2013 and newer, as well as in clang.
-#if (EIGEN_HAS_CXX11_MATH && !(EIGEN_COMP_GNUC_STRICT && __FINITE_MATH_ONLY__)) || (EIGEN_COMP_MSVC>=1800) || (EIGEN_COMP_CLANG)
+#if (EIGEN_HAS_CXX11_MATH && !(EIGEN_COMP_GNUC_STRICT && __FINITE_MATH_ONLY__)) || (EIGEN_COMP_MSVC) || (EIGEN_COMP_CLANG)
 #define EIGEN_USE_STD_FPCLASSIFY 1
 #else
 #define EIGEN_USE_STD_FPCLASSIFY 0
@@ -971,22 +962,22 @@ inline EIGEN_MATHFUNC_RETVAL(random, Scalar) random()
 
 template<typename T>
 EIGEN_DEVICE_FUNC
-typename internal::enable_if<internal::is_integral<T>::value,bool>::type
+std::enable_if_t<internal::is_integral<T>::value,bool>
 isnan_impl(const T&) { return false; }
 
 template<typename T>
 EIGEN_DEVICE_FUNC
-typename internal::enable_if<internal::is_integral<T>::value,bool>::type
+std::enable_if_t<internal::is_integral<T>::value,bool>
 isinf_impl(const T&) { return false; }
 
 template<typename T>
 EIGEN_DEVICE_FUNC
-typename internal::enable_if<internal::is_integral<T>::value,bool>::type
+std::enable_if_t<internal::is_integral<T>::value,bool>
 isfinite_impl(const T&) { return true; }
 
 template<typename T>
 EIGEN_DEVICE_FUNC
-typename internal::enable_if<(!internal::is_integral<T>::value)&&(!NumTraits<T>::IsComplex),bool>::type
+std::enable_if_t<(!internal::is_integral<T>::value)&&(!NumTraits<T>::IsComplex),bool>
 isfinite_impl(const T& x)
 {
   #if defined(EIGEN_GPU_COMPILE_PHASE)
@@ -1001,7 +992,7 @@ isfinite_impl(const T& x)
 
 template<typename T>
 EIGEN_DEVICE_FUNC
-typename internal::enable_if<(!internal::is_integral<T>::value)&&(!NumTraits<T>::IsComplex),bool>::type
+std::enable_if_t<(!internal::is_integral<T>::value)&&(!NumTraits<T>::IsComplex),bool>
 isinf_impl(const T& x)
 {
   #if defined(EIGEN_GPU_COMPILE_PHASE)
@@ -1016,7 +1007,7 @@ isinf_impl(const T& x)
 
 template<typename T>
 EIGEN_DEVICE_FUNC
-typename internal::enable_if<(!internal::is_integral<T>::value)&&(!NumTraits<T>::IsComplex),bool>::type
+std::enable_if_t<(!internal::is_integral<T>::value)&&(!NumTraits<T>::IsComplex),bool>
 isnan_impl(const T& x)
 {
   #if defined(EIGEN_GPU_COMPILE_PHASE)
@@ -1049,7 +1040,7 @@ EIGEN_DEVICE_FUNC inline bool isinf_impl(const float& x)       { return isinf_ms
 
 #elif (defined __FINITE_MATH_ONLY__ && __FINITE_MATH_ONLY__ && EIGEN_COMP_GNUC)
 
-#if EIGEN_GNUC_AT_LEAST(5,0)
+#if EIGEN_COMP_GNUC
   #define EIGEN_TMP_NOOPT_ATTRIB EIGEN_DEVICE_FUNC inline __attribute__((optimize("no-finite-math-only")))
 #else
   // NOTE the inline qualifier and noinline attribute are both needed: the former is to avoid linking issue (duplicate symbol),
@@ -1241,7 +1232,7 @@ inline EIGEN_MATHFUNC_RETVAL(real, Scalar) real(const Scalar& x)
 
 template<typename Scalar>
 EIGEN_DEVICE_FUNC
-inline typename internal::add_const_on_value_type< EIGEN_MATHFUNC_RETVAL(real_ref, Scalar) >::type real_ref(const Scalar& x)
+inline internal::add_const_on_value_type_t< EIGEN_MATHFUNC_RETVAL(real_ref, Scalar) > real_ref(const Scalar& x)
 {
   return internal::real_ref_impl<Scalar>::run(x);
 }
@@ -1269,7 +1260,7 @@ inline EIGEN_MATHFUNC_RETVAL(arg, Scalar) arg(const Scalar& x)
 
 template<typename Scalar>
 EIGEN_DEVICE_FUNC
-inline typename internal::add_const_on_value_type< EIGEN_MATHFUNC_RETVAL(imag_ref, Scalar) >::type imag_ref(const Scalar& x)
+inline internal::add_const_on_value_type_t< EIGEN_MATHFUNC_RETVAL(imag_ref, Scalar) > imag_ref(const Scalar& x)
 {
   return internal::imag_ref_impl<Scalar>::run(x);
 }
@@ -1512,7 +1503,7 @@ double log(const double &x) { return ::log(x); }
 
 template<typename T>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
-typename internal::enable_if<NumTraits<T>::IsSigned || NumTraits<T>::IsComplex,typename NumTraits<T>::Real>::type
+std::enable_if_t<NumTraits<T>::IsSigned || NumTraits<T>::IsComplex,typename NumTraits<T>::Real>
 abs(const T &x) {
   EIGEN_USING_STD(abs);
   return abs(x);
@@ -1520,7 +1511,7 @@ abs(const T &x) {
 
 template<typename T>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
-typename internal::enable_if<!(NumTraits<T>::IsSigned || NumTraits<T>::IsComplex),typename NumTraits<T>::Real>::type
+std::enable_if_t<!(NumTraits<T>::IsSigned || NumTraits<T>::IsComplex),typename NumTraits<T>::Real>
 abs(const T &x) {
   return x;
 }

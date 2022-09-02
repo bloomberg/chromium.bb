@@ -189,7 +189,13 @@ fully-functional master_preferences file):
 
 "system_level": true,
 
-"verbose_logging": true
+"verbose_logging": true,
+
+"browser": {
+
+"confirm_to_quit": true,
+
+}
 
 },
 
@@ -230,6 +236,9 @@ are:
             (and only on first launch) of the browser.
 *   sync_promo.show_on_first_run_allowed: prevents the sign-in page from
             appearing on first run.
+*   browser/confirm_to_quit: Supported only on MacOS can be used to
+            prevent the confirmation prompt on quitting the browser. Note that
+            it needs to be in the "distribution" section of the file.
 
 ### Pre-installed Bookmarks
 

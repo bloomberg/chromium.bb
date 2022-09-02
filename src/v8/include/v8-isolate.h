@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "cppgc/common.h"
 #include "v8-array-buffer.h"       // NOLINT(build/include_directory)
@@ -246,6 +245,7 @@ class V8_EXPORT Isolate {
 
     /**
      * Explicitly specify a startup snapshot blob. The embedder owns the blob.
+     * The embedder *must* ensure that the snapshot is from a trusted source.
      */
     StartupData* snapshot_blob = nullptr;
 
@@ -304,6 +304,15 @@ class V8_EXPORT Isolate {
     int embedder_wrapper_object_index = -1;
 
     /**
+     * Callbacks to invoke in case of fatal or OOM errors.
+     */
+    FatalErrorCallback fatal_error_callback = nullptr;
+    OOMErrorCallback oom_error_callback = nullptr;
+
+    V8_DEPRECATE_SOON("Use oom_error_callback (https://crbug.com/1323177)")
+    LegacyOOMErrorCallback legacy_oom_error_callback = nullptr;
+
+    /**
      * The following parameter is experimental and may change significantly.
      * This is currently for internal testing.
      */
@@ -316,16 +325,18 @@ class V8_EXPORT Isolate {
    */
   class V8_EXPORT V8_NODISCARD Scope {
    public:
-    explicit Scope(Isolate* isolate) : isolate_(isolate) { isolate->Enter(); }
+    explicit Scope(Isolate* isolate) : v8_isolate_(isolate) {
+      v8_isolate_->Enter();
+    }
 
-    ~Scope() { isolate_->Exit(); }
+    ~Scope() { v8_isolate_->Exit(); }
 
     // Prevent copying of Scope objects.
     Scope(const Scope&) = delete;
     Scope& operator=(const Scope&) = delete;
 
    private:
-    Isolate* const isolate_;
+    Isolate* const v8_isolate_;
   };
 
   /**
@@ -346,7 +357,7 @@ class V8_EXPORT Isolate {
 
    private:
     OnFailure on_failure_;
-    Isolate* isolate_;
+    v8::Isolate* v8_isolate_;
 
     bool was_execution_allowed_assert_;
     bool was_execution_allowed_throws_;
@@ -368,7 +379,7 @@ class V8_EXPORT Isolate {
         const AllowJavascriptExecutionScope&) = delete;
 
    private:
-    Isolate* isolate_;
+    Isolate* v8_isolate_;
     bool was_execution_allowed_assert_;
     bool was_execution_allowed_throws_;
     bool was_execution_allowed_dump_;
@@ -391,7 +402,7 @@ class V8_EXPORT Isolate {
         const SuppressMicrotaskExecutionScope&) = delete;
 
    private:
-    internal::Isolate* const isolate_;
+    internal::Isolate* const i_isolate_;
     internal::MicrotaskQueue* const microtask_queue_;
     internal::Address previous_stack_height_;
 
@@ -404,7 +415,7 @@ class V8_EXPORT Isolate {
    */
   class V8_EXPORT V8_NODISCARD SafeForTerminationScope {
    public:
-    explicit SafeForTerminationScope(v8::Isolate* isolate);
+    explicit SafeForTerminationScope(v8::Isolate* v8_isolate);
     ~SafeForTerminationScope();
 
     // Prevent copying of Scope objects.
@@ -412,7 +423,7 @@ class V8_EXPORT Isolate {
     SafeForTerminationScope& operator=(const SafeForTerminationScope&) = delete;
 
    private:
-    internal::Isolate* isolate_;
+    internal::Isolate* i_isolate_;
     bool prev_value_;
   };
 
@@ -544,6 +555,8 @@ class V8_EXPORT Isolate {
     kWasmMultiValue = 110,
     kWasmExceptionHandling = 111,
     kInvalidatedMegaDOMProtector = 112,
+    kFunctionPrototypeArguments = 113,
+    kFunctionPrototypeCaller = 114,
 
     // If you add new values here, you'll also need to update Chromium's:
     // web_feature.mojom, use_counter_callback.cc, and enums.xml. V8 changes to
@@ -649,9 +662,6 @@ class V8_EXPORT Isolate {
    * This specifies the callback called by the upcoming dynamic
    * import() language feature to load modules.
    */
-  V8_DEPRECATE_SOON("Use HostImportModuleDynamicallyCallback")
-  void SetHostImportModuleDynamicallyCallback(
-      HostImportModuleDynamicallyWithImportAssertionsCallback callback);
   void SetHostImportModuleDynamicallyCallback(
       HostImportModuleDynamicallyCallback callback);
 
@@ -661,6 +671,13 @@ class V8_EXPORT Isolate {
    */
   void SetHostInitializeImportMetaObjectCallback(
       HostInitializeImportMetaObjectCallback callback);
+
+  /**
+   * This specifies the callback called by the upcoming ShadowRealm
+   * construction language feature to retrieve host created globals.
+   */
+  void SetHostCreateShadowRealmContextCallback(
+      HostCreateShadowRealmContextCallback callback);
 
   /**
    * This specifies the callback called when the stack property of Error
@@ -849,6 +866,9 @@ class V8_EXPORT Isolate {
    * Returns the number of phantom handles without callbacks that were reset
    * by the garbage collector since the last call to this function.
    */
+  V8_DEPRECATED(
+      "Information cannot be relied on anymore as internal representation may "
+      "change.")
   size_t NumberOfPhantomHandleResetsSinceLastCall();
 
   /**
@@ -1478,6 +1498,10 @@ class V8_EXPORT Isolate {
   /** Set the callback to invoke in case of fatal errors. */
   void SetFatalErrorHandler(FatalErrorCallback that);
 
+  /** Set the callback to invoke in case of OOM errors (deprecated). */
+  V8_DEPRECATE_SOON("Use OOMErrorCallback (https://crbug.com/1323177)")
+  void SetOOMErrorHandler(LegacyOOMErrorCallback that);
+
   /** Set the callback to invoke in case of OOM errors. */
   void SetOOMErrorHandler(OOMErrorCallback that);
 
@@ -1529,14 +1553,18 @@ class V8_EXPORT Isolate {
 
   void SetWasmStreamingCallback(WasmStreamingCallback callback);
 
+  void SetWasmAsyncResolvePromiseCallback(
+      WasmAsyncResolvePromiseCallback callback);
+
   void SetWasmLoadSourceMapCallback(WasmLoadSourceMapCallback callback);
 
   void SetWasmSimdEnabledCallback(WasmSimdEnabledCallback callback);
 
   void SetWasmExceptionsEnabledCallback(WasmExceptionsEnabledCallback callback);
 
-  void SetWasmDynamicTieringEnabledCallback(
-      WasmDynamicTieringEnabledCallback callback);
+  V8_DEPRECATE_SOON("Dynamic tiering is now enabled by default")
+  void SetWasmDynamicTieringEnabledCallback(WasmDynamicTieringEnabledCallback) {
+  }
 
   void SetSharedArrayBufferConstructorEnabledCallback(
       SharedArrayBufferConstructorEnabledCallback callback);
@@ -1608,6 +1636,9 @@ class V8_EXPORT Isolate {
    * Iterates through all the persistent handles in the current isolate's heap
    * that have class_ids.
    */
+  V8_DEPRECATED(
+      "Information cannot be relied on anymore as internal representation may "
+      "change.")
   void VisitHandlesWithClassIds(PersistentHandleVisitor* visitor);
 
   /**
@@ -1615,6 +1646,9 @@ class V8_EXPORT Isolate {
    * that have class_ids and are weak to be marked as inactive if there is no
    * pending activity for the handle.
    */
+  V8_DEPRECATED(
+      "Information cannot be relied on anymore as internal representation may "
+      "change.")
   void VisitWeakHandles(PersistentHandleVisitor* visitor);
 
   /**

@@ -7,10 +7,12 @@
 #include <memory>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/keyboard_shortcut_item.h"
+#include "ash/public/cpp/style/color_provider.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
-#include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/shortcut_viewer/views/bubble_view.h"
 #include "base/i18n/rtl.h"
 #include "base/no_destructor.h"
@@ -29,16 +31,54 @@ namespace keyboard_shortcut_viewer {
 
 namespace {
 
+// Light mode color:
+constexpr int kIconSize = 16;
+
+constexpr SkColor kShortcutBubbleSeparatorColorLight =
+    SkColorSetARGB(0xFF, 0x1A, 0x73, 0xE8);
+
+// Custom separator view to enable updating OnThemeChanged.
+class KSVSeparatorImageView : public views::ImageView {
+ public:
+  KSVSeparatorImageView() {
+    color_provider_ = ash::ColorProvider::Get();
+    ConfigureImage();
+  }
+
+  KSVSeparatorImageView(const KSVSeparatorImageView&) = delete;
+  KSVSeparatorImageView operator=(const KSVSeparatorImageView&) = delete;
+
+  ~KSVSeparatorImageView() override = default;
+
+  // views::View:
+  void OnThemeChanged() override {
+    ConfigureImage();
+
+    views::ImageView::OnThemeChanged();
+  }
+
+ private:
+  // Configure separator image view depending on color mode.
+  void ConfigureImage() {
+    DCHECK(color_provider_);
+    SkColor kShortcutBubbleSeparatorColor = kShortcutBubbleSeparatorColorLight;
+    if (ash::features::IsDarkLightModeEnabled() &&
+        color_provider_->IsDarkModeEnabled()) {
+      kShortcutBubbleSeparatorColor = color_provider_->GetContentLayerColor(
+          ash::ColorProvider::ContentLayerType::kTextColorSecondary);
+    }
+    SetImage(gfx::CreateVectorIcon(ash::kKsvSeparatorPlusIcon,
+                                   kShortcutBubbleSeparatorColor));
+    SetImageSize(gfx::Size(kIconSize, kIconSize));
+  }
+
+  ash::ColorProvider* color_provider_;  // Not owned.
+};
+
 // Creates the separator view between bubble views of modifiers and key.
 std::unique_ptr<views::View> CreateSeparatorView() {
-  constexpr SkColor kSeparatorColor = SkColorSetARGB(0xFF, 0x1A, 0x73, 0xE8);
-  constexpr int kIconSize = 16;
-
-  std::unique_ptr<views::ImageView> separator_view =
-      std::make_unique<views::ImageView>();
-  separator_view->SetImage(
-      gfx::CreateVectorIcon(kKsvSeparatorPlusIcon, kSeparatorColor));
-  separator_view->SetImageSize(gfx::Size(kIconSize, kIconSize));
+  std::unique_ptr<KSVSeparatorImageView> separator_view =
+      std::make_unique<KSVSeparatorImageView>();
   return separator_view;
 }
 
@@ -175,7 +215,6 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
   const std::u16string separator_string = u"+ ";
   for (size_t i = 0; i < offsets.size(); ++i) {
     views::StyledLabel::RangeStyleInfo style_info;
-    style_info.disable_line_wrapping = true;
     const std::u16string& replacement_string = replacement_strings[i];
     std::unique_ptr<views::View> custom_view =
         replacement_string == separator_string
@@ -190,7 +229,7 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
 
   constexpr int kVerticalPadding = 10;
   SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(kVerticalPadding, 0, kVerticalPadding, 0)));
+      gfx::Insets::TLBR(kVerticalPadding, 0, kVerticalPadding, 0)));
 
   // Use leaf list item role so that name is spoken by screen reader, but
   // redundant child label text is not also spoken.

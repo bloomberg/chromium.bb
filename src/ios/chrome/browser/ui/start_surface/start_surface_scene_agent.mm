@@ -4,15 +4,27 @@
 
 #import "ios/chrome/browser/ui/start_surface/start_surface_scene_agent.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
+#import "ios/chrome/app/application_delegate/startup_information.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/scene_controller.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -61,10 +73,67 @@ const char kExcessNTPTabsRemoved[] = "IOS.NTP.ExcessRemovedTabCount";
                                           .incognitoInterface.browser];
     }
   }
+  if (level >= SceneActivationLevelForegroundInactive &&
+      self.previousActivationLevel < SceneActivationLevelForegroundInactive) {
+    if (IsStartSurfaceSplashStartupEnabled()) {
+      [self logBackgroundDurationMetricForActivationLevel:level];
+      [self showStartSurfaceIfNecessary];
+    }
+  }
   self.previousActivationLevel = level;
 }
 
-// Removes duplicate NTP tabs in |browser|'s WebStateList.
+- (void)showStartSurfaceIfNecessary {
+  if (!ShouldShowStartSurfaceForSceneState(self.sceneState)) {
+    return;
+  }
+
+  // Do not show the Start Surface no matter whether it is enabled or not when
+  // the Tab grid is active by design.
+  if (self.sceneState.controller.isTabGridVisible) {
+    return;
+  }
+
+  // If there is no active tab, a NTP will be added, and since there is no
+  // recent tab, there is no need to mark `modifytVisibleNTPForStartSurface`.
+  // Keep showing the last active NTP tab no matter whether the Start Surface is
+  // enabled or not by design.
+  // Note that activeWebState could only be nullptr when the Tab grid is active
+  // for now.
+  web::WebState* activeWebState =
+      self.sceneState.interfaceProvider.mainInterface.browser->GetWebStateList()
+          ->GetActiveWebState();
+  if (!activeWebState || IsURLNtp(activeWebState->GetVisibleURL())) {
+    return;
+  }
+
+  base::RecordAction(base::UserMetricsAction("IOS.StartSurface.Show"));
+  Browser* browser = self.sceneState.interfaceProvider.mainInterface.browser;
+  StartSurfaceRecentTabBrowserAgent::FromBrowser(browser)->SaveMostRecentTab();
+
+  // Activate the existing NTP tab for the Start surface.
+  WebStateList* webStateList = browser->GetWebStateList();
+  for (int i = 0; i < webStateList->count(); i++) {
+    web::WebState* webState = webStateList->GetWebStateAt(i);
+    if (IsURLNtp(webState->GetVisibleURL())) {
+      NewTabPageTabHelper::FromWebState(webState)->SetShowStartSurface(true);
+      webStateList->ActivateWebStateAt(i);
+      return;
+    }
+  }
+
+  // Create a new NTP since there is no existing one.
+  TabInsertionBrowserAgent* insertion_agent =
+      TabInsertionBrowserAgent::FromBrowser(browser);
+  web::NavigationManager::WebLoadParams params((GURL(kChromeUINewTabURL)));
+  insertion_agent->InsertWebState(
+      params, nullptr, /*opened_by_dom=*/false,
+      TabInsertion::kPositionAutomatically, /*in_background=*/false,
+      /*inherit_opener=*/false, /*should_show_start_surface=*/true,
+      /*filtered_param_count=*/0);
+}
+
+// Removes duplicate NTP tabs in `browser`'s WebStateList.
 - (void)removeExcessNTPsInBrowser:(Browser*)browser {
   WebStateList* webStateList = browser->GetWebStateList();
   web::WebState* activeWebState =
@@ -78,11 +147,11 @@ const char kExcessNTPTabsRemoved[] = "IOS.NTP.ExcessRemovedTabCount";
     web::WebState* webState = webStateList->GetWebStateAt(i);
     if (IsURLNtp(webState->GetVisibleURL())) {
       // Check if there is navigation history for this WebState that is showing
-      // the NTP. If there is, then set |keepOneNTP| to NO, indicating that all
+      // the NTP. If there is, then set `keepOneNTP` to NO, indicating that all
       // WebStates in NTPs with no navigation history will get removed.
-      if (webState->GetNavigationManager()->GetItemCount() <= 1) {
+      if (webState->GetNavigationItemCount() == 1) {
         // Keep track if active WebState is showing an NTP and has no navigation
-        // history since it may get removed if |keepOneNTP| is NO.
+        // history since it may get removed if `keepOneNTP` is NO.
         if (i == activeWebStateIndex) {
           activeWebStateIsEmptyNTP = YES;
         }
@@ -127,6 +196,25 @@ const char kExcessNTPTabsRemoved[] = "IOS.NTP.ExcessRemovedTabCount";
     int newActiveIndex =
         webStateList->GetIndexOfWebState(lastNtpWebStatesWithNavHistory);
     webStateList->ActivateWebStateAt(newActiveIndex);
+  }
+}
+
+- (void)logBackgroundDurationMetricForActivationLevel:
+    (SceneActivationLevel)level {
+  NSInteger timeSinceBackgroundInMinutes =
+      GetTimeSinceMostRecentTabWasOpenForSceneState(self.sceneState) / 60;
+  BOOL isColdStart = (level > SceneActivationLevelBackground &&
+                      self.sceneState.appState.startupInformation.isColdStart);
+  if (isColdStart) {
+    base::UmaHistogramCustomTimes("IOS.ColdStartBackgroundTime",
+                                  base::Minutes(timeSinceBackgroundInMinutes),
+                                  base::Seconds(0),
+                                  base::Seconds(12 * 60 /* 12 hours */), 24);
+  } else {
+    base::UmaHistogramCustomTimes("IOS.WarmStartBackgroundTime",
+                                  base::Minutes(timeSinceBackgroundInMinutes),
+                                  base::Seconds(0),
+                                  base::Seconds(12 * 60 /* 12 hours */), 24);
   }
 }
 

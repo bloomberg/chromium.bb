@@ -29,6 +29,7 @@
 
 import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 
@@ -56,7 +57,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class Script implements TextUtils.ContentProvider.ContentProvider, FrameAssociated {
   debuggerModel: DebuggerModel;
   scriptId: Protocol.Runtime.ScriptId;
-  sourceURL: string;
+  sourceURL: Platform.DevToolsPath.UrlString;
   lineOffset: number;
   columnOffset: number;
   endLine: number;
@@ -65,7 +66,7 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
   hash: string;
   readonly #isContentScriptInternal: boolean;
   readonly #isLiveEditInternal: boolean;
-  sourceMapURL: string|undefined;
+  sourceMapURL: Platform.DevToolsPath.UrlString|undefined;
   debugSymbols: Protocol.Debugger.DebugSymbols|null;
   hasSourceURL: boolean;
   contentLength: number;
@@ -74,15 +75,16 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
   readonly #codeOffsetInternal: number|null;
   readonly #language: string|null;
   #contentPromise: Promise<TextUtils.ContentProvider.DeferredContent>|null;
-  readonly #embedderNameInternal: string|null;
+  readonly #embedderNameInternal: Platform.DevToolsPath.UrlString|null;
   readonly isModule: boolean|null;
   constructor(
-      debuggerModel: DebuggerModel, scriptId: Protocol.Runtime.ScriptId, sourceURL: string, startLine: number,
-      startColumn: number, endLine: number, endColumn: number, executionContextId: number, hash: string,
-      isContentScript: boolean, isLiveEdit: boolean, sourceMapURL: string|undefined, hasSourceURL: boolean,
-      length: number, isModule: boolean|null, originStackTrace: Protocol.Runtime.StackTrace|null,
-      codeOffset: number|null, scriptLanguage: string|null, debugSymbols: Protocol.Debugger.DebugSymbols|null,
-      embedderName: string|null) {
+      debuggerModel: DebuggerModel, scriptId: Protocol.Runtime.ScriptId, sourceURL: Platform.DevToolsPath.UrlString,
+      startLine: number, startColumn: number, endLine: number, endColumn: number, executionContextId: number,
+      hash: string, isContentScript: boolean, isLiveEdit: boolean,
+      sourceMapURL: Platform.DevToolsPath.UrlString|undefined, hasSourceURL: boolean, length: number,
+      isModule: boolean|null, originStackTrace: Protocol.Runtime.StackTrace|null, codeOffset: number|null,
+      scriptLanguage: string|null, debugSymbols: Protocol.Debugger.DebugSymbols|null,
+      embedderName: Platform.DevToolsPath.UrlString|null) {
     this.debuggerModel = debuggerModel;
     this.scriptId = scriptId;
     this.sourceURL = sourceURL;
@@ -108,7 +110,7 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
     this.#embedderNameInternal = embedderName;
   }
 
-  embedderName(): string|null {
+  embedderName(): Platform.DevToolsPath.UrlString|null {
     return this.#embedderNameInternal;
   }
 
@@ -163,8 +165,7 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
     return this.#isLiveEditInternal;
   }
 
-  // TODO(crbug.com/1253323): Cast to RawPathString will be removed when migration to branded types is complete.
-  contentURL(): string {
+  contentURL(): Platform.DevToolsPath.UrlString {
     return this.sourceURL;
   }
 
@@ -191,7 +192,6 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
 
   originalContentProvider(): TextUtils.ContentProvider.ContentProvider {
     if (!this.#originalContentProviderInternal) {
-      /* } */
       let lazyContentPromise: Promise<TextUtils.ContentProvider.DeferredContent>|null;
       this.#originalContentProviderInternal =
           new TextUtils.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), () => {
@@ -219,7 +219,9 @@ export class Script implements TextUtils.ContentProvider.ContentProvider, FrameA
                     return {content: bytecode, isEncoded: true};
                   }
                   let content: string = scriptSource || '';
-                  if (this.hasSourceURL) {
+                  if (this.hasSourceURL && this.sourceURL.startsWith('snippet://')) {
+                    // TODO(crbug.com/1330846): Find a better way to establish the snippet automapping binding then adding
+                    // a sourceURL comment before evaluation and removing it here.
                     content = Script.trimSourceURLComment(content);
                   }
                   return {content, isEncoded: false};

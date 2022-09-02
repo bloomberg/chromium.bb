@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -89,6 +88,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/gtest_util.h"
 #include "net/test/key_util.h"
+#include "net/test/ssl_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -531,9 +531,7 @@ void FakeBlockingStreamSocket::ReturnReadResult() {
 class CountingStreamSocket : public WrappedStreamSocket {
  public:
   explicit CountingStreamSocket(std::unique_ptr<StreamSocket> transport)
-      : WrappedStreamSocket(std::move(transport)),
-        read_count_(0),
-        write_count_(0) {}
+      : WrappedStreamSocket(std::move(transport)) {}
   ~CountingStreamSocket() override = default;
 
   // Socket implementation:
@@ -556,8 +554,8 @@ class CountingStreamSocket : public WrappedStreamSocket {
   int write_count() const { return write_count_; }
 
  private:
-  int read_count_;
-  int write_count_;
+  int read_count_ = 0;
+  int write_count_ = 0;
 };
 
 // A helper class that will delete |socket| when the callback is invoked.
@@ -593,7 +591,7 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
 // reported and the number of violations reported.
 class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
  public:
-  MockExpectCTReporter() : num_failures_(0) {}
+  MockExpectCTReporter() = default;
   ~MockExpectCTReporter() override = default;
 
   void OnExpectCTFailed(
@@ -634,7 +632,7 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
  private:
   HostPortPair host_port_pair_;
   GURL report_uri_;
-  uint32_t num_failures_;
+  uint32_t num_failures_ = 0;
   raw_ptr<const X509Certificate> served_certificate_chain_;
   raw_ptr<const X509Certificate> validated_certificate_chain_;
   SignedCertificateTimestampAndStatusList signed_certificate_timestamps_;
@@ -979,23 +977,6 @@ class ClientSocketFactoryWithoutReadIfReady : public ClientSocketFactory {
                                            host_and_port, ssl_config);
   }
 
-  std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
-      std::unique_ptr<StreamSocket> stream_socket,
-      const std::string& user_agent,
-      const HostPortPair& endpoint,
-      const ProxyServer& proxy_server,
-      HttpAuthController* http_auth_controller,
-      bool tunnel,
-      bool using_spdy,
-      NextProto negotiated_protocol,
-      ProxyDelegate* proxy_delegate,
-      const NetworkTrafficAnnotationTag& traffic_annotation) override {
-    return factory_->CreateProxyClientSocket(
-        std::move(stream_socket), user_agent, endpoint, proxy_server,
-        http_auth_controller, tunnel, using_spdy, negotiated_protocol,
-        proxy_delegate, traffic_annotation);
-  }
-
  private:
   const raw_ptr<ClientSocketFactory> factory_;
 };
@@ -1204,7 +1185,7 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
 
       const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
       static const int kRequestTextSize =
-          static_cast<int>(base::size(request_text) - 1);
+          static_cast<int>(std::size(request_text) - 1);
       scoped_refptr<IOBuffer> request_buffer =
           base::MakeRefCounted<IOBuffer>(kRequestTextSize);
       memcpy(request_buffer->data(), request_text, kRequestTextSize);
@@ -1385,6 +1366,10 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
 
     SSLInfo ssl_info;
     EXPECT_TRUE(GetSSLInfo(&ssl_info));
+
+    // Make sure all asynchronous histogram logging is complete.
+    base::RunLoop().RunUntilIdle();
+
     return SSLInfo::HANDSHAKE_FULL == ssl_info.handshake_type;
   }
 
@@ -1455,41 +1440,6 @@ class HangingCertVerifier : public CertVerifier {
   base::RunLoop run_loop_;
   int num_active_requests_ = 0;
 };
-
-bssl::UniquePtr<SSL_ECH_KEYS> MakeTestECHKeys(
-    const char* public_name,
-    size_t max_name_len,
-    std::vector<uint8_t>* ech_config_list) {
-  bssl::ScopedEVP_HPKE_KEY key;
-  if (!EVP_HPKE_KEY_generate(key.get(), EVP_hpke_x25519_hkdf_sha256())) {
-    return nullptr;
-  }
-
-  uint8_t* ech_config;
-  size_t ech_config_len;
-  if (!SSL_marshal_ech_config(&ech_config, &ech_config_len,
-                              /*config_id=*/1, key.get(), public_name,
-                              max_name_len)) {
-    return nullptr;
-  }
-  bssl::UniquePtr<uint8_t> scoped_ech_config(ech_config);
-
-  uint8_t* ech_config_list_raw;
-  size_t ech_config_list_len;
-  bssl::UniquePtr<SSL_ECH_KEYS> keys(SSL_ECH_KEYS_new());
-  if (!keys ||
-      !SSL_ECH_KEYS_add(keys.get(), /*is_retry_config=*/1, ech_config,
-                        ech_config_len, key.get()) ||
-      !SSL_ECH_KEYS_marshal_retry_configs(keys.get(), &ech_config_list_raw,
-                                          &ech_config_list_len)) {
-    return nullptr;
-  }
-  bssl::UniquePtr<uint8_t> scoped_ech_config_list(ech_config_list_raw);
-
-  ech_config_list->assign(ech_config_list_raw,
-                          ech_config_list_raw + ech_config_list_len);
-  return keys;
-}
 
 }  // namespace
 
@@ -1722,13 +1672,13 @@ TEST_P(SSLClientSocketReadTest, Read) {
 
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   scoped_refptr<IOBuffer> request_buffer =
-      base::MakeRefCounted<IOBuffer>(base::size(request_text) - 1);
-  memcpy(request_buffer->data(), request_text, base::size(request_text) - 1);
+      base::MakeRefCounted<IOBuffer>(std::size(request_text) - 1);
+  memcpy(request_buffer->data(), request_text, std::size(request_text) - 1);
 
   rv = callback.GetResult(
-      sock->Write(request_buffer.get(), base::size(request_text) - 1,
+      sock->Write(request_buffer.get(), std::size(request_text) - 1,
                   callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
-  EXPECT_EQ(static_cast<int>(base::size(request_text) - 1), rv);
+  EXPECT_EQ(static_cast<int>(std::size(request_text) - 1), rv);
 
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
   int64_t unencrypted_bytes_read = 0;
@@ -1805,7 +1755,7 @@ TEST_P(SSLClientSocketReadTest, Read_WithSynchronousError) {
 
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   static const int kRequestTextSize =
-      static_cast<int>(base::size(request_text) - 1);
+      static_cast<int>(std::size(request_text) - 1);
   scoped_refptr<IOBuffer> request_buffer =
       base::MakeRefCounted<IOBuffer>(kRequestTextSize);
   memcpy(request_buffer->data(), request_text, kRequestTextSize);
@@ -1858,7 +1808,7 @@ TEST_P(SSLClientSocketVersionTest, Write_WithSynchronousError) {
 
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   static const int kRequestTextSize =
-      static_cast<int>(base::size(request_text) - 1);
+      static_cast<int>(std::size(request_text) - 1);
   scoped_refptr<IOBuffer> request_buffer =
       base::MakeRefCounted<IOBuffer>(kRequestTextSize);
   memcpy(request_buffer->data(), request_text, kRequestTextSize);
@@ -1926,7 +1876,7 @@ TEST_P(SSLClientSocketVersionTest, Write_WithSynchronousErrorNoRead) {
 
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   static const int kRequestTextSize =
-      static_cast<int>(base::size(request_text) - 1);
+      static_cast<int>(std::size(request_text) - 1);
   scoped_refptr<IOBuffer> request_buffer =
       base::MakeRefCounted<IOBuffer>(kRequestTextSize);
   memcpy(request_buffer->data(), request_text, kRequestTextSize);
@@ -2111,7 +2061,7 @@ TEST_P(SSLClientSocketReadTest, Read_WithWriteError) {
   // Send a request so there is something to read from the socket.
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   static const int kRequestTextSize =
-      static_cast<int>(base::size(request_text) - 1);
+      static_cast<int>(std::size(request_text) - 1);
   scoped_refptr<IOBuffer> request_buffer =
       base::MakeRefCounted<IOBuffer>(kRequestTextSize);
   memcpy(request_buffer->data(), request_text, kRequestTextSize);
@@ -2294,14 +2244,14 @@ TEST_P(SSLClientSocketReadTest, Read_SmallChunks) {
 
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   scoped_refptr<IOBuffer> request_buffer =
-      base::MakeRefCounted<IOBuffer>(base::size(request_text) - 1);
-  memcpy(request_buffer->data(), request_text, base::size(request_text) - 1);
+      base::MakeRefCounted<IOBuffer>(std::size(request_text) - 1);
+  memcpy(request_buffer->data(), request_text, std::size(request_text) - 1);
 
   TestCompletionCallback callback;
   rv = callback.GetResult(
-      sock_->Write(request_buffer.get(), base::size(request_text) - 1,
+      sock_->Write(request_buffer.get(), std::size(request_text) - 1,
                    callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
-  EXPECT_EQ(static_cast<int>(base::size(request_text) - 1), rv);
+  EXPECT_EQ(static_cast<int>(std::size(request_text) - 1), rv);
 
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(1);
   do {
@@ -2335,14 +2285,14 @@ TEST_P(SSLClientSocketReadTest, Read_ManySmallRecords) {
 
   const char request_text[] = "GET /ssl-many-small-records HTTP/1.0\r\n\r\n";
   scoped_refptr<IOBuffer> request_buffer =
-      base::MakeRefCounted<IOBuffer>(base::size(request_text) - 1);
-  memcpy(request_buffer->data(), request_text, base::size(request_text) - 1);
+      base::MakeRefCounted<IOBuffer>(std::size(request_text) - 1);
+  memcpy(request_buffer->data(), request_text, std::size(request_text) - 1);
 
   rv = callback.GetResult(
-      sock->Write(request_buffer.get(), base::size(request_text) - 1,
+      sock->Write(request_buffer.get(), std::size(request_text) - 1,
                   callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
   ASSERT_GT(rv, 0);
-  ASSERT_EQ(static_cast<int>(base::size(request_text) - 1), rv);
+  ASSERT_EQ(static_cast<int>(std::size(request_text) - 1), rv);
 
   // Note: This relies on SSLClientSocketNSS attempting to read up to 17K of
   // data (the max SSL record size) at a time. Ensure that at least 15K worth
@@ -2370,14 +2320,14 @@ TEST_P(SSLClientSocketReadTest, Read_Interrupted) {
 
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   scoped_refptr<IOBuffer> request_buffer =
-      base::MakeRefCounted<IOBuffer>(base::size(request_text) - 1);
-  memcpy(request_buffer->data(), request_text, base::size(request_text) - 1);
+      base::MakeRefCounted<IOBuffer>(std::size(request_text) - 1);
+  memcpy(request_buffer->data(), request_text, std::size(request_text) - 1);
 
   TestCompletionCallback callback;
   rv = callback.GetResult(
-      sock_->Write(request_buffer.get(), base::size(request_text) - 1,
+      sock_->Write(request_buffer.get(), std::size(request_text) - 1,
                    callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
-  EXPECT_EQ(static_cast<int>(base::size(request_text) - 1), rv);
+  EXPECT_EQ(static_cast<int>(std::size(request_text) - 1), rv);
 
   // Do a partial read and then exit.  This test should not crash!
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(512);
@@ -2405,13 +2355,13 @@ TEST_P(SSLClientSocketReadTest, Read_FullLogging) {
 
   const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
   scoped_refptr<IOBuffer> request_buffer =
-      base::MakeRefCounted<IOBuffer>(base::size(request_text) - 1);
-  memcpy(request_buffer->data(), request_text, base::size(request_text) - 1);
+      base::MakeRefCounted<IOBuffer>(std::size(request_text) - 1);
+  memcpy(request_buffer->data(), request_text, std::size(request_text) - 1);
 
   rv = callback.GetResult(
-      sock->Write(request_buffer.get(), base::size(request_text) - 1,
+      sock->Write(request_buffer.get(), std::size(request_text) - 1,
                   callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
-  EXPECT_EQ(static_cast<int>(base::size(request_text) - 1), rv);
+  EXPECT_EQ(static_cast<int>(std::size(request_text) - 1), rv);
 
   auto entries = log_observer_.GetEntries();
   size_t last_index = ExpectLogContainsSomewhereAfter(
@@ -2452,7 +2402,7 @@ TEST_F(SSLClientSocketTest, PrematureApplicationData) {
   // All reads and writes complete synchronously (async=false).
   MockRead data_reads[] = {
       MockRead(SYNCHRONOUS, reinterpret_cast<const char*>(application_data),
-               base::size(application_data)),
+               std::size(application_data)),
       MockRead(SYNCHRONOUS, OK),
   };
 
@@ -2953,7 +2903,7 @@ TEST_P(SSLClientSocketVersionTest, ReuseStates) {
   EXPECT_FALSE(sock_->WasEverUsed());
 
   const char kRequestText[] = "GET / HTTP/1.0\r\n\r\n";
-  const size_t kRequestLen = base::size(kRequestText) - 1;
+  const size_t kRequestLen = std::size(kRequestText) - 1;
   scoped_refptr<IOBuffer> request_buffer =
       base::MakeRefCounted<IOBuffer>(kRequestLen);
   memcpy(request_buffer->data(), kRequestText, kRequestLen);
@@ -3026,7 +2976,7 @@ TEST_P(SSLClientSocketVersionTest, ReusableAfterWrite) {
 
   // Write a partial HTTP request.
   const char kRequestText[] = "GET / HTTP/1.0";
-  const size_t kRequestLen = base::size(kRequestText) - 1;
+  const size_t kRequestLen = std::size(kRequestText) - 1;
   scoped_refptr<IOBuffer> request_buffer =
       base::MakeRefCounted<IOBuffer>(kRequestLen);
   memcpy(request_buffer->data(), kRequestText, kRequestLen);
@@ -3826,6 +3776,9 @@ HashValueVector MakeHashValueVector(uint8_t value) {
 // Test that |ssl_info.pkp_bypassed| is set when a local trust anchor causes
 // pinning to be bypassed.
 TEST_P(SSLClientSocketVersionTest, PKPBypassedSet) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
   scoped_refptr<X509Certificate> server_cert =
@@ -3841,6 +3794,7 @@ TEST_P(SSLClientSocketVersionTest, PKPBypassedSet) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   transport_security_state_->EnableStaticPinsForTesting();
+  transport_security_state_->SetPinningListAlwaysTimelyForTesting(true);
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   SSLConfig ssl_config;
@@ -3859,6 +3813,9 @@ TEST_P(SSLClientSocketVersionTest, PKPBypassedSet) {
 }
 
 TEST_P(SSLClientSocketVersionTest, PKPEnforced) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
   scoped_refptr<X509Certificate> server_cert =
@@ -3874,6 +3831,7 @@ TEST_P(SSLClientSocketVersionTest, PKPEnforced) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   transport_security_state_->EnableStaticPinsForTesting();
+  transport_security_state_->SetPinningListAlwaysTimelyForTesting(true);
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   SSLConfig ssl_config;
@@ -4158,6 +4116,9 @@ TEST_P(SSLClientSocketVersionTest, CTIsRequiredByExpectCT) {
 // When both PKP and CT are required for a host, and both fail, the more
 // serious error is that the pin validation failed.
 TEST_P(SSLClientSocketVersionTest, PKPMoreImportantThanCT) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
   scoped_refptr<X509Certificate> server_cert =
@@ -4173,6 +4134,7 @@ TEST_P(SSLClientSocketVersionTest, PKPMoreImportantThanCT) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   transport_security_state_->EnableStaticPinsForTesting();
+  transport_security_state_->SetPinningListAlwaysTimelyForTesting(true);
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   const char kCTHost[] = "pkp-expect-ct.preloaded.test";
@@ -5138,11 +5100,11 @@ TEST_F(SSLClientSocketTest, Tag) {
                             host_port_pair(), SSLConfig()));
 
   EXPECT_EQ(tagging_sock->tag(), SocketTag());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SocketTag tag(0x12345678, 0x87654321);
   sock->ApplySocketTag(tag);
   EXPECT_EQ(tagging_sock->tag(), tag);
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 TEST_F(SSLClientSocketTest, ECH) {
@@ -5151,7 +5113,7 @@ TEST_F(SSLClientSocketTest, ECH) {
 
   SSLServerConfig server_config;
   SSLConfig client_config;
-  server_config.ech_keys = MakeTestECHKeys(
+  server_config.ech_keys = MakeTestEchKeys(
       "public.example", /*max_name_len=*/64, &client_config.ech_config_list);
   ASSERT_TRUE(server_config.ech_keys);
 
@@ -5212,10 +5174,10 @@ TEST_F(SSLClientSocketTest, ECHWrongKeys) {
   static const char kPublicName[] = "public.example";
   std::vector<uint8_t> ech_config_list1, ech_config_list2;
   bssl::UniquePtr<SSL_ECH_KEYS> keys1 =
-      MakeTestECHKeys(kPublicName, /*max_name_len=*/64, &ech_config_list1);
+      MakeTestEchKeys(kPublicName, /*max_name_len=*/64, &ech_config_list1);
   ASSERT_TRUE(keys1);
   bssl::UniquePtr<SSL_ECH_KEYS> keys2 =
-      MakeTestECHKeys(kPublicName, /*max_name_len=*/64, &ech_config_list2);
+      MakeTestEchKeys(kPublicName, /*max_name_len=*/64, &ech_config_list2);
   ASSERT_TRUE(keys2);
 
   // Configure the client and server with different keys.
@@ -5256,7 +5218,7 @@ TEST_F(SSLClientSocketTest, ECHSecurelyDisabled) {
   static const char kPublicName[] = "public.example";
   std::vector<uint8_t> ech_config_list;
   bssl::UniquePtr<SSL_ECH_KEYS> keys =
-      MakeTestECHKeys(kPublicName, /*max_name_len=*/64, &ech_config_list);
+      MakeTestEchKeys(kPublicName, /*max_name_len=*/64, &ech_config_list);
   ASSERT_TRUE(keys);
 
   // The server does not have keys configured.
@@ -5293,7 +5255,7 @@ TEST_F(SSLClientSocketTest, ECHSecurelyDisabledTLS12) {
   static const char kPublicName[] = "public.example";
   std::vector<uint8_t> ech_config_list;
   bssl::UniquePtr<SSL_ECH_KEYS> keys =
-      MakeTestECHKeys(kPublicName, /*max_name_len=*/64, &ech_config_list);
+      MakeTestEchKeys(kPublicName, /*max_name_len=*/64, &ech_config_list);
   ASSERT_TRUE(keys);
 
   // The server does not have keys configured.
@@ -5331,10 +5293,10 @@ TEST_F(SSLClientSocketTest, ECHFallbackBadCert) {
   static const char kPublicName[] = "public.example";
   std::vector<uint8_t> ech_config_list1, ech_config_list2;
   bssl::UniquePtr<SSL_ECH_KEYS> keys1 =
-      MakeTestECHKeys(kPublicName, /*max_name_len=*/64, &ech_config_list1);
+      MakeTestEchKeys(kPublicName, /*max_name_len=*/64, &ech_config_list1);
   ASSERT_TRUE(keys1);
   bssl::UniquePtr<SSL_ECH_KEYS> keys2 =
-      MakeTestECHKeys(kPublicName, /*max_name_len=*/64, &ech_config_list2);
+      MakeTestEchKeys(kPublicName, /*max_name_len=*/64, &ech_config_list2);
   ASSERT_TRUE(keys2);
 
   // Configure the client and server with different keys.
@@ -5587,8 +5549,7 @@ TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNoResume) {
 }
 
 // Test 0-RTT logging in the standard ConfirmHandshake-after-acceptance case.
-// Disabled due to flakiness across all platforms: https://crbug.com/1247914.
-TEST_F(SSLClientSocketZeroRTTTest, DISABLED_EarlyDataReasonZeroRTT) {
+TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonZeroRTT) {
   const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
 
   ASSERT_TRUE(StartServer());
@@ -5602,6 +5563,9 @@ TEST_F(SSLClientSocketZeroRTTTest, DISABLED_EarlyDataReasonZeroRTT) {
   ASSERT_THAT(
       callback.GetResult(ssl_socket()->ConfirmHandshake(callback.callback())),
       IsOk());
+
+  base::RunLoop().RunUntilIdle();
+
   histograms.ExpectUniqueSample(kReasonHistogram, ssl_early_data_accepted, 1);
 }
 

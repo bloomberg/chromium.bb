@@ -4,7 +4,7 @@
  *
  *   TrueType GX Font Variation loader (specification)
  *
- * Copyright (C) 2004-2021 by
+ * Copyright (C) 2004-2022 by
  * David Turner, Robert Wilhelm, Werner Lemberg and George Williams.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -60,57 +60,6 @@ FT_BEGIN_HEADER
     GX_AVarCorrespondence  correspondence; /* array with pairCount entries */
 
   } GX_AVarSegmentRec, *GX_AVarSegment;
-
-
-  typedef struct  GX_ItemVarDataRec_
-  {
-    FT_UInt    itemCount;      /* number of delta sets per item         */
-    FT_UInt    regionIdxCount; /* number of region indices in this data */
-    FT_UInt*   regionIndices;  /* array of `regionCount' indices;       */
-                               /* these index `varRegionList'           */
-    FT_Short*  deltaSet;       /* array of `itemCount' deltas           */
-                               /* use `innerIndex' for this array       */
-
-  } GX_ItemVarDataRec, *GX_ItemVarData;
-
-
-  /* contribution of one axis to a region */
-  typedef struct  GX_AxisCoordsRec_
-  {
-    FT_Fixed  startCoord;
-    FT_Fixed  peakCoord;      /* zero means no effect (factor = 1) */
-    FT_Fixed  endCoord;
-
-  } GX_AxisCoordsRec, *GX_AxisCoords;
-
-
-  typedef struct  GX_VarRegionRec_
-  {
-    GX_AxisCoords  axisList;               /* array of axisCount records */
-
-  } GX_VarRegionRec, *GX_VarRegion;
-
-
-  /* item variation store */
-  typedef struct  GX_ItemVarStoreRec_
-  {
-    FT_UInt         dataCount;
-    GX_ItemVarData  varData;            /* array of dataCount records;     */
-                                        /* use `outerIndex' for this array */
-    FT_UShort     axisCount;
-    FT_UInt       regionCount;          /* total number of regions defined */
-    GX_VarRegion  varRegionList;
-
-  } GX_ItemVarStoreRec, *GX_ItemVarStore;
-
-
-  typedef struct  GX_DeltaSetIdxMapRec_
-  {
-    FT_ULong  mapCount;
-    FT_UInt*  outerIndex;               /* indices to item var data */
-    FT_UInt*  innerIndex;               /* indices to delta set     */
-
-  } GX_DeltaSetIdxMapRec, *GX_DeltaSetIdxMap;
 
 
   /**************************************************************************
@@ -430,6 +379,34 @@ FT_BEGIN_HEADER
 
   FT_LOCAL( void )
   tt_apply_mvar( TT_Face  face );
+
+
+  FT_LOCAL( FT_Error )
+  tt_var_load_item_variation_store( TT_Face          face,
+                                    FT_ULong         offset,
+                                    GX_ItemVarStore  itemStore );
+
+  FT_LOCAL( FT_Error )
+  tt_var_load_delta_set_index_mapping( TT_Face            face,
+                                       FT_ULong           offset,
+                                       GX_DeltaSetIdxMap  map,
+                                       GX_ItemVarStore    itemStore,
+                                       FT_ULong           table_len );
+
+  FT_LOCAL( FT_Int )
+  tt_var_get_item_delta( TT_Face          face,
+                         GX_ItemVarStore  itemStore,
+                         FT_UInt          outerIndex,
+                         FT_UInt          innerIndex );
+
+  FT_LOCAL( void )
+  tt_var_done_item_variation_store( TT_Face          face,
+                                    GX_ItemVarStore  itemStore );
+
+  FT_LOCAL( void )
+  tt_var_done_delta_set_index_map( TT_Face            face,
+                                   GX_DeltaSetIdxMap  deltaSetIdxMap );
+
 
   FT_LOCAL( FT_Error )
   tt_get_var_blend( TT_Face      face,

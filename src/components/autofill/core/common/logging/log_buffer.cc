@@ -44,8 +44,8 @@ void AppendChildToLastNode(std::vector<base::Value>* buffer,
     return;
   }
 
-  base::Value::ListStorage list;
-  list.emplace_back(std::move(new_child));
+  base::Value::List list;
+  list.Append(std::move(new_child));
   parent.SetKey("children", base::Value(std::move(list)));
 }
 
@@ -65,8 +65,8 @@ bool TryCoalesceString(std::vector<base::Value>* buffer,
   auto* children = parent.FindListKey("children");
   if (!children)
     return false;
-  DCHECK(!children->GetList().empty());
-  auto& last_child = children->GetList().back();
+  DCHECK(!children->GetListDeprecated().empty());
+  auto& last_child = children->GetListDeprecated().back();
   if (!IsTextNode(last_child))
     return false;
   std::string* old_text = last_child.FindStringKey("value");
@@ -75,9 +75,9 @@ bool TryCoalesceString(std::vector<base::Value>* buffer,
 }
 
 base::Value CreateEmptyFragment() {
-  base::Value::DictStorage storage;
-  storage.try_emplace("type", "fragment");
-  return base::Value(storage);
+  base::Value::Dict dict;
+  dict.Set("type", "fragment");
+  return base::Value(std::move(dict));
 }
 
 }  // namespace
@@ -99,13 +99,13 @@ base::Value LogBuffer::RetrieveResult() {
     *this << CTag{};
 
   auto* children = buffer_[0].FindListKey("children");
-  if (!children || children->GetList().empty())
+  if (!children || children->GetListDeprecated().empty())
     return base::Value();
 
   // If the fragment has a single child, remove it from |children| and return
   // that directly.
-  if (children->GetList().size() == 1) {
-    return std::move(std::move(*children).TakeList().back());
+  if (children->GetListDeprecated().size() == 1) {
+    return std::move(std::move(*children).TakeListDeprecated().back());
   }
 
   return std::exchange(buffer_.back(), CreateEmptyFragment());
@@ -115,10 +115,10 @@ LogBuffer& operator<<(LogBuffer& buf, Tag&& tag) {
   if (!buf.active())
     return buf;
 
-  base::Value::DictStorage storage;
-  storage.try_emplace("type", "element");
-  storage.try_emplace("value", std::move(tag.name));
-  buf.buffer_.emplace_back(std::move(storage));
+  base::Value::Dict dict;
+  dict.Set("type", "element");
+  dict.Set("value", std::move(tag.name));
+  buf.buffer_.emplace_back(std::move(dict));
   return buf;
 }
 
@@ -147,8 +147,8 @@ LogBuffer& operator<<(LogBuffer& buf, Attrib&& attrib) {
     attributes->SetKey(std::move(attrib.name),
                        base::Value(std::move(attrib.value)));
   } else {
-    base::Value::DictStorage dict;
-    dict.try_emplace(std::move(attrib.name), std::move(attrib.value));
+    base::Value::Dict dict;
+    dict.Set(attrib.name, std::move(attrib.value));
     node.SetKey("attributes", base::Value(std::move(dict)));
   }
 
@@ -171,12 +171,12 @@ LogBuffer& operator<<(LogBuffer& buf, base::StringPiece text) {
   if (TryCoalesceString(&buf.buffer_, text))
     return buf;
 
-  base::Value::DictStorage storage;
-  storage.try_emplace("type", "text");
+  base::Value::Dict dict;
+  dict.Set("type", "text");
   // This text is not HTML escaped because the rest of the frame work takes care
   // of that and it must not be escaped twice.
-  storage.try_emplace("value", text);
-  base::Value node_to_add(std::move(storage));
+  dict.Set("value", text);
+  base::Value node_to_add(std::move(dict));
   AppendChildToLastNode(&buf.buffer_, std::move(node_to_add));
   return buf;
 }
@@ -197,7 +197,7 @@ LogBuffer& operator<<(LogBuffer& buf, LogBuffer&& buffer) {
     auto* children = node_to_add.FindListKey("children");
     if (!children)
       return buf;
-    for (auto& child : children->GetList())
+    for (auto& child : children->GetListDeprecated())
       AppendChildToLastNode(&buf.buffer_, std::exchange(child, base::Value()));
     return buf;
   }

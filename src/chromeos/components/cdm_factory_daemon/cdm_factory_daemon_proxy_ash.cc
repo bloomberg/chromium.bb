@@ -4,15 +4,16 @@
 
 #include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy_ash.h"
 
+#include "ash/constants/ash_switches.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/components/cdm_factory_daemon/output_protection_impl.h"
 #include "chromeos/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,8 +28,40 @@ constexpr char kCdmFactoryDaemonPipeName[] = "cdm-factory-daemon-pipe";
 
 namespace chromeos {
 
-CdmFactoryDaemonProxyAsh::CdmFactoryDaemonProxyAsh()
-    : CdmFactoryDaemonProxy() {}
+CdmFactoryDaemonProxyAsh::CdmFactoryDaemonProxyAsh() : CdmFactoryDaemonProxy() {
+  // Check if there's a Chrome flag set to force a specific HDCP mode. We do
+  // that from here because this is a singleton we use in ash chrome and this is
+  // related to the OutputProtection class we have which is able to manage HDCP
+  // state across all displays easily.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(ash::switches::kAlwaysEnableHdcp)) {
+    std::string hdcp_mode =
+        command_line->GetSwitchValueASCII(ash::switches::kAlwaysEnableHdcp);
+    if (!hdcp_mode.empty()) {
+      forced_output_protection_ =
+          std::make_unique<OutputProtectionImpl>(nullptr);
+      if (hdcp_mode == "type0") {
+        forced_output_protection_->EnableProtection(
+            cdm::mojom::OutputProtection::ProtectionType::HDCP_TYPE_0,
+            base::DoNothing());
+      } else if (hdcp_mode == "type1") {
+        forced_output_protection_->EnableProtection(
+            cdm::mojom::OutputProtection::ProtectionType::HDCP_TYPE_1,
+            base::DoNothing());
+      } else {
+        LOG(ERROR) << "Invalid HDCP mode of: " << hdcp_mode;
+      }
+    } else {
+      LOG(ERROR) << "Empty HDCP mode for: " << ash::switches::kAlwaysEnableHdcp;
+    }
+  }
+
+  ash::Shell::Get()
+      ->display_configurator()
+      ->content_protection_manager()
+      ->SetProvisionedKeyRequest(base::BindRepeating(
+          &CdmFactoryDaemonProxyAsh::GetHdcp14Key, base::Unretained(this)));
+}
 
 CdmFactoryDaemonProxyAsh::~CdmFactoryDaemonProxyAsh() = default;
 
@@ -233,6 +266,27 @@ void CdmFactoryDaemonProxyAsh::OnDaemonMojoConnectionError() {
   // Reset the remote here to trigger reconnection to the daemon on the next
   // call to CreateFactory.
   daemon_remote_.reset();
+}
+
+void CdmFactoryDaemonProxyAsh::GetHdcp14Key(
+    cdm::mojom::CdmFactoryDaemon::GetHdcp14KeyCallback callback) {
+  if (!mojo_task_runner_->RunsTasksInCurrentSequence()) {
+    mojo_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&CdmFactoryDaemonProxyAsh::GetHdcp14Key,
+                                  base::Unretained(this), std::move(callback)));
+    return;
+  }
+
+  DVLOG(1) << "CdmFactoryDaemonProxyAsh::GetHdcp14Key called";
+  if (daemon_remote_) {
+    DVLOG(1) << "CdmFactoryDaemon mojo connection already exists, re-use it";
+    daemon_remote_->GetHdcp14Key(std::move(callback));
+    return;
+  }
+
+  EstablishDaemonConnection(
+      base::BindOnce(&CdmFactoryDaemonProxyAsh::GetHdcp14Key,
+                     base::Unretained(this), std::move(callback)));
 }
 
 }  // namespace chromeos

@@ -17,8 +17,8 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/printing/history/print_job_info.pb.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/reporting/client/report_queue.h"
 #include "components/reporting/client/report_queue_factory.h"
@@ -29,7 +29,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace print = ::chromeos::printing::proto;
+namespace print = ::ash::printing::proto;
 namespace em = ::enterprise_management;
 
 namespace ash {
@@ -70,7 +70,7 @@ class PrintJobReportingServiceImpl : public PrintJobReportingService {
     em::PrintJobEvent event = Convert(print_job_info);
     VLOG(1) << "Enqueuing event for print job: "
             << event.job_configuration().id();
-    Enqueue(event);
+    Enqueue(std::move(event));
   }
 
  private:
@@ -84,10 +84,11 @@ class PrintJobReportingServiceImpl : public PrintJobReportingService {
     cros_settings_->GetBoolean(kReportDevicePrintJobs, &should_report_);
   }
 
-  void Enqueue(const em::PrintJobEvent& event) {
+  void Enqueue(em::PrintJobEvent event) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    report_queue_->Enqueue(&event, ::reporting::Priority::SLOW_BATCH,
-                           base::DoNothing());
+    report_queue_->Enqueue(
+        std::make_unique<em::PrintJobEvent>(std::move(event)),
+        ::reporting::Priority::SLOW_BATCH, base::DoNothing());
   }
 
   static em::PrintJobEvent Convert(const print::PrintJobInfo& print_job_info) {

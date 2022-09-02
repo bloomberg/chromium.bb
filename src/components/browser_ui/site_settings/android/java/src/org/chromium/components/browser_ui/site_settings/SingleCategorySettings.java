@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -36,7 +37,6 @@ import androidx.preference.PreferenceScreen;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -50,6 +50,7 @@ import org.chromium.components.browser_ui.settings.SearchUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.AutoDarkMetrics.AutoDarkSettingsChangeSource;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
@@ -296,13 +297,12 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
         // Color the first part of the title blue.
         ForegroundColorSpan blueSpan = new ForegroundColorSpan(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color_link));
+                SemanticColorUtils.getDefaultTextColorAccent1(getContext()));
         spannable.setSpan(blueSpan, 0, spannable.length() - prefCount.length(),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         // Gray out the total count of items.
-        int gray = ApiCompatibilityUtils.getColor(
-                getResources(), R.color.default_text_color_secondary);
+        final @ColorInt int gray = SemanticColorUtils.getDefaultTextColorSecondary(getContext());
         spannable.setSpan(new ForegroundColorSpan(gray), spannable.length() - prefCount.length(),
                 spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return spannable;
@@ -1010,6 +1010,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         params.cookieControlsMode = prefService.getInteger(COOKIE_CONTROLS_MODE);
         params.cookiesContentSettingEnforced = mCategory.isManaged();
         params.cookieControlsModeEnforced = prefService.isManagedPreference(COOKIE_CONTROLS_MODE);
+        params.isIncognitoModeEnabled = getSiteSettingsDelegate().isIncognitoModeEnabled();
         fourStateCookieToggle.setState(params);
     }
 
@@ -1111,7 +1112,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         descriptions[1] =
                 getString(ContentSettingsResources.getSiteSummary(ContentSettingValues.BLOCK));
 
-        return new AlertDialog.Builder(getContext(), R.style.Theme_Chromium_AlertDialog)
+        return new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_BrowserUI_AlertDialog)
                 .setPositiveButton(R.string.cancel, null)
                 .setNegativeButton(R.string.remove,
                         (dialog, which) -> {

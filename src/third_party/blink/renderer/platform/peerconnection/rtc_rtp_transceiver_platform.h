@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/notreached.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -56,7 +57,6 @@ class PLATFORM_EXPORT RTCRtpTransceiverPlatform {
   virtual void SetMid(absl::optional<String>) {}
   virtual std::unique_ptr<RTCRtpSenderPlatform> Sender() const = 0;
   virtual std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const = 0;
-  virtual bool Stopped() const = 0;
   virtual webrtc::RtpTransceiverDirection Direction() const = 0;
   virtual webrtc::RTCError SetDirection(webrtc::RtpTransceiverDirection) = 0;
   virtual absl::optional<webrtc::RtpTransceiverDirection> CurrentDirection()

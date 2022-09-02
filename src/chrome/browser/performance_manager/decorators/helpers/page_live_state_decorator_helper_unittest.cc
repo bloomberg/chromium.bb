@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
 
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
@@ -15,6 +16,7 @@
 #include "components/performance_manager/test_support/test_harness_helper.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 namespace performance_manager {
 
@@ -52,8 +54,7 @@ class PageLiveStateDecoratorHelperTest
 
   void EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType stream_type,
-      absl::optional<media::mojom::DisplayMediaInformationPtr>
-          display_media_info,
+      media::mojom::DisplayMediaInformationPtr display_media_info,
       bool (PageLiveStateDecorator::Data::*pm_getter)() const);
 
   // Forces deletion of the PageLiveStateDecoratorHelper.
@@ -67,7 +68,7 @@ class PageLiveStateDecoratorHelperTest
 
 void PageLiveStateDecoratorHelperTest::EndToEndStreamPropertyTest(
     blink::mojom::MediaStreamType stream_type,
-    absl::optional<media::mojom::DisplayMediaInformationPtr> display_media_info,
+    media::mojom::DisplayMediaInformationPtr display_media_info,
     bool (PageLiveStateDecorator::Data::*pm_getter)() const) {
   // By default all properties are set to false.
   testing::TestPageNodePropertyOnPMSequence(
@@ -79,9 +80,18 @@ void PageLiveStateDecoratorHelperTest::EndToEndStreamPropertyTest(
   blink::MediaStreamDevice device(stream_type, "fake_device", "fake_device");
   device.display_media_info = std::move(display_media_info);
 
+  blink::mojom::StreamDevices devices;
+  if (blink::IsAudioInputMediaType(device.type))
+    devices.audio_device = device;
+  else if (blink::IsVideoInputMediaType(device.type))
+    devices.video_device = device;
+  else
+    NOTREACHED();
+
   std::unique_ptr<content::MediaStreamUI> ui =
-      indicator()->RegisterMediaStream(web_contents(), {device});
-  ui->OnStarted(base::OnceClosure(), content::MediaStreamUI::SourceCallback(),
+      indicator()->RegisterMediaStream(web_contents(), devices);
+  ui->OnStarted(base::RepeatingClosure(),
+                content::MediaStreamUI::SourceCallback(),
                 /*label=*/std::string(), /*screen_capture_ids=*/{},
                 content::MediaStreamUI::StateChangeCallback());
   testing::TestPageNodePropertyOnPMSequence(
@@ -100,28 +110,28 @@ void PageLiveStateDecoratorHelperTest::EndToEndStreamPropertyTest(
 TEST_F(PageLiveStateDecoratorHelperTest, OnIsCapturingVideoChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
-      /*display_media_info=*/absl::nullopt,
+      /*display_media_info=*/nullptr,
       &PageLiveStateDecorator::Data::IsCapturingVideo);
 }
 
 TEST_F(PageLiveStateDecoratorHelperTest, OnIsCapturingAudioChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
-      /*display_media_info=*/absl::nullopt,
+      /*display_media_info=*/nullptr,
       &PageLiveStateDecorator::Data::IsCapturingAudio);
 }
 
 TEST_F(PageLiveStateDecoratorHelperTest, OnIsBeingMirroredChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE,
-      /*display_media_info=*/absl::nullopt,
+      /*display_media_info=*/nullptr,
       &PageLiveStateDecorator::Data::IsBeingMirrored);
 }
 
 TEST_F(PageLiveStateDecoratorHelperTest, OnIsCapturingWindowChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
-      /*display_media_info=*/absl::nullopt,
+      /*display_media_info=*/nullptr,
       &PageLiveStateDecorator::Data::IsCapturingWindow);
 }
 

@@ -12,6 +12,7 @@
 
 #include "ash/components/settings/timezone_settings.h"
 #include "ash/components/timezone/timezone_request.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
@@ -51,6 +51,8 @@ struct UResClose {
 
 base::LazyInstance<base::Lock>::Leaky g_timezone_bundle_lock =
     LAZY_INSTANCE_INITIALIZER;
+
+const size_t kMaxGeolocationResponseLength = 8;
 
 // Returns an exemplary city in the given timezone.
 std::u16string GetExemplarCity(const icu::TimeZone& zone) {
@@ -196,6 +198,21 @@ bool CanSetSystemTimezone(const user_manager::User* user) {
 namespace ash {
 namespace system {
 
+absl::optional<std::string> GetCountryCodeFromTimezoneIfAvailable(
+    const std::string& timezone) {
+  // Determine region code from timezone id.
+  char region[kMaxGeolocationResponseLength];
+  UErrorCode error = U_ZERO_ERROR;
+  auto timezone_unicode = icu::UnicodeString::fromUTF8(timezone);
+  icu::TimeZone::getRegion(timezone_unicode, region,
+                           kMaxGeolocationResponseLength, error);
+  // Track failures.
+  if (U_FAILURE(error))
+    return absl::nullopt;
+
+  return base::ToLowerASCII(region);
+}
+
 std::u16string GetCurrentTimezoneName() {
   return GetTimezoneName(TimezoneSettings::GetInstance()->GetTimezone());
 }
@@ -205,16 +222,16 @@ std::unique_ptr<base::ListValue> GetTimezoneList() {
   const auto& timezones = TimezoneSettings::GetInstance()->GetTimezoneList();
   auto timezone_list = std::make_unique<base::ListValue>();
   for (const auto& timezone : timezones) {
-    auto option = std::make_unique<base::ListValue>();
-    option->Append(TimezoneSettings::GetTimezoneID(*timezone));
-    option->Append(GetTimezoneName(*timezone));
-    timezone_list->Append(std::move(option));
+    base::Value::List option;
+    option.Append(TimezoneSettings::GetTimezoneID(*timezone));
+    option.Append(GetTimezoneName(*timezone));
+    timezone_list->GetList().Append(std::move(option));
   }
   return timezone_list;
 }
 
 bool HasSystemTimezonePolicy() {
-  if (!chromeos::InstallAttributes::Get()->IsEnterpriseManaged())
+  if (!InstallAttributes::Get()->IsEnterpriseManaged())
     return false;
 
   std::string policy_timezone;

@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
@@ -72,9 +73,9 @@ void PrinterProviderInternalAPI::NotifyGetPrintersResult(
 void PrinterProviderInternalAPI::NotifyGetCapabilityResult(
     const Extension* extension,
     int request_id,
-    const base::DictionaryValue& capability) {
+    const base::Value::Dict& capability) {
   for (auto& observer : observers_)
-    observer.OnGetCapabilityResult(extension, request_id, capability);
+    observer.OnGetCapabilityResult(extension, request_id, capability.Clone());
 }
 
 void PrinterProviderInternalAPI::NotifyPrintResult(
@@ -126,13 +127,14 @@ PrinterProviderInternalReportPrinterCapabilityFunction::Run() {
   if (params->capability) {
     PrinterProviderInternalAPI::GetFactoryInstance()
         ->Get(browser_context())
-        ->NotifyGetCapabilityResult(extension(), params->request_id,
-                                    params->capability->additional_properties);
+        ->NotifyGetCapabilityResult(
+            extension(), params->request_id,
+            params->capability->additional_properties.GetDict());
   } else {
     PrinterProviderInternalAPI::GetFactoryInstance()
         ->Get(browser_context())
         ->NotifyGetCapabilityResult(extension(), params->request_id,
-                                    base::DictionaryValue());
+                                    base::Value::Dict());
   }
   return RespondNow(NoArguments());
 }
@@ -149,7 +151,6 @@ PrinterProviderInternalReportPrintersFunction::Run() {
       internal_api::ReportPrinters::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  base::ListValue printers;
   if (params->printers) {
     PrinterProviderInternalAPI::GetFactoryInstance()
         ->Get(browser_context())

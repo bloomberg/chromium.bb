@@ -16,14 +16,16 @@
 #include "base/debug/activity_tracker.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include <sys/event.h>
 #endif
 
@@ -95,7 +97,7 @@ bool WaitpidWithTimeout(base::ProcessHandle handle,
   return ret_pid > 0;
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Using kqueue on Mac so that we can wait on non-child processes.
 // We can't use kqueues on child processes because we need to reap
 // our own children using wait.
@@ -183,7 +185,7 @@ bool WaitForSingleNonChildProcess(base::ProcessHandle handle,
 
   return true;
 }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
 bool WaitForExitWithTimeoutImpl(base::ProcessHandle handle,
                                 int* exit_code,
@@ -200,13 +202,13 @@ bool WaitForExitWithTimeoutImpl(base::ProcessHandle handle,
   const bool exited = (parent_pid < 0);
 
   if (!exited && parent_pid != our_pid) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // On Mac we can wait on non child processes.
     return WaitForSingleNonChildProcess(handle, timeout);
 #else
     // Currently on Linux we can't handle non child processes.
     NOTIMPLEMENTED();
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
   }
 
   int status;
@@ -229,20 +231,26 @@ bool WaitForExitWithTimeoutImpl(base::ProcessHandle handle,
 
 namespace base {
 
-Process::Process(ProcessHandle handle) : process_(handle) {
-}
-
-Process::~Process() = default;
+Process::Process(ProcessHandle handle) : process_(handle) {}
 
 Process::Process(Process&& other) : process_(other.process_) {
+#if BUILDFLAG(IS_CHROMEOS)
+  unique_token_ = std::move(other.unique_token_);
+#endif
+
   other.Close();
 }
 
 Process& Process::operator=(Process&& other) {
   process_ = other.process_;
+#if BUILDFLAG(IS_CHROMEOS)
+  unique_token_ = std::move(other.unique_token_);
+#endif
   other.Close();
   return *this;
 }
+
+Process::~Process() = default;
 
 // static
 Process Process::Current() {
@@ -284,7 +292,13 @@ Process Process::Duplicate() const {
   if (is_current())
     return Current();
 
+#if BUILDFLAG(IS_CHROMEOS)
+  Process duplicate = Process(process_);
+  duplicate.unique_token_ = unique_token_;
+  return duplicate;
+#else
   return Process(process_);
+#endif
 }
 
 ProcessHandle Process::Release() {
@@ -312,20 +326,23 @@ bool Process::Terminate(int exit_code, bool wait) const {
   DCHECK(IsValid());
   CHECK_GT(process_, 0);
 
-  bool did_terminate = kill(process_, SIGTERM) == 0;
-
-  if (wait && did_terminate) {
-    if (WaitForExitWithTimeout(Seconds(60), nullptr))
-      return true;
-    did_terminate = kill(process_, SIGKILL) == 0;
-    if (did_terminate)
-      return WaitForExit(nullptr);
+  if (kill(process_, SIGTERM) != 0) {
+    DPLOG(ERROR) << "Unable to terminate process " << process_;
+    return false;
   }
 
-  if (!did_terminate)
-    DPLOG(ERROR) << "Unable to terminate process " << process_;
+#if BUILDFLAG(IS_CHROMEOS)
+  CleanUpProcessAsync();
+#endif
 
-  return did_terminate;
+  if (!wait || WaitForExitWithTimeout(Seconds(60), nullptr)) {
+    return true;
+  }
+  if (kill(process_, SIGKILL) != 0) {
+    DPLOG(ERROR) << "Unable to kill process " << process_;
+    return false;
+  }
+  return WaitForExit(nullptr);
 }
 
 bool Process::WaitForExit(int* exit_code) const {
@@ -354,7 +371,11 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
   return exited;
 }
 
-void Process::Exited(int exit_code) const {}
+void Process::Exited(int exit_code) const {
+#if BUILDFLAG(IS_CHROMEOS)
+  CleanUpProcessAsync();
+#endif
+}
 
 int Process::GetPriority() const {
   DCHECK(IsValid());

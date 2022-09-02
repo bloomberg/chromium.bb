@@ -1061,8 +1061,8 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
   apibtle::Characteristic api_characteristic;
   PopulateCharacteristic(characteristic, &api_characteristic);
   std::vector<base::Value> args;
-  args.push_back(base::Value::FromUniquePtrValue(
-      apibtle::CharacteristicToValue(&api_characteristic)));
+  args.push_back(
+      base::Value(apibtle::CharacteristicToValue(&api_characteristic)));
 
   DispatchEventToExtensionsWithPermission(
       events::BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_VALUE_CHANGED,
@@ -1515,9 +1515,14 @@ void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
         !FindNotifySession(extension_id, characteristic_id))
       continue;
 
+    std::vector<base::Value> args_copy;
+    args_copy.reserve(args.size());
+    for (const auto& arg : args) {
+      args_copy.emplace_back(arg.Clone());
+    }
     // Send the event.
     auto event = std::make_unique<Event>(histogram_value, event_name,
-                                         base::Value(args).TakeList());
+                                         std::move(args_copy));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
   }

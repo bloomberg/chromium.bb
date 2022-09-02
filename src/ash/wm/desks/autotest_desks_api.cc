@@ -179,7 +179,8 @@ bool AutotestDesksApi::RemoveActiveDesk(base::OnceClosure on_complete) {
 
   new DeskAnimationObserver(std::move(on_complete));
   controller->RemoveDesk(controller->active_desk(),
-                         DesksCreationRemovalSource::kButton);
+                         DesksCreationRemovalSource::kButton,
+                         DeskCloseType::kCombineDesks);
   return true;
 }
 
@@ -212,6 +213,10 @@ bool AutotestDesksApi::IsWindowInDesk(aura::Window* window, int desk_index) {
   aura::Window* desk_container = DesksController::Get()->GetDeskContainer(
       window->GetRootWindow(), desk_index);
   return desk_container->Contains(window);
+}
+
+int AutotestDesksApi::GetDeskCount() const {
+  return DesksController::Get()->desks().size();
 }
 
 }  // namespace ash

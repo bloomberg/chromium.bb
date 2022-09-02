@@ -9,13 +9,12 @@
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace gfx {
 class PointF;
-class Rect;
 }  // namespace gfx
 
 namespace blink {
@@ -69,14 +68,6 @@ class CORE_EXPORT DevToolsEmulator final
   // frame. Returns an updated emulation transform for a viewport override, and
   // should only be called when HasViewportOverride() is true.
   TransformationMatrix MainFrameScrollOrScaleChanged();
-
-  // Rewrites the |visible_rect| to the area of the devtools custom viewport if
-  // it is enabled. Otherwise, leaves |visible_rect| unchanged. Takes as input
-  // the size of the viewport, which gives an upper bound on the size of the
-  // area that is visible. The |viewport_size| is physical pixels if
-  // UseZoomForDSF() is enabled, or DIP otherwise.
-  void OverrideVisibleRect(const gfx::Size& viewport_size,
-                           gfx::Rect* visible_rect) const;
 
   // Returns the scale used to convert incoming input events while emulating
   // device metics.

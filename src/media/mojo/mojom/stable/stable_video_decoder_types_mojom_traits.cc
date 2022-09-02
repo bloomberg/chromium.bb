@@ -4,9 +4,17 @@
 
 #include "media/mojo/mojom/stable/stable_video_decoder_types_mojom_traits.h"
 
+#include "base/time/time.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/format_utils.h"
 #include "media/gpu/buffer_validation.h"
+#include "mojo/public/cpp/bindings/optional_as_pointer.h"
+
+#if BUILDFLAG(USE_V4L2_CODEC)
+#include "media/gpu/v4l2/v4l2_status.h"
+#elif BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi/vaapi_status.h"
+#endif
 
 // This file contains a variety of conservative compile-time assertions that
 // help us detect changes that may break the backward compatibility requirement
@@ -33,8 +41,15 @@ media::stable::mojom::VideoFrameDataPtr MakeVideoFrameData(
   CHECK(input->HasGpuMemoryBuffer());
   gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle =
       input->GetGpuMemoryBuffer()->CloneHandle();
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   CHECK_EQ(gpu_memory_buffer_handle.type, gfx::NATIVE_PIXMAP);
   CHECK(!gpu_memory_buffer_handle.native_pixmap_handle.planes.empty());
+#else
+  // We should not be trying to serialize a media::VideoFrame for the purposes
+  // of this interface outside of Linux and Chrome OS.
+  CHECK(false);
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
   return media::stable::mojom::VideoFrameData::NewGpuMemoryBufferData(
       media::stable::mojom::GpuMemoryBufferVideoFrameData::New(
@@ -254,6 +269,222 @@ bool StructTraits<media::stable::mojom::ColorVolumeMetadataDataView,
     return false;
   if (!data.ReadWhitePoint(&output->white_point))
     return false;
+  return true;
+}
+
+// static
+base::TimeDelta StructTraits<media::stable::mojom::DecoderBufferDataView,
+                             scoped_refptr<media::DecoderBuffer>>::
+    timestamp(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(
+      std::is_same<decltype(input->timestamp()),
+                   decltype(
+                       media::stable::mojom::DecoderBuffer::timestamp)>::value,
+      "Unexpected type for media::DecoderBuffer::timestamp(). If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+  if (!input->end_of_stream())
+    return input->timestamp();
+  return base::TimeDelta();
+}
+
+// static
+base::TimeDelta StructTraits<media::stable::mojom::DecoderBufferDataView,
+                             scoped_refptr<media::DecoderBuffer>>::
+    duration(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(
+      std::is_same<decltype(input->duration()),
+                   decltype(
+                       media::stable::mojom::DecoderBuffer::duration)>::value,
+      "Unexpected type for media::DecoderBuffer::duration(). If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+  if (!input->end_of_stream())
+    return input->duration();
+  return base::TimeDelta();
+}
+
+// static
+bool StructTraits<media::stable::mojom::DecoderBufferDataView,
+                  scoped_refptr<media::DecoderBuffer>>::
+    is_end_of_stream(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(
+      std::is_same<
+          decltype(input->end_of_stream()),
+          decltype(
+              media::stable::mojom::DecoderBuffer::is_end_of_stream)>::value,
+      "Unexpected type for media::DecoderBuffer::end_of_stream(). If you need "
+      "to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+  return input->end_of_stream();
+}
+
+// static
+uint32_t StructTraits<media::stable::mojom::DecoderBufferDataView,
+                      scoped_refptr<media::DecoderBuffer>>::
+    data_size(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(
+      std::is_same<decltype(input->data_size()), size_t>::value,
+      "Unexpected type for media::DecoderBuffer::data_size(). If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+  if (!input->end_of_stream())
+    return base::checked_cast<uint32_t>(input->data_size());
+  return 0u;
+}
+
+// static
+bool StructTraits<media::stable::mojom::DecoderBufferDataView,
+                  scoped_refptr<media::DecoderBuffer>>::
+    is_key_frame(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(
+      std::is_same<
+          decltype(input->is_key_frame()),
+          decltype(media::stable::mojom::DecoderBuffer::is_key_frame)>::value,
+      "Unexpected type for media::DecoderBuffer::is_key_frame(). If you need "
+      "to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+  if (!input->end_of_stream())
+    return input->is_key_frame();
+  return false;
+}
+
+// static
+std::vector<uint8_t> StructTraits<media::stable::mojom::DecoderBufferDataView,
+                                  scoped_refptr<media::DecoderBuffer>>::
+    side_data(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(
+      std::is_same<decltype(input->side_data()), const uint8_t*>::value,
+      "Unexpected type for media::DecoderBuffer::side_data(). If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+  static_assert(std::is_same<decltype(input->side_data_size()), size_t>::value,
+                "Unexpected type for media::DecoderBuffer::side_data_size(). "
+                "If you need to change this assertion, please contact "
+                "chromeos-gfx-video@google.com.");
+  if (input->end_of_stream() || !input->side_data())
+    return {};
+  CHECK_GT(input->side_data_size(), 0u);
+  // This copy is okay because the side data is expected to be small always.
+  return std::vector<uint8_t>(input->side_data(),
+                              input->side_data() + input->side_data_size());
+}
+
+// static
+std::unique_ptr<media::DecryptConfig>
+StructTraits<media::stable::mojom::DecoderBufferDataView,
+             scoped_refptr<media::DecoderBuffer>>::
+    decrypt_config(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(std::is_same<decltype(input->decrypt_config()),
+                             const media::DecryptConfig*>::value,
+                "Unexpected type for media::DecoderBuffer::decrypt_config(). "
+                "If you need to change this assertion, please contact "
+                "chromeos-gfx-video@google.com.");
+  static_assert(
+      std::is_same<
+          decltype(input->decrypt_config()->Clone()),
+          decltype(media::stable::mojom::DecoderBuffer::decrypt_config)>::value,
+      "Unexpected type for media::DecoderBuffer::decrypt_config()->Clone(). If "
+      "you need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+  if (input->end_of_stream() || !input->decrypt_config())
+    return nullptr;
+  std::unique_ptr<media::DecryptConfig> decrypt_config =
+      input->decrypt_config()->Clone();
+  CHECK(!!decrypt_config);
+  return decrypt_config;
+}
+
+// static
+base::TimeDelta StructTraits<media::stable::mojom::DecoderBufferDataView,
+                             scoped_refptr<media::DecoderBuffer>>::
+    front_discard(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(
+      std::is_same<decltype(input->discard_padding()),
+                   const std::pair<base::TimeDelta, base::TimeDelta>&>::value,
+      "Unexpected type for input->discard_padding(). If you need to change "
+      "this assertion, please contact chromeos-gfx-video@google.com.");
+  static_assert(
+      std::is_same<
+          decltype(input->discard_padding().first),
+          decltype(media::stable::mojom::DecoderBuffer::front_discard)>::value,
+      "Unexpected type for input->discard_padding().first. If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+  if (!input->end_of_stream())
+    return input->discard_padding().first;
+  return base::TimeDelta();
+}
+
+// static
+base::TimeDelta StructTraits<media::stable::mojom::DecoderBufferDataView,
+                             scoped_refptr<media::DecoderBuffer>>::
+    back_discard(const scoped_refptr<media::DecoderBuffer>& input) {
+  static_assert(
+      std::is_same<decltype(input->discard_padding()),
+                   const std::pair<base::TimeDelta, base::TimeDelta>&>::value,
+      "Unexpected type for input->discard_padding(). If you need to change "
+      "this assertion, please contact chromeos-gfx-video@google.com.");
+  static_assert(
+      std::is_same<
+          decltype(input->discard_padding().second),
+          decltype(media::stable::mojom::DecoderBuffer::back_discard)>::value,
+      "Unexpected type for input->discard_padding().second. If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+  if (!input->end_of_stream())
+    return input->discard_padding().second;
+  return base::TimeDelta();
+}
+
+// static
+bool StructTraits<media::stable::mojom::DecoderBufferDataView,
+                  scoped_refptr<media::DecoderBuffer>>::
+    Read(media::stable::mojom::DecoderBufferDataView input,
+         scoped_refptr<media::DecoderBuffer>* output) {
+  if (input.is_end_of_stream()) {
+    *output = media::DecoderBuffer::CreateEOSBuffer();
+    return !!(*output);
+  }
+  auto decoder_buffer = base::MakeRefCounted<media::DecoderBuffer>(
+      base::strict_cast<size_t>(input.data_size()));
+
+  base::TimeDelta timestamp;
+  if (!input.ReadTimestamp(&timestamp))
+    return false;
+  decoder_buffer->set_timestamp(timestamp);
+
+  base::TimeDelta duration;
+  if (!input.ReadTimestamp(&duration))
+    return false;
+  decoder_buffer->set_duration(duration);
+
+  decoder_buffer->set_is_key_frame(input.is_key_frame());
+
+  std::vector<uint8_t> side_data;
+  if (!input.ReadSideData(&side_data))
+    return false;
+  if (!side_data.empty()) {
+    decoder_buffer->CopySideDataFrom(side_data.data(), side_data.size());
+  }
+
+  std::unique_ptr<media::DecryptConfig> decrypt_config;
+  if (!input.ReadDecryptConfig(&decrypt_config))
+    return false;
+  if (decrypt_config)
+    decoder_buffer->set_decrypt_config(std::move(decrypt_config));
+
+  base::TimeDelta front_discard;
+  if (!input.ReadFrontDiscard(&front_discard))
+    return false;
+  base::TimeDelta back_discard;
+  if (!input.ReadBackDiscard(&back_discard))
+    return false;
+  static_assert(
+      std::is_same<media::DecoderBuffer::DiscardPadding,
+                   std::pair<base::TimeDelta, base::TimeDelta>>::value,
+      "Unexpected type for media::DecoderBuffer::DiscardPadding. If you need "
+      "to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+  media::DecoderBuffer::DiscardPadding discard_padding(front_discard,
+                                                       back_discard);
+  decoder_buffer->set_discard_padding(discard_padding);
+
+  *output = std::move(decoder_buffer);
   return true;
 }
 
@@ -518,6 +749,7 @@ const gfx::GpuMemoryBufferId& StructTraits<
   return input.id;
 }
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // static
 gfx::NativePixmapHandle StructTraits<
     media::stable::mojom::NativeGpuMemoryBufferHandleDataView,
@@ -526,6 +758,7 @@ gfx::NativePixmapHandle StructTraits<
   CHECK_EQ(input.type, gfx::NATIVE_PIXMAP);
   return std::move(input.native_pixmap_handle);
 }
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 // static
 bool StructTraits<media::stable::mojom::NativeGpuMemoryBufferHandleDataView,
@@ -535,11 +768,276 @@ bool StructTraits<media::stable::mojom::NativeGpuMemoryBufferHandleDataView,
   if (!data.ReadId(&output->id))
     return false;
 
-  if (!data.ReadPlatformHandle(&output->native_pixmap_handle))
-    return false;
-
   output->type = gfx::NATIVE_PIXMAP;
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  if (!data.ReadPlatformHandle(&output->native_pixmap_handle))
+    return false;
+  return true;
+#else
+  // We should not be trying to de-serialize a gfx::GpuMemoryBufferHandle for
+  // the purposes of this interface outside of Linux and Chrome OS.
+  return false;
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+}
+
+// static
+media::stable::mojom::StatusCode StructTraits<
+    media::stable::mojom::StatusDataDataView,
+    media::internal::StatusData>::code(const media::internal::StatusData&
+                                           input) {
+  static_assert(
+      std::is_same_v<decltype(::media::internal::StatusData::code), uint16_t>,
+      "Unexpected type for media::internal::StatusData::code. If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+
+  // TODO(b/215438024): enforce that this check implies that the input.code
+  // really corresponds to media::DecoderStatusTraits::Codes.
+  CHECK(input.group == media::DecoderStatusTraits::Group());
+
+  static_assert(
+      std::is_same_v<std::underlying_type_t<media::DecoderStatusTraits::Codes>,
+                     uint16_t>,
+      "Unexpected underlying type for media::DecoderStatusTraits::Codes. If "
+      "you need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+  if (input.code ==
+      static_cast<uint16_t>(media::DecoderStatusTraits::Codes::kOk)) {
+    return media::stable::mojom::StatusCode::kOk;
+  } else if (input.code == static_cast<uint16_t>(
+                               media::DecoderStatusTraits::Codes::kAborted)) {
+    return media::stable::mojom::StatusCode::kAborted;
+  }
+  return media::stable::mojom::StatusCode::kError;
+}
+
+// static
+std::string StructTraits<media::stable::mojom::StatusDataDataView,
+                         media::internal::StatusData>::
+    group(const media::internal::StatusData& input) {
+  static_assert(
+      std::is_same<decltype(::media::internal::StatusData::group),
+                   decltype(media::stable::mojom::StatusData::group)>::value,
+      "Unexpected type for media::internal::StatusData::group. If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+
+  CHECK(input.group == media::DecoderStatusTraits::Group());
+
+  return input.group;
+}
+
+// static
+std::string StructTraits<media::stable::mojom::StatusDataDataView,
+                         media::internal::StatusData>::
+    message(const media::internal::StatusData& input) {
+  static_assert(
+      std::is_same<decltype(::media::internal::StatusData::message),
+                   decltype(media::stable::mojom::StatusData::message)>::value,
+      "Unexpected type for media::internal::StatusData::message. If you need "
+      "to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+
+  return input.message;
+}
+
+// static
+base::span<const base::Value> StructTraits<
+    media::stable::mojom::StatusDataDataView,
+    media::internal::StatusData>::frames(const media::internal::StatusData&
+                                             input) {
+  static_assert(
+      std::is_same<decltype(::media::internal::StatusData::frames),
+                   decltype(media::stable::mojom::StatusData::frames)>::value,
+      "Unexpected type for media::internal::StatusData::frames. If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+
+  return input.frames;
+}
+
+// static
+absl::optional<media::internal::StatusData> StructTraits<
+    media::stable::mojom::StatusDataDataView,
+    media::internal::StatusData>::cause(const media::internal::StatusData&
+                                            input) {
+  static_assert(
+      std::is_same<decltype(*input.cause),
+                   std::add_lvalue_reference<decltype(
+                       media::stable::mojom::StatusData::cause)::value_type>::
+                       type>::value,
+      "Unexpected type for media::internal::StatusData::cause. If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+
+  static_assert(
+      std::is_same_v<std::underlying_type_t<media::DecoderStatusTraits::Codes>,
+                     media::StatusCodeType>,
+      "Unexpected underlying type for media::DecoderStatusTraits::Codes. If "
+      "you need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+
+#if BUILDFLAG(USE_VAAPI)
+  static_assert(
+      std::is_same_v<std::underlying_type_t<media::VaapiStatusTraits::Codes>,
+                     uint16_t>,
+      "Unexpected underlying type for media::VaapiStatusTraits::Codes. If "
+      "you need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+  static_assert(
+      static_cast<uint16_t>(media::VaapiStatusTraits::Codes::kOk) == 0u,
+      "Unexpected value for media::VaapiStatusTraits::Codes::kOk. If "
+      "you need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+#elif BUILDFLAG(USE_V4L2_CODEC)
+  static_assert(
+      std::is_same_v<std::underlying_type_t<media::V4L2StatusTraits::Codes>,
+                     uint16_t>,
+      "Unexpected underlying type for media::V4L2StatusTraits::Codes. If "
+      "you need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+  static_assert(
+      static_cast<uint16_t>(media::V4L2StatusTraits::Codes::kOk) == 0u,
+      "Unexpected value for media::V4L2StatusTraits::Codes::kOk. If "
+      "you need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+#endif
+
+  if (input.cause) {
+    media::internal::StatusData output_cause(*input.cause);
+    static_assert(
+        std::is_same_v<decltype(output_cause.code), uint16_t>,
+        "Unexpected type for output_cause.code. If you need to change this "
+        "assertion, please contact chromeos-gfx-video@google.com.");
+
+    static_assert(
+        std::is_same_v<decltype(output_cause.code), media::StatusCodeType>,
+        "Unexpected type for output_cause.code. If you need to "
+        "change this assertion, please contact chromeos-gfx-video@google.com.");
+
+    // TODO(b/215438024): enforce that these checks imply that the
+    // output_cause.code really corresponds to media::VaapiStatusTraits::Codes
+    // or media::V4L2StatusTraits::Codes.
+#if BUILDFLAG(USE_VAAPI)
+    CHECK(output_cause.group == media::VaapiStatusTraits::Group());
+#elif BUILDFLAG(USE_V4L2_CODEC)
+    CHECK(output_cause.group == media::V4L2StatusTraits::Group());
+#else
+    // TODO(b/217970098): allow building the VaapiStatusTraits and
+    // V4L2StatusTraits without USE_VAAPI/USE_V4L2_CODEC so these guards could
+    // be removed.
+    CHECK(false);
+#endif
+    output_cause.code = static_cast<media::StatusCodeType>(
+        output_cause.code ? media::DecoderStatusTraits::Codes::kFailed
+                          : media::DecoderStatusTraits::Codes::kOk);
+    output_cause.group = std::string(media::DecoderStatusTraits::Group());
+    return output_cause;
+  }
+  return absl::nullopt;
+}
+
+// static
+const base::Value& StructTraits<media::stable::mojom::StatusDataDataView,
+                                media::internal::StatusData>::
+    data(const media::internal::StatusData& input) {
+  static_assert(
+      std::is_same<decltype(input.data.Clone()),
+                   decltype(media::stable::mojom::StatusData::data)>::value,
+      "Unexpected type for media::internal::StatusData::data::Clone(). If you "
+      "need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+
+  return input.data;
+}
+
+// static
+bool StructTraits<media::stable::mojom::StatusDataDataView,
+                  media::internal::StatusData>::
+    Read(media::stable::mojom::StatusDataDataView data,
+         media::internal::StatusData* output) {
+  static_assert(
+      std::is_same<decltype(output->code), media::StatusCodeType>::value,
+      "Unexpected type for media::internal::StatusData::code. If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+
+  static_assert(
+      std::is_same_v<std::underlying_type_t<media::DecoderStatusTraits::Codes>,
+                     media::StatusCodeType>,
+      "Unexpected underlying type for media::DecoderStatusTraits::Codes. If "
+      "you need to change this assertion, please contact "
+      "chromeos-gfx-video@google.com.");
+
+  switch (data.code()) {
+    case media::stable::mojom::StatusCode::kOk:
+      output->code = static_cast<media::StatusCodeType>(
+          media::DecoderStatusTraits::Codes::kOk);
+      break;
+    case media::stable::mojom::StatusCode::kAborted:
+      output->code = static_cast<media::StatusCodeType>(
+          media::DecoderStatusTraits::Codes::kAborted);
+      break;
+    case media::stable::mojom::StatusCode::kError:
+      output->code = static_cast<media::StatusCodeType>(
+          media::DecoderStatusTraits::Codes::kFailed);
+      break;
+    default:
+      return false;
+  }
+
+  // TODO(b/215438024): the group will always be the one that corresponds
+  // to the DecoderStatus::Codes so it does not have to be sent over IPC.
+  // Remove the group field from the media::stable::mojom::StatusData
+  // structure.
+  output->group = std::string(media::DecoderStatusTraits::Group());
+
+  if (!data.ReadMessage(&output->message))
+    return false;
+
+  if (!data.ReadFrames(&output->frames))
+    return false;
+
+  if (!data.ReadData(&output->data))
+    return false;
+
+  absl::optional<media::internal::StatusData> cause;
+  if (!data.ReadCause(&cause))
+    return false;
+
+  if (cause.has_value()) {
+    output->cause =
+        std::make_unique<media::internal::StatusData>(std::move(*cause));
+  }
+
+  return true;
+}
+
+// static
+mojo::OptionalAsPointer<const media::internal::StatusData> StructTraits<
+    media::stable::mojom::StatusDataView,
+    media::DecoderStatus>::internal(const media::DecoderStatus& input) {
+  static_assert(
+      std::is_same<decltype(*input.data_),
+                   std::add_lvalue_reference<decltype(
+                       media::stable::mojom::Status::internal)::value_type>::
+                       type>::value,
+      "Unexpected type for media::DecoderStatus::data_. If you need to "
+      "change this assertion, please contact chromeos-gfx-video@google.com.");
+
+  CHECK(input.data_ || input.is_ok());
+
+  return MakeOptionalAsPointer(input.data_.get());
+}
+
+// static
+bool StructTraits<media::stable::mojom::StatusDataView, media::DecoderStatus>::
+    Read(media::stable::mojom::StatusDataView data,
+         media::DecoderStatus* output) {
+  absl::optional<media::internal::StatusData> internal;
+  if (!data.ReadInternal(&internal))
+    return false;
+  if (internal) {
+    output->data_ = internal->copy();
+    return !!output->data_;
+  }
+  *output = media::DecoderStatus(media::OkStatus());
   return true;
 }
 

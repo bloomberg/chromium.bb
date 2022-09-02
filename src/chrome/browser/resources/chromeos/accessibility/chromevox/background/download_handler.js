@@ -6,8 +6,9 @@
  * @fileoverview Listens for download events and provides corresponding
  * notifications in ChromeVox.
  */
+import {Output} from '/chromevox/background/output/output.js';
 
-goog.provide('DownloadHandler');
+export class DownloadHandler {}
 
 /**
  * Maps download item ID to an object containing its file name and progress

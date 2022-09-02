@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "cc/trees/layer_tree_frame_sink.h"
 
 #include "base/memory/read_only_shared_memory_region.h"
@@ -11,6 +13,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
+#include "components/viz/test/test_raster_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,8 +33,7 @@ class StubLayerTreeFrameSink : public LayerTreeFrameSink {
                            nullptr) {}
 
   void SubmitCompositorFrame(viz::CompositorFrame frame,
-                             bool hit_test_data_changed,
-                             bool show_hit_test_borders) override {
+                             bool hit_test_data_changed) override {
     client_->DidReceiveCompositorFrameAck();
   }
   void DidNotProduceFrame(const viz::BeginFrameAck& ack,
@@ -116,7 +118,7 @@ TEST(LayerTreeFrameSinkTest, WorkerContextLossFailsBind) {
       viz::TestContextProvider::CreateWorker();
 
   // Lose the context so BindToClient fails.
-  worker_provider->UnboundTestContextGL()->set_context_lost(true);
+  worker_provider->UnboundTestRasterInterface()->set_context_lost(true);
 
   auto task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   StubLayerTreeFrameSink layer_tree_frame_sink(context_provider,

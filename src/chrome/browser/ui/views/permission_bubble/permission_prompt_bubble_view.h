@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_style.h"
 #include "components/permissions/permission_prompt.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -34,10 +35,11 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
  public:
   METADATA_HEADER(PermissionPromptBubbleView);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kPermissionPromptBubbleViewIdentifier);
-  PermissionPromptBubbleView(Browser* browser,
-                             permissions::PermissionPrompt::Delegate* delegate,
-                             base::TimeTicks permission_requested_time,
-                             PermissionPromptStyle prompt_style);
+  PermissionPromptBubbleView(
+      Browser* browser,
+      base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate,
+      base::TimeTicks permission_requested_time,
+      PermissionPromptStyle prompt_style);
   PermissionPromptBubbleView(const PermissionPromptBubbleView&) = delete;
   PermissionPromptBubbleView& operator=(const PermissionPromptBubbleView&) =
       delete;
@@ -50,16 +52,12 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
   void UpdateAnchorPosition();
 
   void SetPromptStyle(PermissionPromptStyle prompt_style);
-  void SetOnBubbleDismissedByUserCallback(base::OnceClosure callback) {
-    on_bubble_dismissed_by_user_callback_ = std::move(callback);
-  }
 
   // views::BubbleDialogDelegateView:
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
   std::u16string GetAccessibleWindowTitle() const override;
   std::u16string GetWindowTitle() const override;
-  void OnWidgetClosing(views::Widget* widget) override;
 
   void AcceptPermission();
   void AcceptPermissionThisTime();
@@ -67,38 +65,24 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
   void ClosingPermission();
 
  private:
-  bool ShouldShowRequest(permissions::RequestType type) const;
-  std::vector<permissions::PermissionRequest*> GetVisibleRequests() const;
   void AddRequestLine(permissions::PermissionRequest* request);
-
-  // Returns the origin to be displayed in the permission prompt. May return
-  // a non-origin, e.g. extension URLs use the name of the extension.
-  std::u16string GetDisplayName() const;
-
-  // Returns whether the display name is an origin.
-  bool GetDisplayNameIsOrigin() const;
-
-  // Get extra information to display for the permission, if any.
-  absl::optional<std::u16string> GetExtraText() const;
 
   // Record UMA Permissions.*.TimeToDecision.|action| metric. Can be
   // Permissions.Prompt.TimeToDecision.* or Permissions.Chip.TimeToDecision.*,
   // depending on which UI is used.
   void RecordDecision(permissions::PermissionAction action);
 
-  // Determines whether the current request should also display an
-  // "Allow only this time" option in addition to the "Allow on every visit"
-  // option.
-  bool GetShowAllowThisTimeButton() const;
-
   const raw_ptr<Browser> browser_;
-  const raw_ptr<permissions::PermissionPrompt::Delegate> delegate_;
+  base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate_;
 
   base::TimeTicks permission_requested_time_;
 
   PermissionPromptStyle prompt_style_;
 
-  base::OnceClosure on_bubble_dismissed_by_user_callback_;
+  const std::u16string display_name_;
+  const std::u16string accessible_window_title_;
+  const std::u16string window_title_;
+  const bool is_display_name_origin_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_PERMISSION_PROMPT_BUBBLE_VIEW_H_

@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">ცხრილი <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">შემდეგ კლავიშზე დაჭერის იგნორირება</translation>
 <translation id="4623097797855662355">კოლოფონი</translation>
+<translation id="4624970070706497034">TalkBack აღარ უზრუნველყოფს მორგებულ ფუნქციებს Chromebook-ისთვის. TalkBack-ის გამოყენება კვლავ შეგიძლიათ, თუმცა კლავიატურის ნაგულისხმევი მალსახმობებით. ხელმისაწვდომი მალსახმობების გასაცნობად დააჭირეთ კლავიშთა კომბინაციას Search+A, შემდეგ კი კლავიშს K. თუ TalkBack-ით სარგებლობის გაგრძელებას გადაწყვეტთ, ხელახლა დააჭირეთ ბრძანებას.</translation>
 <translation id="463135993322337640">სიახლეების გასაცნობად დააჭირეთ კლავიშთა კომბინაციას ChromeVox o, n</translation>
 <translation id="4649220074413114917">ეკრანზე ორი თითით შეხებით შესაძლებელია მეტყველების შეჩერება. ეს გამოგადგებათ, როცა არ გსურთ, რომ ChromeVox რამეს კითხულობდეს. გასაგრძელებლად შეეხეთ ეკრანს ორი თითით.</translation>
 <translation id="4660783501463101648">ChromeVox Classic გაუქმდა. ახლა მასზე კლავიატურის მეშვეობით გადართვა ვეღარ მოხერხდება.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">ბრაილის წარწერები ჩართულია</translation>
 <translation id="5183440668879371625">ბრაილის წინა სტრიქონი</translation>
 <translation id="5189244881767082992">ხაზი</translation>
-<translation id="5234747236692380506">აიკრიფოს <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">ახალი სიმინდისფერი</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">დასასრული</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">სწრაფი ორიენტაცია დასრულდა!</translation>
 <translation id="5534303576632885660">სათაური</translation>
 <translation id="5539820223028224601">გეინსბორო</translation>
+<translation id="554893713779400387">კარნახის გადართვა</translation>
 <translation id="5549179427201066174">ხმოვანი გამოხმაურების (ხმოვანი ეფექტების) ჩართვა ან გამორთვა</translation>
 <translation id="556042886152191864">ღილაკი</translation>
 <translation id="5561345396546889625">შემდეგი სია</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">ჟურნალი</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">გრაფიკული სიმბოლო</translation>
+<translation id="5648939288050772726">გილოცავთ! თქვენ წარმატებით გაეცანით ChromeVox-თან მუშაობის საფუძვლებს. გახსოვდეთ, რომ ChromeVox-ის ბრძანებათა მენიუს ნებისმიერ დროს გახსნა შეგიძლიათ კლავიშთა შემდეგი კომბინაციით: Search+წერტილი. ChromeVox-ისა და ChromeOS-ის შესახებ დამატებითი ინფორმაციისთვის გაეცანით ქვემოთ მითითებულ სტატიებს.
+    თუ სახელმძღვანელოს გაცნობა დაასრულეთ, ChromeVox-ის მეშვეობით გადადით დახურვის ღილაკზე და დააწკაპუნეთ მასზე.</translation>
 <translation id="5653397561111110475">Chromebook-ის სენსორული ეკრანის მარტივი წვდომის ფუნქციების გამოყენება</translation>
 <translation id="5655682562155942719">გადასვლის ბრძანებები</translation>
 <translation id="56637627897541303">ტექსტის არე</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{სვეტი}other{# სვეტები}}</translation>
 <translation id="6444046323172968959">გაფრთხილების დიალოგი</translation>
 <translation id="6452403590345320472">სარჩევი</translation>
+<translation id="6457542714329819968">ტიპი</translation>
 <translation id="6468049171101508116">შემდეგი ღილაკი</translation>
 <translation id="646954774886932461">ინდექსი</translation>
 <translation id="6475604559827479857">გამოყოფილი სიტყვების ფერი:</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">ბუნებრივი ხმა</translation>
 <translation id="7714340021005120797">შემდეგი ველი ჩამონათვლით არ არის</translation>
-<translation id="772146615414628379">გილოცავთ! თქვენ წარმატებით გაეცანით ChromeVox-თან მუშაობის საფუძვლებს. გახსოვდეთ, რომ ChromeVox-ის ბრძანებათა მენიუს ნებისმიერ დროს გახსნა შეგიძლიათ კლავიშთა შემდეგი კომბინაციით: Search+წერტილი. ChromeVox-ისა და Chrome OS-ის შესახებ დამატებითი ინფორმაციისთვის გაეცანით ქვემოთ მითითებულ სტატიებს.
-    თუ სახელმძღვანელოს გაცნობა დაასრულეთ, ChromeVox-ის მეშვეობით გადადით დახურვის ღილაკზე და დააწკაპუნეთ მასზე.</translation>
 <translation id="7724603315864178912">ამოჭრა</translation>
 <translation id="7731785449856576010">შემდეგი მედიავიჯეტი არ არის</translation>
 <translation id="7735498529470878067">შეხებით დათვალიერება დაგეხმარებათ, სწრაფად გაერკვეთ იმაში, თუ რა არის მოცემული ეკრანზე.</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">მუქი წითელი</translation>
 <translation id="923331726185079994">ChromeVox განახლდა</translation>
 <translation id="93384979447910801">მუქი ზღვისფერი მწვანე</translation>
+<translation id="937605981140327129">TalkBack ამჟამად არ არის დაინსტალირებული. Play Store-იდან დააინსტალირეთ Android AccessibilitySuite და ცადეთ ხელახლა.</translation>
 <translation id="948171205378458592">მეტყველების სიჩქარის შემცირება</translation>
 <translation id="957570623732056069">ამ გაკვეთილში გადაადგილებისთვის გადაფურცლეთ ერთი თითით მარცხნივ ან მარჯვნივ</translation>
 <translation id="958854023026327378">ერთი თითით გადაფურცვლა ქვემოთ</translation>

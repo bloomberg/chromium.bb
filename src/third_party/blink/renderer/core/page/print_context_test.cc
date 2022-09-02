@@ -9,10 +9,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
-#include "gpu/command_buffer/client/raster_implementation_gles.h"
+#include "components/viz/test/test_raster_interface.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/before_print_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -102,40 +103,6 @@ class MockPageContextCanvas : public SkCanvas {
   Vector<Operation> recorded_operations_;
 };
 
-// overrides methods of RasterImplementationGLES to suppress NOTREACHED().
-class FakeRasterInterface : public gpu::raster::RasterImplementationGLES {
- public:
-  explicit FakeRasterInterface(gpu::gles2::GLES2Interface* gl,
-                               gpu::ContextSupport* context_support)
-      : gpu::raster::RasterImplementationGLES(gl, context_support) {}
-
-  void BeginRasterCHROMIUM(GLuint sk_color,
-                           GLboolean needs_clear,
-                           GLuint msaa_sample_count,
-                           gpu::raster::MsaaMode msaa_mode,
-                           GLboolean can_use_lcd_text,
-                           const gfx::ColorSpace& color_space,
-                           const GLbyte* mailbox) override {}
-  void RasterCHROMIUM(const cc::DisplayItemList* list,
-                      cc::ImageProvider* provider,
-                      const gfx::Size& content_size,
-                      const gfx::Rect& full_raster_rect,
-                      const gfx::Rect& playback_rect,
-                      const gfx::Vector2dF& post_translate,
-                      const gfx::Vector2dF& post_scale,
-                      bool requires_clear,
-                      size_t* max_op_size_hint,
-                      bool preserve_recording = true) override {}
-  void EndRasterCHROMIUM() override {}
-
-  void ReadbackImagePixels(const gpu::Mailbox& source_mailbox,
-                           const SkImageInfo& dst_info,
-                           GLuint dst_row_bytes,
-                           int src_x,
-                           int src_y,
-                           void* dst_pixels) override {}
-};
-
 class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
  protected:
   explicit PrintContextTest(LocalFrameClient* local_frame_client = nullptr)
@@ -169,12 +136,13 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
     Event* event = MakeGarbageCollected<BeforePrintEvent>();
     GetPrintContext().GetFrame()->DomWindow()->DispatchEvent(*event);
     GetPrintContext().BeginPrintMode(page_rect.width(), page_rect.height());
-    UpdateAllLifecyclePhasesForTest();
+    GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kTest);
     auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
     GraphicsContext& context = builder->Context();
     context.SetPrinting(true);
-    GetDocument().View()->PaintContentsOutsideOfLifecycle(
-        context, kGlobalPaintAddUrlMetadata, CullRect(page_rect));
+    GetDocument().View()->PaintOutsideOfLifecycle(
+        context, PaintFlag::kAddUrlMetadata, CullRect(page_rect));
     {
       DrawingRecorder recorder(
           context, *GetDocument().GetLayoutView(),
@@ -369,9 +337,6 @@ TEST_P(PrintContextTest, LinkedTarget) {
 
   const Vector<MockPageContextCanvas::Operation>& operations =
       canvas.RecordedOperations();
-  for (const auto& operation : operations) {
-    LOG(INFO) << (operation.type ? "Point" : "Rect") << operation.rect;
-  }
   ASSERT_EQ(8u, operations.size());
   // The DrawRect operations come from a stable iterator.
   EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
@@ -664,9 +629,8 @@ class PrintContextOOPRCanvasTest : public PrintContextTest {
     gl_context->set_supports_oop_raster(true);
     std::unique_ptr<viz::TestContextSupport> context_support =
         std::make_unique<viz::TestContextSupport>();
-    std::unique_ptr<FakeRasterInterface> raster_interface =
-        std::make_unique<FakeRasterInterface>(gl_context.get(),
-                                              context_support.get());
+    std::unique_ptr<viz::TestRasterInterface> raster_interface =
+        std::make_unique<viz::TestRasterInterface>();
     test_context_provider_ = base::MakeRefCounted<viz::TestContextProvider>(
         std::move(context_support), std::move(gl_context),
         std::move(raster_interface),
@@ -718,6 +682,8 @@ TEST_P(PrintContextOOPRCanvasTest, Canvas2DBeforePrint) {
 }
 
 TEST_P(PrintContextOOPRCanvasTest, Canvas2DFlushForImageListener) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(features::kCanvas2dStaysGPUOnReadback);
   // Verifies that a flush triggered by a change to a source canvas results
   // in printing falling out of vector print mode.
 

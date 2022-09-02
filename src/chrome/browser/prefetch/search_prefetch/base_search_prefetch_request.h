@@ -12,10 +12,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
-namespace net {
-class HttpResponseHeaders;
-}
-
 class Profile;
 class SearchPrefetchURLLoader;
 
@@ -38,13 +34,15 @@ enum class SearchPrefetchStatus {
   // |kRequestFailed|.
   kCanBeServedAndUserClicked = 3,
   // The request can be served to the navigation stack, and has fully streamed
-  // the response with no errors. This is a terminal state.
+  // the response with no errors.
   kComplete = 4,
-  // The request hit an error and cannot be served. This is a terminal state.
+  // The request hit an error and cannot be served.
   kRequestFailed = 5,
   // The request was cancelled before completion. This is terminal state.
   kRequestCancelled = 6,
-  kMaxValue = kRequestCancelled,
+  // The request was served to the navigation stack. This is terminal state.
+  kServed = 7,
+  kMaxValue = kServed,
 };
 
 // A class representing a prefetch used by the Search Prefetch Service.
@@ -52,8 +50,10 @@ enum class SearchPrefetchStatus {
 // updating |current_status_|.
 class BaseSearchPrefetchRequest {
  public:
-  BaseSearchPrefetchRequest(const GURL& prefetch_url,
-                            base::OnceClosure report_error_callback);
+  BaseSearchPrefetchRequest(
+      const GURL& prefetch_url,
+      bool navigation_prefetch,
+      base::OnceCallback<void(bool)> report_error_callback);
   virtual ~BaseSearchPrefetchRequest();
 
   BaseSearchPrefetchRequest(const BaseSearchPrefetchRequest&) = delete;
@@ -75,6 +75,9 @@ class BaseSearchPrefetchRequest {
   // Called when the prefetch encounters an error.
   void ErrorEncountered();
 
+  // Called when the prefetch encounters an error.
+  void ErrorEncounteredUsingFallback();
+
   // Update the status when the request is serveable.
   void MarkPrefetchAsServable();
 
@@ -84,18 +87,24 @@ class BaseSearchPrefetchRequest {
   // Update the status when the relevant search item is clicked in omnibox.
   void MarkPrefetchAsClicked();
 
-  // The URL for the prefetch request.
-  const GURL& prefetch_url() { return prefetch_url_; }
+  // Update the status when the request is actually served to the navigation
+  // stack.
+  void MarkPrefetchAsServed();
 
-  // Whether the prefetch should be served based on |headers|.
-  bool CanServePrefetchRequest(
-      const scoped_refptr<net::HttpResponseHeaders> headers);
+  // Record the time at which the user clicked a suggestion matching this
+  // prefetch.
+  void RecordClickTime();
+
+  // Whether the request was started as a navigation prefetch (as opposed to a
+  // suggestion prefetch).
+  bool navigation_prefetch() const { return navigation_prefetch_; }
 
   // Starts and begins processing |resource_request|.
   virtual void StartPrefetchRequestInternal(
       Profile* profile,
       std::unique_ptr<network::ResourceRequest> resource_request,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      base::OnceCallback<void(bool)> report_error_callback) = 0;
 
   // Stops the on-going prefetch and should mark |current_status_|
   // appropriately.
@@ -115,8 +124,14 @@ class BaseSearchPrefetchRequest {
   // The URL to prefetch the search terms from.
   GURL prefetch_url_;
 
+  // Whether this is for a navigation-time prefetch.
+  bool navigation_prefetch_;
+
   // Called when there is a network/server error on the prefetch request.
-  base::OnceClosure report_error_callback_;
+  base::OnceCallback<void(bool)> report_error_callback_;
+
+  // The time at which the prefetched URL was clicked in the Omnibox.
+  base::TimeTicks time_clicked_;
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_BASE_SEARCH_PREFETCH_REQUEST_H_

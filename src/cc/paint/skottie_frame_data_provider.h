@@ -12,6 +12,7 @@
 #include "cc/paint/paint_export.h"
 #include "cc/paint/skottie_frame_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 
@@ -28,29 +29,24 @@ namespace cc {
 // ImageAssets shall always be invoked from the same sequence).
 class CC_PAINT_EXPORT SkottieFrameDataProvider {
  public:
-  class CC_PAINT_EXPORT ImageAsset
-      : public base::RefCountedThreadSafe<ImageAsset> {
+  class CC_PAINT_EXPORT ImageAsset : public base::RefCounted<ImageAsset> {
    public:
     // Returns the image to use for an asset in a frame of a skottie animation.
-    // If absl::nullopt is returned, the most recently provided image for this
-    // asset is reused when the frame is rendered. Thus, the ImageAsset may
-    // return "null" if: a) The most recent image intentionally should be
-    // reused or b) The provider knows that this particular asset does not
-    // appear at the specified timestamp of the animation.
+    // May return a blank SkottieFrameData instance with an empty |image|.
+    // Skottie handles this gracefully and simply skips the image asset while
+    // still rendering the rest of the frame.
     //
     // |t|: See skresources::ImageAsset::getFrame(). Same semantics. Specifies
     //      the frame of interest in the animation that's about to be rendered.
     // |scale_factor|: See |image_scale| in gfx::Canvas. Can be used to generate
     //                 a PaintImage from a gfx::ImageSkia instance.
-    virtual absl::optional<SkottieFrameData> GetFrameData(
-        float t,
-        float scale_factor) = 0;
+    virtual SkottieFrameData GetFrameData(float t, float scale_factor) = 0;
 
    protected:
     virtual ~ImageAsset() = default;
 
    private:
-    friend class base::RefCountedThreadSafe<ImageAsset>;
+    friend class base::RefCounted<ImageAsset>;
   };
 
   virtual ~SkottieFrameDataProvider() = default;
@@ -60,9 +56,17 @@ class CC_PAINT_EXPORT SkottieFrameDataProvider {
   // for the given |resource_id| gets re-used for the lifetime of the animation;
   // LoadImageAsset() is not called multiple times for the same |resource_id|.
   // The returned value must never be null.
+  //
+  // |size| contains this asset's dimensions as specified in the Lottie
+  // animation file. Note that the ultimate image(s) returned by GetFrameData()
+  // are not required to have dimensions that match this |size|. It's provided
+  // here as a guide that implementations can optionally use to transform
+  // their images if desired. May be null if the asset didn't have dimensions
+  // specified in the Lottie file.
   virtual scoped_refptr<ImageAsset> LoadImageAsset(
       base::StringPiece resource_id,
-      const base::FilePath& resource_path) = 0;
+      const base::FilePath& resource_path,
+      const absl::optional<gfx::Size>& size) = 0;
 };
 
 }  // namespace cc

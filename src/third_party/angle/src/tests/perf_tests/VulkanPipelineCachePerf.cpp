@@ -8,6 +8,7 @@
 
 #include "ANGLEPerfTest.h"
 
+#include "libANGLE/renderer/vulkan/RendererVk.h"
 #include "libANGLE/renderer/vulkan/vk_cache_utils.h"
 #include "libANGLE/renderer/vulkan/vk_helpers.h"
 #include "util/random_utils.h"
@@ -34,17 +35,19 @@ class VulkanPipelineCachePerfTest : public ANGLEPerfTest
     std::vector<vk::GraphicsPipelineDesc> mCacheMisses;
     size_t mMissIndex = 0;
 
+    bool mWithDynamicState;
+
   private:
     void randomizeDesc(vk::GraphicsPipelineDesc *desc);
 };
 
 VulkanPipelineCachePerfTest::VulkanPipelineCachePerfTest()
-    : ANGLEPerfTest("VulkanPipelineCachePerf", "", "", kIterationsPerStep)
+    : ANGLEPerfTest("VulkanPipelineCachePerf", "", "", kIterationsPerStep), mWithDynamicState(false)
 {}
 
 VulkanPipelineCachePerfTest::~VulkanPipelineCachePerfTest()
 {
-    mCache.destroy(VK_NULL_HANDLE);
+    mCache.reset();
 }
 
 void VulkanPipelineCachePerfTest::SetUp()
@@ -76,6 +79,8 @@ void VulkanPipelineCachePerfTest::randomizeDesc(vk::GraphicsPipelineDesc *desc)
     std::vector<uint8_t> bytes(sizeof(vk::GraphicsPipelineDesc));
     FillVectorWithRandomUBytes(&mRNG, &bytes);
     memcpy(desc, bytes.data(), sizeof(vk::GraphicsPipelineDesc));
+
+    desc->setSupportsDynamicStateForTest(mWithDynamicState);
 }
 
 void VulkanPipelineCachePerfTest::step()
@@ -83,6 +88,9 @@ void VulkanPipelineCachePerfTest::step()
     vk::RenderPass rp;
     vk::PipelineLayout pl;
     vk::PipelineCache pc;
+    PipelineCacheAccess spc;
+    vk::RefCounted<vk::ShaderAndSerial> vsAndSerial;
+    vk::RefCounted<vk::ShaderAndSerial> fsAndSerial;
     vk::ShaderAndSerialMap ssm;
     const vk::GraphicsPipelineDesc *desc = nullptr;
     vk::PipelineHelper *result           = nullptr;
@@ -93,8 +101,14 @@ void VulkanPipelineCachePerfTest::step()
     // The Vulkan handle types are difficult to cast to without #ifdefs.
     VkShaderModule vs = (VkShaderModule)1;
     VkShaderModule fs = (VkShaderModule)2;
-    ssm[gl::ShaderType::Vertex].get().get().setHandle(vs);
-    ssm[gl::ShaderType::Fragment].get().get().setHandle(fs);
+
+    vsAndSerial.get().get().setHandle(vs);
+    fsAndSerial.get().get().setHandle(fs);
+
+    ssm[gl::ShaderType::Vertex].set(&vsAndSerial);
+    ssm[gl::ShaderType::Fragment].set(&fsAndSerial);
+
+    spc.init(&pc, nullptr);
 
     vk::SpecializationConstants defaultSpecConsts{};
 
@@ -102,8 +116,8 @@ void VulkanPipelineCachePerfTest::step()
     {
         for (const auto &hit : mCacheHits)
         {
-            (void)mCache.getPipeline(VK_NULL_HANDLE, pc, rp, pl, am, ctm, dbm, ssm,
-                                     defaultSpecConsts, hit, &desc, &result);
+            (void)mCache.getPipeline(VK_NULL_HANDLE, &spc, rp, pl, am, ctm, dbm, ssm,
+                                     defaultSpecConsts, PipelineSource::Draw, hit, &desc, &result);
         }
     }
 
@@ -111,14 +125,23 @@ void VulkanPipelineCachePerfTest::step()
          ++missCount, ++mMissIndex)
     {
         const auto &miss = mCacheMisses[mMissIndex];
-        (void)mCache.getPipeline(VK_NULL_HANDLE, pc, rp, pl, am, ctm, dbm, ssm, defaultSpecConsts,
-                                 miss, &desc, &result);
+        (void)mCache.getPipeline(VK_NULL_HANDLE, &spc, rp, pl, am, ctm, dbm, ssm, defaultSpecConsts,
+                                 PipelineSource::Draw, miss, &desc, &result);
     }
+
+    vsAndSerial.get().get().setHandle(VK_NULL_HANDLE);
+    fsAndSerial.get().get().setHandle(VK_NULL_HANDLE);
 }
 
 }  // anonymous namespace
 
 TEST_F(VulkanPipelineCachePerfTest, Run)
 {
+    run();
+}
+
+TEST_F(VulkanPipelineCachePerfTest, Run_WithDynamicState)
+{
+    mWithDynamicState = true;
     run();
 }

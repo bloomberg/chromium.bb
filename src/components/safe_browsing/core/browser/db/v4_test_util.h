@@ -31,7 +31,7 @@ class TestV4Store : public V4Store {
               const base::FilePath& store_path);
   ~TestV4Store() override;
 
-  bool HasValidData() const override;
+  bool HasValidData() override;
 
   void MarkPrefixAsBad(HashPrefix prefix);
 
@@ -70,7 +70,7 @@ class TestV4DatabaseFactory : public V4DatabaseFactory {
   TestV4DatabaseFactory();
   ~TestV4DatabaseFactory() override;
 
-  std::unique_ptr<V4Database> Create(
+  std::unique_ptr<V4Database, base::OnTaskRunnerDeleter> Create(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       std::unique_ptr<StoreMap> store_map) override;
 

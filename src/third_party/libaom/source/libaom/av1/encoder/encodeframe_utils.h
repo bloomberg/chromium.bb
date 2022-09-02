@@ -301,7 +301,7 @@ static AOM_INLINE int set_segment_rdmult(const AV1_COMP *const cpi,
                                          MACROBLOCK *const x,
                                          int8_t segment_id) {
   const AV1_COMMON *const cm = &cpi->common;
-  av1_init_plane_quantizers(cpi, x, segment_id);
+  av1_init_plane_quantizers(cpi, x, segment_id, 0);
   const int segment_qindex =
       av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex);
   return av1_compute_rd_mult(cpi,
@@ -334,11 +334,16 @@ int av1_active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step);
 void av1_get_tpl_stats_sb(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                           int mi_col, SuperBlockEnc *sb_enc);
 
-int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
+int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, ThreadData *td,
+                                   int64_t *delta_dist, BLOCK_SIZE bsize,
                                    int mi_row, int mi_col);
 
 int av1_get_q_for_hdr(AV1_COMP *const cpi, MACROBLOCK *const x,
                       BLOCK_SIZE bsize, int mi_row, int mi_col);
+
+int av1_get_cb_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                      const BLOCK_SIZE bsize, const int mi_row,
+                      const int mi_col);
 
 int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             const BLOCK_SIZE bsize, const int mi_row,
@@ -386,7 +391,8 @@ void av1_update_picked_ref_frames_mask(MACROBLOCK *const x, int ref_type,
 void av1_avg_cdf_symbols(FRAME_CONTEXT *ctx_left, FRAME_CONTEXT *ctx_tr,
                          int wt_left, int wt_tr);
 
-void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int offset);
+void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
+                           int mi_col);
 
 void av1_reset_mbmi(CommonModeInfoParams *const mi_params, BLOCK_SIZE sb_size,
                     int mi_row, int mi_col);
@@ -424,16 +430,33 @@ static AOM_INLINE void av1_dealloc_mb_data(struct AV1Common *cm,
   mb->winner_mode_stats = NULL;
 }
 
-static AOM_INLINE void av1_alloc_mb_data(struct AV1Common *cm,
-                                         struct macroblock *mb,
-                                         int use_nonrd_pick_mode,
-                                         int use_mb_rd_hash) {
-  if (!use_nonrd_pick_mode) {
+static AOM_INLINE void allocate_winner_mode_stats(const AV1_COMP *cpi,
+                                                  struct macroblock *mb) {
+  const SPEED_FEATURES *sf = &cpi->sf;
+  // The winner_mode_stats buffer is not required in these cases.
+  if (is_stat_generation_stage(cpi) ||
+      (sf->rt_sf.use_nonrd_pick_mode && !sf->rt_sf.hybrid_intra_pickmode) ||
+      (sf->winner_mode_sf.multi_winner_mode_type == MULTI_WINNER_MODE_OFF))
+    return;
+
+  const AV1_COMMON *cm = &cpi->common;
+  const int winner_mode_count =
+      winner_mode_count_allowed[sf->winner_mode_sf.multi_winner_mode_type];
+  CHECK_MEM_ERROR(cm, mb->winner_mode_stats,
+                  (WinnerModeStats *)aom_malloc(
+                      winner_mode_count * sizeof(mb->winner_mode_stats[0])));
+}
+
+static AOM_INLINE void av1_alloc_mb_data(const AV1_COMP *cpi,
+                                         struct macroblock *mb) {
+  const AV1_COMMON *cm = &cpi->common;
+  const SPEED_FEATURES *sf = &cpi->sf;
+  if (!sf->rt_sf.use_nonrd_pick_mode) {
     // Memory for mb_rd_record is allocated only when use_mb_rd_hash sf is
     // enabled.
-    if (use_mb_rd_hash)
-      mb->txfm_search_info.mb_rd_record =
-          (MB_RD_RECORD *)aom_malloc(sizeof(MB_RD_RECORD));
+    if (sf->rd_sf.use_mb_rd_hash)
+      CHECK_MEM_ERROR(cm, mb->txfm_search_info.mb_rd_record,
+                      (MB_RD_RECORD *)aom_malloc(sizeof(MB_RD_RECORD)));
     if (!frame_is_intra_only(cm))
       CHECK_MEM_ERROR(
           cm, mb->inter_modes_info,
@@ -452,12 +475,8 @@ static AOM_INLINE void av1_alloc_mb_data(struct AV1Common *cm,
   CHECK_MEM_ERROR(cm, mb->e_mbd.seg_mask,
                   (uint8_t *)aom_memalign(
                       16, 2 * MAX_SB_SQUARE * sizeof(mb->e_mbd.seg_mask[0])));
-  const int winner_mode_count = frame_is_intra_only(cm)
-                                    ? MAX_WINNER_MODE_COUNT_INTRA
-                                    : MAX_WINNER_MODE_COUNT_INTER;
-  CHECK_MEM_ERROR(cm, mb->winner_mode_stats,
-                  (WinnerModeStats *)aom_malloc(
-                      winner_mode_count * sizeof(mb->winner_mode_stats[0])));
+
+  allocate_winner_mode_stats(cpi, mb);
 }
 
 // This function will compute the number of reference frames to be disabled
@@ -538,7 +557,7 @@ static AOM_INLINE void enforce_max_ref_frames(
       case LAST3_FRAME: *ref_frame_flags &= ~AOM_LAST3_FLAG; break;
       case LAST2_FRAME: *ref_frame_flags &= ~AOM_LAST2_FLAG; break;
       case ALTREF2_FRAME: *ref_frame_flags &= ~AOM_ALT2_FLAG; break;
-      case GOLDEN_FRAME: *ref_frame_flags &= ~AOM_GOLD_FLAG; break;
+      case BWDREF_FRAME: *ref_frame_flags &= ~AOM_GOLD_FLAG; break;
       default: assert(0);
     }
     --total_valid_refs;

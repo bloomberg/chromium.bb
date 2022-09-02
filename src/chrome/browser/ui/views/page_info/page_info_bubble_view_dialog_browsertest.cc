@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/page_info/about_this_site_service_factory.h"
@@ -17,16 +18,19 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/page_info/core/about_this_site_service.h"
 #include "components/page_info/core/features.h"
 #include "components/page_info/core/proto/about_this_site_metadata.pb.h"
 #include "components/page_info/page_info.h"
+#include "components/privacy_sandbox/canonical_topic.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_test_util.h"
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/common/features.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/cert_test_util.h"
@@ -37,6 +41,7 @@ namespace {
 
 constexpr char kExpiredCertificateFile[] = "expired_cert.pem";
 constexpr char kAboutThisSiteUrl[] = "a.test";
+constexpr char kHistoryUrl[] = "b.test";
 
 class ClickEvent : public ui::Event {
  public:
@@ -439,7 +444,9 @@ class PageInfoBubbleViewAboutThisSiteDialogBrowserTest
     : public DialogBrowserTest {
  public:
   PageInfoBubbleViewAboutThisSiteDialogBrowserTest() {
-    feature_list_.InitWithFeatures({page_info::kPageInfoAboutThisSite}, {});
+    feature_list_.InitWithFeatures({page_info::kPageInfoAboutThisSiteEn,
+                                    page_info::kPageInfoAboutThisSiteNonEn},
+                                   {});
   }
 
   void SetUpOnMainThread() override {
@@ -493,16 +500,19 @@ class PageInfoBubbleViewAboutThisSiteDialogBrowserTest
 
     if (name == "AboutThisSite") {
       // No further action needed, default case.
-    }
-
-    if (name == "AboutThisSiteSubpage") {
+    } else if (name == "AboutThisSiteSubpage") {
       auto* service =
           AboutThisSiteServiceFactory::GetForProfile(browser()->profile());
-      auto source_id = ukm::GetSourceIdForWebContentsDocument(
-          browser()->tab_strip_model()->GetActiveWebContents());
+      auto source_id = browser()
+                           ->tab_strip_model()
+                           ->GetActiveWebContents()
+                           ->GetPrimaryMainFrame()
+                           ->GetPageUkmSourceId();
       bubble_view->OpenAboutThisSitePage(
           service->GetAboutThisSiteInfo(GetUrl(kAboutThisSiteUrl), source_id)
               .value());
+    } else {
+      NOTREACHED();
     }
   }
 
@@ -522,5 +532,127 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteDialogBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteDialogBrowserTest,
                        InvokeUi_AboutThisSiteSubpage) {
+  ShowAndVerifyUi();
+}
+
+class PageInfoBubbleViewPrivacySandboxDialogBrowserTest
+    : public DialogBrowserTest {
+ public:
+  PageInfoBubbleViewPrivacySandboxDialogBrowserTest() {
+    feature_list_.InitWithFeatures({privacy_sandbox::kPrivacySandboxSettings3},
+                                   {});
+  }
+
+  void SetUpOnMainThread() override {
+    https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.Start());
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  // DialogBrowserTest:
+  void ShowUi(const std::string& name) override {
+    // Bubble dialogs' bounds may exceed the display's work area.
+    // https://crbug.com/893292.
+    set_should_verify_dialog_bounds(false);
+
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetUrl("a.test")));
+
+    // TODO(crbug.com/1286276): It would be better to actually access the
+    // topic through Javascript for an end-to-end test when the API is ready.
+    auto* pscs = content_settings::PageSpecificContentSettings::GetForFrame(
+        browser()
+            ->tab_strip_model()
+            ->GetActiveWebContents()
+            ->GetPrimaryMainFrame());
+
+    pscs->OnTopicAccessed(
+        url::Origin::Create(GURL("https://a.test")), false,
+        privacy_sandbox::CanonicalTopic(
+            browsing_topics::Topic(1),
+            privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY));
+
+    OpenPageInfoBubble(browser());
+
+    auto* bubble_view = static_cast<PageInfoBubbleView*>(
+        PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    bubble_view->presenter_for_testing()->SetSiteNameForTesting(
+        u"Example site");
+
+    if (name == "PrivacySandboxMain") {
+      // No further action needed, default case.
+    } else if (name == "PrivacySandboxSubpage") {
+      bubble_view->OpenAdPersonalizationPage();
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  GURL GetUrl(const std::string& host) {
+    return https_server_.GetURL(host, "/title1.html");
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
+};
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewPrivacySandboxDialogBrowserTest,
+                       InvokeUi_PrivacySandboxMain) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewPrivacySandboxDialogBrowserTest,
+                       InvokeUi_PrivacySandboxSubpage) {
+  ShowAndVerifyUi();
+}
+
+class PageInfoBubbleViewHistoryDialogBrowserTest : public DialogBrowserTest {
+ public:
+  PageInfoBubbleViewHistoryDialogBrowserTest() {
+    feature_list_.InitWithFeatures({page_info::kPageInfoHistoryDesktop}, {});
+  }
+
+  void SetUpOnMainThread() override {
+    https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.Start());
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    base::Time yesterday = base::Time::Now() - base::Days(1);
+    auto* history_service = HistoryServiceFactory::GetForProfile(
+        browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+    history_service->AddPage(GetUrl(kHistoryUrl), yesterday,
+                             history::SOURCE_BROWSED);
+  }
+
+  // DialogBrowserTest:
+  void ShowUi(const std::string& name) override {
+    // Bubble dialogs' bounds may exceed the display's work area.
+    // https://crbug.com/893292.
+    set_should_verify_dialog_bounds(false);
+
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetUrl(kHistoryUrl)));
+    OpenPageInfoBubble(browser());
+
+    auto* bubble_view = static_cast<PageInfoBubbleView*>(
+        PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    bubble_view->presenter_for_testing()->SetSiteNameForTesting(
+        u"Example site");
+  }
+
+  GURL GetUrl(const std::string& host) {
+    return https_server_.GetURL(host, "/title1.html");
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
+};
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewHistoryDialogBrowserTest,
+                       InvokeUi_History) {
   ShowAndVerifyUi();
 }

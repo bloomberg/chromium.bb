@@ -24,7 +24,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -38,7 +38,7 @@ NavigationMetricsRecorder::NavigationMetricsRecorder(
       site_engagement::SiteEngagementService::Get(profile);
   cookie_settings_ = CookieSettingsFactory::GetForProfile(profile);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // The site isolation synthetic field trial is only needed on Android, as on
   // desktop it would be unnecessarily set for all users.
   is_synthetic_isolation_trial_enabled_ = true;
@@ -76,12 +76,17 @@ void NavigationMetricsRecorder::DidFinishNavigation(
   // process and register a synthetic field trial if so.  Note that this needs
   // to go before the IsInPrimaryMainFrame() check, as we want to register
   // navigations to isolated sites from both main frames and subframes.
+  auto* site_instance =
+      navigation_handle->GetRenderFrameHost()->GetSiteInstance();
   if (is_synthetic_isolation_trial_enabled_ &&
-      navigation_handle->GetRenderFrameHost()
-          ->GetSiteInstance()
-          ->RequiresDedicatedProcess()) {
+      site_instance->RequiresDedicatedProcess()) {
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
         "SiteIsolationActive", "Enabled");
+  }
+
+  if (site_instance->RequiresOriginKeyedProcess()) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        "ProcessIsolatedOriginAgentClusterActive", "Enabled");
   }
 
   // Also register a synthetic field trial when we encounter a navigation to an

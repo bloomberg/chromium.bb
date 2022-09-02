@@ -51,6 +51,7 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 using blink::WebAXContext;
 using blink::WebAXObject;
@@ -113,24 +114,24 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
   WebSettings* settings = web_view->GetSettings();
 
   SetAccessibilityCrashKey(mode);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Password values are only passed through on Android.
   settings->SetAccessibilityPasswordValuesEnabled(true);
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Inline text boxes can be enabled globally on all except Android.
   // On Android they can be requested for just a specific node.
   if (mode.has_mode(ui::AXMode::kInlineTextBoxes))
     settings->SetInlineTextBoxAccessibilityEnabled(true);
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // aria-modal currently prunes the accessibility tree on Mac only.
   settings->SetAriaModalPrunesAXTree(true);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Do not ignore SVG grouping (<g>) elements on ChromeOS, which is needed so
   // Select-to-Speak can read SVG text nodes in natural reading order.
   settings->SetAccessibilityIncludeSvgGElement(true);
@@ -142,7 +143,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
   // UI for a select element directly accessible. Disable by default on
   // Chrome OS, but some tests may override.
   bool disable_ax_menu_list = false;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   disable_ax_menu_list = true;
 #endif
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -213,7 +214,7 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
 
   SetAccessibilityCrashKey(mode);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Inline text boxes can be enabled globally on all except Android.
   // On Android they can be requested for just a specific node.
   WebView* web_view = render_frame_->GetWebView();
@@ -229,7 +230,7 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
       }
     }
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   serializer_->Reset();
   const WebDocument& document = GetMainDocument();
@@ -242,17 +243,38 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
   }
 }
 
+// This function expects the |point| passed by parameter to be relative to the
+// page viewport, always. This means that when the position is within a popup,
+// the |point| should still be relative to the web page's viewport.
 void RenderAccessibilityImpl::HitTest(
     const gfx::Point& point,
     ax::mojom::Event event_to_fire,
     int request_id,
     mojom::RenderAccessibility::HitTestCallback callback) {
   WebAXObject ax_object;
+
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
     auto root_obj = WebAXObject::FromWebDocument(document);
-    if (root_obj.MaybeUpdateLayoutAndCheckValidity())
-      ax_object = root_obj.HitTest(point);
+    if (root_obj.MaybeUpdateLayoutAndCheckValidity()) {
+      // 1. Now that layout has been updated for the entire document, try to run
+      // the hit test operation on the popup root element, if there's a popup
+      // opened. This is needed to allow hit testing within web content popups.
+      absl::optional<gfx::RectF> popup_bounds = GetPopupBounds();
+      if (popup_bounds.has_value()) {
+        auto popup_root_obj = WebAXObject::FromWebDocument(GetPopupDocument());
+        // WebAXObject::HitTest expects the point passed by parameter to be
+        // relative to the instance we call it from.
+        ax_object = popup_root_obj.HitTest(
+            point - ToRoundedVector2d(popup_bounds->OffsetFromOrigin()));
+      }
+
+      // 2. If running the hit test operation on the popup didn't returned any
+      // result (or if there was no popup), run the hit test operation from the
+      // main element.
+      if (ax_object.IsNull())
+        ax_object = root_obj.HitTest(point);
+    }
   }
 
   // Return if no attached accessibility object was found for the main document.
@@ -447,11 +469,14 @@ void RenderAccessibilityImpl::Reset(int32_t reset_token) {
 void RenderAccessibilityImpl::MarkWebAXObjectDirty(
     const WebAXObject& obj,
     bool subtree,
+    ax::mojom::EventFrom event_from,
     ax::mojom::Action event_from_action,
     std::vector<ui::AXEventIntent> event_intents,
     ax::mojom::Event event_type) {
-  EnqueueDirtyObject(obj, ax::mojom::EventFrom::kAction, event_from_action,
-                     event_intents, dirty_objects_.end());
+  DCHECK(obj.AccessibilityIsIncludedInTree())
+      << "Cannot serialize unincluded object: " << obj.ToString(true).Utf8();
+  EnqueueDirtyObject(obj, event_from, event_from_action, event_intents,
+                     dirty_objects_.end());
 
   if (subtree)
     serializer_->InvalidateSubtree(obj);
@@ -474,7 +499,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
   if (obj.IsDetached())
     return;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Inline text boxes are needed to support moving by character/word/line.
   // On Android, we don't load inline text boxes by default, only on-demand, or
   // when part of the focused object. So, when focus moves to an editable text
@@ -508,8 +533,9 @@ void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
     event_schedule_mode_ = EventScheduleMode::kProcessEventsImmediately;
 
   if (ShouldSerializeNodeForEvent(obj, event)) {
-    MarkWebAXObjectDirty(obj, false, event.event_from_action,
-                         event.event_intents, event.event_type);
+    MarkWebAXObjectDirty(obj, /* subtree= */ false, event.event_from,
+                         event.event_from_action, event.event_intents,
+                         event.event_type);
   }
 
   ScheduleSendPendingAccessibilityEvents();
@@ -542,6 +568,7 @@ bool RenderAccessibilityImpl::IsImmediateProcessingRequiredForEvent(
     case ax::mojom::Event::kExpandedChanged:
     case ax::mojom::Event::kHide:
     case ax::mojom::Event::kLayoutComplete:
+    case ax::mojom::Event::kLoadStart:
     case ax::mojom::Event::kLocationChanged:
     case ax::mojom::Event::kMenuListValueChanged:
     case ax::mojom::Event::kRowCollapsed:
@@ -562,7 +589,6 @@ bool RenderAccessibilityImpl::IsImmediateProcessingRequiredForEvent(
     case ax::mojom::Event::kFocusContext:
     case ax::mojom::Event::kHitTestResult:
     case ax::mojom::Event::kImageFrameUpdated:
-    case ax::mojom::Event::kLoadStart:
     case ax::mojom::Event::kLiveRegionCreated:
     case ax::mojom::Event::kLiveRegionChanged:
     case ax::mojom::Event::kMediaStartedPlaying:
@@ -857,76 +883,22 @@ bool RenderAccessibilityImpl::SerializeUpdatesAndEvents(
     if (!obj.MaybeUpdateLayoutAndCheckValidity())
       continue;
 
-    // If the object in question is not included in the tree, get the
-    // nearest ancestor that is (ParentObject() will do this for us).
-    // Otherwise this can lead to the serializer doing extra work because
-    // the object won't be in |already_serialized_ids|.
-    if (!obj.AccessibilityIsIncludedInTree()) {
-      obj = obj.ParentObject();
-      if (obj.IsDetached())
-        continue;
-    }
-
-    if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
+    // Cannot serialize unincluded object.
+    // Only included objects are marked dirty, but this can happen if the object
+    // becomes unincluded after it was originally marked dirty, in which case a
+    // children changed will also be fired on the included ancestor. The
+    // children changed event on the ancestor means that attempting to serialize
+    // this unincluded object is not necessary.
+    if (!obj.AccessibilityIsIncludedInTree())
       continue;
 
-    // Further down the page, we update |already_serialized_ids| with all IDs
+    // Further down this loop, we update |already_serialized_ids| with all IDs
     // actually serialized. However, add this object's ID first because there's
     // a chance that we try to serialize this object but the serializer ends up
     // skipping it. That's probably a Blink bug if that happens, but still we
     // need to make sure we don't keep trying the same object over again.
-    already_serialized_ids.insert(obj.AxID());
-
-    // If it's ignored, find the first ancestor that's not ignored and
-    // mark all ancestors along the way as dirty.
-    if (obj.AccessibilityIsIgnored()) {
-      WebAXObject ancestor = obj;
-      std::list<std::unique_ptr<AXDirtyObject>>::iterator insertion_point =
-          std::next(dirty_objects_.begin());
-      for (; !ancestor.IsDetached() && ancestor.AccessibilityIsIgnored();
-           ancestor = ancestor.ParentObject()) {
-        // There are 3 states of nodes that we care about here.
-        // (x) Unignored, included in tree
-        // [x] Ignored, included in tree
-        // <x> Ignored, excluded from tree
-        //
-        // Consider the following tree :
-        // ++(0) Role::kRootWebArea
-        // ++++<1> Role::kNone
-        // ++++++[2] Role::kGenericContainer <body>
-        // ++++++++[3] Role::kGenericContainer with 'visibility: hidden'
-        //
-        // If we modify [3] to be 'visibility: visible', we will receive
-        // Event::kChildrenChanged here for the Ignored parent [2].
-        // We must re-serialize the Unignored parent node (0) due to this
-        // change, but we must also re-serialize [2] since its children
-        // have changed. <1> was never part of the ax tree, and therefore
-        // does not need to be serialized.
-        // Note that [3] will be serialized to (3) during :
-        // |AXTreeSerializer<>::SerializeChangedNodes| when node [2] is
-        // being serialized, since it will detect the Ignored state had
-        // changed.
-        //
-        // Similarly, during Event::kTextChanged, if any Ignored,
-        // but included in tree ancestor uses NameFrom::kContents,
-        // they must also be re-serialized in case the name changed.
-        //
-        // Insert just after the object currently being serialized.
-        insertion_point = EnqueueDirtyObject(
-            ancestor, current_dirty_object->event_from,
-            current_dirty_object->event_from_action,
-            current_dirty_object->event_intents, insertion_point);
-        // Increment remaining objects to serialize to ensure that it's
-        // serialized now, not in a subsequent message.
-        ++num_remaining_objects_to_serialize;
-      }
-      EnqueueDirtyObject(ancestor, current_dirty_object->event_from,
-                         current_dirty_object->event_from_action,
-                         current_dirty_object->event_intents, insertion_point);
-      // Increment remaining objects to serialize to ensure that it's
-      // serialized now, not in a subsequent message.
-      ++num_remaining_objects_to_serialize;
-    }
+    if (!already_serialized_ids.insert(obj.AxID()).second)
+      continue;  // No insertion, was already present.
 
     ui::AXTreeUpdate update;
     update.event_from = current_dirty_object->event_from;
@@ -1306,7 +1278,8 @@ void RenderAccessibilityImpl::MarkAllAXObjectsDirty(
     objs_to_explore.pop();
 
     if (obj.Role() == role)
-      MarkWebAXObjectDirty(obj, /* subtree */ false, event_from_action);
+      MarkWebAXObjectDirty(obj, /* subtree */ false,
+                           ax::mojom::EventFrom::kNone, event_from_action);
 
     std::vector<blink::WebAXObject> children;
     tree_source_->GetChildren(obj, &children);
@@ -1447,6 +1420,25 @@ blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
   if (popup)
     return popup->GetDocument();
   return WebDocument();
+}
+
+absl::optional<gfx::RectF> RenderAccessibilityImpl::GetPopupBounds() {
+  const WebDocument& popup_document = GetPopupDocument();
+  if (popup_document.IsNull())
+    return absl::nullopt;
+
+  auto obj = WebAXObject::FromWebDocument(popup_document);
+
+  gfx::RectF popup_bounds;
+  WebAXObject popup_container;
+  gfx::Transform transform;
+  obj.GetRelativeBounds(popup_container, popup_bounds, transform);
+
+  // The |popup_container| will never be set for a popup element. See
+  // `AXObject::GetRelativeBounds`.
+  DCHECK(popup_container.IsNull());
+
+  return popup_bounds;
 }
 
 WebAXObject RenderAccessibilityImpl::GetPluginRoot() {

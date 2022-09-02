@@ -9,11 +9,6 @@ AutocompleteProviderClient::GetHistoryClustersService() {
   return nullptr;
 }
 
-ntp_tiles::MostVisitedSites*
-AutocompleteProviderClient::GetNtpMostVisitedSites() {
-  return nullptr;
-}
-
 bool AutocompleteProviderClient::AllowDeletingBrowserHistory() const {
   return true;
 }
@@ -28,4 +23,9 @@ bool AutocompleteProviderClient::IsIncognitoModeAvailable() const {
 
 bool AutocompleteProviderClient::IsSharingHubAvailable() const {
   return false;
+}
+
+base::WeakPtr<AutocompleteProviderClient>
+AutocompleteProviderClient::GetWeakPtr() {
+  return nullptr;
 }

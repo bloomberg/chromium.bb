@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -28,9 +29,13 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/discards_resources.h"
+#include "chrome/grit/discards_resources_map.h"
 #include "components/favicon_base/favicon_url_parser.h"
+#include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/public/user_tuning/prefs.h"
+#include "components/prefs/pref_service.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -204,6 +209,27 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
     std::move(callback).Run();
   }
 
+  void ToggleLocalStatePref(const std::string& pref_name) {
+    bool val = g_browser_process->local_state()->GetBoolean(pref_name);
+    g_browser_process->local_state()->SetBoolean(pref_name, !val);
+  }
+
+  void ToggleHighEfficiencyMode() override {
+    if (base::FeatureList::IsEnabled(
+            performance_manager::features::kHighEfficiencyModeAvailable)) {
+      ToggleLocalStatePref(
+          performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled);
+    }
+  }
+
+  void ToggleBatterySaverMode() override {
+    if (base::FeatureList::IsEnabled(
+            performance_manager::features::kBatterySaverModeAvailable)) {
+      ToggleLocalStatePref(
+          performance_manager::user_tuning::prefs::kBatterySaverModeEnabled);
+    }
+  }
+
  private:
   mojo::Receiver<discards::mojom::DetailsProvider> receiver_;
 };
@@ -218,26 +244,10 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
-  source->DisableTrustedTypesCSP();
 
-  const webui::ResourcePath kResources[] = {
-      {"discards.js", IDR_DISCARDS_JS},
-      {"discards_main.js", IDR_DISCARDS_DISCARDS_MAIN_JS},
-      {"database_tab.js", IDR_DISCARDS_DATABASE_TAB_JS},
-      {"discards_tab.js", IDR_DISCARDS_DISCARDS_TAB_JS},
-      {"sorted_table_behavior.js", IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS},
-      {"graph_tab.js", IDR_DISCARDS_GRAPH_TAB_JS},
-
-      // Full paths (relative to source) for mojom generated files.
-      {"chrome/browser/ui/webui/discards/discards.mojom-webui.js",
-       IDR_DISCARDS_MOJOM_WEBUI_JS},
-      {"chrome/browser/resource_coordinator/"
-       "lifecycle_unit_state.mojom-webui.js",
-       IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJOM_WEBUI_JS},
-      {"chrome/browser/ui/webui/discards/site_data.mojom-webui.js",
-       IDR_DISCARDS_SITE_DATA_MOJOM_WEBUI_JS},
-  };
-  webui::SetupWebUIDataSource(source.get(), kResources, IDR_DISCARDS_HTML);
+  webui::SetupWebUIDataSource(
+      source.get(), base::make_span(kDiscardsResources, kDiscardsResourcesSize),
+      IDR_DISCARDS_DISCARDS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());

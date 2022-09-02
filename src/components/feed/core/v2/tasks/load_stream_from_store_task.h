@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_store.h"
@@ -61,16 +62,17 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
                           const StreamType& stream_type,
                           FeedStore* store,
                           bool missed_last_refresh,
+                          bool is_web_feed_subscriber,
                           base::OnceCallback<void(Result)> callback);
   ~LoadStreamFromStoreTask() override;
   LoadStreamFromStoreTask(const LoadStreamFromStoreTask&) = delete;
   LoadStreamFromStoreTask& operator=(const LoadStreamFromStoreTask&) = delete;
 
   void IgnoreStalenessForTesting() { ignore_staleness_ = true; }
+  void IngoreAccountForTesting() { ignore_account_ = true; }
 
  private:
   void Run() override;
-
   void LoadStreamDone(FeedStore::LoadStreamResult);
   void LoadContentDone(std::vector<feedstore::Content> content,
                        std::vector<feedstore::StreamSharedState> shared_states);
@@ -88,6 +90,8 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
   raw_ptr<FeedStore> store_;  // Unowned.
   bool ignore_staleness_ = false;
   bool missed_last_refresh_ = false;
+  bool ignore_account_ = false;
+  bool is_web_feed_subscriber_ = false;
   base::OnceCallback<void(Result)> result_callback_;
 
   // Data to be stuffed into the Result when the task is complete.

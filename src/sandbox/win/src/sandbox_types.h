@@ -15,7 +15,7 @@ namespace sandbox {
 //
 // Note: These codes are listed in a histogram and any new codes should be added
 // at the end. If the underlying type is changed then the forward declaration in
-// sandbox_init.h must be updated.
+// sandbox_init_win.h must be updated.
 //
 enum ResultCode : int {
   SBOX_ALL_OK = 0,
@@ -146,6 +146,22 @@ enum ResultCode : int {
   SBOX_ERROR_CANNOT_CREATE_LOWBOX_IMPERSONATION_TOKEN = 61,
   // Cannot create a sandbox policy for an unsandboxed process.
   SBOX_ERROR_UNSANDBOXED_PROCESS = 62,
+  // Could not create the unsandboxed process. Extended error from
+  // base::LaunchProcess will be in GetLastError().
+  SBOX_ERROR_CANNOT_LAUNCH_UNSANDBOXED_PROCESS = 63,
+  // Attempt to start a sandboxed process from sandbox code hosted not within
+  // the main EXE. This is an unsupported operation by the sandbox.
+  SBOX_ERROR_INVALID_LINK_STATE = 64,
+  // The target process main EXE had a different base address to the broker.
+  // This should be impossible but might happen if there is a mismatch in the
+  // running executable image files vs the one disk.
+  SBOX_ERROR_INVALID_TARGET_BASE_ADDRESS = 65,
+  // The target process sentinel value cannot be read.
+  SBOX_ERROR_CANNOT_READ_SENTINEL_VALUE = 66,
+  // Short read of the target process sentinel value.
+  SBOX_ERROR_INVALID_READ_SENTINEL_SIZE = 67,
+  // The target process sentinel value did not match the sentinel in the broker.
+  SBOX_ERROR_MISMATCH_SENTINEL_VALUE = 68,
   // Placeholder for last item of the enum.
   SBOX_ERROR_LAST
 };
@@ -185,10 +201,8 @@ enum InterceptionType {
   INTERCEPTION_INVALID = 0,
   INTERCEPTION_SERVICE_CALL,  // Trampoline of an NT native call
   INTERCEPTION_EAT,
-  INTERCEPTION_SIDESTEP,        // Preamble patch
-  INTERCEPTION_SMART_SIDESTEP,  // Preamble patch but bypass internal calls
-  INTERCEPTION_UNLOAD_MODULE,   // Unload the module (don't patch)
-  INTERCEPTION_LAST             // Placeholder for last item in the enumeration
+  INTERCEPTION_UNLOAD_MODULE,  // Unload the module (don't patch)
+  INTERCEPTION_LAST            // Placeholder for last item in the enumeration
 };
 
 }  // namespace sandbox

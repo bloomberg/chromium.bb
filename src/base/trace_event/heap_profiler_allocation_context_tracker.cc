@@ -12,7 +12,6 @@
 
 #include "base/atomicops.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/debugging_buildflags.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
@@ -23,11 +22,11 @@
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "build/build_config.h"
 
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE)
 #include "base/trace_event/cfi_backtrace_android.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #include <sys/prctl.h>
 #endif
 
@@ -64,7 +63,7 @@ ThreadLocalStorage::Slot& AllocationContextTrackerTLS() {
 // are used to tag allocations even after the thread dies.
 const char* GetAndLeakThreadName() {
   char name[16];
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   // If the thread name is not set, try to get it from prctl. Thread name might
   // not be set in cases where the thread started before heap profiling was
   // enabled.
@@ -72,7 +71,8 @@ const char* GetAndLeakThreadName() {
   if (!err) {
     return strdup(name);
   }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_ANDROID)
 
   // Use tid if we don't have a thread name.
   snprintf(name, sizeof(name), "%lu",
@@ -162,7 +162,7 @@ bool AllocationContextTracker::GetContextSnapshot(AllocationContext* ctx) {
   CaptureMode mode = capture_mode_.load(std::memory_order_relaxed);
 
   auto* backtrace = std::begin(ctx->backtrace.frames);
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   auto* backtrace_end = std::end(ctx->backtrace.frames);
 #endif
 
@@ -193,20 +193,20 @@ bool AllocationContextTracker::GetContextSnapshot(AllocationContext* ctx) {
 // from this point and up until main(). We intentionally request
 // kMaxFrameCount + 1 frames, so that we know if there are more frames
 // than our backtrace capacity.
-#if !defined(OS_NACL)  // We don't build base/debug/stack_trace.cc for NaCl.
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE)
-        const void* frames[Backtrace::kMaxFrameCount + 1];
-        static_assert(base::size(frames) >= Backtrace::kMaxFrameCount,
-                      "not requesting enough frames to fill Backtrace");
-        size_t frame_count =
-            CFIBacktraceAndroid::GetInitializedInstance()->Unwind(
-                frames, base::size(frames));
+#if !BUILDFLAG(IS_NACL)  // We don't build base/debug/stack_trace.cc for NaCl.
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE)
+      const void* frames[Backtrace::kMaxFrameCount + 1];
+      static_assert(std::size(frames) >= Backtrace::kMaxFrameCount,
+                    "not requesting enough frames to fill Backtrace");
+      size_t frame_count =
+          CFIBacktraceAndroid::GetInitializedInstance()->Unwind(
+              frames, std::size(frames));
 #elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
         const void* frames[Backtrace::kMaxFrameCount + 1];
-        static_assert(base::size(frames) >= Backtrace::kMaxFrameCount,
+        static_assert(std::size(frames) >= Backtrace::kMaxFrameCount,
                       "not requesting enough frames to fill Backtrace");
         size_t frame_count = debug::TraceStackFramePointers(
-            frames, base::size(frames),
+            frames, std::size(frames),
             1 /* exclude this function from the trace */);
 #else
         // Fall-back to capturing the stack with base::debug::StackTrace,
@@ -227,7 +227,7 @@ bool AllocationContextTracker::GetContextSnapshot(AllocationContext* ctx) {
           const void* frame = frames[i];
           *backtrace++ = StackFrame::FromProgramCounter(frame);
         }
-#endif  // !defined(OS_NACL)
+#endif  // !BUILDFLAG(IS_NACL)
         break;
       }
   }

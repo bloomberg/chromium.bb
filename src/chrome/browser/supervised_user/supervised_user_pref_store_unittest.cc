@@ -7,8 +7,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/common/net/safe_search_util.h"
@@ -95,6 +98,28 @@ void SupervisedUserPrefStoreTest::TearDown() {
   service_.Shutdown();
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+TEST_F(SupervisedUserPrefStoreTest,
+       ConfigureSettingsWithHistoryDeletionAllowed) {
+  SupervisedUserPrefStoreFixture fixture(&service_);
+  EXPECT_FALSE(fixture.initialization_completed());
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      supervised_users::kAllowHistoryDeletionForChildAccounts);
+
+  pref_store_->SetInitializationCompleted();
+  service_.SetActive(true);
+
+  // kAllowDeletingBrowserHistory is based on the state of the feature
+  // supervised_users::kAllowHistoryDeletionForChildAccounts.
+  // This is enabled in scope.
+  EXPECT_THAT(fixture.changed_prefs()->FindBoolPath(
+                  prefs::kAllowDeletingBrowserHistory),
+              Optional(true));
+}
+#endif
+
 TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   SupervisedUserPrefStoreFixture fixture(&service_);
   EXPECT_FALSE(fixture.initialization_completed());
@@ -107,10 +132,17 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
 
   service_.SetActive(true);
 
-  // kAllowDeletingBrowserHistory is hardcoded to false for supervised users.
+  // kAllowDeletingBrowserHistory is based on the state of the feature
+  // supervised_users::kAllowHistoryDeletionForChildAccounts.
+  // This is disabled in scope.
   EXPECT_THAT(fixture.changed_prefs()->FindBoolPath(
                   prefs::kAllowDeletingBrowserHistory),
               Optional(false));
+
+  // kIncognitoModeAvailability must be disabled for all supervised users.
+  EXPECT_THAT(
+      fixture.changed_prefs()->FindIntPath(prefs::kIncognitoModeAvailability),
+      Optional(static_cast<int>(IncognitoModePrefs::Availability::kDisabled)));
 
   // kSupervisedModeManualHosts does not have a hardcoded value.
   base::DictionaryValue* manual_hosts = nullptr;
@@ -122,9 +154,10 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   EXPECT_THAT(
       fixture.changed_prefs()->FindBoolPath(prefs::kForceGoogleSafeSearch),
       Optional(true));
-  int force_youtube_restrict = safe_search_util::YOUTUBE_RESTRICT_OFF;
-  EXPECT_TRUE(fixture.changed_prefs()->GetInteger(prefs::kForceYouTubeRestrict,
-                                                  &force_youtube_restrict));
+  int force_youtube_restrict =
+      fixture.changed_prefs()
+          ->FindIntPath(prefs::kForceYouTubeRestrict)
+          .value_or(safe_search_util::YOUTUBE_RESTRICT_OFF);
   EXPECT_EQ(force_youtube_restrict,
             safe_search_util::YOUTUBE_RESTRICT_MODERATE);
 
@@ -160,8 +193,11 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   EXPECT_THAT(
       fixture.changed_prefs()->FindBoolPath(prefs::kForceGoogleSafeSearch),
       Optional(false));
-  EXPECT_TRUE(fixture.changed_prefs()->GetInteger(prefs::kForceYouTubeRestrict,
-                                                  &force_youtube_restrict));
+
+  force_youtube_restrict =
+      fixture.changed_prefs()
+          ->FindIntPath(prefs::kForceYouTubeRestrict)
+          .value_or(safe_search_util::YOUTUBE_RESTRICT_MODERATE);
   EXPECT_EQ(force_youtube_restrict, safe_search_util::YOUTUBE_RESTRICT_OFF);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

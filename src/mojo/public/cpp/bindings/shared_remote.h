@@ -6,9 +6,9 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_SHARED_REMOTE_H_
 
 #include <memory>
+#include <tuple>
 
 #include "base/bind.h"
-#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
@@ -18,8 +18,6 @@
 #include "mojo/public/cpp/bindings/lib/thread_safe_forwarder_base.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
-#include "mojo/public/cpp/bindings/sync_event_watcher.h"
 
 namespace mojo {
 
@@ -31,7 +29,7 @@ struct SharedRemoteTraits;
 template <typename Interface>
 struct SharedRemoteTraits<Remote<Interface>> {
   static void BindDisconnected(Remote<Interface>& remote) {
-    ignore_result(remote.BindNewPipeAndPassReceiver());
+    std::ignore = remote.BindNewPipeAndPassReceiver();
   }
 };
 
