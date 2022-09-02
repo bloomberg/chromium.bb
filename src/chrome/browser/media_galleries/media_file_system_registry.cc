@@ -18,6 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
@@ -48,7 +49,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
 
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #endif
 
@@ -170,7 +171,7 @@ RPHReferenceManager::~RPHReferenceManager() {
 
 void RPHReferenceManager::ReferenceFromWebContents(
     content::WebContents* contents) {
-  RenderProcessHost* rph = contents->GetMainFrame()->GetProcess();
+  RenderProcessHost* rph = contents->GetPrimaryMainFrame()->GetProcess();
   if (!base::Contains(observer_map_, rph)) {
     observer_map_[rph] = std::make_unique<RPHObserver>(this, rph);
   }
@@ -248,7 +249,7 @@ void RPHReferenceManager::OnRenderProcessHostDestroyed(
 
 void RPHReferenceManager::OnWebContentsDestroyedOrNavigated(
     WebContents* contents) {
-  RenderProcessHost* rph = contents->GetMainFrame()->GetProcess();
+  RenderProcessHost* rph = contents->GetPrimaryMainFrame()->GetProcess();
   auto rph_info = observer_map_.find(rph);
   DCHECK(rph_info != observer_map_.end());
 
@@ -676,7 +677,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   void RevokeFileSystem(const std::string& fs_name) override {
     ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
 
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&MTPDeviceMapService::RevokeMTPFileSystem,
@@ -715,7 +716,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   bool RegisterFileSystemForMTPDevice(const std::string& device_id,
                                       const std::string fs_name,
                                       const base::FilePath& path) {
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 

@@ -7,10 +7,11 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/strings/escape.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 #include "chromeos/services/assistant/public/shared/constants.h"
-#include "net/base/escape.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -18,7 +19,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-namespace ash {
 namespace quick_answers {
 namespace {
 
@@ -35,7 +35,7 @@ using base::Value;
 
 constexpr char kTranslationAPIUrl[] =
     "https://translation.googleapis.com/language/translate/v2";
-constexpr char kAuthorizationHeaderFormat[] = "Bearer ";
+constexpr char kApiKeyName[] = "key";
 
 constexpr base::StringPiece kQueryKey = "q";
 constexpr base::StringPiece kSourceLanguageKey = "source";
@@ -49,7 +49,7 @@ std::string BuildTranslationRequestBody(const IntentInfo& intent_info) {
   payload.SetKey(kQueryKey, std::move(query));
 
   payload.SetKey(kSourceLanguageKey, Value(intent_info.source_language));
-  payload.SetKey(kTargetLanguageKey, Value(intent_info.target_language));
+  payload.SetKey(kTargetLanguageKey, Value(intent_info.device_language));
 
   std::string request_payload_str;
   base::JSONWriter::Write(payload, &request_payload_str);
@@ -69,9 +69,16 @@ TranslationResultLoader::~TranslationResultLoader() = default;
 void TranslationResultLoader::BuildRequest(
     const PreprocessedOutput& preprocessed_output,
     BuildRequestCallback callback) const {
-  delegate()->RequestAccessToken(base::BindOnce(
-      &TranslationResultLoader::OnRequestAccessTokenComplete,
-      base::Unretained(this), preprocessed_output, std::move(callback)));
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = net::AppendQueryParameter(
+      GURL(kTranslationAPIUrl), kApiKeyName, google_apis::GetAPIKey());
+  resource_request->method = net::HttpRequestHeaders::kPostMethod;
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                                      "application/json");
+
+  std::move(callback).Run(
+      std::move(resource_request),
+      BuildTranslationRequestBody(preprocessed_output.intent_info));
 }
 
 void TranslationResultLoader::ProcessResponse(
@@ -85,23 +92,4 @@ void TranslationResultLoader::ProcessResponse(
       BuildTranslationTitleText(preprocessed_output.intent_info));
 }
 
-void TranslationResultLoader::OnRequestAccessTokenComplete(
-    const PreprocessedOutput& preprocessed_output,
-    BuildRequestCallback callback,
-    const std::string& access_token) const {
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GURL(kTranslationAPIUrl);
-  resource_request->method = net::HttpRequestHeaders::kPostMethod;
-  resource_request->headers.SetHeader(
-      net::HttpRequestHeaders::kAuthorization,
-      kAuthorizationHeaderFormat + access_token);
-  resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                      "application/json");
-
-  std::move(callback).Run(
-      std::move(resource_request),
-      BuildTranslationRequestBody(preprocessed_output.intent_info));
-}
-
 }  // namespace quick_answers
-}  // namespace ash

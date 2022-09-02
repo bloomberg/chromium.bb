@@ -19,6 +19,10 @@
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace ash {
 namespace {
 
@@ -63,7 +67,8 @@ void EnableDebuggingScreen::HideImpl() {
     view_->Hide();
 }
 
-void EnableDebuggingScreen::OnUserAction(const std::string& action_id) {
+void EnableDebuggingScreen::OnUserActionDeprecated(
+    const std::string& action_id) {
   if (action_id == kUserActionCancel || action_id == kUserActionDone) {
     exit_callback_.Run();
   } else if (action_id == kUserActionLearnMore) {
@@ -71,7 +76,7 @@ void EnableDebuggingScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionRemoveRootFSProtection) {
     HandleRemoveRootFSProtection();
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 

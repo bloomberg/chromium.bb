@@ -14,12 +14,15 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/containers/adapters.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -101,7 +104,8 @@ class WorkspaceWindowResizerTest : public AshTestBase {
     aura::Window* root = Shell::GetPrimaryRootWindow();
     gfx::Rect root_bounds(root->bounds());
     EXPECT_EQ(800, root_bounds.width());
-    Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+    WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+        root, gfx::Rect(), gfx::Insets(), gfx::Insets());
     window_ = std::make_unique<aura::Window>(&delegate_);
     window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
@@ -142,10 +146,10 @@ class WorkspaceWindowResizerTest : public AshTestBase {
   std::vector<int> WindowOrderAsIntVector(aura::Window* parent) const {
     std::vector<int> result;
     const aura::Window::Windows& windows = parent->children();
-    for (aura::Window::Windows::const_reverse_iterator i = windows.rbegin();
-         i != windows.rend(); ++i) {
-      if (*i == window_.get() || *i == window2_.get() || *i == window3_.get()) {
-        result.push_back((*i)->GetId());
+    for (aura::Window* window : base::Reversed(windows)) {
+      if (window == window_.get() || window == window2_.get() ||
+          window == window3_.get()) {
+        result.push_back(window->GetId());
       }
     }
     return result;
@@ -171,6 +175,7 @@ class WorkspaceWindowResizerTest : public AshTestBase {
                                          ::wm::WINDOW_MOVE_SOURCE_MOUSE,
                                          attached_windows);
   }
+
   std::unique_ptr<WorkspaceWindowResizer> CreateWorkspaceResizerForTest(
       aura::Window* window,
       const gfx::Point& point_in_parent,
@@ -181,6 +186,24 @@ class WorkspaceWindowResizerTest : public AshTestBase {
     window_state->CreateDragDetails(gfx::PointF(point_in_parent),
                                     window_component, source);
     return WorkspaceWindowResizer::Create(window_state, attached_windows);
+  }
+
+  void DragToMaximize(aura::Window* window) {
+    std::unique_ptr<WindowResizer> resizer = CreateResizerForTest(window);
+    resizer->Drag(gfx::PointF(400.f, 400.f), 0);
+    resizer->Drag(gfx::PointF(400.f, 2.f), 0);
+    DwellCountdownTimerFireNow();
+    resizer->CompleteDrag();
+    ASSERT_TRUE(WindowState::Get(window)->IsMaximized());
+    resizer.reset();
+  }
+
+  void DragToRestore(aura::Window* window) {
+    std::unique_ptr<WindowResizer> resizer = CreateResizerForTest(window);
+    resizer->Drag(gfx::PointF(200.f, 200.f), 0);
+    resizer->CompleteDrag();
+    ASSERT_FALSE(WindowState::Get(window)->IsMaximized());
+    resizer.reset();
   }
 
   PhantomWindowController* snap_phantom_window_controller() const {
@@ -199,6 +222,10 @@ class WorkspaceWindowResizerTest : public AshTestBase {
 
   void DwellCountdownTimerFireNow() {
     workspace_resizer_->dwell_countdown_timer_.FireNow();
+  }
+
+  void DragToMaximizeBehaviorCheckCountdownTimerFireNow(aura::Window* window) {
+    WindowState::Get(window)->drag_to_maximize_mis_trigger_timer_.FireNow();
   }
 
   TestWindowDelegate delegate_;
@@ -420,7 +447,8 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
 TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   window_->SetBounds(gfx::Rect(300, 100, 300, 200));
   window2_->SetBounds(gfx::Rect(300, 300, 200, 150));
@@ -666,7 +694,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
     resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
     resizer->CompleteDrag();
     EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
-    snapped_bounds.Inset(0, 0, -10, 0);
+    snapped_bounds.Inset(gfx::Insets::TLBR(0, 0, 0, -10));
     EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
     EXPECT_EQ(kInitialBounds, window_state->GetRestoreBoundsInParent());
   }
@@ -693,7 +721,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
     resizer->CompleteDrag();
     EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
     gfx::Rect expected_bounds(snapped_bounds);
-    expected_bounds.Inset(0, 0, 0, 10);
+    expected_bounds.Inset(gfx::Insets::TLBR(0, 0, 10, 0));
     EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());
     EXPECT_FALSE(window_state->HasRestoreBounds());
   }
@@ -734,7 +762,7 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
 // Makes sure we don't allow dragging below the work area.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 10, 0));
+                                         gfx::Insets::TLBR(0, 0, 10, 0));
 
   ASSERT_EQ(1, display::Screen::GetScreen()->GetNumDisplays());
 
@@ -753,7 +781,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
   ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
 
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 10, 0));
+                                         gfx::Insets::TLBR(0, 0, 10, 0));
 
   // Positions the secondary display at the bottom the primary display.
   Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
@@ -779,7 +807,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
   }
 
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 10, 0));
+                                         gfx::Insets::TLBR(0, 0, 10, 0));
   {
     window_->SetBounds(gfx::Rect(100, 200, 300, 400));
     std::unique_ptr<WindowResizer> resizer =
@@ -812,7 +840,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
 // Makes sure we don't allow dragging off the top of the work area.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(10, 0, 0, 0));
+                                         gfx::Insets::TLBR(10, 0, 0, 0));
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 400));
   std::unique_ptr<WindowResizer> resizer = CreateResizerForTest(window_.get());
@@ -823,7 +851,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
 
 TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 50, 0));
+                                         gfx::Insets::TLBR(0, 0, 50, 0));
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 380));
   std::unique_ptr<WindowResizer> resizer =
@@ -835,7 +863,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 50, 0));
+                                         gfx::Insets::TLBR(0, 0, 50, 0));
   int left = screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).x();
   int pixels_to_left_border = 50;
   int window_width = 300;
@@ -851,7 +879,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 50, 0));
+                                         gfx::Insets::TLBR(0, 0, 50, 0));
   int right =
       screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).right();
   int pixels_to_right_border = 50;
@@ -870,8 +898,10 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
-  Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 50, 0));
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets::TLBR(0, 0, 50, 0),
+      gfx::Insets::TLBR(0, 0, 50, 0));
   int bottom =
       screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
   int delta_to_bottom = 50;
@@ -892,7 +922,7 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   // Only primary display.  Changes the window position to fit within the
   // display.
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 50, 0));
+                                         gfx::Insets::TLBR(0, 0, 50, 0));
   int right =
       screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).right();
   int pixels_to_right_border = 50;
@@ -910,7 +940,7 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   // the position because the window is still within the secondary display.
   UpdateDisplay("1000x600,600x400");
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
-                                         gfx::Insets(0, 0, 50, 0));
+                                         gfx::Insets::TLBR(0, 0, 50, 0));
   window_->SetBounds(gfx::Rect(window_x, 100, window_width, 380));
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
   EXPECT_EQ(gfx::Rect(window_x + window_width, 100, window_width, 380),
@@ -1536,7 +1566,8 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
 TEST_F(WorkspaceWindowResizerTest, DontExceedMinHeight) {
   UpdateDisplay("600x500");
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  WorkAreaInsets::ForWindow(root)->UpdateWorkAreaInsetsForTest(
+      root, gfx::Rect(), gfx::Insets(), gfx::Insets());
 
   // Four 100x100 windows flush against eachother, starting at 100,100.
   window_->SetBounds(gfx::Rect(100, 100, 100, 100));
@@ -1918,6 +1949,116 @@ TEST_F(WorkspaceWindowResizerTest, DragToMaximizeStartingInSnapRegion) {
   DwellCountdownTimerFireNow();
   resizer->CompleteDrag();
   EXPECT_TRUE(WindowState::Get(window_.get())->IsMaximized());
+}
+
+TEST_F(WorkspaceWindowResizerTest, DragToMaximizeNumOfMisTriggersMetric) {
+  base::HistogramTester histogram_tester;
+  auto* window = window_.get();
+  auto* window2 = window2_.get();
+  AllowSnap(window);
+  AllowSnap(window2);
+
+  // Drag to maximize `window_` again.
+  DragToMaximize(window);
+
+  // Immediately restore it.
+  DragToRestore(window);
+
+  // Drag to maximize again immediately after it's restored.
+  DragToMaximize(window);
+
+  // Immediately restore it again.
+  DragToRestore(window);
+
+  // Wait for the drag to maximize behavior to be checked.
+  DragToMaximizeBehaviorCheckCountdownTimerFireNow(window);
+
+  window_.reset();
+
+  // Verify that during the lifetime of `window_`, there're 2 drag to maximize
+  // mis-triggers on it.
+  histogram_tester.ExpectBucketCount(
+      "Ash.Window.DragMaximized.NumberOfMisTriggers", 2, 1);
+
+  // Drag to maximize `window2_`.
+  DragToMaximize(window2);
+  // Immediately restore it.
+  DragToRestore(window2);
+
+  DragToMaximizeBehaviorCheckCountdownTimerFireNow(window2);
+
+  window2_.reset();
+
+  // Verify that during the lifetime of `window2_`, there is one drag to
+  // maximize mis-trigger on it.
+  histogram_tester.ExpectBucketCount(
+      "Ash.Window.DragMaximized.NumberOfMisTriggers", 1, 1);
+
+  window3_.reset();
+  // Verify that the number of mis-triggers is not recorded for `window3`, since
+  // it's never been dragged to maximized.
+  histogram_tester.ExpectBucketCount(
+      "Ash.Window.DragMaximized.NumberOfMisTriggers", 0, 0);
+}
+
+TEST_F(WorkspaceWindowResizerTest, DragToMaximizeValidMetric) {
+  base::HistogramTester histogram_tester;
+  auto* window = window_.get();
+  AllowSnap(window);
+
+  // Drag to maximize `window_`.
+  DragToMaximize(window);
+
+  // Now immediately drag to restore `window_`.
+  DragToRestore(window);
+
+  // Wait for the drag to maximize behavior to be checked.
+  DragToMaximizeBehaviorCheckCountdownTimerFireNow(window);
+
+  // Verify that since `window_` is restored immediately after is dragged to
+  // maximized, drag to maximize behavior should be considered as invalid.
+  histogram_tester.ExpectBucketCount("Ash.Window.DragMaximized.Valid", true, 0);
+  histogram_tester.ExpectBucketCount("Ash.Window.DragMaximized.Valid", false,
+                                     1);
+
+  // Drag to maximize `window_` again.
+  DragToMaximize(window);
+
+  // Don't restore `window_` and wait for the drag to maximize behavior to be
+  // checked.
+  DragToMaximizeBehaviorCheckCountdownTimerFireNow(window);
+
+  DragToRestore(window);
+
+  // Verify this time the drag to maximize behavior should be considered as
+  // valid since the window is restored after 5 seconds.
+  histogram_tester.ExpectBucketCount("Ash.Window.DragMaximized.Valid", true, 1);
+  histogram_tester.ExpectBucketCount("Ash.Window.DragMaximized.Valid", false,
+                                     1);
+
+  // Drag to maximize `window_` again.
+  DragToMaximize(window);
+
+  // Immediately restore it.
+  DragToRestore(window);
+
+  // Drag to maximize again immediately after it's restored.
+  DragToMaximize(window);
+
+  // Verify that the first drag to maximize should be considered as invalid.
+  histogram_tester.ExpectBucketCount("Ash.Window.DragMaximized.Valid", false,
+                                     2);
+
+  // Immediately restore it again.
+  DragToRestore(window);
+
+  // Wait for the drag to maximize behavior to be checked.
+  DragToMaximizeBehaviorCheckCountdownTimerFireNow(window);
+
+  // Verify that the second drag to maximize should also be considered as
+  // invalid.'
+  histogram_tester.ExpectBucketCount("Ash.Window.DragMaximized.Valid", false,
+                                     3);
 }
 
 // Makes sure that we are not creating any resizer in kiosk mode.
@@ -2443,7 +2584,7 @@ TEST_F(PortraitWorkspaceWindowResizerTest, ResizeSnapped) {
     resizer->Drag(CalculateDragPoint(*resizer, 0, 30), 0);
     resizer->CompleteDrag();
     EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
-    expected_snap_bounds.Inset(0, 0, 0, -30);
+    expected_snap_bounds.Inset(gfx::Insets::TLBR(0, 0, -30, 0));
     EXPECT_EQ(expected_snap_bounds, window_->bounds());
     EXPECT_EQ(kInitialBounds, window_state->GetRestoreBoundsInParent());
   }
@@ -2468,7 +2609,7 @@ TEST_F(PortraitWorkspaceWindowResizerTest, ResizeSnapped) {
     resizer->Drag(CalculateDragPoint(*resizer, 30, 0), 0);
     resizer->CompleteDrag();
     EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
-    expected_snap_bounds.Inset(30, 0, 0, 0);
+    expected_snap_bounds.Inset(gfx::Insets::TLBR(0, 30, 0, 0));
     EXPECT_EQ(expected_snap_bounds, window_->bounds());
     EXPECT_FALSE(window_state->HasRestoreBounds());
   }

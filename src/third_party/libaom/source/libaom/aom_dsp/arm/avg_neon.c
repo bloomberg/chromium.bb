@@ -15,6 +15,7 @@
 #include "aom_dsp/arm/mem_neon.h"
 #include "aom_dsp/arm/sum_neon.h"
 #include "aom_dsp/arm/transpose_neon.h"
+#include "aom_ports/mem.h"
 
 unsigned int aom_avg_4x4_neon(const uint8_t *a, int a_stride) {
   const uint8x16_t b = load_unaligned_u8q(a, a_stride);
@@ -46,6 +47,16 @@ unsigned int aom_avg_8x8_neon(const uint8_t *a, int a_stride) {
   d = horizontal_add_u16x8(sum);
 
   return vget_lane_u32(vrshr_n_u32(d, 6), 0);
+}
+
+void aom_avg_8x8_quad_neon(const uint8_t *s, int p, int x16_idx, int y16_idx,
+                           int *avg) {
+  for (int k = 0; k < 4; k++) {
+    const int x8_idx = x16_idx + ((k & 1) << 3);
+    const int y8_idx = y16_idx + ((k >> 1) << 3);
+    const uint8_t *s_tmp = s + y8_idx * p + x8_idx;
+    avg[k] = aom_avg_8x8_neon(s_tmp, p);
+  }
 }
 
 int aom_satd_lp_neon(const int16_t *coeff, int length) {
@@ -186,3 +197,28 @@ int aom_vector_var_neon(const int16_t *ref, const int16_t *src, const int bwl) {
   int var = sse - ((mean * mean) >> (bwl + 2));
   return var;
 }
+
+#if CONFIG_AV1_HIGHBITDEPTH
+unsigned int aom_highbd_avg_4x4_neon(const uint8_t *s, int p) {
+  const uint16_t *src = CONVERT_TO_SHORTPTR(s);
+  const uint16x4_t r0 = vld1_u16(src);
+  src += p;
+  uint16x4_t r1, r2, r3;
+  r1 = vld1_u16(src);
+  src += p;
+  r2 = vld1_u16(src);
+  src += p;
+  r3 = vld1_u16(src);
+  const uint16x4_t s1 = vadd_u16(r0, r1);
+  const uint16x4_t s2 = vadd_u16(r2, r3);
+  const uint16x4_t s3 = vadd_u16(s1, s2);
+#if defined(__aarch64__)
+  return (vaddv_u16(s3) + 8) >> 4;
+#else
+  const uint16x4_t h1 = vpadd_u16(s3, s3);
+  const uint16x4_t h2 = vpadd_u16(h1, h1);
+  const uint16x4_t res = vrshr_n_u16(h2, 4);
+  return vget_lane_u16(res, 0);
+#endif
+}
+#endif  // CONFIG_AV1_HIGHBITDEPTH

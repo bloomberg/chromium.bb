@@ -11,10 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -244,7 +246,11 @@ class LazilyDeallocatedDeque {
       while (!empty()) {
         pop_front();
       }
-      delete[] reinterpret_cast<char*>(data_.get());
+      // Stop referencing the memory with the raw_ptr first, before releasing
+      // memory. This avoids the raw_ptr to be temporarily dangling.
+      char* memory = reinterpret_cast<char*>(data_.get());
+      data_ = nullptr;
+      delete[] memory;
     }
 
     bool empty() const { return back_index_ == front_index_; }
@@ -368,7 +374,7 @@ class LazilyDeallocatedDeque {
 
   // `tail_` is not a raw_ptr<...> for performance reasons (based on analysis of
   // sampling profiler data and tab_search:top100:2020).
-  Ring* tail_ = nullptr;
+  RAW_PTR_EXCLUSION Ring* tail_ = nullptr;
 
   size_t size_ = 0;
   size_t max_size_ = 0;

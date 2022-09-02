@@ -63,7 +63,7 @@ interface ProcessHost {
         // to associate the connection of the incoming request with the
         // correct instance of process host.
 
-    createWebView(WebViewHost& host, WebViewCreateParams params) => (WebViewClient& client, int32 status);
+    createWebView(pending_receiver<WebViewHost> host, WebViewCreateParams params) => (pending_receiver<WebViewClient> client, int32 status);
         // Create a new webview.
 
     [Sync]

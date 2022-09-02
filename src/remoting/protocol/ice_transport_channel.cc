@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "jingle/glue/utils.h"
+#include "components/webrtc/net_address_utils.h"
 #include "net/base/net_errors.h"
 #include "remoting/protocol/channel_socket_adapter.h"
 #include "remoting/protocol/port_allocator_factory.h"
@@ -21,7 +21,6 @@
 #include "third_party/webrtc/p2p/base/p2p_transport_channel.h"
 #include "third_party/webrtc/p2p/base/packet_transport_internal.h"
 #include "third_party/webrtc/p2p/base/port.h"
-#include "third_party/webrtc/rtc_base/network.h"
 
 namespace remoting {
 namespace protocol {
@@ -240,15 +239,15 @@ void IceTransportChannel::NotifyRouteChanged() {
       CandidateTypeToTransportRouteType(connection->local_candidate().type()),
       CandidateTypeToTransportRouteType(connection->remote_candidate().type()));
 
-  if (!jingle_glue::SocketAddressToIPEndPoint(
+  if (!webrtc::SocketAddressToIPEndPoint(
           connection->remote_candidate().address(), &route.remote_address)) {
     LOG(FATAL) << "Failed to convert peer IP address.";
   }
 
   const cricket::Candidate& local_candidate =
       channel_->best_connection()->local_candidate();
-  if (!jingle_glue::SocketAddressToIPEndPoint(
-          local_candidate.address(), &route.local_address)) {
+  if (!webrtc::SocketAddressToIPEndPoint(local_candidate.address(),
+                                         &route.local_address)) {
     LOG(FATAL) << "Failed to convert local IP address.";
   }
 

@@ -7,6 +7,7 @@
 #include "base/check.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/zygote/zygote_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -19,7 +20,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace content {
@@ -30,7 +31,7 @@ UtilitySandboxedProcessLauncherDelegate::
         const base::EnvironmentMap& env,
         const base::CommandLine& cmd_line)
     :
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
       env_(env),
 #endif
       sandbox_type_(sandbox_type),
@@ -38,7 +39,7 @@ UtilitySandboxedProcessLauncherDelegate::
 #if DCHECK_IS_ON()
   bool supported_sandbox_type =
       sandbox_type_ == sandbox::mojom::Sandbox::kNoSandbox ||
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       sandbox_type_ ==
           sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges ||
       sandbox_type_ == sandbox::mojom::Sandbox::kXrCompositing ||
@@ -47,11 +48,12 @@ UtilitySandboxedProcessLauncherDelegate::
       sandbox_type_ == sandbox::mojom::Sandbox::kMediaFoundationCdm ||
       sandbox_type_ == sandbox::mojom::Sandbox::kWindowsSystemProxyResolver ||
 #endif
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       sandbox_type_ == sandbox::mojom::Sandbox::kMirroring ||
 #endif
       sandbox_type_ == sandbox::mojom::Sandbox::kUtility ||
       sandbox_type_ == sandbox::mojom::Sandbox::kService ||
+      sandbox_type_ == sandbox::mojom::Sandbox::kServiceWithJit ||
       sandbox_type_ == sandbox::mojom::Sandbox::kNetwork ||
       sandbox_type_ == sandbox::mojom::Sandbox::kCdm ||
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
@@ -61,17 +63,22 @@ UtilitySandboxedProcessLauncherDelegate::
 #if BUILDFLAG(ENABLE_PLUGINS)
       sandbox_type_ == sandbox::mojom::Sandbox::kPpapi ||
 #endif
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
       sandbox_type_ == sandbox::mojom::Sandbox::kVideoCapture ||
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::mojom::Sandbox::kHardwareVideoDecoding ||
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::mojom::Sandbox::kIme ||
       sandbox_type_ == sandbox::mojom::Sandbox::kTts ||
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
       sandbox_type_ == sandbox::mojom::Sandbox::kLibassistant ||
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+      sandbox_type_ == sandbox::mojom::Sandbox::kScreenAI ||
+#endif
       sandbox_type_ == sandbox::mojom::Sandbox::kAudio ||
       sandbox_type_ == sandbox::mojom::Sandbox::kSpeechRecognition;
   DCHECK(supported_sandbox_type);
@@ -86,11 +93,11 @@ UtilitySandboxedProcessLauncherDelegate::GetSandboxType() {
   return sandbox_type_;
 }
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 base::EnvironmentMap UtilitySandboxedProcessLauncherDelegate::GetEnvironment() {
   return env_;
 }
-#endif  // OS_POSIX
+#endif  // BUILDFLAG(IS_POSIX)
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 ZygoteHandle UtilitySandboxedProcessLauncherDelegate::GetZygote() {
@@ -102,8 +109,10 @@ ZygoteHandle UtilitySandboxedProcessLauncherDelegate::GetZygote() {
   // unsandboxed zygote and then apply their actual sandboxes in the forked
   // process upon startup.
   if (sandbox_type_ == sandbox::mojom::Sandbox::kNetwork ||
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::mojom::Sandbox::kHardwareVideoDecoding ||
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::mojom::Sandbox::kIme ||
       sandbox_type_ == sandbox::mojom::Sandbox::kTts ||
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -113,6 +122,9 @@ ZygoteHandle UtilitySandboxedProcessLauncherDelegate::GetZygote() {
       sandbox_type_ == sandbox::mojom::Sandbox::kAudio ||
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
       sandbox_type_ == sandbox::mojom::Sandbox::kPrintBackend ||
+#endif
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+      sandbox_type_ == sandbox::mojom::Sandbox::kScreenAI ||
 #endif
       sandbox_type_ == sandbox::mojom::Sandbox::kSpeechRecognition) {
     return GetUnsandboxedZygote();

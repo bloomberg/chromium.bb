@@ -23,14 +23,14 @@ namespace Eigen
      * \ingroup Splines_Module
      * \brief Compile-time attributes of the Spline class for Dynamic degree.
      **/
-    template <typename Scalar_, int Dim_, int _Degree>
-    struct SplineTraits< Spline<Scalar_, Dim_, _Degree>, Dynamic >
+    template <typename Scalar_, int Dim_, int Degree_>
+    struct SplineTraits< Spline<Scalar_, Dim_, Degree_>, Dynamic >
     {
       typedef Scalar_ Scalar; /*!< The spline curve's scalar type. */
       enum { Dimension = Dim_ /*!< The spline curve's dimension. */ };
-      enum { Degree = _Degree /*!< The spline curve's degree. */ };
+      enum { Degree = Degree_ /*!< The spline curve's degree. */ };
 
-      enum { OrderAtCompileTime = _Degree==Dynamic ? Dynamic : _Degree+1 /*!< The spline curve's order at compile-time. */ };
+      enum { OrderAtCompileTime = Degree_==Dynamic ? Dynamic : Degree_+1 /*!< The spline curve's order at compile-time. */ };
       enum { NumOfDerivativesAtCompileTime = OrderAtCompileTime /*!< The number of derivatives defined for the current spline. */ };
       
       enum { DerivativeMemoryLayout = Dimension==1 ? RowMajor : ColMajor /*!< The derivative type's memory layout. */ };
@@ -63,10 +63,10 @@ namespace Eigen
      *
      * The traits class inherits all attributes from the SplineTraits of Dynamic degree.
      **/
-    template < typename Scalar_, int Dim_, int _Degree, int _DerivativeOrder >
-    struct SplineTraits< Spline<Scalar_, Dim_, _Degree>, _DerivativeOrder > : public SplineTraits< Spline<Scalar_, Dim_, _Degree> >
+    template < typename Scalar_, int Dim_, int Degree_, int _DerivativeOrder >
+    struct SplineTraits< Spline<Scalar_, Dim_, Degree_>, _DerivativeOrder > : public SplineTraits< Spline<Scalar_, Dim_, Degree_> >
     {
-      enum { OrderAtCompileTime = _Degree==Dynamic ? Dynamic : _Degree+1 /*!< The spline curve's order at compile-time. */ };
+      enum { OrderAtCompileTime = Degree_==Dynamic ? Dynamic : Degree_+1 /*!< The spline curve's order at compile-time. */ };
       enum { NumOfDerivativesAtCompileTime = _DerivativeOrder==Dynamic ? Dynamic : _DerivativeOrder+1 /*!< The number of derivatives defined for the current spline. */ };
       
       enum { DerivativeMemoryLayout = Dim_==1 ? RowMajor : ColMajor /*!< The derivative type's memory layout. */ };

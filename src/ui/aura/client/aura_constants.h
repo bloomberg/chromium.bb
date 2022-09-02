@@ -135,18 +135,6 @@ AURA_EXPORT extern const aura::WindowProperty<gfx::NativeViewAccessible>* const
 // A property key to store the preferred size of the window.
 AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kPreferredSize;
 
-// A property key to store ui::WindowShowState for restoring a window from
-// minimized show state.
-// Used in Ash to remember the show state before the window was minimized.
-AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
-    kPreMinimizedShowStateKey;
-
-// A property key to store ui::WindowShowState for restoring a window from
-// fullscreen show state.
-// Used in Ash to remember the show state before the window was fullscreen.
-AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
-    kPreFullscreenShowStateKey;
-
 // A property key to store the resize behavior, which is a bitmask of the
 // ResizeBehavior values.
 AURA_EXPORT extern const WindowProperty<int>* const kResizeBehaviorKey;
@@ -159,6 +147,11 @@ AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;
 // See ui/base/ui_base_types.h for its definition.
 AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
     kShowStateKey;
+
+// A property key to store ui::WindowShowState for a window to restore back to
+// from the current window show state.
+AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
+    kRestoreShowStateKey;
 
 // A property key to store key event dispatch policy. The default value is
 // false, which means IME receives a key event in PREDISPATCH phace before a

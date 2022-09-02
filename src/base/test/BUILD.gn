@@ -88,6 +88,7 @@ static_library("test_support") {
     "perf_time_logger.h",
     "power_monitor_test.cc",
     "power_monitor_test.h",
+    "repeating_test_future.h",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_feature_list.cc",
@@ -117,6 +118,7 @@ static_library("test_support") {
     "test_file_util.cc",
     "test_file_util.h",
     "test_future.h",
+    "test_future_internal.h",
     "test_io_thread.cc",
     "test_io_thread.h",
     "test_message_loop.cc",
@@ -143,12 +145,6 @@ static_library("test_support") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
-  data_deps = [
-    # The isolate needs this script for setting up the test. It's not actually
-    # needed to run this target locally.
-    "//testing:test_scripts_shared",
-  ]
-
   public_deps = [
     ":test_config",
     "//base",
@@ -161,7 +157,6 @@ static_library("test_support") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//third_party/icu:icuuc",
     "//third_party/libxml:libxml_utils",
     "//third_party/libxml:xml_reader",
@@ -185,7 +180,7 @@ static_library("test_support") {
     ]
   }
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos) {
     sources += [
       "scoped_chromeos_version_info.cc",
       "scoped_chromeos_version_info.h",
@@ -396,6 +391,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//testing/android/native_test:native_main_runner_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     ]

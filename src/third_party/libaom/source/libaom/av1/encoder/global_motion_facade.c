@@ -263,7 +263,7 @@ static int disable_gm_search_based_on_stats(const AV1_COMP *const cpi) {
     // valid_gm_model_found is initialized to INT32_MAX in the beginning of
     // every GF group.
     // Therefore, GM param estimation is always done for all frames until
-    // atleast 1 frame each of ARF_UPDATE, INTNL_ARF_UPDATE and LF_UPDATE are
+    // at least 1 frame each of ARF_UPDATE, INTNL_ARF_UPDATE and LF_UPDATE are
     // encoded in a GF group For subsequent frames, GM param estimation is
     // disabled, if no valid models have been found in all the three update
     // types.
@@ -354,22 +354,6 @@ static AOM_INLINE void update_valid_ref_frames_for_gm(
   }
 }
 
-// Allocates and initializes memory for segment_map and MotionModel.
-static AOM_INLINE void alloc_global_motion_data(MotionModel *params_by_motion,
-                                                uint8_t **segment_map,
-                                                const int segment_map_w,
-                                                const int segment_map_h) {
-  for (int m = 0; m < RANSAC_NUM_MOTIONS; m++) {
-    av1_zero(params_by_motion[m]);
-    params_by_motion[m].inliers =
-        aom_malloc(sizeof(*(params_by_motion[m].inliers)) * 2 * MAX_CORNERS);
-  }
-
-  *segment_map = (uint8_t *)aom_malloc(sizeof(*segment_map) * segment_map_w *
-                                       segment_map_h);
-  av1_zero_array(*segment_map, segment_map_w * segment_map_h);
-}
-
 // Deallocates segment_map and inliers.
 static AOM_INLINE void dealloc_global_motion_data(MotionModel *params_by_motion,
                                                   uint8_t *segment_map) {
@@ -378,6 +362,30 @@ static AOM_INLINE void dealloc_global_motion_data(MotionModel *params_by_motion,
   for (int m = 0; m < RANSAC_NUM_MOTIONS; m++) {
     aom_free(params_by_motion[m].inliers);
   }
+}
+
+// Allocates and initializes memory for segment_map and MotionModel.
+static AOM_INLINE bool alloc_global_motion_data(MotionModel *params_by_motion,
+                                                uint8_t **segment_map,
+                                                const int segment_map_w,
+                                                const int segment_map_h) {
+  av1_zero_array(params_by_motion, RANSAC_NUM_MOTIONS);
+  for (int m = 0; m < RANSAC_NUM_MOTIONS; m++) {
+    params_by_motion[m].inliers =
+        aom_malloc(sizeof(*(params_by_motion[m].inliers)) * 2 * MAX_CORNERS);
+    if (!params_by_motion[m].inliers) {
+      dealloc_global_motion_data(params_by_motion, NULL);
+      return false;
+    }
+  }
+
+  *segment_map = (uint8_t *)aom_calloc(segment_map_w * segment_map_h,
+                                       sizeof(*segment_map));
+  if (!*segment_map) {
+    dealloc_global_motion_data(params_by_motion, NULL);
+    return false;
+  }
+  return true;
 }
 
 // Initializes parameters used for computing global motion.
@@ -417,7 +425,7 @@ static AOM_INLINE void setup_global_motion_info_params(AV1_COMP *cpi) {
         sizeof(gm_info->reference_frames[1][0]), compare_distance);
 
   gm_info->num_src_corners = -1;
-  // If atleast one valid reference frame exists in past/future directions,
+  // If at least one valid reference frame exists in past/future directions,
   // compute interest points of source frame using FAST features.
   if (gm_info->num_ref_frames[0] > 0 || gm_info->num_ref_frames[1] > 0) {
     gm_info->num_src_corners = av1_fast_corner_detect(

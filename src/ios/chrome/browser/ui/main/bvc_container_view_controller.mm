@@ -82,20 +82,22 @@
 - (void)presentViewController:(UIViewController*)viewControllerToPresent
                      animated:(BOOL)flag
                    completion:(void (^)())completion {
-  // Force presentation to go through the current BVC, which does some
-  // associated bookkeeping.
-  DCHECK(self.currentBVC);
-  [self.currentBVC presentViewController:viewControllerToPresent
-                                animated:flag
-                              completion:completion];
+  // Force presentation to go through the current BVC, if possible, which does
+  // some associated bookkeeping.
+  UIViewController* viewController =
+      self.currentBVC ? self.currentBVC : self.fallbackPresenterViewController;
+  [viewController presentViewController:viewControllerToPresent
+                               animated:flag
+                             completion:completion];
 }
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
                            completion:(void (^)())completion {
-  // Force dismissal to go through the current BVC, which does some associated
-  // bookkeeping.
-  DCHECK(self.currentBVC);
-  [self.currentBVC dismissViewControllerAnimated:flag completion:completion];
+  // Force dismissal to go through the current BVC, if possible, which does some
+  // associated bookkeeping.
+  UIViewController* viewController =
+      self.currentBVC ? self.currentBVC : self.fallbackPresenterViewController;
+  [viewController dismissViewControllerAnimated:flag completion:completion];
 }
 
 - (UIViewController*)childViewControllerForStatusBarHidden {
@@ -123,12 +125,26 @@
     // Revealed.
     if (self.thumbStripPanHandler.currentState == ViewRevealState::Revealed) {
       self.view.transform = CGAffineTransformMakeTranslation(
-          0, self.thumbStripPanHandler.revealedHeight);
-    } else if (self.thumbStripPanHandler.currentState ==
-               ViewRevealState::Fullscreen) {
-      self.view.transform = CGAffineTransformMakeTranslation(
           0, self.thumbStripPanHandler.baseViewHeight);
     }
+
+    [coordinator
+        animateAlongsideTransition:nil
+                        completion:^(
+                            id<UIViewControllerTransitionCoordinatorContext>
+                                context) {
+                          if (self.thumbStripPanHandler.currentState ==
+                              ViewRevealState::Peeked) {
+                            CGRect frame = self.view.frame;
+                            CGFloat topOffset =
+                                self.view.window.safeAreaInsets.top;
+                            frame.size.height =
+                                topOffset + kTabStripHeight +
+                                self.thumbStripPanHandler.baseViewHeight -
+                                self.thumbStripPanHandler.peekedHeight;
+                            self.view.frame = frame;
+                          }
+                        }];
   }
 }
 
@@ -168,6 +184,12 @@
   self.solidBackground.overrideUserInterfaceStyle =
       self.incognito ? UIUserInterfaceStyleDark
                      : UIUserInterfaceStyleUnspecified;
+
+  if (currentViewRevealState == ViewRevealState::Peeked) {
+    CGRect frame = self.view.frame;
+    frame.size.height = self.thumbStripPanHandler.baseViewHeight;
+    self.view.frame = frame;
+  }
 }
 
 - (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
@@ -187,12 +209,6 @@
       break;
     case ViewRevealState::Revealed:
       self.view.transform = CGAffineTransformMakeTranslation(
-          0, self.thumbStripPanHandler.revealedHeight);
-      self.solidBackground.transform =
-          CGAffineTransformMakeTranslation(0, topOffset);
-      break;
-    case ViewRevealState::Fullscreen:
-      self.view.transform = CGAffineTransformMakeTranslation(
           0, self.thumbStripPanHandler.baseViewHeight);
       self.solidBackground.transform =
           CGAffineTransformMakeTranslation(0, topOffset);
@@ -200,8 +216,21 @@
   }
 }
 
-- (void)didAnimateViewReveal:(ViewRevealState)viewRevealState {
+- (void)didAnimateViewRevealFromState:(ViewRevealState)startViewRevealState
+                              toState:(ViewRevealState)currentViewRevealState
+                              trigger:(ViewRevealTrigger)trigger {
   self.solidBackground.hidden = YES;
+
+  if (currentViewRevealState == ViewRevealState::Peeked) {
+    // For a11y scroll to work in peeked mode, the frame has to be reduced to
+    // the height visible. Otherwise focus goes below the bottom.
+    CGFloat topOffset = self.view.window.safeAreaInsets.top;
+    CGRect frame = self.view.frame;
+    frame.size.height = topOffset + kTabStripHeight +
+                        self.thumbStripPanHandler.baseViewHeight -
+                        self.thumbStripPanHandler.peekedHeight;
+    self.view.frame = frame;
+  }
 }
 
 @end

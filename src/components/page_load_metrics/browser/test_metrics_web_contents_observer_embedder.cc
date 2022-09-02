@@ -18,9 +18,10 @@ namespace {
 
 // Simple PageLoadMetricsObserver that copies observed PageLoadTimings into the
 // provided std::vector, so they can be analyzed by unit tests.
-class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
+class TimingLoggingPageLoadMetricsObserver final
+    : public PageLoadMetricsObserver {
  public:
-  TestPageLoadMetricsObserver(
+  TimingLoggingPageLoadMetricsObserver(
       std::vector<mojom::PageLoadTimingPtr>* updated_timings,
       std::vector<mojom::PageLoadTimingPtr>* updated_subframe_timings,
       std::vector<mojom::PageLoadTimingPtr>* complete_timings,
@@ -43,6 +44,11 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
             is_first_navigation_in_web_contents),
         count_on_enter_back_forward_cache_(count_on_enter_back_forward_cache) {}
 
+  const char* GetObserverName() const override {
+    static const char kName[] = "TimingLoggingPageLoadMetricsObserver";
+    return kName;
+  }
+
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override {
@@ -50,6 +56,12 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     *is_first_navigation_in_web_contents_ =
         GetDelegate().IsFirstNavigationInWebContents();
     return CONTINUE_OBSERVING;
+  }
+
+  ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url) override {
+    return FORWARD_OBSERVING;
   }
 
   void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
@@ -115,11 +127,16 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
 
 // Test PageLoadMetricsObserver that stops observing page loads with certain
 // substrings in the URL.
-class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
+class FilteringPageLoadMetricsObserver final : public PageLoadMetricsObserver {
  public:
   explicit FilteringPageLoadMetricsObserver(
       std::vector<GURL>* completed_filtered_urls)
       : completed_filtered_urls_(completed_filtered_urls) {}
+
+  const char* GetObserverName() const override {
+    static const char kName[] = "FilteringPageLoadMetricsObserver";
+    return kName;
+  }
 
   ObservePolicy OnStart(content::NavigationHandle* handle,
                         const GURL& currently_committed_url,
@@ -129,8 +146,13 @@ class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
     return should_ignore ? STOP_OBSERVING : CONTINUE_OBSERVING;
   }
 
-  ObservePolicy OnCommit(content::NavigationHandle* handle,
-                         ukm::SourceId source_id) override {
+  ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url) override {
+    return FORWARD_OBSERVING;
+  }
+
+  ObservePolicy OnCommit(content::NavigationHandle* handle) override {
     const bool should_ignore =
         handle->GetURL().spec().find("ignore-on-commit") != std::string::npos;
     return should_ignore ? STOP_OBSERVING : CONTINUE_OBSERVING;
@@ -158,7 +180,7 @@ bool TestMetricsWebContentsObserverEmbedder::IsNewTabPageUrl(const GURL& url) {
 
 void TestMetricsWebContentsObserverEmbedder::RegisterObservers(
     PageLoadTracker* tracker) {
-  tracker->AddObserver(std::make_unique<TestPageLoadMetricsObserver>(
+  tracker->AddObserver(std::make_unique<TimingLoggingPageLoadMetricsObserver>(
       &updated_timings_, &updated_subframe_timings_, &complete_timings_,
       &updated_cpu_timings_, &loaded_resources_, &observed_committed_urls_,
       &observed_aborted_urls_, &observed_features_,
@@ -181,6 +203,11 @@ bool TestMetricsWebContentsObserverEmbedder::IsNoStatePrefetch(
 }
 
 bool TestMetricsWebContentsObserverEmbedder::IsExtensionUrl(const GURL& url) {
+  return false;
+}
+
+bool TestMetricsWebContentsObserverEmbedder::IsSidePanel(
+    content::WebContents* web_contents) {
   return false;
 }
 

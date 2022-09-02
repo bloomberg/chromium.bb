@@ -10,7 +10,9 @@
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
+#include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/enterprise/browser/reporting/cloud_reporting_frequency_policy_handler.h"
 #include "components/enterprise/browser/reporting/cloud_reporting_policy_handler.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/history/core/common/pref_names.h"
@@ -32,7 +34,7 @@
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
 #include "ios/chrome/browser/policy/browser_signin_policy_handler.h"
-#include "ios/chrome/browser/policy/policy_features.h"
+#include "ios/chrome/browser/policy/new_tab_page_location_policy_handler.h"
 #import "ios/chrome/browser/policy/restrict_accounts_policy_handler.h"
 #include "ios/chrome/browser/pref_names.h"
 
@@ -49,6 +51,12 @@ namespace {
 // that directly map to a single preference.
 // clang-format off
 const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
+  { policy::key::kAllowChromeDataInBackups,
+    prefs::kAllowChromeDataInBackups,
+    base::Value::Type::BOOLEAN },
+  { policy::key::kComponentUpdatesEnabled,
+    prefs::kComponentUpdatesEnabled,
+    base::Value::Type::BOOLEAN },
   { policy::key::kChromeVariations,
     variations::prefs::kVariationsRestrictionsByPolicy,
     base::Value::Type::INTEGER },
@@ -114,19 +122,13 @@ void PopulatePolicyHandlerParameters(
 std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
     bool allow_future_policies,
     const policy::Schema& chrome_schema) {
-  DCHECK(IsEnterprisePolicyEnabled());
   std::unique_ptr<policy::ConfigurationPolicyHandlerList> handlers =
       std::make_unique<policy::ConfigurationPolicyHandlerList>(
           base::BindRepeating(&PopulatePolicyHandlerParameters),
           base::BindRepeating(&policy::GetChromePolicyDetails),
           allow_future_policies);
 
-  // Check the feature flag before adding handlers to the list.
-  if (!ShouldInstallEnterprisePolicyHandlers()) {
-    return handlers;
-  }
-
-  for (size_t i = 0; i < base::size(kSimplePolicyMap); ++i) {
+  for (size_t i = 0; i < std::size(kSimplePolicyMap); ++i) {
     handlers->AddHandler(std::make_unique<SimplePolicyHandler>(
         kSimplePolicyMap[i].policy_name, kSimplePolicyMap[i].preference_path,
         kSimplePolicyMap[i].value_type));
@@ -149,11 +151,13 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
   handlers->AddHandler(std::make_unique<syncer::SyncPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<enterprise_reporting::CloudReportingPolicyHandler>());
-
-  if (ShouldInstallURLBlocklistPolicyHandlers()) {
-    handlers->AddHandler(std::make_unique<policy::URLBlocklistPolicyHandler>(
-        policy::key::kURLBlocklist));
-  }
+  handlers->AddHandler(
+      std::make_unique<
+          enterprise_reporting::CloudReportingFrequencyPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<policy::NewTabPageLocationPolicyHandler>());
+  handlers->AddHandler(std::make_unique<policy::URLBlocklistPolicyHandler>(
+      policy::key::kURLBlocklist));
 
   return handlers;
 }

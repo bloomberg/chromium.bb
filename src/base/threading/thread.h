@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
@@ -28,7 +29,7 @@ class MessagePump;
 class RunLoop;
 
 // IMPORTANT: Instead of creating a base::Thread, consider using
-// base::Create(Sequenced|SingleThread)TaskRunner().
+// base::ThreadPool::Create(Sequenced|SingleThread)TaskRunner().
 //
 // A simple thread abstraction that establishes a MessageLoop on a new thread.
 // The consumer uses the MessageLoop of the thread to cause code to execute on
@@ -138,7 +139,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // before it is destructed.
   ~Thread() override;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Causes the thread to initialize COM.  This must be called before calling
   // Start() or StartWithOptions().  If |use_mta| is false, the thread is also
   // started with a TYPE_UI message loop.  It is an error to call
@@ -275,7 +276,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   friend class MessageLoopTaskRunnerTest;
   friend class ScheduleWorkTest;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   enum ComStatus {
     NONE,
     STA,
@@ -288,7 +289,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
   void ThreadQuitHelper();
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Whether this thread needs to initialize COM, and if so, in what mode.
   ComStatus com_status_ = NONE;
 #endif

@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -39,7 +40,6 @@
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_agent_host_client.h"
 #include "headless/lib/browser/protocol/headless_handler.h"
-#include "headless/public/internal/headless_devtools_client_impl.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -57,12 +57,12 @@ namespace headless {
 namespace {
 
 void UpdatePrefsFromSystemSettings(blink::RendererPreferences* prefs) {
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_WIN)
   content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
 #endif
 
   // The values were copied from chrome/browser/renderer_preferences_util.cc.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   prefs->focus_ring_color = SkColorSetRGB(0x00, 0x5F, 0xCC);
 #else
   prefs->focus_ring_color = SkColorSetRGB(0x10, 0x10, 0x10);
@@ -103,7 +103,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   }
 
   void ActivateContents(content::WebContents* contents) override {
-    contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->Focus();
+    contents->GetPrimaryMainFrame()->GetRenderViewHost()->GetWidget()->Focus();
   }
 
   void CloseContents(content::WebContents* source) override {
@@ -306,7 +306,7 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
     HeadlessBrowserContextImpl* browser_context)
     : content::WebContentsObserver(web_contents.get()),
       browser_context_(browser_context),
-      render_process_host_(web_contents->GetMainFrame()->GetProcess()),
+      render_process_host_(web_contents->GetPrimaryMainFrame()->GetProcess()),
       web_contents_delegate_(new HeadlessWebContentsImpl::Delegate(this)),
       web_contents_(std::move(web_contents)),
       agent_host_(
@@ -355,7 +355,7 @@ void HeadlessWebContentsImpl::RenderFrameDeleted(
 }
 
 void HeadlessWebContentsImpl::RenderViewReady() {
-  DCHECK(web_contents()->GetMainFrame()->IsRenderFrameLive());
+  DCHECK(web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive());
 
   if (devtools_target_ready_notification_sent_)
     return;
@@ -367,21 +367,24 @@ void HeadlessWebContentsImpl::RenderViewReady() {
 }
 
 int HeadlessWebContentsImpl::GetMainFrameRenderProcessId() const {
-  if (!web_contents() || !web_contents()->GetMainFrame())
+  if (!web_contents() || !web_contents()->GetPrimaryMainFrame())
     return -1;
-  return web_contents()->GetMainFrame()->GetProcess()->GetID();
+  return web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID();
 }
 
 int HeadlessWebContentsImpl::GetMainFrameTreeNodeId() const {
-  if (!web_contents() || !web_contents()->GetMainFrame())
+  if (!web_contents() || !web_contents()->GetPrimaryMainFrame())
     return -1;
-  return web_contents()->GetMainFrame()->GetFrameTreeNodeId();
+  return web_contents()->GetPrimaryMainFrame()->GetFrameTreeNodeId();
 }
 
 std::string HeadlessWebContentsImpl::GetMainFrameDevToolsId() const {
-  if (!web_contents() || !web_contents()->GetMainFrame())
+  if (!web_contents() || !web_contents()->GetPrimaryMainFrame())
     return "";
-  return web_contents()->GetMainFrame()->GetDevToolsFrameToken().ToString();
+  return web_contents()
+      ->GetPrimaryMainFrame()
+      ->GetDevToolsFrameToken()
+      .ToString();
 }
 
 bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {
@@ -442,7 +445,8 @@ void HeadlessWebContentsImpl::RenderProcessHostDestroyed(
 }
 
 HeadlessDevToolsTarget* HeadlessWebContentsImpl::GetDevToolsTarget() {
-  return web_contents()->GetMainFrame()->IsRenderFrameLive() ? this : nullptr;
+  return web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive() ? this
+                                                                    : nullptr;
 }
 
 std::unique_ptr<HeadlessDevToolsChannel>

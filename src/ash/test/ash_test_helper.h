@@ -17,6 +17,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/message_center/test_notifier_settings_controller.h"
 #include "base/test/scoped_command_line.h"
+#include "chromeos/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "ui/aura/test/aura_test_helper.h"
 
@@ -24,19 +25,23 @@ class PrefService;
 
 namespace aura {
 class Window;
-}
+}  // namespace aura
+
+namespace base {
+class SystemMonitor;
+}  // namespace base
 
 namespace display {
 class Display;
-}
+}  // namespace display
 
 namespace ui {
 class ContextFactory;
-}
+}  // namespace ui
 
 namespace views {
 class TestViewsDelegate;
-}
+}  // namespace views
 
 namespace ash {
 
@@ -48,7 +53,7 @@ class TestWallpaperControllerClient;
 
 namespace input_method {
 class MockInputMethodManager;
-}
+}  // namespace input_method
 
 // A helper class that does common initialization required for Ash. Creates a
 // root window and an ash::Shell instance with a test delegate.
@@ -130,10 +135,19 @@ class AshTestHelper : public aura::test::AuraTestHelper {
     return ambient_ash_test_helper_.get();
   }
 
+  chromeos::bluetooth_config::ScopedBluetoothConfigTestHelper*
+  bluetooth_config_test_helper() {
+    return &scoped_bluetooth_config_test_helper_;
+  }
+
  private:
   // Scoping objects to manage init/teardown of services.
   class BluezDBusManagerInitializer;
   class PowerPolicyControllerInitializer;
+
+  // Must be constructed so that `base::SystemMonitor::Get()` returns a valid
+  // instance.
+  std::unique_ptr<base::SystemMonitor> system_monitor_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_ =
       std::make_unique<base::test::ScopedCommandLine>();
@@ -160,6 +174,8 @@ class AshTestHelper : public aura::test::AuraTestHelper {
       test_keyboard_controller_observer_;
   std::unique_ptr<AmbientAshTestHelper> ambient_ash_test_helper_;
   std::unique_ptr<TestWallpaperControllerClient> wallpaper_controller_client_;
+  chromeos::bluetooth_config::ScopedBluetoothConfigTestHelper
+      scoped_bluetooth_config_test_helper_;
 
   // InputMethodManager is not owned by this class. It is stored in a
   // global that is registered via InputMethodManager::Initialize().

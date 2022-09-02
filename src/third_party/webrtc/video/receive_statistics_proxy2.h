@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
 #include "api/task_queue/task_queue_base.h"
 #include "api/units/timestamp.h"
@@ -50,10 +51,11 @@ class ReceiveStatisticsProxy : public VCMReceiveStatisticsCallback,
  public:
   ReceiveStatisticsProxy(uint32_t remote_ssrc,
                          Clock* clock,
-                         TaskQueueBase* worker_thread);
+                         TaskQueueBase* worker_thread,
+                         const FieldTrialsView& field_trials);
   ~ReceiveStatisticsProxy() override;
 
-  VideoReceiveStream::Stats GetStats() const;
+  VideoReceiveStreamInterface::Stats GetStats() const;
 
   void OnDecodedFrame(const VideoFrame& frame,
                       absl::optional<uint8_t> qp,
@@ -66,6 +68,8 @@ class ReceiveStatisticsProxy : public VCMReceiveStatisticsCallback,
   void OnDecodedFrame(const VideoFrameMetaData& frame_meta,
                       absl::optional<uint8_t> qp,
                       int32_t decode_time_ms,
+                      webrtc::TimeDelta processing_delay,
+                      webrtc::TimeDelta assembly_time,
                       VideoContentType content_type);
 
   void OnSyncOffsetUpdated(int64_t video_playout_ntp_ms,
@@ -107,7 +111,7 @@ class ReceiveStatisticsProxy : public VCMReceiveStatisticsCallback,
   void OnRttUpdate(int64_t avg_rtt_ms);
 
   // Notification methods that are used to check our internal state and validate
-  // threading assumptions. These are called by VideoReceiveStream.
+  // threading assumptions. These are called by VideoReceiveStreamInterface.
   void DecoderThreadStarting();
   void DecoderThreadStopped();
 
@@ -164,7 +168,8 @@ class ReceiveStatisticsProxy : public VCMReceiveStatisticsCallback,
   int num_bad_states_ RTC_GUARDED_BY(main_thread_);
   int num_certain_states_ RTC_GUARDED_BY(main_thread_);
   // Note: The `stats_.rtp_stats` member is not used or populated by this class.
-  mutable VideoReceiveStream::Stats stats_ RTC_GUARDED_BY(main_thread_);
+  mutable VideoReceiveStreamInterface::Stats stats_
+      RTC_GUARDED_BY(main_thread_);
   // Same as stats_.ssrc, but const (no lock required).
   const uint32_t remote_ssrc_;
   RateStatistics decode_fps_estimator_ RTC_GUARDED_BY(main_thread_);

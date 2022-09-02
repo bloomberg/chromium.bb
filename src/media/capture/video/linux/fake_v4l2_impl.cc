@@ -14,9 +14,12 @@
 #include "base/bits.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "media/base/video_frame.h"
 
+#ifndef KERNEL_VERSION
 #define KERNEL_VERSION(a, b, c) (((a) << 16) + ((b) << 8) + (c))
+#endif
 
 namespace media {
 
@@ -76,6 +79,8 @@ class FakeV4L2Impl::OpenedDevice {
     timeperframe_.numerator = kDefaultFrameInternvalNumerator;
     timeperframe_.denominator = kDefaultFrameInternvalDenominator;
   }
+
+  ~OpenedDevice() { DCHECK(!frame_production_thread_.IsRunning()); }
 
   const std::string& device_id() const { return config_.descriptor.device_id; }
 

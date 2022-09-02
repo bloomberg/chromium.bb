@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/media_switches.h"
+#include "media/mojo/mojom/speech_recognition.mojom.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 
 namespace speech {
@@ -49,14 +50,15 @@ CrosSpeechRecognitionService::CrosSpeechRecognitionService(
 
 CrosSpeechRecognitionService::~CrosSpeechRecognitionService() {}
 
-void CrosSpeechRecognitionService::Create(
+void CrosSpeechRecognitionService::BindSpeechRecognitionContext(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionContext> receiver) {
-  if (enable_soda_) {
-    speech_recognition_contexts_.Add(this, std::move(receiver));
-  } else {
-    // If soda is not enabled, do the same thing as chrome.
-    ChromeSpeechRecognitionService::Create(std::move(receiver));
-  }
+  speech_recognition_contexts_.Add(this, std::move(receiver));
+}
+
+void CrosSpeechRecognitionService::BindAudioSourceSpeechRecognitionContext(
+    mojo::PendingReceiver<media::mojom::AudioSourceSpeechRecognitionContext>
+        receiver) {
+  audio_source_speech_recognition_contexts_.Add(this, std::move(receiver));
 }
 
 void CrosSpeechRecognitionService::BindRecognizer(

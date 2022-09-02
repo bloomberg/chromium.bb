@@ -4,8 +4,10 @@
 
 #import "ios/chrome/browser/ui/first_run/default_browser/default_browser_screen_view_controller.h"
 
+#include "ios/chrome/browser/first_run/first_run_metrics.h"
 #import "ios/chrome/browser/ui/elements/instruction_view.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
+#import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -15,20 +17,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Reuse ID for registering cell class in table views.
-constexpr NSString* kReuseID = @"InstructionTableCell";
-
-}  // namespace
-
-@interface DefaultBrowserScreenViewController ()
-
-// Instruction list to set the default browser.
-@property(nonatomic, strong) NSArray* defaultBrowserSteps;
-
-@end
-
 @implementation DefaultBrowserScreenViewController
 
 #pragma mark - UIViewController
@@ -36,7 +24,7 @@ constexpr NSString* kReuseID = @"InstructionTableCell";
 - (void)viewDidLoad {
   self.view.accessibilityIdentifier =
       first_run::kFirstRunDefaultBrowserScreenAccessibilityIdentifier;
-  self.bannerImage = [UIImage imageNamed:@"default_browser_screen_banner"];
+  self.bannerName = @"default_browser_screen_banner";
   self.titleText =
       l10n_util::GetNSString(IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_TITLE);
   self.subtitleText =
@@ -48,7 +36,7 @@ constexpr NSString* kReuseID = @"InstructionTableCell";
   self.secondaryActionString = l10n_util::GetNSString(
       IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_SECONDARY_ACTION);
 
-  self.defaultBrowserSteps = @[
+  NSArray* defaultBrowserSteps = @[
     l10n_util::GetNSString(IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_FIRST_STEP),
     l10n_util::GetNSString(
         IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_SECOND_STEP),
@@ -56,7 +44,7 @@ constexpr NSString* kReuseID = @"InstructionTableCell";
   ];
 
   UIView* instructionView =
-      [[InstructionView alloc] initWithList:self.defaultBrowserSteps];
+      [[InstructionView alloc] initWithList:defaultBrowserSteps];
   instructionView.translatesAutoresizingMaskIntoConstraints = NO;
 
   [self.specificContentView addSubview:instructionView];
@@ -74,6 +62,13 @@ constexpr NSString* kReuseID = @"InstructionTableCell";
   ]];
 
   [super viewDidLoad];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  RecordFirstRunScrollButtonVisibilityMetrics(
+      first_run::FirstRunScreenType::kDefaultBrowserPromoScreen,
+      !self.didReachBottom);
 }
 
 @end

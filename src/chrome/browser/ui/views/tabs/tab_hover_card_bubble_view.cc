@@ -17,7 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -65,7 +65,7 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/base/win/shell.h"
 #endif
 
@@ -77,11 +77,13 @@ constexpr int kHoverCardTitleMaxLines = 2;
 constexpr int kHorizontalMargin = 18;
 constexpr int kVerticalMargin = 10;
 constexpr int kFootnoteVerticalMargin = 8;
-constexpr gfx::Insets kTitleMargins(kVerticalMargin, kHorizontalMargin);
-constexpr gfx::Insets kAlertMargins(kFootnoteVerticalMargin, kHorizontalMargin);
+constexpr auto kTitleMargins =
+    gfx::Insets::VH(kVerticalMargin, kHorizontalMargin);
+constexpr auto kAlertMargins =
+    gfx::Insets::VH(kFootnoteVerticalMargin, kHorizontalMargin);
 
 bool CustomShadowsSupported() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return ui::win::IsAeroGlassEnabled();
 #else
   return true;
@@ -760,7 +762,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   // not become active. Setting this to false creates the need to explicitly
   // hide the hovercard on press, touch, and keyboard events.
   SetCanActivate(false);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   set_accept_events(false);
 #endif
 
@@ -808,7 +810,8 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     title_margins.set_bottom(0);
     domain_label_->SetProperty(
         views::kMarginsKey,
-        gfx::Insets(0, kHorizontalMargin, kVerticalMargin, kHorizontalMargin));
+        gfx::Insets::TLBR(0, kHorizontalMargin, kVerticalMargin,
+                          kHorizontalMargin));
   }
 
   title_label_->SetProperty(views::kMarginsKey, title_margins);
@@ -871,7 +874,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   GURL domain_url;
   // Use committed URL to determine if no page has yet loaded, since the title
   // can be blank for some web pages.
-  if (tab->data().last_committed_url.is_empty()) {
+  if (!tab->data().last_committed_url.is_valid()) {
     domain_url = tab->data().visible_url;
     title = tab->data().IsCrashed()
                 ? l10n_util::GetStringUTF16(IDS_HOVER_CARD_CRASHED_TITLE)
@@ -892,13 +895,18 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
     if (domain_url.SchemeIsBlob()) {
       domain = l10n_util::GetStringUTF16(IDS_HOVER_CARD_BLOB_URL_SOURCE);
     } else {
-      domain = url_formatter::FormatUrl(
-          domain_url,
-          url_formatter::kFormatUrlOmitDefaults |
-              url_formatter::kFormatUrlOmitHTTPS |
-              url_formatter::kFormatUrlOmitTrivialSubdomains |
-              url_formatter::kFormatUrlTrimAfterHost,
-          net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
+      if (tab->data().should_display_url) {
+        // Hide the domain when necessary. This leaves an empty space in the
+        // card, but this scenario is very rare. Also, shrinking the card to
+        // remove the space would result in visual noise, so we keep it simple.
+        domain = url_formatter::FormatUrl(
+            domain_url,
+            url_formatter::kFormatUrlOmitDefaults |
+                url_formatter::kFormatUrlOmitHTTPS |
+                url_formatter::kFormatUrlOmitTrivialSubdomains |
+                url_formatter::kFormatUrlTrimAfterHost,
+            base::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
+      }
 
       // Most of the time we want our standard (tail-elided) formatting for web
       // pages, but when viewing an image in the browser, many users want to
@@ -928,7 +936,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
             color_provider->GetColor(ui::kColorBubbleFooterBackground)));
         alert_label->SetBorder(views::CreatePaddedBorder(
             views::CreateSolidSidedBorder(
-                0, 0, 1, 0,
+                gfx::Insets::TLBR(0, 0, 1, 0),
                 color_provider->GetColor(ui::kColorBubbleFooterBorder)),
             kAlertMargins));
       }

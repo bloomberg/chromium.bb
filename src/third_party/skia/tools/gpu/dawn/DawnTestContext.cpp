@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "dawn/webgpu_cpp.h"
+#include "webgpu/webgpu_cpp.h"
 #include "tools/gpu/dawn/DawnTestContext.h"
 
 #ifdef SK_BUILD_FOR_UNIX
@@ -19,12 +19,12 @@
 #define USE_OPENGL_BACKEND 0
 
 #ifdef SK_DAWN
-#include "dawn/webgpu.h"
+#include "webgpu/webgpu.h"
 #include "dawn/dawn_proc.h"
 #include "include/gpu/GrDirectContext.h"
 #include "tools/AutoreleasePool.h"
 #if USE_OPENGL_BACKEND
-#include "dawn_native/OpenGLBackend.h"
+#include "dawn/native/OpenGLBackend.h"
 #endif
 
 #if defined(SK_BUILD_FOR_MAC) && USE_OPENGL_BACKEND
@@ -83,14 +83,16 @@ static void PrintDeviceError(WGPUErrorType, const char* message, void*) {
 
 class DawnTestContextImpl : public sk_gpu_test::DawnTestContext {
 public:
-    static wgpu::Device createDevice(const dawn_native::Instance& instance,
-                                     dawn_native::BackendType type) {
-        DawnProcTable backendProcs = dawn_native::GetProcs();
+    static wgpu::Device createDevice(const dawn::native::Instance& instance,
+                                     wgpu::BackendType type) {
+        DawnProcTable backendProcs = dawn::native::GetProcs();
         dawnProcSetProcs(&backendProcs);
 
-        std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
-        for (dawn_native::Adapter adapter : adapters) {
-            if (adapter.GetBackendType() == type) {
+        std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
+        for (dawn::native::Adapter adapter : adapters) {
+            wgpu::AdapterProperties properties;
+            adapter.GetProperties(&properties);
+            if (properties.backendType == type) {
                 return wgpu::Device::Acquire(adapter.CreateDevice());
             }
         }
@@ -98,14 +100,14 @@ public:
     }
 
     static DawnTestContext* Create(DawnTestContext* sharedContext) {
-        std::unique_ptr<dawn_native::Instance> instance = std::make_unique<dawn_native::Instance>();
+        std::unique_ptr<dawn::native::Instance> instance = std::make_unique<dawn::native::Instance>();
         wgpu::Device device;
         if (sharedContext) {
             device = sharedContext->getDevice();
         } else {
-            dawn_native::BackendType type;
+            wgpu::BackendType type;
 #if USE_OPENGL_BACKEND
-            dawn_native::opengl::AdapterDiscoveryOptions adapterOptions;
+            dawn::native::opengl::AdapterDiscoveryOptions adapterOptions;
             adapterOptions.getProc = reinterpret_cast<void*(*)(const char*)>(
 #if defined(SK_BUILD_FOR_UNIX)
                 glXGetProcAddress
@@ -116,15 +118,15 @@ public:
 #endif
             );
             instance->DiscoverAdapters(&adapterOptions);
-            type = dawn_native::BackendType::OpenGL;
+            type = wgpu::BackendType::OpenGL;
 #else
             instance->DiscoverDefaultAdapters();
 #if defined(SK_BUILD_FOR_MAC)
-            type = dawn_native::BackendType::Metal;
+            type = wgpu::BackendType::Metal;
 #elif defined(SK_BUILD_FOR_WIN)
-            type = dawn_native::BackendType::D3D12;
+            type = wgpu::BackendType::D3D12;
 #elif defined(SK_BUILD_FOR_UNIX)
-            type = dawn_native::BackendType::Vulkan;
+            type = wgpu::BackendType::Vulkan;
 #endif
 #endif
             device = createDevice(*instance, type);
@@ -152,7 +154,7 @@ protected:
     }
 
 private:
-    DawnTestContextImpl(std::unique_ptr<dawn_native::Instance> instance,
+    DawnTestContextImpl(std::unique_ptr<dawn::native::Instance> instance,
                         const wgpu::Device& device)
             : DawnTestContext(std::move(instance), device) {
         fFenceSupport = true;

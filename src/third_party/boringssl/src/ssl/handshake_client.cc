@@ -235,7 +235,12 @@ static bool ssl_write_client_cipher_list(const SSL_HANDSHAKE *hs, CBB *out,
   // Add TLS 1.3 ciphers. Order ChaCha20-Poly1305 relative to AES-GCM based on
   // hardware support.
   if (hs->max_version >= TLS1_3_VERSION) {
-    if (!EVP_has_aes_hardware() &&
+    const bool include_chacha20 = ssl_tls13_cipher_meets_policy(
+        TLS1_CK_CHACHA20_POLY1305_SHA256 & 0xffff,
+        ssl->config->only_fips_cipher_suites_in_tls13);
+
+    if (!EVP_has_aes_hardware() &&  //
+        include_chacha20 &&         //
         !CBB_add_u16(&child, TLS1_CK_CHACHA20_POLY1305_SHA256 & 0xffff)) {
       return false;
     }
@@ -243,7 +248,8 @@ static bool ssl_write_client_cipher_list(const SSL_HANDSHAKE *hs, CBB *out,
         !CBB_add_u16(&child, TLS1_CK_AES_256_GCM_SHA384 & 0xffff)) {
       return false;
     }
-    if (EVP_has_aes_hardware() &&
+    if (EVP_has_aes_hardware() &&  //
+        include_chacha20 &&        //
         !CBB_add_u16(&child, TLS1_CK_CHACHA20_POLY1305_SHA256 & 0xffff)) {
       return false;
     }
@@ -331,7 +337,7 @@ bool ssl_add_client_hello(SSL_HANDSHAKE *hs) {
   Array<uint8_t> msg;
   if (!ssl->method->init_message(ssl, cbb.get(), &body, SSL3_MT_CLIENT_HELLO) ||
       !ssl_write_client_hello_without_extensions(hs, &body, type,
-                                                 /*empty_session_id*/ false) ||
+                                                 /*empty_session_id=*/false) ||
       !ssl_add_clienthello_tlsext(hs, &body, /*out_encoded=*/nullptr,
                                   &needs_psk_binder, type, CBB_len(&body)) ||
       !ssl->method->finish_message(ssl, cbb.get(), &msg)) {

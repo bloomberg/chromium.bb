@@ -165,7 +165,8 @@ class ChildBubbleContainerLayout {
       const int height_to_cede =
           std::min(layout.child_layouts[0].bounds.height(),
                    layout.host_size.height() - max_height_);
-      layout.child_layouts[0].bounds.Inset(0, 0, 0, height_to_cede);
+      layout.child_layouts[0].bounds.Inset(
+          gfx::Insets::TLBR(0, 0, height_to_cede, 0));
       for (size_t i = 1; i < layout.child_layouts.size(); ++i)
         layout.child_layouts[i].bounds.Offset(0, -height_to_cede);
       layout.host_size.Enlarge(0, -height_to_cede);
@@ -311,18 +312,17 @@ HoldingSpaceTrayBubble::HoldingSpaceTrayBubble(
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect =
       holding_space_tray->shelf()->GetSystemTrayAnchorRect();
-  init_params.bg_color = SK_ColorTRANSPARENT;
   init_params.insets = GetTrayBubbleInsets();
   init_params.shelf_alignment = holding_space_tray->shelf()->alignment();
   init_params.preferred_width = kHoldingSpaceBubbleWidth;
   init_params.close_on_deactivate = true;
   init_params.has_shadow = false;
   init_params.reroute_event_handler = true;
+  init_params.transparent = true;
 
   // Create and customize bubble view.
   TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
   // Ensure bubble frame does not draw background behind bubble view.
-  bubble_view->set_color(SK_ColorTRANSPARENT);
   child_bubble_container_ =
       bubble_view->AddChildView(std::make_unique<ChildBubbleContainer>());
   child_bubble_container_->SetMaxHeight(CalculateMaxHeight());

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 
+#include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -42,8 +43,14 @@ bool AppServiceProxyFactory::IsAppServiceAvailableForProfile(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // An exception on Chrome OS is the guest profile, which is incognito, but
   // can have apps within it.
-  return (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
-          (!profile->IsOffTheRecord() || profile->IsGuestSession()));
+
+  // Use OTR profile for Guest Session.
+  if (profile->IsGuestSession()) {
+    return profile->IsOffTheRecord();
+  }
+
+  return (!ash::ProfileHelper::IsSigninProfile(profile) &&
+          !profile->IsOffTheRecord());
 #else
   return !profile->IsOffTheRecord();
 #endif
@@ -110,14 +117,16 @@ content::BrowserContext* AppServiceProxyFactory::GetBrowserContextToUse(
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
+  if (ash::ProfileHelper::IsSigninProfile(profile)) {
     return nullptr;
   }
 
   // We must have a proxy in guest mode to ensure default extension-based apps
   // are served.
   if (profile->IsGuestSession()) {
-    return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+    return profile->IsOffTheRecord()
+               ? chrome::GetBrowserContextOwnInstanceInIncognito(context)
+               : nullptr;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

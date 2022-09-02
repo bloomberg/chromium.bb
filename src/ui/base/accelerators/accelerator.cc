@@ -19,19 +19,19 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/strings/grit/ui_strings.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
-#if !defined(OS_WIN) && (defined(USE_AURA) || defined(OS_MAC))
+#if !BUILDFLAG(IS_WIN) && (defined(USE_AURA) || BUILDFLAG(IS_MAC))
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "ui/base/ui_base_features.h"
 #endif
 
@@ -108,7 +108,7 @@ Accelerator::Accelerator(KeyboardCode key_code,
       time_stamp_(time_stamp),
       interrupted_by_mouse_event_(false) {}
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 Accelerator::Accelerator(KeyboardCode key_code,
                          DomCode code,
                          int modifiers,
@@ -131,7 +131,7 @@ Accelerator::Accelerator(const KeyEvent& key_event)
       time_stamp_(key_event.time_stamp()),
       interrupted_by_mouse_event_(false),
       source_device_id_(key_event.source_device_id()) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (features::IsImprovedKeyboardShortcutsEnabled()) {
     code_ = key_event.code();
   }
@@ -176,7 +176,7 @@ KeyEvent Accelerator::ToKeyEvent() const {
                       ? ET_KEY_PRESSED
                       : ET_KEY_RELEASED,
                   key_code(),
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
                   code(),
 #endif
                   modifiers(), time_stamp());
@@ -231,14 +231,14 @@ bool Accelerator::IsRepeat() const {
 std::u16string Accelerator::GetShortcutText() const {
   std::u16string shortcut;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   shortcut = KeyCodeToMacSymbol();
 #else
   shortcut = KeyCodeToName();
 #endif
 
   if (shortcut.empty()) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Our fallback is to try translate the key code to a regular character
     // unless it is one of digits (VK_0 to VK_9). Some keyboard
     // layouts have characters other than digits assigned in
@@ -254,7 +254,7 @@ std::u16string Accelerator::GetShortcutText() const {
     // VKEY_UNKNOWN), |::MapVirtualKeyW| returns 0.
     if (key != 0)
       shortcut += key;
-#elif defined(USE_AURA) || defined(OS_MAC) || defined(OS_ANDROID)
+#elif defined(USE_AURA) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
     const uint16_t c = DomCodeToUsLayoutCharacter(
         UsLayoutKeyboardCodeToDomCode(key_code_), false);
     if (c != 0)
@@ -263,7 +263,7 @@ std::u16string Accelerator::GetShortcutText() const {
 #endif
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   shortcut = ApplyShortFormModifiers(shortcut);
 #else
   // Checking whether the character used for the accelerator is alphanumeric.
@@ -308,12 +308,12 @@ std::u16string Accelerator::GetShortcutText() const {
     shortcut_rtl.append(shortcut, 0, shortcut.length() - key_length - 1);
     shortcut.swap(shortcut_rtl);
   }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
   return shortcut;
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // In macOS 10.13, the glyphs used for page up, page down, home, and end were
 // changed from the arrows below to new, skinny arrows. The tricky bit is that
 // the underlying Unicode characters weren't changed, just the font used. Maybe
@@ -343,15 +343,11 @@ std::u16string Accelerator::KeyCodeToMacSymbol() const {
     case VKEY_NEXT:
       return u"⇟";  // U+21DF, DOWNWARDS ARROW WITH DOUBLE STROKE
     case VKEY_HOME:
-      if (base::mac::IsAtLeastOS10_13() && base::i18n::IsRTL()) {
-        return u"↗";  // U+2197, NORTH EAST ARROW
-      }
-      return u"↖";  // U+2196, NORTH WEST ARROW
+      return base::i18n::IsRTL() ? u"↗"   // U+2197, NORTH EAST ARROW
+                                 : u"↖";  // U+2196, NORTH WEST ARROW
     case VKEY_END:
-      if (base::mac::IsAtLeastOS10_13() && base::i18n::IsRTL()) {
-        return u"↙";  // U+2199, SOUTH WEST ARROW
-      }
-      return u"↘";  // U+2198, SOUTH EAST ARROW
+      return base::i18n::IsRTL() ? u"↙"   // U+2199, SOUTH WEST ARROW
+                                 : u"↘";  // U+2198, SOUTH EAST ARROW
     case VKEY_TAB:
       return u"⇥";  // U+21E5, RIGHTWARDS ARROW TO BAR
     // Mac has a shift-tab icon ("⇤", U+21E4, LEFTWARDS ARROW TO BAR) but we
@@ -361,7 +357,7 @@ std::u16string Accelerator::KeyCodeToMacSymbol() const {
       return KeyCodeToName();
   }
 }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
 std::u16string Accelerator::KeyCodeToName() const {
   int string_id = 0;
@@ -420,7 +416,7 @@ std::u16string Accelerator::KeyCodeToName() const {
     case VKEY_F11:
       string_id = IDS_APP_F11_KEY;
       break;
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     // On Mac, commas and periods are used literally in accelerator text.
     case VKEY_OEM_COMMA:
       string_id = IDS_APP_COMMA_KEY;
@@ -463,11 +459,11 @@ std::u16string Accelerator::ApplyLongFormModifiers(
     result = ApplyModifierToAcceleratorString(result, IDS_APP_ALT_KEY);
 
   if (IsCmdDown()) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     result = ApplyModifierToAcceleratorString(result, IDS_APP_COMMAND_KEY);
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#elif BUILDFLAG(IS_CHROMEOS)
     result = ApplyModifierToAcceleratorString(result, IDS_APP_SEARCH_KEY);
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
     result = ApplyModifierToAcceleratorString(result, IDS_APP_WINDOWS_KEY);
 #else
     NOTREACHED();

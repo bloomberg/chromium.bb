@@ -42,9 +42,8 @@ constexpr size_t kMaxSizeBytes = (1 << 16) * 4;
 // * 8 bytes FeedbackPacket header.
 // * 2 bytes for one chunk.
 constexpr size_t kMinPayloadSizeBytes = 8 + 8 + 2;
-constexpr int kBaseScaleFactor =
-    TransportFeedback::kDeltaScaleFactor * (1 << 8);
-constexpr int64_t kTimeWrapPeriodUs = (1ll << 24) * kBaseScaleFactor;
+constexpr TimeDelta kBaseTimeTick = TransportFeedback::kDeltaTick * (1 << 8);
+constexpr TimeDelta kTimeWrapPeriod = kBaseTimeTick * (1 << 24);
 
 //    Message format
 //
@@ -273,7 +272,7 @@ TransportFeedback::TransportFeedback(bool include_timestamps, bool include_lost)
       base_time_ticks_(0),
       feedback_seq_(0),
       include_timestamps_(include_timestamps),
-      last_timestamp_us_(0),
+      last_timestamp_(Timestamp::Zero()),
       size_bytes_(kTransportFeedbackHeaderSizeBytes) {}
 
 TransportFeedback::TransportFeedback(const TransportFeedback&) = default;
@@ -285,7 +284,7 @@ TransportFeedback::TransportFeedback(TransportFeedback&& other)
       base_time_ticks_(other.base_time_ticks_),
       feedback_seq_(other.feedback_seq_),
       include_timestamps_(other.include_timestamps_),
-      last_timestamp_us_(other.last_timestamp_us_),
+      last_timestamp_(other.last_timestamp_),
       received_packets_(std::move(other.received_packets_)),
       all_packets_(std::move(other.all_packets_)),
       encoded_chunks_(std::move(other.encoded_chunks_)),
@@ -297,12 +296,12 @@ TransportFeedback::TransportFeedback(TransportFeedback&& other)
 TransportFeedback::~TransportFeedback() {}
 
 void TransportFeedback::SetBase(uint16_t base_sequence,
-                                int64_t ref_timestamp_us) {
+                                Timestamp ref_timestamp) {
   RTC_DCHECK_EQ(num_seq_no_, 0);
-  RTC_DCHECK_GE(ref_timestamp_us, 0);
   base_seq_no_ = base_sequence;
-  base_time_ticks_ = (ref_timestamp_us % kTimeWrapPeriodUs) / kBaseScaleFactor;
-  last_timestamp_us_ = GetBaseTimeUs();
+  base_time_ticks_ =
+      (ref_timestamp.us() % kTimeWrapPeriod.us()) / kBaseTimeTick.us();
+  last_timestamp_ = BaseTime();
 }
 
 void TransportFeedback::SetFeedbackSequenceNumber(uint8_t feedback_sequence) {
@@ -310,19 +309,25 @@ void TransportFeedback::SetFeedbackSequenceNumber(uint8_t feedback_sequence) {
 }
 
 bool TransportFeedback::AddReceivedPacket(uint16_t sequence_number,
-                                          int64_t timestamp_us) {
+                                          Timestamp timestamp) {
   // Set delta to zero if timestamps are not included, this will simplify the
   // encoding process.
   int16_t delta = 0;
   if (include_timestamps_) {
     // Convert to ticks and round.
+    if (last_timestamp_ > timestamp) {
+      timestamp += (last_timestamp_ - timestamp).RoundUpTo(kTimeWrapPeriod);
+    }
+    RTC_DCHECK_GE(timestamp, last_timestamp_);
     int64_t delta_full =
-        (timestamp_us - last_timestamp_us_) % kTimeWrapPeriodUs;
-    if (delta_full > kTimeWrapPeriodUs / 2)
-      delta_full -= kTimeWrapPeriodUs;
-    delta_full +=
-        delta_full < 0 ? -(kDeltaScaleFactor / 2) : kDeltaScaleFactor / 2;
-    delta_full /= kDeltaScaleFactor;
+        (timestamp - last_timestamp_).us() % kTimeWrapPeriod.us();
+    if (delta_full > kTimeWrapPeriod.us() / 2) {
+      delta_full -= kTimeWrapPeriod.us();
+      delta_full -= kDeltaTick.us() / 2;
+    } else {
+      delta_full += kDeltaTick.us() / 2;
+    }
+    delta_full /= kDeltaTick.us();
 
     delta = static_cast<int16_t>(delta_full);
     // If larger than 16bit signed, we can't represent it - need new fb packet.
@@ -352,7 +357,7 @@ bool TransportFeedback::AddReceivedPacket(uint16_t sequence_number,
   received_packets_.emplace_back(sequence_number, delta);
   if (include_lost_)
     all_packets_.emplace_back(sequence_number, delta);
-  last_timestamp_us_ += delta * kDeltaScaleFactor;
+  last_timestamp_ += delta * kDeltaTick;
   if (include_timestamps_) {
     size_bytes_ += delta_size;
   }
@@ -374,28 +379,48 @@ uint16_t TransportFeedback::GetBaseSequence() const {
   return base_seq_no_;
 }
 
+Timestamp TransportFeedback::BaseTime() const {
+  // Add an extra kTimeWrapPeriod to allow add received packets arrived earlier
+  // than the first added packet (and thus allow to record negative deltas)
+  // even when base_time_ticks_ == 0.
+  return Timestamp::Zero() + kTimeWrapPeriod +
+         int64_t{base_time_ticks_} * kBaseTimeTick;
+}
+
 int64_t TransportFeedback::GetBaseTimeUs() const {
-  return static_cast<int64_t>(base_time_ticks_) * kBaseScaleFactor;
+  // Historically BaseTime was stored as signed integer and could be negative.
+  // However with new api it is not possible, but for compatibility with legacy
+  // tests return base time as negative when it used to be negative.
+  int64_t base_time_us = BaseTime().us() % kTimeWrapPeriod.us();
+  if (base_time_us >= kTimeWrapPeriod.us() / 2) {
+    return base_time_us - kTimeWrapPeriod.us();
+  } else {
+    return base_time_us;
+  }
 }
 
-TimeDelta TransportFeedback::GetBaseTime() const {
-  return TimeDelta::Micros(GetBaseTimeUs());
-}
-
-int64_t TransportFeedback::GetBaseDeltaUs(int64_t prev_timestamp_us) const {
-  int64_t delta = GetBaseTimeUs() - prev_timestamp_us;
-
-  // Detect and compensate for wrap-arounds in base time.
-  if (std::abs(delta - kTimeWrapPeriodUs) < std::abs(delta)) {
-    delta -= kTimeWrapPeriodUs;  // Wrap backwards.
-  } else if (std::abs(delta + kTimeWrapPeriodUs) < std::abs(delta)) {
-    delta += kTimeWrapPeriodUs;  // Wrap forwards.
+namespace {
+TimeDelta CompensateForWrapAround(TimeDelta delta) {
+  if ((delta - kTimeWrapPeriod).Abs() < delta.Abs()) {
+    delta -= kTimeWrapPeriod;  // Wrap backwards.
+  } else if ((delta + kTimeWrapPeriod).Abs() < delta.Abs()) {
+    delta += kTimeWrapPeriod;  // Wrap forwards.
   }
   return delta;
 }
+}  // namespace
+
+int64_t TransportFeedback::GetBaseDeltaUs(int64_t prev_timestamp_us) const {
+  int64_t delta_us = GetBaseTimeUs() - prev_timestamp_us;
+  return CompensateForWrapAround(TimeDelta::Micros(delta_us)).us();
+}
 
 TimeDelta TransportFeedback::GetBaseDelta(TimeDelta prev_timestamp) const {
-  return TimeDelta::Micros(GetBaseDeltaUs(prev_timestamp.us()));
+  return CompensateForWrapAround(GetBaseTime() - prev_timestamp);
+}
+
+TimeDelta TransportFeedback::GetBaseDelta(Timestamp prev_timestamp) const {
+  return CompensateForWrapAround(BaseTime() - prev_timestamp);
 }
 
 // De-serialize packet.
@@ -417,7 +442,7 @@ bool TransportFeedback::Parse(const CommonHeader& packet) {
 
   base_seq_no_ = ByteReader<uint16_t>::ReadBigEndian(&payload[8]);
   uint16_t status_count = ByteReader<uint16_t>::ReadBigEndian(&payload[10]);
-  base_time_ticks_ = ByteReader<int32_t, 3>::ReadBigEndian(&payload[12]);
+  base_time_ticks_ = ByteReader<uint32_t, 3>::ReadBigEndian(&payload[12]);
   feedback_seq_ = payload[15];
   Clear();
   size_t index = 16;
@@ -465,7 +490,7 @@ bool TransportFeedback::Parse(const CommonHeader& packet) {
           received_packets_.emplace_back(seq_no, delta);
           if (include_lost_)
             all_packets_.emplace_back(seq_no, delta);
-          last_timestamp_us_ += delta * kDeltaScaleFactor;
+          last_timestamp_ += delta * kDeltaTick;
           index += delta_size;
           break;
         }
@@ -474,7 +499,7 @@ bool TransportFeedback::Parse(const CommonHeader& packet) {
           received_packets_.emplace_back(seq_no, delta);
           if (include_lost_)
             all_packets_.emplace_back(seq_no, delta);
-          last_timestamp_us_ += delta * kDeltaScaleFactor;
+          last_timestamp_ += delta * kDeltaTick;
           index += delta_size;
           break;
         }
@@ -544,7 +569,7 @@ bool TransportFeedback::IsConsistent() const {
                       << num_seq_no_;
     return false;
   }
-  int64_t timestamp_us = GetBaseTimeUs();
+  Timestamp timestamp = BaseTime();
   auto packet_it = received_packets_.begin();
   uint16_t seq_no = base_seq_no_;
   for (DeltaSize delta_size : delta_sizes) {
@@ -566,7 +591,7 @@ bool TransportFeedback::IsConsistent() const {
                           << " doesn't fit into one byte";
         return false;
       }
-      timestamp_us += packet_it->delta_us();
+      timestamp += packet_it->delta();
       ++packet_it;
     }
     if (include_timestamps_) {
@@ -579,9 +604,10 @@ bool TransportFeedback::IsConsistent() const {
                       << packet_it->sequence_number();
     return false;
   }
-  if (timestamp_us != last_timestamp_us_) {
-    RTC_LOG(LS_ERROR) << "Last timestamp mismatch. Calculated: " << timestamp_us
-                      << ". Saved: " << last_timestamp_us_;
+  if (timestamp != last_timestamp_) {
+    RTC_LOG(LS_ERROR) << "Last timestamp mismatch. Calculated: "
+                      << ToLogString(timestamp)
+                      << ". Saved: " << ToLogString(last_timestamp_);
     return false;
   }
   if (size_bytes_ != packet_size) {
@@ -627,7 +653,7 @@ bool TransportFeedback::Create(uint8_t* packet,
   ByteWriter<uint16_t>::WriteBigEndian(&packet[*position], num_seq_no_);
   *position += 2;
 
-  ByteWriter<int32_t, 3>::WriteBigEndian(&packet[*position], base_time_ticks_);
+  ByteWriter<uint32_t, 3>::WriteBigEndian(&packet[*position], base_time_ticks_);
   *position += 3;
 
   packet[(*position)++] = feedback_seq_;
@@ -666,7 +692,7 @@ bool TransportFeedback::Create(uint8_t* packet,
 
 void TransportFeedback::Clear() {
   num_seq_no_ = 0;
-  last_timestamp_us_ = GetBaseTimeUs();
+  last_timestamp_ = BaseTime();
   received_packets_.clear();
   all_packets_.clear();
   encoded_chunks_.clear();

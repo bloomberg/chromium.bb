@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class HTMLButtonElement final : public HTMLFormControlElement {
+class CORE_EXPORT HTMLButtonElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -60,6 +60,11 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void DefaultEventHandler(Event&) override;
   bool HasActivationBehavior() const override;
+
+  // Buttons can trigger popups.
+  PopupTriggerSupport SupportsPopupTriggering() const override {
+    return PopupTriggerSupport::kActivate;
+  }
 
   void AppendToFormData(FormData&) override;
 

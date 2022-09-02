@@ -64,7 +64,6 @@ namespace FinishComposingText =
     extensions::api::input_method_private::FinishComposingText;
 
 using ::ash::input_method::InputMethodEngine;
-using ::ash::input_method::InputMethodEngineBase;
 using ::ui::IMEEngineHandlerInterface;
 
 const char kErrorEngineNotAvailable[] = "The engine is not available.";
@@ -83,7 +82,6 @@ void SetMenuItemToMenu(const input_ime::MenuItem& input,
   }
 
   if (input.style != input_ime::MENU_ITEM_STYLE_NONE) {
-    out->modified |= InputMethodEngine::MENU_ITEM_MODIFIED_STYLE;
     out->style =
         static_cast<ash::input_method::InputMethodManager::MenuItemStyle>(
             input.style);
@@ -148,6 +146,7 @@ input_ime::AssistiveWindowType ConvertAssistiveWindowType(
     case ui::ime::AssistiveWindowType::kPersonalInfoSuggestion:
     case ui::ime::AssistiveWindowType::kGrammarSuggestion:
     case ui::ime::AssistiveWindowType::kMultiWordSuggestion:
+    case ui::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_NONE;
     case ui::ime::AssistiveWindowType::kUndoWindow:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_UNDO;
@@ -221,14 +220,17 @@ InputMethodEngine* GetEngineIfActive(Profile* profile,
                                      std::string* error) {
   extensions::InputImeEventRouter* event_router =
       extensions::GetInputImeEventRouter(profile);
-  DCHECK(event_router) << kErrorRouterNotAvailable;
+  if (!event_router) {
+    *error = kErrorRouterNotAvailable;
+    return nullptr;
+  }
   InputMethodEngine* engine = static_cast<InputMethodEngine*>(
       event_router->GetEngineIfActive(extension_id, error));
   return engine;
 }
 
 class ImeObserverChromeOS
-    : public ash::input_method::InputMethodEngineBase::Observer {
+    : public ash::input_method::InputMethodEngineObserver {
  public:
   ImeObserverChromeOS(const std::string& extension_id, Profile* profile)
       : extension_id_(extension_id), profile_(profile) {}
@@ -238,25 +240,24 @@ class ImeObserverChromeOS
 
   ~ImeObserverChromeOS() override = default;
 
-  void OnCandidateClicked(
-      const std::string& component_id,
-      int candidate_id,
-      InputMethodEngineBase::MouseButtonEvent button) override {
+  void OnCandidateClicked(const std::string& component_id,
+                          int candidate_id,
+                          ash::input_method::MouseButtonEvent button) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnCandidateClicked::kEventName))
       return;
 
     input_ime::MouseButton button_enum = input_ime::MOUSE_BUTTON_NONE;
     switch (button) {
-      case InputMethodEngineBase::MOUSE_BUTTON_MIDDLE:
+      case ash::input_method::MOUSE_BUTTON_MIDDLE:
         button_enum = input_ime::MOUSE_BUTTON_MIDDLE;
         break;
 
-      case InputMethodEngineBase::MOUSE_BUTTON_RIGHT:
+      case ash::input_method::MOUSE_BUTTON_RIGHT:
         button_enum = input_ime::MOUSE_BUTTON_RIGHT;
         break;
 
-      case InputMethodEngineBase::MOUSE_BUTTON_LEFT:
+      case ash::input_method::MOUSE_BUTTON_LEFT:
       // Default to left.
       default:
         button_enum = input_ime::MOUSE_BUTTON_LEFT;
@@ -626,8 +627,8 @@ class ImeObserverChromeOS
 
     auto event = std::make_unique<extensions::Event>(
         histogram_value, event_name, std::move(args), profile_);
-    extensions::EventRouter::Get(profile_)
-        ->DispatchEventToExtension(extension_id_, std::move(event));
+    extensions::EventRouter::Get(profile_)->DispatchEventToExtension(
+        extension_id_, std::move(event));
   }
 
   // The component IME extensions need to know the current screen type (e.g.
@@ -908,7 +909,7 @@ bool InputImeEventRouter::RegisterImeExtension(
     is_login = active_state->GetUIStyle() ==
                ash::input_method::InputMethodManager::UIStyle::kLogin;
   } else {
-    is_login = chromeos::ProfileHelper::IsSigninProfile(profile);
+    is_login = ash::ProfileHelper::IsSigninProfile(profile);
   }
 
   if (is_login && profile->HasPrimaryOTRProfile()) {
@@ -983,9 +984,8 @@ ExtensionFunction::ResponseAction InputImeClearCompositionFunction::Run() {
       parent_params->parameters;
 
   bool success = engine->ClearComposition(params.context_id, &error);
-  std::unique_ptr<base::ListValue> results =
-      std::make_unique<base::ListValue>();
-  results->Append(std::make_unique<base::Value>(success));
+  std::vector<base::Value> results;
+  results.emplace_back(success);
   return RespondNow(success
                         ? ArgumentList(std::move(results))
                         : ErrorWithArguments(
@@ -1062,8 +1062,8 @@ ExtensionFunction::ResponseAction
 InputImeSetCandidateWindowPropertiesFunction::Run() {
   std::unique_ptr<SetCandidateWindowProperties::Params> parent_params(
       SetCandidateWindowProperties::Params::Create(args()));
-  const SetCandidateWindowProperties::Params::Parameters&
-      params = parent_params->parameters;
+  const SetCandidateWindowProperties::Params::Parameters& params =
+      parent_params->parameters;
 
   std::string error;
   InputMethodEngine* engine =
@@ -1077,9 +1077,8 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
 
   if (properties.visible &&
       !engine->SetCandidateWindowVisible(*properties.visible, &error)) {
-    std::unique_ptr<base::ListValue> results =
-        std::make_unique<base::ListValue>();
-    results->Append(std::make_unique<base::Value>(false));
+    std::vector<base::Value> results;
+    results.emplace_back(false);
     return RespondNow(ErrorWithArguments(
         std::move(results), InformativeError(error, static_function_name())));
   }
@@ -1150,8 +1149,7 @@ ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
 
   std::unique_ptr<SetCandidates::Params> parent_params(
       SetCandidates::Params::Create(args()));
-  const SetCandidates::Params::Parameters& params =
-      parent_params->parameters;
+  const SetCandidates::Params::Parameters& params = parent_params->parameters;
 
   std::vector<InputMethodEngine::Candidate> candidates_out;
   for (const auto& candidate_in : params.candidates) {
@@ -1170,9 +1168,8 @@ ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
 
   bool success =
       engine->SetCandidates(params.context_id, candidates_out, &error);
-  std::unique_ptr<base::ListValue> results =
-      std::make_unique<base::ListValue>();
-  results->Append(std::make_unique<base::Value>(success));
+  std::vector<base::Value> results;
+  results.emplace_back(success);
   return RespondNow(success
                         ? ArgumentList(std::move(results))
                         : ErrorWithArguments(
@@ -1195,9 +1192,8 @@ ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
 
   bool success =
       engine->SetCursorPosition(params.context_id, params.candidate_id, &error);
-  std::unique_ptr<base::ListValue> results =
-      std::make_unique<base::ListValue>();
-  results->Append(std::make_unique<base::Value>(success));
+  std::vector<base::Value> results;
+  results.emplace_back(success);
   return RespondNow(success
                         ? ArgumentList(std::move(results))
                         : ErrorWithArguments(
@@ -1223,7 +1219,7 @@ ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
     SetMenuItemToMenu(item_in, &items_out.back());
   }
 
-  if (!engine->SetMenuItems(items_out, &error)) {
+  if (!engine->UpdateMenuItems(items_out, &error)) {
     return RespondNow(Error(InformativeError(
         base::StringPrintf("%s %s", kErrorSetMenuItemsFail, error.c_str()),
         static_function_name())));
@@ -1327,18 +1323,17 @@ InputMethodPrivateGetCompositionBoundsFunction::Run() {
   if (!engine)
     return RespondNow(Error(InformativeError(error, static_function_name())));
 
-  auto bounds_list = std::make_unique<base::ListValue>();
+  base::Value::List bounds_list;
   for (const auto& bounds : engine->composition_bounds()) {
-    auto bounds_value = std::make_unique<base::DictionaryValue>();
-    bounds_value->SetInteger("x", bounds.x());
-    bounds_value->SetInteger("y", bounds.y());
-    bounds_value->SetInteger("w", bounds.width());
-    bounds_value->SetInteger("h", bounds.height());
-    bounds_list->Append(std::move(bounds_value));
+    base::Value::Dict bounds_value;
+    bounds_value.Set("x", bounds.x());
+    bounds_value.Set("y", bounds.y());
+    bounds_value.Set("w", bounds.width());
+    bounds_value.Set("h", bounds.height());
+    bounds_list.Append(std::move(bounds_value));
   }
 
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(bounds_list))));
+  return RespondNow(OneArgument(base::Value(std::move(bounds_list))));
 }
 
 void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,

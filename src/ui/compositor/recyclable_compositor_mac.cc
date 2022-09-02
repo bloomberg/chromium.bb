@@ -5,6 +5,7 @@
 #include "ui/compositor/recyclable_compositor_mac.h"
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/features.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -157,8 +158,9 @@ void RecyclableCompositorMacFactory::RecycleCompositor(
 
 RecyclableCompositorMacFactory::RecyclableCompositorMacFactory()
     : weak_factory_(this) {
-  if (features::IsUsingSkiaRenderer())
-    recycling_disabled_ = true;
+  // TODO(crbug.com/1247756): This class probably isn't needed anymore since
+  // recycling is always disabled.
+  recycling_disabled_ = true;
 }
 
 RecyclableCompositorMacFactory::~RecyclableCompositorMacFactory() = default;

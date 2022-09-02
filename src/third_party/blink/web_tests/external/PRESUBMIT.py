@@ -8,6 +8,8 @@ See https://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
+import os
+import tempfile
 
 USE_PYTHON3 = True
 
@@ -56,6 +58,12 @@ def _LintWPT(input_api, output_api):
     if not paths_in_wpt:
         return []
 
+    # We have to set delete=False and then let the object go out of scope so
+    # that the file can be opened by name on Windows.
+    with tempfile.NamedTemporaryFile('w+', newline='', delete=False) as f:
+        for path in paths_in_wpt:
+            f.write('%s\n' % path)
+        paths_name = f.name
     args = [
         python3_command(input_api),
         linter_path,
@@ -64,16 +72,20 @@ def _LintWPT(input_api, output_api):
         '--ignore-glob=*-expected.txt',
         '--ignore-glob=*DIR_METADATA',
         '--ignore-glob=*OWNERS',
-    ] + paths_in_wpt
+        '--paths-file=%s' % paths_name,
+    ]
 
-    proc = input_api.subprocess.Popen(
-        args,
-        stdout=input_api.subprocess.PIPE,
-        stderr=input_api.subprocess.PIPE)
+    proc = input_api.subprocess.Popen(args,
+                                      stdout=input_api.subprocess.PIPE,
+                                      stderr=input_api.subprocess.PIPE)
     stdout, stderr = proc.communicate()
+    os.remove(paths_name)
 
     if proc.returncode != 0:
-        return [output_api.PresubmitError('wpt lint failed:', long_text=stdout + stderr)]
+        return [
+            output_api.PresubmitError('wpt lint failed:',
+                                      long_text=stdout + stderr)
+        ]
     return []
 
 

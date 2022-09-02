@@ -3,17 +3,17 @@
 #include "base/callback.h"
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/permission_controller.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 
 namespace blpwtk2 {
 
 namespace {
 
-bool IsAllowlistedPermissionType(content::PermissionType permission) {
+bool IsAllowlistedPermissionType(blink::PermissionType permission) {
     switch (permission) {
-        case content::PermissionType::CLIPBOARD_READ_WRITE:
-        case content::PermissionType::CLIPBOARD_SANITIZED_WRITE:
+        case blink::PermissionType::CLIPBOARD_READ_WRITE:
+        case blink::PermissionType::CLIPBOARD_SANITIZED_WRITE:
             return true;
 
         default:
@@ -30,7 +30,7 @@ PermissionManager::PermissionManager() = default;
 PermissionManager::~PermissionManager() {}
 
 void PermissionManager::RequestPermission(
-    content::PermissionType permission,
+    blink::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
@@ -42,7 +42,7 @@ void PermissionManager::RequestPermission(
 }
 
 void PermissionManager::RequestPermissions(
-    const std::vector<content::PermissionType>& permissions,
+    const std::vector<blink::PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
@@ -58,14 +58,30 @@ void PermissionManager::RequestPermissions(
     std::move(callback).Run(result);
 }
 
+void PermissionManager::RequestPermissionsFromCurrentDocument(
+    const std::vector<blink::PermissionType>& permissions,
+    content::RenderFrameHost* render_frame_host,
+    bool user_gesture,
+    base::OnceCallback<void(
+        const std::vector<blink::mojom::PermissionStatus>&)> callback) {
+
+    std::vector<blink::mojom::PermissionStatus> result;
+    for (const auto& permission : permissions) {
+        result.push_back(IsAllowlistedPermissionType(permission)
+                            ? blink::mojom::PermissionStatus::GRANTED
+                            : blink::mojom::PermissionStatus::DENIED);
+    }
+    std::move(callback).Run(result);
+}
+
 void PermissionManager::ResetPermission(
-    content::PermissionType permission,
+    blink::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
 }
 
 blink::mojom::PermissionStatus PermissionManager::GetPermissionStatus(
-    content::PermissionType permission,
+    blink::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
 
@@ -75,10 +91,20 @@ blink::mojom::PermissionStatus PermissionManager::GetPermissionStatus(
 }
 
 blink::mojom::PermissionStatus
-PermissionManager::GetPermissionStatusForFrame(
-    content::PermissionType permission,
-    content::RenderFrameHost* render_frame_host,
-    const GURL& requesting_origin) {
+PermissionManager::GetPermissionStatusForCurrentDocument(
+    blink::PermissionType permission,
+    content::RenderFrameHost* render_frame_host) {
+
+  return IsAllowlistedPermissionType(permission)
+             ? blink::mojom::PermissionStatus::GRANTED
+             : blink::mojom::PermissionStatus::DENIED;
+}
+
+blink::mojom::PermissionStatus
+PermissionManager::GetPermissionStatusForWorker(
+    blink::PermissionType permission,
+    content::RenderProcessHost* render_process_host,
+    const GURL& worker_origin) {
 
   return IsAllowlistedPermissionType(permission)
              ? blink::mojom::PermissionStatus::GRANTED
@@ -87,7 +113,8 @@ PermissionManager::GetPermissionStatusForFrame(
 
 PermissionManager::SubscriptionId
 PermissionManager::SubscribePermissionStatusChange(
-    content::PermissionType permission,
+    blink::PermissionType permission,
+    content::RenderProcessHost* render_process_host,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) {

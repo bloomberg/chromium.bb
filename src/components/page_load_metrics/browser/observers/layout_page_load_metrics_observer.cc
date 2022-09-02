@@ -15,13 +15,6 @@ void Record(const PageRenderData& data) {
     base::UmaHistogramPercentageObsoleteDoNotUse(
         "Blink.Layout.NGRatio.Blocks",
         data.ng_layout_block_count * 100 / data.all_layout_block_count);
-
-    base::UmaHistogramPercentage(
-        "Blink.Layout.NGRatio.FlexboxBlocks",
-        data.flexbox_ng_layout_block_count * 100 / data.all_layout_block_count);
-    base::UmaHistogramPercentage(
-        "Blink.Layout.NGRatio.GridBlocks",
-        data.grid_ng_layout_block_count * 100 / data.all_layout_block_count);
   }
   if (data.all_layout_call_count) {
     base::UmaHistogramPercentageObsoleteDoNotUse(
@@ -35,6 +28,14 @@ void Record(const PageRenderData& data) {
 LayoutPageLoadMetricsObserver::LayoutPageLoadMetricsObserver() = default;
 
 LayoutPageLoadMetricsObserver::~LayoutPageLoadMetricsObserver() = default;
+
+// TODO(https://crbug.com/1317494): Audit and use appropriate policy.
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+LayoutPageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  return STOP_OBSERVING;
+}
 
 void LayoutPageLoadMetricsObserver::OnComplete(const mojom::PageLoadTiming&) {
   Record(GetDelegate().GetPageRenderData());

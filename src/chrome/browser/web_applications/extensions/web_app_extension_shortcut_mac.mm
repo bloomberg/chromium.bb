@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -19,8 +18,8 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_app_shortcut_mac.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #import "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/pref_names.h"
@@ -154,9 +153,7 @@ void ShowCreateChromeAppShortcutsDialog(
   // the user anything. Just create shortcuts.
   CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
                   web_app::ShortcutLocations(), profile, app,
-                  base::DoNothing());
-  if (!close_callback.is_null())
-    std::move(close_callback).Run(true);
+                  base::BindOnce(std::move(close_callback)));
 }
 
 void ShowCreateChromeAppShortcutsDialog(
@@ -168,9 +165,7 @@ void ShowCreateChromeAppShortcutsDialog(
   // the user anything. Just create shortcuts.
   CreateShortcutsForWebApp(web_app::SHORTCUT_CREATION_BY_USER,
                            web_app::ShortcutLocations(), profile, app_id,
-                           base::DoNothing());
-  if (!close_callback.is_null())
-    std::move(close_callback).Run(true);
+                           base::BindOnce(std::move(close_callback)));
 }
 
 }  // namespace chrome

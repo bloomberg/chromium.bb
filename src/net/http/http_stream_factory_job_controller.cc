@@ -58,12 +58,10 @@ GURL CreateAltSvcUrl(const GURL& origin_url,
   DCHECK(origin_url.is_valid());
   DCHECK(origin_url.IsStandard());
 
-  url::Replacements<char> replacements;
+  GURL::Replacements replacements;
   std::string port_str = base::NumberToString(alternative_destination.port());
-  replacements.SetPort(port_str.c_str(), url::Component(0, port_str.size()));
-  replacements.SetHost(
-      alternative_destination.host().c_str(),
-      url::Component(0, alternative_destination.host().size()));
+  replacements.SetPortStr(port_str);
+  replacements.SetHostStr(alternative_destination.host());
 
   return origin_url.ReplaceComponents(replacements);
 }
@@ -132,31 +130,22 @@ HttpStreamFactory::JobController::JobController(
     bool is_websocket,
     bool enable_ip_based_pooling,
     bool enable_alternative_services,
+    bool delay_main_job_with_available_spdy_session,
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config)
     : factory_(factory),
       session_(session),
       job_factory_(job_factory),
-      request_(nullptr),
       delegate_(delegate),
       is_preconnect_(is_preconnect),
       is_websocket_(is_websocket),
       enable_ip_based_pooling_(enable_ip_based_pooling),
       enable_alternative_services_(enable_alternative_services),
-      main_job_net_error_(OK),
-      alternative_job_net_error_(OK),
-      alternative_job_failed_on_default_network_(false),
-      job_bound_(false),
-      main_job_is_blocked_(false),
-      main_job_is_resumed_(false),
-      bound_job_(nullptr),
-      next_state_(STATE_RESOLVE_PROXY),
-      proxy_resolve_request_(nullptr),
+      delay_main_job_with_available_spdy_session_(
+          delay_main_job_with_available_spdy_session),
       request_info_(request_info),
       server_ssl_config_(server_ssl_config),
       proxy_ssl_config_(proxy_ssl_config),
-      num_streams_(0),
-      priority_(IDLE),
       net_log_(NetLogWithSource::Make(
           session->net_log(),
           NetLogSourceType::HTTP_STREAM_JOB_CONTROLLER)) {
@@ -601,8 +590,23 @@ const NetLogWithSource* HttpStreamFactory::JobController::GetNetLog() const {
 void HttpStreamFactory::JobController::MaybeSetWaitTimeForMainJob(
     const base::TimeDelta& delay) {
   if (main_job_is_blocked_) {
-    main_job_wait_time_ =
-        std::min(delay, base::Seconds(kMaxDelayTimeForMainJobSecs));
+    const bool has_available_spdy_session =
+        main_job_->HasAvailableSpdySession();
+    if (!delay_main_job_with_available_spdy_session_ &&
+        has_available_spdy_session) {
+      main_job_wait_time_ = base::TimeDelta();
+    } else {
+      main_job_wait_time_ =
+          std::min(delay, base::Seconds(kMaxDelayTimeForMainJobSecs));
+    }
+    if (has_available_spdy_session) {
+      UMA_HISTOGRAM_TIMES("Net.HttpJob.MainJobWaitTimeWithAvailableSpdySession",
+                          main_job_wait_time_);
+    } else {
+      UMA_HISTOGRAM_TIMES(
+          "Net.HttpJob.MainJobWaitTimeWithoutAvailableSpdySession",
+          main_job_wait_time_);
+    }
   }
 }
 
@@ -1109,7 +1113,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     QuicSessionKey session_key(
         HostPortPair::FromURL(mapped_origin), request_info.privacy_mode,
         request_info.socket_tag, request_info.network_isolation_key,
-        request_info.secure_dns_policy);
+        request_info.secure_dns_policy, /*require_dns_https_alpn=*/false);
 
     GURL destination = CreateAltSvcUrl(
         original_url, alternative_service_info.host_port_pair());

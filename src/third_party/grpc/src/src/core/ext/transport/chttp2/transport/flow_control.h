@@ -22,10 +22,14 @@
 #include <grpc/support/port_platform.h>
 
 #include <stdint.h>
+#include <stdlib.h>
+
+#include <algorithm>
 
 #include "src/core/ext/transport/chttp2/transport/http2_settings.h"
-#include "src/core/lib/gpr/useful.h"
-#include "src/core/lib/gprpp/manual_constructor.h"
+#include "src/core/lib/debug/trace.h"
+#include "src/core/lib/gprpp/time.h"
+#include "src/core/lib/iomgr/error.h"
 #include "src/core/lib/transport/bdp_estimator.h"
 #include "src/core/lib/transport/pid_controller.h"
 
@@ -194,7 +198,7 @@ class TransportFlowControlBase {
   virtual void TestOnlyForceHugeWindow() {}
 
  protected:
-  friend class ::grpc::testing::TrickledCHTTP2;
+  friend class grpc::testing::TrickledCHTTP2;
   int64_t remote_window_ = kDefaultWindow;
   int64_t target_initial_window_size_ = kDefaultWindow;
   int64_t announced_window_ = kDefaultWindow;
@@ -335,7 +339,7 @@ class TransportFlowControl final : public TransportFlowControlBase {
 
   /* pid controller */
   PidController pid_controller_;
-  grpc_millis last_pid_update_ = 0;
+  Timestamp last_pid_update_;
 };
 
 // Fat interface with all methods a stream flow control implementation needs
@@ -384,7 +388,7 @@ class StreamFlowControlBase {
   int64_t announced_window_delta() const { return announced_window_delta_; }
 
  protected:
-  friend class ::grpc::testing::TrickledCHTTP2;
+  friend class grpc::testing::TrickledCHTTP2;
   int64_t remote_window_delta_ = 0;
   int64_t local_window_delta_ = 0;
   int64_t announced_window_delta_ = 0;

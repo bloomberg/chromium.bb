@@ -30,9 +30,9 @@
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
@@ -74,10 +74,10 @@ TEST(FloatRoundedRectTest, zeroRadii) {
   EXPECT_FALSE(r.XInterceptsAtY(1, min_x_intercept, max_x_intercept));
   EXPECT_FALSE(r.XInterceptsAtY(7, min_x_intercept, max_x_intercept));
 
-  // The FloatRoundedRect::expandRadii() function doesn't change radii
-  // gfx::SizeFs that are <= zero. Same as RoundedRect::expandRadii().
-  r.ExpandRadii(20);
-  r.ShrinkRadii(10);
+  // The FloatRoundedRect::Outset() and Inset() don't change zero radii.
+  r.Outset(20);
+  EXPECT_TRUE(r.GetRadii().IsZero());
+  r.Inset(10);
   EXPECT_TRUE(r.GetRadii().IsZero());
 }
 
@@ -161,75 +161,53 @@ TEST(FloatRoundedRectTest, ellipticalCorners) {
   EXPECT_FALSE(r.XInterceptsAtY(101, min_x_intercept, max_x_intercept));
 }
 
-TEST(FloatRoundedRectTest, radiusCenterRect) {
-  gfx::SizeF corner_rect(10, 10);
-  FloatRoundedRect r0(gfx::RectF(0, 0, 100, 50),
-                      FloatRoundedRect::Radii(corner_rect, corner_rect,
-                                              corner_rect, corner_rect));
-  EXPECT_EQ(gfx::RectF(10, 10, 80, 30), r0.RadiusCenterRect());
-
-  // "Degenerate" cases all return an empty rectangle.
-  gfx::RectF collapsed_rect(0, 0, 100, 50);
-  collapsed_rect.Inset(200);
-  FloatRoundedRect r1(collapsed_rect);
-  EXPECT_TRUE(r1.RadiusCenterRect().IsEmpty());
-
-  FloatRoundedRect::Radii radii_with_too_large_corner(
-      gfx::SizeF(55, 55), gfx::SizeF(), gfx::SizeF(), gfx::SizeF());
-  FloatRoundedRect r2(gfx::RectF(0, 0, 100, 50), radii_with_too_large_corner);
-  EXPECT_TRUE(r2.RadiusCenterRect().IsEmpty());
-}
-
 TEST(FloatRoundedRectTest, IntersectsQuadIsInclusive) {
-  FloatRoundedRect::Radii corner_radii;
-  corner_radii.SetTopLeft(gfx::SizeF(5, 5));
-  corner_radii.SetTopRight(gfx::SizeF(5, 5));
-  corner_radii.SetBottomLeft(gfx::SizeF(5, 5));
-  corner_radii.SetBottomRight(gfx::SizeF(5, 5));
+  FloatRoundedRect::Radii corner_radii(5);
+
   // A rect at (10, 10) with dimensions 20x20 and radii of size 5x5.
   FloatRoundedRect r(gfx::RectF(10, 10, 20, 20), corner_radii);
 
   // A quad fully inside the rounded rect should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(11, 11, 8, 8))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(11, 11, 8, 8))));
 
   // A quad fully outside the rounded rect should not intersect.
-  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(gfx::RectF(0, 0, 1, 1))));
+  EXPECT_FALSE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(0, 0, 1, 1))));
 
   // A quad touching the top edge of the rounded rect should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(15, 9, 5, 1))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(15, 9, 5, 1))));
 
   // A quad touching the right edge of the rounded rect should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(30, 15, 1, 1))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(30, 15, 1, 1))));
 
   // A quad touching the bottom edge of the rounded rect should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(15, 30, 1, 1))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(15, 30, 1, 1))));
 
   // A quad touching the left edge of the rounded rect should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(9, 15, 1, 1))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(9, 15, 1, 1))));
 
   // A quad outside the top-left arc should not intersect.
-  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(gfx::RectF(10, 10, 1, 1))));
+  EXPECT_FALSE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(10, 10, 1, 1))));
 
   // A quad inside the top-left arc should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(13, 13, 1, 1))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(13, 13, 1, 1))));
 
   // A quad outside the top-right arc should not intersect.
-  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(gfx::RectF(29, 10, 1, 1))));
+  EXPECT_FALSE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(29, 10, 1, 1))));
 
   // A quad inside the top-right arc should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(26, 13, 1, 1))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(26, 13, 1, 1))));
 
   // A quad outside the bottom-right arc should not intersect.
-  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(gfx::RectF(29, 29, 1, 1))));
+  EXPECT_FALSE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(29, 29, 1, 1))));
 
   // A quad inside the bottom-right arc should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(26, 26, 1, 1))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(26, 26, 1, 1))));
 
   // A quad outside the bottom-left arc should not intersect.
-  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(gfx::RectF(10, 29, 1, 1))));
+  EXPECT_FALSE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(10, 29, 1, 1))));
 
   // A quad inside the bottom-left arc should intersect.
-  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(gfx::RectF(13, 26, 1, 1))));
+  EXPECT_TRUE(r.IntersectsQuad(gfx::QuadF(gfx::RectF(13, 26, 1, 1))));
 }
 
 TEST(FloatRoundedrectTest, ConstrainRadii) {
@@ -277,6 +255,97 @@ TEST(FloatRoundedrectTest, ConstrainRadii) {
                       gfx::SizeF(85088.6, 21377.3));
   r7.ConstrainRadii();
   EXPECT_TRUE(r7.IsRenderable());
+}
+
+TEST(FloatRoundedRectTest, OutsetRect) {
+  FloatRoundedRect r(gfx::RectF(0, 0, 100, 100));
+  r.Outset(gfx::OutsetsF().set_top(1).set_right(2).set_bottom(3).set_left(4));
+  EXPECT_EQ(FloatRoundedRect(gfx::RectF(-4, -1, 106, 104)), r);
+  r.Outset(
+      gfx::OutsetsF().set_top(-1).set_right(-2).set_bottom(-3).set_left(-4));
+  EXPECT_EQ(FloatRoundedRect(gfx::RectF(0, 0, 100, 100)), r);
+}
+
+TEST(FloatRoundedRectTest, InsetRect) {
+  FloatRoundedRect r(gfx::RectF(0, 0, 100, 100));
+  r.Inset(gfx::InsetsF().set_top(1).set_right(2).set_bottom(3).set_left(4));
+  EXPECT_EQ(FloatRoundedRect(gfx::RectF(4, 1, 94, 96)), r);
+  r.Inset(gfx::InsetsF().set_top(-1).set_right(-2).set_bottom(-3).set_left(-4));
+  EXPECT_EQ(FloatRoundedRect(gfx::RectF(0, 0, 100, 100)), r);
+}
+
+TEST(FloatRoundedRectTest, OutsetWithRadii) {
+  FloatRoundedRect r(gfx::RectF(0, 0, 100, 100), gfx::SizeF(5, 10),
+                     gfx::SizeF(15, 20), gfx::SizeF(0, 30), gfx::SizeF(35, 0));
+  r.Outset(
+      gfx::OutsetsF().set_top(40).set_right(30).set_bottom(20).set_left(10));
+  // Zero components of radii should be kept unchanged to ensure sharp corners
+  // are still sharp.
+  EXPECT_EQ(FloatRoundedRect(gfx::RectF(-10, -40, 140, 160), gfx::SizeF(15, 50),
+                             gfx::SizeF(45, 60), gfx::SizeF(0, 50),
+                             gfx::SizeF(65, 0)),
+            r);
+}
+
+TEST(FloatRoundedRectTest, InsetWithRadii) {
+  FloatRoundedRect r(gfx::RectF(0, 0, 100, 100), gfx::SizeF(20, 30),
+                     gfx::SizeF(40, 50), gfx::SizeF(0, 60), gfx::SizeF(70, 0));
+  r.Inset(gfx::InsetsF().set_top(40).set_right(30).set_bottom(20).set_left(10));
+  EXPECT_EQ(FloatRoundedRect(gfx::RectF(10, 40, 60, 40), gfx::SizeF(10, 0),
+                             gfx::SizeF(10, 10), gfx::SizeF(0, 40),
+                             gfx::SizeF(40, 0)),
+            r);
+}
+
+// Outset() should keep zero components in radii to ensure sharp corners are
+// still sharp.
+TEST(FloatRoundedRectTest, InsetWithPartialZeroRadii) {
+  FloatRoundedRect r(gfx::RectF(0, 0, 100, 100), gfx::SizeF(5, 0),
+                     gfx::SizeF(0, 20), gfx::SizeF(0, 30), gfx::SizeF(35, 0));
+  r.Inset(10);
+  EXPECT_EQ(
+      FloatRoundedRect(gfx::RectF(10, 10, 80, 80), gfx::SizeF(0, 0),
+                       gfx::SizeF(0, 10), gfx::SizeF(0, 20), gfx::SizeF(25, 0)),
+      r);
+}
+
+TEST(FloatRoundedRectTest, OutsetForMarginOrShadow) {
+  FloatRoundedRect r(gfx::RectF(0, 0, 200, 200), gfx::SizeF(4, 8),
+                     gfx::SizeF(12, 16), gfx::SizeF(0, 32), gfx::SizeF(64, 0));
+  r.OutsetForMarginOrShadow(32);
+  EXPECT_EQ(FloatRoundedRect(
+                gfx::RectF(-32, -32, 264, 264), gfx::SizeF(14.5625f, 26.5f),
+                gfx::SizeF(36.1875f, 44), gfx::SizeF(0, 64), gfx::SizeF(96, 0)),
+            r);
+}
+
+TEST(FloatRoundedRectTest, InsetToBeNonRenderable) {
+  FloatRoundedRect pie(gfx::RectF(0, 0, 100, 100), gfx::SizeF(100, 100),
+                       gfx::SizeF(), gfx::SizeF(), gfx::SizeF());
+  EXPECT_TRUE(pie.IsRenderable());
+  FloatRoundedRect small_pie = pie;
+  small_pie.Inset(20);
+  EXPECT_EQ(FloatRoundedRect(gfx::RectF(20, 20, 60, 60), gfx::SizeF(80, 80),
+                             gfx::SizeF(), gfx::SizeF(), gfx::SizeF()),
+            small_pie);
+  EXPECT_FALSE(small_pie.IsRenderable());
+  small_pie.Outset(20);
+  EXPECT_EQ(pie, small_pie);
+}
+
+TEST(FloatRoundedRectTest, OutsetForShapeMargin) {
+  FloatRoundedRect r(gfx::RectF(0, 0, 100, 100), gfx::SizeF(5, 10),
+                     gfx::SizeF(15, 0), gfx::SizeF(0, 30), gfx::SizeF(0, 0));
+  r.OutsetForShapeMargin(0);
+  EXPECT_EQ(
+      FloatRoundedRect(gfx::RectF(0, 0, 100, 100), gfx::SizeF(5, 10),
+                       gfx::SizeF(15, 0), gfx::SizeF(0, 30), gfx::SizeF(0, 0)),
+      r);
+  r.OutsetForShapeMargin(5);
+  EXPECT_EQ(
+      FloatRoundedRect(gfx::RectF(-5, -5, 110, 110), gfx::SizeF(10, 15),
+                       gfx::SizeF(20, 5), gfx::SizeF(5, 35), gfx::SizeF(5, 5)),
+      r);
 }
 
 TEST(FloatRoundedRectTest, ToString) {

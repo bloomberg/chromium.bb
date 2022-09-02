@@ -92,6 +92,7 @@ class SafeBrowsingPrivateEventRouter
   static const char kKeyPasswordBreachIdentities[];
   static const char kKeyPasswordBreachIdentitiesUrl[];
   static const char kKeyPasswordBreachIdentitiesUsername[];
+  static const char kKeyUserJustification[];
 
   static const char kKeyPasswordReuseEvent[];
   static const char kKeyPasswordChangedEvent[];
@@ -110,6 +111,7 @@ class SafeBrowsingPrivateEventRouter
   static const char kTriggerFileDownload[];
   static const char kTriggerFileUpload[];
   static const char kTriggerWebContentUpload[];
+  static const char kTriggerPagePrint[];
 
   explicit SafeBrowsingPrivateEventRouter(content::BrowserContext* context);
 
@@ -121,9 +123,14 @@ class SafeBrowsingPrivateEventRouter
   ~SafeBrowsingPrivateEventRouter() override;
 
   // Notifies listeners that the user reused a protected password.
+  // - `url` is the URL where the password was reused
+  // - `user_name` is the user associated with the reused password
+  // - `is_phising_url` is whether the URL is thought to be a phishing one
+  // - `warning_shown` is whether a warning dialog was shown to the user
   void OnPolicySpecifiedPasswordReuseDetected(const GURL& url,
                                               const std::string& user_name,
-                                              bool is_phishing_url);
+                                              bool is_phishing_url,
+                                              bool warning_shown);
 
   // Notifies listeners that the user changed the password associated with
   // |user_name|.
@@ -171,7 +178,8 @@ class SafeBrowsingPrivateEventRouter
       const std::string& scan_id,
       safe_browsing::DeepScanAccessPoint access_point,
       const enterprise_connectors::ContentAnalysisResponse::Result& result,
-      const int64_t content_size);
+      const int64_t content_size,
+      absl::optional<std::u16string> user_justification);
 
   // Notifies listeners that deep scanning failed, for the given |reason|.
   void OnUnscannedFileEvent(const GURL& url,
@@ -259,7 +267,7 @@ class SafeBrowsingPrivateEventRouter
   virtual void ReportRealtimeEvent(
       const std::string&,
       const enterprise_connectors::ReportingSettings& settings,
-      base::Value event);
+      base::Value::Dict event);
 
  private:
   // Initialize a real-time report client if needed.  This client is used only
@@ -310,6 +318,9 @@ class SafeBrowsingPrivateEventRouter
 
   // Determines if real-time reporting is available based on platform and user.
   static bool IsRealtimeReportingAvailable();
+
+  // Removes any path information and returns just the basename.
+  static std::string GetBaseName(const std::string& filename);
 
   // Returns the Gaia email address of the account signed in to the profile or
   // an empty string if the profile is not signed in.

@@ -41,6 +41,7 @@ if (is_posix && !build_with_chromium) {
       "../../third_party/googletest:gtest",
       "../../util",
       "../common:certificate",
+      "../common:certificate_boringssl",
       "../common:channel",
       "../common:test_helpers",
       "../receiver:channel",
@@ -56,6 +57,7 @@ if (is_posix && !build_with_chromium) {
       "../../platform:test",
       "../../third_party/boringssl",
       "../../util",
+      "../common:certificate_boringssl",
       "../common:test_helpers",
       "../common/certificate/proto:certificate_proto",
     ]

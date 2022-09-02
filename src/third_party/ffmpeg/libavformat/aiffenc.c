@@ -37,7 +37,7 @@ typedef struct AIFFOutputContext {
     int64_t frames;
     int64_t ssnd;
     int audio_stream_idx;
-    PacketList *pict_list, *pict_list_end;
+    PacketList pict_list;
     int write_id3v2;
     int id3v2_version;
 } AIFFOutputContext;
@@ -48,9 +48,9 @@ static int put_id3v2_tags(AVFormatContext *s, AIFFOutputContext *aiff)
     uint64_t pos, end, size;
     ID3v2EncContext id3v2 = { 0 };
     AVIOContext *pb = s->pb;
-    PacketList *pict_list = aiff->pict_list;
+    PacketListEntry *list_entry = aiff->pict_list.head;
 
-    if (!s->metadata && !s->nb_chapters && !aiff->pict_list)
+    if (!s->metadata && !s->nb_chapters && !list_entry)
         return 0;
 
     avio_wl32(pb, MKTAG('I', 'D', '3', ' '));
@@ -59,10 +59,10 @@ static int put_id3v2_tags(AVFormatContext *s, AIFFOutputContext *aiff)
 
     ff_id3v2_start(&id3v2, pb, aiff->id3v2_version, ID3v2_DEFAULT_MAGIC);
     ff_id3v2_write_metadata(s, &id3v2);
-    while (pict_list) {
-        if ((ret = ff_id3v2_write_apic(s, &id3v2, &pict_list->pkt)) < 0)
+    while (list_entry) {
+        if ((ret = ff_id3v2_write_apic(s, &id3v2, &list_entry->pkt)) < 0)
             return ret;
-        pict_list = pict_list->next;
+        list_entry = list_entry->next;
     }
     ff_id3v2_finish(&id3v2, pb, s->metadata_header_padding);
 
@@ -144,10 +144,10 @@ static int aiff_write_header(AVFormatContext *s)
         avio_wb32(pb, 0xA2805140);
     }
 
-    if (par->channels > 2 && par->channel_layout) {
+    if (par->ch_layout.order == AV_CHANNEL_ORDER_NATIVE && par->ch_layout.nb_channels > 2) {
         ffio_wfourcc(pb, "CHAN");
         avio_wb32(pb, 12);
-        ff_mov_write_chan(pb, par->channel_layout);
+        ff_mov_write_chan(pb, par->ch_layout.u.mask);
     }
 
     put_meta(s, "title",     MKTAG('N', 'A', 'M', 'E'));
@@ -158,7 +158,7 @@ static int aiff_write_header(AVFormatContext *s)
     /* Common chunk */
     ffio_wfourcc(pb, "COMM");
     avio_wb32(pb, aifc ? 24 : 18); /* size */
-    avio_wb16(pb, par->channels);  /* Number of channels */
+    avio_wb16(pb, par->ch_layout.nb_channels);  /* Number of channels */
 
     aiff->frames = avio_tell(pb);
     avio_wb32(pb, 0);              /* Number of frames */
@@ -170,7 +170,7 @@ static int aiff_write_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
     if (!par->block_align)
-        par->block_align = (par->bits_per_coded_sample * par->channels) >> 3;
+        par->block_align = (par->bits_per_coded_sample * par->ch_layout.nb_channels) >> 3;
 
     avio_wb16(pb, par->bits_per_coded_sample); /* Sample size */
 
@@ -218,8 +218,7 @@ static int aiff_write_packet(AVFormatContext *s, AVPacket *pkt)
         if (s->streams[pkt->stream_index]->nb_frames >= 1)
             return 0;
 
-        return avpriv_packet_list_put(&aiff->pict_list, &aiff->pict_list_end,
-                                  pkt, av_packet_ref, 0);
+        return avpriv_packet_list_put(&aiff->pict_list, pkt, NULL, 0);
     }
 
     return 0;
@@ -265,7 +264,7 @@ static void aiff_deinit(AVFormatContext *s)
 {
     AIFFOutputContext *aiff = s->priv_data;
 
-    avpriv_packet_list_free(&aiff->pict_list, &aiff->pict_list_end);
+    avpriv_packet_list_free(&aiff->pict_list);
 }
 
 #define OFFSET(x) offsetof(AIFFOutputContext, x)

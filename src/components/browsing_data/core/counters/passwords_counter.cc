@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/time/time.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -236,6 +237,10 @@ void PasswordsCounter::Count() {
       base::BindOnce(&PasswordsCounter::OnFetchDone, base::Unretained(this)));
 }
 
+void PasswordsCounter::OnPasswordsFetchDone() {
+  ReportResult(MakeResult());
+}
+
 std::unique_ptr<PasswordsCounter::PasswordsResult>
 PasswordsCounter::MakeResult() {
   DCHECK(!(is_sync_active() && num_account_passwords() > 0));
@@ -246,7 +251,7 @@ PasswordsCounter::MakeResult() {
 
 void PasswordsCounter::OnFetchDone() {
   if (--remaining_tasks_ == 0)
-    ReportResult(MakeResult());
+    OnPasswordsFetchDone();
 }
 
 }  // namespace browsing_data

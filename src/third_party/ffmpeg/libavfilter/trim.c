@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "config.h"
+#include "config_components.h"
 
 #include "libavutil/channel_layout.h"
 #include "libavutil/common.h"
@@ -309,7 +310,7 @@ static int atrim_filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
         av_frame_copy_props(out, frame);
         av_samples_copy(out->extended_data, frame->extended_data, 0, start_sample,
-                        out->nb_samples, inlink->channels,
+                        out->nb_samples, inlink->ch_layout.nb_channels,
                         frame->format);
         if (out->pts != AV_NOPTS_VALUE)
             out->pts += av_rescale_q(start_sample, (AVRational){ 1, out->sample_rate },
@@ -363,6 +364,7 @@ const AVFilter ff_af_atrim = {
     .init        = init,
     .priv_size   = sizeof(TrimContext),
     .priv_class  = &atrim_class,
+    .flags       = AVFILTER_FLAG_METADATA_ONLY,
     FILTER_INPUTS(atrim_inputs),
     FILTER_OUTPUTS(atrim_outputs),
 };

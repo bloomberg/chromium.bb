@@ -12,6 +12,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/media_router/common/media_sink.h"
+#include "components/media_router/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace media_router {
@@ -55,7 +56,7 @@ void CastMediaSinkService::Start(
       FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::Start,
                                 base::Unretained(impl_.get())));
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   StartMdnsDiscovery();
 #endif
 }
@@ -157,6 +158,9 @@ void CastMediaSinkService::RunSinksDiscoveredCallback(
 }
 
 void CastMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
+  // TODO(crbug.com/1293535): Simplify how logger instances are made available
+  // to their clients.
+
   DCHECK(logger_impl);
   logger_impl_ = logger_impl;
   if (dns_sd_registry_) {
@@ -165,7 +169,7 @@ void CastMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
   }
 
   mojo::PendingRemote<mojom::Logger> pending_remote;
-  logger_impl_->Bind(pending_remote.InitWithNewPipeAndPassReceiver());
+  logger_impl_->BindReceiver(pending_remote.InitWithNewPipeAndPassReceiver());
   impl_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CastMediaSinkServiceImpl::BindLogger,

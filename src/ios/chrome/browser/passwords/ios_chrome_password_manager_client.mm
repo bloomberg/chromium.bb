@@ -8,12 +8,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -28,6 +30,7 @@
 #import "components/ukm/ios/ukm_url_recorder.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_change_success_tracker_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_reuse_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/ios_password_requirements_service_factory.h"
@@ -58,7 +61,8 @@ using password_manager::SyncState;
 
 namespace {
 
-const syncer::SyncService* GetSyncService(ChromeBrowserState* browser_state) {
+const syncer::SyncService* GetSyncServiceForBrowserState(
+    ChromeBrowserState* browser_state) {
   return SyncServiceFactory::GetForBrowserStateIfExists(browser_state);
 }
 
@@ -67,12 +71,13 @@ const syncer::SyncService* GetSyncService(ChromeBrowserState* browser_state) {
 IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
     id<IOSChromePasswordManagerClientBridge> bridge)
     : bridge_(bridge),
-      password_feature_manager_(GetPrefs(),
-                                GetSyncService(bridge_.browserState)),
+      password_feature_manager_(
+          GetPrefs(),
+          GetSyncServiceForBrowserState(bridge_.browserState)),
       password_reuse_detection_manager_(this),
-      credentials_filter_(
-          this,
-          base::BindRepeating(&GetSyncService, bridge_.browserState)),
+      credentials_filter_(this,
+                          base::BindRepeating(&GetSyncServiceForBrowserState,
+                                              bridge_.browserState)),
       helper_(this) {
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
@@ -176,6 +181,11 @@ PrefService* IOSChromePasswordManagerClient::GetPrefs() const {
   return (bridge_.browserState)->GetPrefs();
 }
 
+const syncer::SyncService* IOSChromePasswordManagerClient::GetSyncService()
+    const {
+  return GetSyncServiceForBrowserState(bridge_.browserState);
+}
+
 PasswordStoreInterface*
 IOSChromePasswordManagerClient::GetProfilePasswordStore() const {
   return IOSChromePasswordStoreFactory::GetForBrowserState(
@@ -198,6 +208,12 @@ IOSChromePasswordManagerClient::GetPasswordReuseManager() const {
 password_manager::PasswordScriptsFetcher*
 IOSChromePasswordManagerClient::GetPasswordScriptsFetcher() {
   return nullptr;
+}
+
+password_manager::PasswordChangeSuccessTracker*
+IOSChromePasswordManagerClient::GetPasswordChangeSuccessTracker() {
+  return IOSChromePasswordChangeSuccessTrackerFactory::GetForBrowserState(
+      bridge_.browserState);
 }
 
 void IOSChromePasswordManagerClient::NotifyUserAutoSignin(
@@ -282,8 +298,7 @@ ukm::SourceId IOSChromePasswordManagerClient::GetUkmSourceId() {
 PasswordManagerMetricsRecorder*
 IOSChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(GetUkmSourceId(),
-                              /*navigation_metric_recorder=*/nullptr);
+    metrics_recorder_.emplace(GetUkmSourceId());
   }
   return base::OptionalOrNullptr(metrics_recorder_);
 }

@@ -382,7 +382,9 @@ COMPONENT_EXPORT(ONC) extern const char kCert[];
 COMPONENT_EXPORT(ONC) extern const char kEAP[];
 COMPONENT_EXPORT(ONC) extern const char kGroup[];
 COMPONENT_EXPORT(ONC) extern const char kIKEVersion[];
+COMPONENT_EXPORT(ONC) extern const char kLocalIdentity[];
 COMPONENT_EXPORT(ONC) extern const char kPSK[];
+COMPONENT_EXPORT(ONC) extern const char kRemoteIdentity[];
 COMPONENT_EXPORT(ONC) extern const char kServerCAPEMs[];
 COMPONENT_EXPORT(ONC) extern const char kServerCARef[];
 COMPONENT_EXPORT(ONC) extern const char kServerCARefs[];
@@ -511,11 +513,12 @@ COMPONENT_EXPORT(ONC) extern const char kWPAD[];
 }  // namespace proxy
 
 namespace global_network_config {
+COMPONENT_EXPORT(ONC) extern const char kAllowCellularSimLock[];
 COMPONENT_EXPORT(ONC) extern const char kAllowOnlyPolicyCellularNetworks[];
 COMPONENT_EXPORT(ONC) extern const char kAllowOnlyPolicyNetworksToAutoconnect[];
-COMPONENT_EXPORT(ONC) extern const char* kAllowOnlyPolicyWiFiToConnect;
+COMPONENT_EXPORT(ONC) extern const char* const kAllowOnlyPolicyWiFiToConnect;
 COMPONENT_EXPORT(ONC)
-extern const char* kAllowOnlyPolicyWiFiToConnectIfAvailable;
+extern const char* const kAllowOnlyPolicyWiFiToConnectIfAvailable;
 COMPONENT_EXPORT(ONC) extern const char kBlacklistedHexSSIDs[];  // Deprecated
 COMPONENT_EXPORT(ONC) extern const char kBlockedHexSSIDs[];
 COMPONENT_EXPORT(ONC) extern const char kDisableNetworkTypes[];

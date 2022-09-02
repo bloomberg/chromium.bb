@@ -654,7 +654,8 @@ CJS_Result CJS_Document::get_author(CJS_Runtime* pRuntime) {
 
 CJS_Result CJS_Document::set_author(CJS_Runtime* pRuntime,
                                     v8::Local<v8::Value> vp) {
-  return setPropertyInternal(pRuntime, vp, "Author");
+  // Read-only.
+  return CJS_Result::Success();
 }
 
 CJS_Result CJS_Document::get_info(CJS_Runtime* pRuntime) {
@@ -734,32 +735,14 @@ CJS_Result CJS_Document::getPropertyInternal(CJS_Runtime* pRuntime,
       pDictionary->GetUnicodeTextFor(propName).AsStringView()));
 }
 
-CJS_Result CJS_Document::setPropertyInternal(CJS_Runtime* pRuntime,
-                                             v8::Local<v8::Value> vp,
-                                             const ByteString& propName) {
-  if (!m_pFormFillEnv)
-    return CJS_Result::Failure(JSMessage::kBadObjectError);
-
-  CPDF_Dictionary* pDictionary = m_pFormFillEnv->GetPDFDocument()->GetInfo();
-  if (!pDictionary)
-    return CJS_Result::Failure(JSMessage::kBadObjectError);
-
-  using pdfium::access_permissions::kModifyContent;
-  if (!m_pFormFillEnv->HasPermissions(kModifyContent))
-    return CJS_Result::Failure(JSMessage::kPermissionError);
-
-  pDictionary->SetNewFor<CPDF_String>(propName, pRuntime->ToWideString(vp));
-  m_pFormFillEnv->SetChangeMark();
-  return CJS_Result::Success();
-}
-
 CJS_Result CJS_Document::get_creation_date(CJS_Runtime* pRuntime) {
   return getPropertyInternal(pRuntime, "CreationDate");
 }
 
 CJS_Result CJS_Document::set_creation_date(CJS_Runtime* pRuntime,
                                            v8::Local<v8::Value> vp) {
-  return setPropertyInternal(pRuntime, vp, "CreationDate");
+  // Read-only.
+  return CJS_Result::Success();
 }
 
 CJS_Result CJS_Document::get_creator(CJS_Runtime* pRuntime) {
@@ -768,7 +751,8 @@ CJS_Result CJS_Document::get_creator(CJS_Runtime* pRuntime) {
 
 CJS_Result CJS_Document::set_creator(CJS_Runtime* pRuntime,
                                      v8::Local<v8::Value> vp) {
-  return setPropertyInternal(pRuntime, vp, "Creator");
+  // Read-only.
+  return CJS_Result::Success();
 }
 
 CJS_Result CJS_Document::get_delay(CJS_Runtime* pRuntime) {
@@ -806,7 +790,8 @@ CJS_Result CJS_Document::get_keywords(CJS_Runtime* pRuntime) {
 
 CJS_Result CJS_Document::set_keywords(CJS_Runtime* pRuntime,
                                       v8::Local<v8::Value> vp) {
-  return setPropertyInternal(pRuntime, vp, "Keywords");
+  // Read-only.
+  return CJS_Result::Success();
 }
 
 CJS_Result CJS_Document::get_mod_date(CJS_Runtime* pRuntime) {
@@ -815,7 +800,8 @@ CJS_Result CJS_Document::get_mod_date(CJS_Runtime* pRuntime) {
 
 CJS_Result CJS_Document::set_mod_date(CJS_Runtime* pRuntime,
                                       v8::Local<v8::Value> vp) {
-  return setPropertyInternal(pRuntime, vp, "ModDate");
+  // Read-only.
+  return CJS_Result::Success();
 }
 
 CJS_Result CJS_Document::get_producer(CJS_Runtime* pRuntime) {
@@ -824,7 +810,8 @@ CJS_Result CJS_Document::get_producer(CJS_Runtime* pRuntime) {
 
 CJS_Result CJS_Document::set_producer(CJS_Runtime* pRuntime,
                                       v8::Local<v8::Value> vp) {
-  return setPropertyInternal(pRuntime, vp, "Producer");
+  // Read-only.
+  return CJS_Result::Success();
 }
 
 CJS_Result CJS_Document::get_subject(CJS_Runtime* pRuntime) {
@@ -833,7 +820,8 @@ CJS_Result CJS_Document::get_subject(CJS_Runtime* pRuntime) {
 
 CJS_Result CJS_Document::set_subject(CJS_Runtime* pRuntime,
                                      v8::Local<v8::Value> vp) {
-  return setPropertyInternal(pRuntime, vp, "Subject");
+  // Read-only.
+  return CJS_Result::Success();
 }
 
 CJS_Result CJS_Document::get_title(CJS_Runtime* pRuntime) {
@@ -844,9 +832,8 @@ CJS_Result CJS_Document::get_title(CJS_Runtime* pRuntime) {
 
 CJS_Result CJS_Document::set_title(CJS_Runtime* pRuntime,
                                    v8::Local<v8::Value> vp) {
-  if (!m_pFormFillEnv)
-    return CJS_Result::Failure(JSMessage::kBadObjectError);
-  return setPropertyInternal(pRuntime, vp, "Title");
+  // Read-only.
+  return CJS_Result::Success();
 }
 
 CJS_Result CJS_Document::get_num_pages(CJS_Runtime* pRuntime) {
@@ -1024,9 +1011,9 @@ CJS_Result CJS_Document::getAnnot(
   if (!pPageView)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CPDFSDK_AnnotIteration annotIteration(pPageView, false);
+  CPDFSDK_AnnotForwardIteration annot_iteration(pPageView);
   CPDFSDK_BAAnnot* pSDKBAAnnot = nullptr;
-  for (const auto& pSDKAnnotCur : annotIteration) {
+  for (const auto& pSDKAnnotCur : annot_iteration) {
     auto* pBAAnnot = pSDKAnnotCur->AsBAAnnot();
     if (pBAAnnot && pBAAnnot->GetAnnotName() == swAnnotName) {
       pSDKBAAnnot = pBAAnnot;
@@ -1066,8 +1053,8 @@ CJS_Result CJS_Document::getAnnots(
     if (!pPageView)
       return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-    CPDFSDK_AnnotIteration annotIteration(pPageView, false);
-    for (const auto& pSDKAnnotCur : annotIteration) {
+    CPDFSDK_AnnotForwardIteration annot_iteration(pPageView);
+    for (const auto& pSDKAnnotCur : annot_iteration) {
       if (!pSDKAnnotCur)
         return CJS_Result::Failure(JSMessage::kBadObjectError);
 
@@ -1408,8 +1395,7 @@ CJS_Result CJS_Document::gotoNamedDest(
   }
   pRuntime->BeginBlock();
   m_pFormFillEnv->DoGoToAction(dest.GetDestPageIndex(pDocument),
-                               dest.GetZoomMode(), scrollPositionArray.data(),
-                               scrollPositionArray.size());
+                               dest.GetZoomMode(), scrollPositionArray);
   pRuntime->EndBlock();
   return CJS_Result::Success();
 }

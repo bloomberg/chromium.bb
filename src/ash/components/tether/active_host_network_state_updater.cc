@@ -4,13 +4,13 @@
 
 #include "ash/components/tether/active_host_network_state_updater.h"
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/tether/active_host.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/network/network_state_handler.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -31,7 +31,9 @@ void ActiveHostNetworkStateUpdater::OnActiveHostChanged(
     case ActiveHost::ActiveHostStatus::DISCONNECTED: {
       DCHECK(!change_info.old_active_host_id.empty());
       DCHECK(!change_info.old_tether_network_guid.empty());
-      DCHECK(!change_info.old_wifi_network_guid.empty());
+      DCHECK(change_info.old_status == ActiveHost::ActiveHostStatus::CONNECTING
+                 ? change_info.old_wifi_network_guid.empty()
+                 : !change_info.old_wifi_network_guid.empty());
 
       PA_LOG(INFO) << "Active host: Disconnected from active host with ID "
                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
@@ -39,7 +41,10 @@ void ActiveHostNetworkStateUpdater::OnActiveHostChanged(
                    << ". Old tether network GUID: "
                    << change_info.old_tether_network_guid
                    << ", old Wi-Fi network GUID: "
-                   << change_info.old_wifi_network_guid;
+                   << (change_info.old_status ==
+                               ActiveHost::ActiveHostStatus::CONNECTING
+                           ? "<never set>"
+                           : change_info.old_wifi_network_guid);
 
       network_state_handler_->SetTetherNetworkStateDisconnected(
           change_info.old_tether_network_guid);
@@ -80,4 +85,4 @@ void ActiveHostNetworkStateUpdater::OnActiveHostChanged(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

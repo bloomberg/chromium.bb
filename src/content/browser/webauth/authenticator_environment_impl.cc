@@ -9,12 +9,14 @@
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "content/browser/webauth/virtual_authenticator.h"
 #include "content/browser/webauth/virtual_discovery.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "device/fido/fido_discovery_factory.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "device/fido/win/webauthn_api.h"
 #endif
 
@@ -36,15 +38,19 @@ AuthenticatorEnvironmentImpl::AuthenticatorEnvironmentImpl() = default;
 AuthenticatorEnvironmentImpl::~AuthenticatorEnvironmentImpl() = default;
 
 void AuthenticatorEnvironmentImpl::EnableVirtualAuthenticatorFor(
-    FrameTreeNode* node) {
+    FrameTreeNode* node,
+    bool enable_ui) {
   // Do not create a new virtual authenticator if there is one already defined
   // for the |node|.
   if (base::Contains(virtual_authenticator_managers_, node))
     return;
 
   node->AddObserver(this);
-  virtual_authenticator_managers_[node] =
+  auto virtual_authenticator_manager =
       std::make_unique<VirtualAuthenticatorManagerImpl>();
+  virtual_authenticator_manager->enable_ui(enable_ui);
+  virtual_authenticator_managers_[node] =
+      std::move(virtual_authenticator_manager);
 }
 
 void AuthenticatorEnvironmentImpl::DisableVirtualAuthenticatorFor(
@@ -101,7 +107,7 @@ AuthenticatorEnvironmentImpl::MaybeGetDiscoveryFactoryTestOverride() {
   return replaced_discovery_factory_.get();
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 device::WinWebAuthnApi* AuthenticatorEnvironmentImpl::win_webauthn_api() const {
   return win_webauthn_api_for_testing_ ? win_webauthn_api_for_testing_.get()
                                        : device::WinWebAuthnApi::GetDefault();

@@ -40,12 +40,11 @@ constexpr int kOverlapFromToolbar = 4;
 // On the top side, background is drawn on top of the top-content separator and
 // some units of background inside the toolbar (or bookmarks bar) itself.
 // Subtract both of those to not get visually-excessive padding.
-constexpr gfx::Insets kBorderInsets(kBorderThickness -
-                                        views::Separator::kThickness -
-                                        kOverlapFromToolbar,
-                                    kBorderThickness,
-                                    kBorderThickness,
-                                    kBorderThickness);
+constexpr auto kBorderInsets = gfx::Insets::TLBR(
+    kBorderThickness - views::Separator::kThickness - kOverlapFromToolbar,
+    kBorderThickness,
+    kBorderThickness,
+    kBorderThickness);
 
 // This border paints the toolbar color around the side panel content and draws
 // a roundrect viewport around the side panel content.
@@ -72,8 +71,8 @@ class SidePanelBorder : public views::Border {
         view.GetLayoutProvider()->GetCornerRadiusMetric(
             views::Emphasis::kMedium, view.GetContentsBounds().size()) *
         dsf;
-    gfx::Insets insets_in_pixels =
-        gfx::ToFlooredInsets(gfx::ConvertInsetsToPixels(GetInsets(), dsf));
+    gfx::InsetsF insets_in_pixels(
+        gfx::ToFlooredInsets(gfx::ConvertInsetsToPixels(GetInsets(), dsf)));
     scaled_bounds.Inset(insets_in_pixels);
     SkRRect rect = SkRRect::MakeRectXY(gfx::RectFToSkRect(scaled_bounds),
                                        corner_radius, corner_radius);
@@ -98,12 +97,9 @@ class SidePanelBorder : public views::Border {
     const float stroke_thickness = views::Separator::kThickness * dsf;
 
     cc::PaintFlags flags;
-    const ui::ThemeProvider* const theme_provider = view.GetThemeProvider();
     flags.setStrokeWidth(stroke_thickness);
-    flags.setColor(color_utils::GetResultingPaintColor(
-        theme_provider->GetColor(
-            ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
-        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+    flags.setColor(view.GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR));
     flags.setStyle(cc::PaintFlags::kStroke_Style);
     flags.setAntiAlias(true);
 
@@ -117,7 +113,8 @@ class SidePanelBorder : public views::Border {
     // This additional inset matches the growth inside BorderView::Layout()
     // below to let us paint on top of the toolbar separator. This additional
     // inset is outside the SidePanel itself, but not outside the BorderView.
-    return kBorderInsets + gfx::Insets(views::Separator::kThickness, 0, 0, 0);
+    return kBorderInsets +
+           gfx::Insets::TLBR(views::Separator::kThickness, 0, 0, 0);
   }
   gfx::Size GetMinimumSize() const override {
     return gfx::Size(GetInsets().width(), GetInsets().height());
@@ -140,7 +137,7 @@ class BorderView : public views::View {
     // Let BorderView grow slightly taller so that it overlaps the divider into
     // the toolbar or bookmarks bar above it.
     gfx::Rect bounds = parent()->GetLocalBounds();
-    bounds.Inset(gfx::Insets(-views::Separator::kThickness, 0, 0, 0));
+    bounds.Inset(gfx::Insets::TLBR(-views::Separator::kThickness, 0, 0, 0));
 
     SetBoundsRect(bounds);
   }
@@ -163,7 +160,7 @@ SidePanel::SidePanel(BrowserView* browser_view)
   constexpr int kDefaultWidth = 320;
   SetPanelWidth(kDefaultWidth + kBorderInsets.width());
 
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(kBorderInsets)));
+  SetBorder(views::CreateEmptyBorder(kBorderInsets));
 
   AddObserver(this);
 }

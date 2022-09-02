@@ -17,6 +17,7 @@
 #include "libANGLE/renderer/metal/RenderTargetMtl.h"
 #include "libANGLE/renderer/metal/SurfaceMtl.h"
 #include "libANGLE/renderer/metal/mtl_command_buffer.h"
+#include "libANGLE/renderer/metal/mtl_context_device.h"
 #include "libANGLE/renderer/metal/mtl_resources.h"
 namespace rx
 {
@@ -154,6 +155,7 @@ class TextureMtl : public TextureImpl
                                         bool fixedSampleLocations) override;
 
     angle::Result initializeContents(const gl::Context *context,
+                                     GLenum binding,
                                      const gl::ImageIndex &imageIndex) override;
 
     // The texture's data is initially initialized and stored in an array
@@ -345,8 +347,6 @@ class TextureMtl : public TextureImpl
 
     GLuint mCurrentBaseLevel = 0;
     GLuint mCurrentMaxLevel  = 1000;
-
-    bool mIsPow2 = false;
 };
 
 }  // namespace rx

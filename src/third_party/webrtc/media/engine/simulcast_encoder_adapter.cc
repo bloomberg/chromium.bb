@@ -108,14 +108,14 @@ int VerifyCodec(const webrtc::VideoCodec* inst) {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-bool StreamQualityCompare(const webrtc::SpatialLayer& a,
-                          const webrtc::SpatialLayer& b) {
+bool StreamQualityCompare(const webrtc::SimulcastStream& a,
+                          const webrtc::SimulcastStream& b) {
   return std::tie(a.height, a.width, a.maxBitrate, a.maxFramerate) <
          std::tie(b.height, b.width, b.maxBitrate, b.maxFramerate);
 }
 
 void GetLowestAndHighestQualityStreamIndixes(
-    rtc::ArrayView<webrtc::SpatialLayer> streams,
+    rtc::ArrayView<webrtc::SimulcastStream> streams,
     int* lowest_quality_stream_idx,
     int* highest_quality_stream_idx) {
   const auto lowest_highest_quality_streams =
@@ -328,8 +328,8 @@ int SimulcastEncoderAdapter::InitEncode(
   int highest_quality_stream_idx = 0;
   if (!is_legacy_singlecast) {
     GetLowestAndHighestQualityStreamIndixes(
-        rtc::ArrayView<SpatialLayer>(codec_.simulcastStream,
-                                     total_streams_count_),
+        rtc::ArrayView<SimulcastStream>(codec_.simulcastStream,
+                                        total_streams_count_),
         &lowest_quality_stream_idx, &highest_quality_stream_idx);
   }
 
@@ -762,7 +762,7 @@ webrtc::VideoCodec SimulcastEncoderAdapter::MakeStreamCodec(
     bool is_lowest_quality_stream,
     bool is_highest_quality_stream) {
   webrtc::VideoCodec codec_params = codec;
-  const SpatialLayer& stream_params = codec.simulcastStream[stream_idx];
+  const SimulcastStream& stream_params = codec.simulcastStream[stream_idx];
 
   codec_params.numberOfSimulcastStreams = 0;
   codec_params.width = stream_params.width;
@@ -791,8 +791,8 @@ webrtc::VideoCodec SimulcastEncoderAdapter::MakeStreamCodec(
       // kComplexityHigher, which maps to cpu_used = -4.
       int pixels_per_frame = codec_params.width * codec_params.height;
       if (pixels_per_frame < 352 * 288) {
-        codec_params.VP8()->complexity =
-            webrtc::VideoCodecComplexity::kComplexityHigher;
+        codec_params.SetVideoEncoderComplexity(
+            webrtc::VideoCodecComplexity::kComplexityHigher);
       }
       // Turn off denoising for all streams but the highest resolution.
       codec_params.VP8()->denoisingOn = false;
@@ -824,7 +824,9 @@ void SimulcastEncoderAdapter::OverrideFromFieldTrial(
         info->apply_alignment_to_all_simulcast_layers ||
         encoder_info_override_.apply_alignment_to_all_simulcast_layers();
   }
-  if (!encoder_info_override_.resolution_bitrate_limits().empty()) {
+  // Override resolution bitrate limits unless they're set already.
+  if (info->resolution_bitrate_limits.empty() &&
+      !encoder_info_override_.resolution_bitrate_limits().empty()) {
     info->resolution_bitrate_limits =
         encoder_info_override_.resolution_bitrate_limits();
   }

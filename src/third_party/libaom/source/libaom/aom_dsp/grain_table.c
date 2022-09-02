@@ -191,11 +191,14 @@ static void grain_table_entry_write(FILE *file,
   }
 }
 
+// TODO(https://crbug.com/aomedia/3228): Update this function to return an
+// integer status.
 void aom_film_grain_table_append(aom_film_grain_table_t *t, int64_t time_stamp,
                                  int64_t end_time,
                                  const aom_film_grain_t *grain) {
   if (!t->tail || memcmp(grain, &t->tail->params, sizeof(*grain))) {
     aom_film_grain_table_entry_t *new_tail = aom_malloc(sizeof(*new_tail));
+    if (!new_tail) return;
     memset(new_tail, 0, sizeof(*new_tail));
     if (t->tail) t->tail->next = new_tail;
     if (!t->head) t->head = new_tail;
@@ -245,6 +248,7 @@ int aom_film_grain_table_lookup(aom_film_grain_table_t *t, int64_t time_stamp,
       } else {
         aom_film_grain_table_entry_t *new_entry =
             aom_malloc(sizeof(*new_entry));
+        if (!new_entry) return 0;
         new_entry->next = entry->next;
         new_entry->start_time = end_time;
         new_entry->end_time = entry->end_time;
@@ -256,7 +260,10 @@ int aom_film_grain_table_lookup(aom_film_grain_table_t *t, int64_t time_stamp,
       // If segments aren't aligned, delete from the beginning of subsequent
       // segments
       if (end_time > entry_end_time) {
-        aom_film_grain_table_lookup(t, entry_end_time, end_time, 1, 0);
+        // Ignoring the return value here is safe since we're erasing from the
+        // beginning of subsequent entries.
+        aom_film_grain_table_lookup(t, entry_end_time, end_time, /*erase=*/1,
+                                    NULL);
       }
       return 1;
     }
@@ -290,6 +297,11 @@ aom_codec_err_t aom_film_grain_table_read(
   aom_film_grain_table_entry_t *prev_entry = NULL;
   while (!feof(file)) {
     aom_film_grain_table_entry_t *entry = aom_malloc(sizeof(*entry));
+    if (!entry) {
+      aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,
+                         "Unable to allocate grain table entry");
+      break;
+    }
     memset(entry, 0, sizeof(*entry));
     grain_table_entry_read(file, error_info, entry);
     entry->next = NULL;

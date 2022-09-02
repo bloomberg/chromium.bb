@@ -16,16 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdatomic.h>
-
-#include "attributes.h"
-#include "cpu.h"
-#include "cpu_internal.h"
 #include "config.h"
-#include "opt.h"
-#include "common.h"
 
 #if HAVE_SCHED_GETAFFINITY
 #ifndef _GNU_SOURCE
@@ -33,6 +24,17 @@
 #endif
 #include <sched.h>
 #endif
+
+#include <stddef.h>
+#include <stdint.h>
+#include <stdatomic.h>
+
+#include "attributes.h"
+#include "cpu.h"
+#include "cpu_internal.h"
+#include "opt.h"
+#include "common.h"
+
 #if HAVE_GETPROCESSAFFINITYMASK || HAVE_WINRT
 #include <windows.h>
 #endif
@@ -62,6 +64,8 @@ static int get_cpu_flags(void)
         return ff_get_cpu_flags_ppc();
     if (ARCH_X86)
         return ff_get_cpu_flags_x86();
+    if (ARCH_LOONGARCH)
+        return ff_get_cpu_flags_loongarch();
     return 0;
 }
 
@@ -135,6 +139,8 @@ int av_parse_cpu_caps(unsigned *flags, const char *s)
         { "cmov",     NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_CMOV     },    .unit = "flags" },
         { "aesni",    NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_AESNI    },    .unit = "flags" },
         { "avx512"  , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_AVX512   },    .unit = "flags" },
+        { "avx512icl",  NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_AVX512ICL   }, .unit = "flags" },
+        { "slowgather", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_SLOW_GATHER }, .unit = "flags" },
 
 #define CPU_FLAG_P2 AV_CPU_FLAG_CMOV | AV_CPU_FLAG_MMX
 #define CPU_FLAG_P3 CPU_FLAG_P2 | AV_CPU_FLAG_MMX2 | AV_CPU_FLAG_SSE
@@ -168,6 +174,9 @@ int av_parse_cpu_caps(unsigned *flags, const char *s)
 #elif ARCH_MIPS
         { "mmi",      NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_MMI      },    .unit = "flags" },
         { "msa",      NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_MSA      },    .unit = "flags" },
+#elif ARCH_LOONGARCH
+        { "lsx",      NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_LSX      },    .unit = "flags" },
+        { "lasx",     NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_CPU_FLAG_LASX     },    .unit = "flags" },
 #endif
         { NULL },
     };
@@ -253,6 +262,8 @@ size_t av_cpu_max_align(void)
         return ff_get_cpu_max_align_ppc();
     if (ARCH_X86)
         return ff_get_cpu_max_align_x86();
+    if (ARCH_LOONGARCH)
+        return ff_get_cpu_max_align_loongarch();
 
     return 8;
 }

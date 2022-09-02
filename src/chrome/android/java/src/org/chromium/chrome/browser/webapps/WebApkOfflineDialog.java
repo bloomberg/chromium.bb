@@ -10,7 +10,6 @@ import android.content.DialogInterface;
 
 import androidx.appcompat.app.AlertDialog;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -31,12 +30,12 @@ public class WebApkOfflineDialog {
      */
     public void show(final Activity activity, String errorMessage) {
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog);
+                new AlertDialog.Builder(activity, R.style.ThemeOverlay_BrowserUI_AlertDialog);
         builder.setMessage(errorMessage)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ApiCompatibilityUtils.finishAndRemoveTask(activity);
+                        activity.finishAndRemoveTask();
                     }
                 });
 

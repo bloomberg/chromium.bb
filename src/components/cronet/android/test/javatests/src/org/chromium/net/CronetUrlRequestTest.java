@@ -777,11 +777,11 @@ public class CronetUrlRequestTest {
         assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
     }
 
-    @DisabledTest(message = "crbug.com/738183")
     @Test
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
+    @DisabledTest(message = "crbug.com/1315367")
     public void testMockReadDataAsyncError() throws Exception {
         final int arbitraryNetError = -5;
         TestUrlRequestCallback callback =
@@ -2462,8 +2462,7 @@ public class CronetUrlRequestTest {
      */
     public void testManyRequests() throws Exception {
         String url = NativeTestServer.getMultiRedirectURL();
-        // Jelly Bean has a 2000 limit on global references, crbug.com/922656.
-        final int numRequests = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ? 2000 : 1500;
+        final int numRequests = 2000;
         TestUrlRequestCallback callbacks[] = new TestUrlRequestCallback[numRequests];
         UrlRequest requests[] = new UrlRequest[numRequests];
         for (int i = 0; i < numRequests; i++) {

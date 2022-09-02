@@ -7,14 +7,23 @@
 
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/public/cpp/system/toast_catalog.h"
+#include "ash/public/cpp/system/toast_data.h"
+#include "ash/public/cpp/system/toast_manager.h"
 #include "ash/webui/eche_app_ui/feature_status.h"
 #include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
 #include "base/callback.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
+namespace gfx {
+class Image;
+}  //  namespace gfx
+
 namespace ash {
 namespace eche_app {
+
+constexpr char kEcheAppToastId[] = "eche_app_toast_id";
 
 // A helper class for launching/closing the app or show a notification.
 class LaunchAppHelper {
@@ -33,9 +42,6 @@ class LaunchAppHelper {
     enum class NotificationType {
       // Remind users to enable screen lock.
       kScreenLock = 0,
-
-      // Remind user to enable the apps streaming setting from remote devices.
-      kDisabledByPhone = 1,
     };
 
     NotificationInfo(
@@ -62,7 +68,8 @@ class LaunchAppHelper {
       const absl::optional<int64_t>& notification_id,
       const std::string& package_name,
       const std::u16string& visible_name,
-      const absl::optional<int64_t>& user_id)>;
+      const absl::optional<int64_t>& user_id,
+      const gfx::Image& icon)>;
 
   using CloseEcheAppFunction = base::RepeatingCallback<void()>;
 
@@ -74,10 +81,6 @@ class LaunchAppHelper {
     // Launching app is not allowed because it requires the user to enable the
     // screen lock.
     kDisabledByScreenLock = 1,
-
-    // Launching app is not allowed because it requires the user enable apps
-    // streaming setting from remote devices.
-    kDisabledByPhone = 2,
   };
 
   LaunchAppHelper(phonehub::PhoneHubManager* phone_hub_manager,
@@ -91,7 +94,7 @@ class LaunchAppHelper {
 
   // Exposed virtual for testing.
   virtual LaunchAppHelper::AppLaunchProhibitedReason
-  checkAppLaunchProhibitedReason(FeatureStatus status) const;
+  CheckAppLaunchProhibitedReason(FeatureStatus status) const;
 
   // Exposed virtual for testing.
   // The notification could be generated from webUI or native layer, for the
@@ -100,10 +103,15 @@ class LaunchAppHelper {
                                 const absl::optional<std::u16string>& message,
                                 std::unique_ptr<NotificationInfo> info) const;
 
+  // Exposed virtual for testing.
+  // Show the native toast message.
+  virtual void ShowToast(const std::u16string& text) const;
+
   void LaunchEcheApp(absl::optional<int64_t> notification_id,
                      const std::string& package_name,
                      const std::u16string& visible_name,
-                     const absl::optional<int64_t>& user_id) const;
+                     const absl::optional<int64_t>& user_id,
+                     const gfx::Image& icon) const;
 
   void CloseEcheApp() const;
 
@@ -114,9 +122,6 @@ class LaunchAppHelper {
   CloseEcheAppFunction close_eche_app_function_;
   LaunchNotificationFunction launch_notification_function_;
 };
-
-std::ostream& operator<<(std::ostream& stream,
-                         LaunchAppHelper::AppLaunchProhibitedReason reasons);
 
 }  // namespace eche_app
 }  // namespace ash

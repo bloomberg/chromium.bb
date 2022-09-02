@@ -25,6 +25,7 @@
 #endif
 #include "vpx_ports/mem.h"
 #include "vpx_ports/system_state.h"
+#include "vpx_ports/vpx_once.h"
 #include "vpx_ports/vpx_timer.h"
 #if CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
 #include "vpx_util/vpx_debug_util.h"
@@ -585,8 +586,6 @@ static void apply_roi_map(VP9_COMP *cpi) {
   int ref_frame[8];
   int internal_delta_q[MAX_SEGMENTS];
   int i;
-  static const int flag_list[4] = { 0, VP9_LAST_FLAG, VP9_GOLD_FLAG,
-                                    VP9_ALT_FLAG };
 
   // TODO(jianj): Investigate why ROI not working in speed < 5 or in non
   // realtime mode.
@@ -618,7 +617,7 @@ static void apply_roi_map(VP9_COMP *cpi) {
     }
     if (skip[i] != 0) {
       vp9_enable_segfeature(seg, i, SEG_LVL_SKIP);
-      vp9_set_segdata(seg, i, SEG_LVL_SKIP, skip[i]);
+      vp9_set_segdata(seg, i, SEG_LVL_SKIP, 0);
     }
     if (ref_frame[i] >= 0) {
       int valid_ref = 1;
@@ -627,7 +626,7 @@ static void apply_roi_map(VP9_COMP *cpi) {
         valid_ref = 0;
       // If GOLDEN is selected, make sure it's set as reference.
       if (ref_frame[i] == GOLDEN_FRAME &&
-          !(cpi->ref_frame_flags & flag_list[ref_frame[i]])) {
+          !(cpi->ref_frame_flags & ref_frame_to_flag(ref_frame[i]))) {
         valid_ref = 0;
       }
       // GOLDEN was updated in previous encoded frame, so GOLDEN and LAST are
@@ -929,23 +928,20 @@ static void vp9_swap_mi_and_prev_mi(VP9_COMMON *cm) {
   cm->prev_mi_grid_visible = cm->prev_mi_grid_base + cm->mi_stride + 1;
 }
 
-void vp9_initialize_enc(void) {
-  static volatile int init_done = 0;
-
-  if (!init_done) {
-    vp9_rtcd();
-    vpx_dsp_rtcd();
-    vpx_scale_rtcd();
-    vp9_init_intra_predictors();
-    vp9_init_me_luts();
-    vp9_rc_init_minq_luts();
-    vp9_entropy_mv_init();
+static void initialize_enc(void) {
+  vp9_rtcd();
+  vpx_dsp_rtcd();
+  vpx_scale_rtcd();
+  vp9_init_intra_predictors();
+  vp9_init_me_luts();
+  vp9_rc_init_minq_luts();
+  vp9_entropy_mv_init();
 #if !CONFIG_REALTIME_ONLY
-    vp9_temporal_filter_init();
+  vp9_temporal_filter_init();
 #endif
-    init_done = 1;
-  }
 }
+
+void vp9_initialize_enc(void) { once(initialize_enc); }
 
 static void dealloc_compressor_data(VP9_COMP *cpi) {
   VP9_COMMON *const cm = &cpi->common;
@@ -1383,21 +1379,22 @@ static void alloc_util_frame_buffers(VP9_COMP *cpi) {
 #endif
 }
 
-static int alloc_context_buffers_ext(VP9_COMP *cpi) {
+static void alloc_context_buffers_ext(VP9_COMP *cpi) {
   VP9_COMMON *cm = &cpi->common;
   int mi_size = cm->mi_cols * cm->mi_rows;
 
-  cpi->mbmi_ext_base = vpx_calloc(mi_size, sizeof(*cpi->mbmi_ext_base));
-  if (!cpi->mbmi_ext_base) return 1;
-
-  return 0;
+  CHECK_MEM_ERROR(cm, cpi->mbmi_ext_base,
+                  vpx_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
 }
 
 static void alloc_compressor_data(VP9_COMP *cpi) {
   VP9_COMMON *cm = &cpi->common;
   int sb_rows;
 
-  vp9_alloc_context_buffers(cm, cm->width, cm->height);
+  if (vp9_alloc_context_buffers(cm, cm->width, cm->height)) {
+    vpx_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+                       "Failed to allocate context buffers");
+  }
 
   alloc_context_buffers_ext(cpi);
 
@@ -1573,15 +1570,13 @@ void vp9_set_rc_buffer_sizes(VP9_COMP *cpi) {
 }
 
 #if CONFIG_VP9_HIGHBITDEPTH
-// TODO(angiebird): make sdx8f available for highbitdepth if needed
 #define HIGHBD_BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX4DF) \
   cpi->fn_ptr[BT].sdf = SDF;                             \
   cpi->fn_ptr[BT].sdaf = SDAF;                           \
   cpi->fn_ptr[BT].vf = VF;                               \
   cpi->fn_ptr[BT].svf = SVF;                             \
   cpi->fn_ptr[BT].svaf = SVAF;                           \
-  cpi->fn_ptr[BT].sdx4df = SDX4DF;                       \
-  cpi->fn_ptr[BT].sdx8f = NULL;
+  cpi->fn_ptr[BT].sdx4df = SDX4DF;
 
 #define MAKE_BFP_SAD_WRAPPER(fnname)                                           \
   static unsigned int fnname##_bits8(const uint8_t *src_ptr,                   \
@@ -2223,6 +2218,7 @@ static INLINE void vpx_img_chroma_subsampling(vpx_img_fmt_t fmt,
   switch (fmt) {
     case VPX_IMG_FMT_I420:
     case VPX_IMG_FMT_YV12:
+    case VPX_IMG_FMT_NV12:
     case VPX_IMG_FMT_I422:
     case VPX_IMG_FMT_I42016:
     case VPX_IMG_FMT_I42216: *subsampling_x = 1; break;
@@ -2233,6 +2229,7 @@ static INLINE void vpx_img_chroma_subsampling(vpx_img_fmt_t fmt,
     case VPX_IMG_FMT_I420:
     case VPX_IMG_FMT_I440:
     case VPX_IMG_FMT_YV12:
+    case VPX_IMG_FMT_NV12:
     case VPX_IMG_FMT_I42016:
     case VPX_IMG_FMT_I44016: *subsampling_y = 1; break;
     default: *subsampling_y = 0; break;
@@ -2563,67 +2560,61 @@ VP9_COMP *vp9_create_compressor(const VP9EncoderConfig *oxcf,
   CHECK_MEM_ERROR(cm, cpi->source_diff_var, vpx_calloc(cm->MBs, sizeof(diff)));
   cpi->source_var_thresh = 0;
   cpi->frames_till_next_var_check = 0;
-#define BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX4DF, SDX8F) \
-  cpi->fn_ptr[BT].sdf = SDF;                             \
-  cpi->fn_ptr[BT].sdaf = SDAF;                           \
-  cpi->fn_ptr[BT].vf = VF;                               \
-  cpi->fn_ptr[BT].svf = SVF;                             \
-  cpi->fn_ptr[BT].svaf = SVAF;                           \
-  cpi->fn_ptr[BT].sdx4df = SDX4DF;                       \
-  cpi->fn_ptr[BT].sdx8f = SDX8F;
+#define BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX4DF) \
+  cpi->fn_ptr[BT].sdf = SDF;                      \
+  cpi->fn_ptr[BT].sdaf = SDAF;                    \
+  cpi->fn_ptr[BT].vf = VF;                        \
+  cpi->fn_ptr[BT].svf = SVF;                      \
+  cpi->fn_ptr[BT].svaf = SVAF;                    \
+  cpi->fn_ptr[BT].sdx4df = SDX4DF;
 
-  // TODO(angiebird): make sdx8f available for every block size
   BFP(BLOCK_32X16, vpx_sad32x16, vpx_sad32x16_avg, vpx_variance32x16,
       vpx_sub_pixel_variance32x16, vpx_sub_pixel_avg_variance32x16,
-      vpx_sad32x16x4d, NULL)
+      vpx_sad32x16x4d)
 
   BFP(BLOCK_16X32, vpx_sad16x32, vpx_sad16x32_avg, vpx_variance16x32,
       vpx_sub_pixel_variance16x32, vpx_sub_pixel_avg_variance16x32,
-      vpx_sad16x32x4d, NULL)
+      vpx_sad16x32x4d)
 
   BFP(BLOCK_64X32, vpx_sad64x32, vpx_sad64x32_avg, vpx_variance64x32,
       vpx_sub_pixel_variance64x32, vpx_sub_pixel_avg_variance64x32,
-      vpx_sad64x32x4d, NULL)
+      vpx_sad64x32x4d)
 
   BFP(BLOCK_32X64, vpx_sad32x64, vpx_sad32x64_avg, vpx_variance32x64,
       vpx_sub_pixel_variance32x64, vpx_sub_pixel_avg_variance32x64,
-      vpx_sad32x64x4d, NULL)
+      vpx_sad32x64x4d)
 
   BFP(BLOCK_32X32, vpx_sad32x32, vpx_sad32x32_avg, vpx_variance32x32,
       vpx_sub_pixel_variance32x32, vpx_sub_pixel_avg_variance32x32,
-      vpx_sad32x32x4d, vpx_sad32x32x8)
+      vpx_sad32x32x4d)
 
   BFP(BLOCK_64X64, vpx_sad64x64, vpx_sad64x64_avg, vpx_variance64x64,
       vpx_sub_pixel_variance64x64, vpx_sub_pixel_avg_variance64x64,
-      vpx_sad64x64x4d, NULL)
+      vpx_sad64x64x4d)
 
   BFP(BLOCK_16X16, vpx_sad16x16, vpx_sad16x16_avg, vpx_variance16x16,
       vpx_sub_pixel_variance16x16, vpx_sub_pixel_avg_variance16x16,
-      vpx_sad16x16x4d, vpx_sad16x16x8)
+      vpx_sad16x16x4d)
 
   BFP(BLOCK_16X8, vpx_sad16x8, vpx_sad16x8_avg, vpx_variance16x8,
       vpx_sub_pixel_variance16x8, vpx_sub_pixel_avg_variance16x8,
-      vpx_sad16x8x4d, vpx_sad16x8x8)
+      vpx_sad16x8x4d)
 
   BFP(BLOCK_8X16, vpx_sad8x16, vpx_sad8x16_avg, vpx_variance8x16,
       vpx_sub_pixel_variance8x16, vpx_sub_pixel_avg_variance8x16,
-      vpx_sad8x16x4d, vpx_sad8x16x8)
+      vpx_sad8x16x4d)
 
   BFP(BLOCK_8X8, vpx_sad8x8, vpx_sad8x8_avg, vpx_variance8x8,
-      vpx_sub_pixel_variance8x8, vpx_sub_pixel_avg_variance8x8, vpx_sad8x8x4d,
-      vpx_sad8x8x8)
+      vpx_sub_pixel_variance8x8, vpx_sub_pixel_avg_variance8x8, vpx_sad8x8x4d)
 
   BFP(BLOCK_8X4, vpx_sad8x4, vpx_sad8x4_avg, vpx_variance8x4,
-      vpx_sub_pixel_variance8x4, vpx_sub_pixel_avg_variance8x4, vpx_sad8x4x4d,
-      NULL)
+      vpx_sub_pixel_variance8x4, vpx_sub_pixel_avg_variance8x4, vpx_sad8x4x4d)
 
   BFP(BLOCK_4X8, vpx_sad4x8, vpx_sad4x8_avg, vpx_variance4x8,
-      vpx_sub_pixel_variance4x8, vpx_sub_pixel_avg_variance4x8, vpx_sad4x8x4d,
-      NULL)
+      vpx_sub_pixel_variance4x8, vpx_sub_pixel_avg_variance4x8, vpx_sad4x8x4d)
 
   BFP(BLOCK_4X4, vpx_sad4x4, vpx_sad4x4_avg, vpx_variance4x4,
-      vpx_sub_pixel_variance4x4, vpx_sub_pixel_avg_variance4x4, vpx_sad4x4x4d,
-      vpx_sad4x4x8)
+      vpx_sub_pixel_variance4x4, vpx_sub_pixel_avg_variance4x4, vpx_sad4x4x4d)
 
 #if CONFIG_VP9_HIGHBITDEPTH
   highbd_set_var_fns(cpi);
@@ -3693,9 +3684,9 @@ static void set_size_dependent_vars(VP9_COMP *cpi, int *q, int *bottom_index,
       case 6: l = 150; break;
     }
     if (!cpi->common.postproc_state.limits) {
-      cpi->common.postproc_state.limits =
-          vpx_calloc(cpi->un_scaled_source->y_width,
-                     sizeof(*cpi->common.postproc_state.limits));
+      CHECK_MEM_ERROR(cm, cpi->common.postproc_state.limits,
+                      vpx_calloc(cpi->un_scaled_source->y_width,
+                                 sizeof(*cpi->common.postproc_state.limits)));
     }
     vp9_denoise(&cpi->common, cpi->Source, cpi->Source, l,
                 cpi->common.postproc_state.limits);
@@ -4118,11 +4109,22 @@ static int encode_without_recode_loop(VP9_COMP *cpi, size_t *size,
     vp9_alt_ref_aq_setup_map(cpi->alt_ref_aq, cpi);
   } else {
 #endif
-    if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
+    // If ROI is enabled and skip feature is used for segmentation, apply cyclic
+    // refresh but not apply ROI for skip for the first 20 frames (defined by
+    // FRAMES_NO_SKIPPING_AFTER_KEY) after key frame to improve quality.
+    if (cpi->roi.enabled && !frame_is_intra_only(cm)) {
+      if (cpi->roi.skip[BACKGROUND_SEG_SKIP_ID]) {
+        if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
+          vp9_cyclic_refresh_setup(cpi);
+        if (cpi->rc.frames_since_key > FRAMES_NO_SKIPPING_AFTER_KEY)
+          apply_roi_map(cpi);
+      } else {
+        apply_roi_map(cpi);
+      }
+    } else if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
       vp9_cyclic_refresh_setup(cpi);
-    } else if (cpi->roi.enabled && !frame_is_intra_only(cm)) {
-      apply_roi_map(cpi);
     }
+
 #if !CONFIG_REALTIME_ONLY
   }
 #endif
@@ -6611,19 +6613,22 @@ static void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
   int pix_num = 1 << num_pels_log2_lookup[txsize_to_bsize[tx_size]];
   const int shift = tx_size == TX_32X32 ? 0 : 2;
 
+  // skip block condition should be handled before this is called.
+  assert(!x->skip_block);
+
 #if CONFIG_VP9_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    vp9_highbd_quantize_fp_32x32(coeff, pix_num, x->skip_block, p->round_fp,
-                                 p->quant_fp, qcoeff, dqcoeff, pd->dequant,
-                                 &eob, scan_order->scan, scan_order->iscan);
+    vp9_highbd_quantize_fp_32x32(coeff, pix_num, p->round_fp, p->quant_fp,
+                                 qcoeff, dqcoeff, pd->dequant, &eob,
+                                 scan_order->scan, scan_order->iscan);
   } else {
-    vp9_quantize_fp_32x32(coeff, pix_num, x->skip_block, p->round_fp,
-                          p->quant_fp, qcoeff, dqcoeff, pd->dequant, &eob,
-                          scan_order->scan, scan_order->iscan);
+    vp9_quantize_fp_32x32(coeff, pix_num, p->round_fp, p->quant_fp, qcoeff,
+                          dqcoeff, pd->dequant, &eob, scan_order->scan,
+                          scan_order->iscan);
   }
 #else
-  vp9_quantize_fp_32x32(coeff, pix_num, x->skip_block, p->round_fp, p->quant_fp,
-                        qcoeff, dqcoeff, pd->dequant, &eob, scan_order->scan,
+  vp9_quantize_fp_32x32(coeff, pix_num, p->round_fp, p->quant_fp, qcoeff,
+                        dqcoeff, pd->dequant, &eob, scan_order->scan,
                         scan_order->iscan);
 #endif  // CONFIG_VP9_HIGHBITDEPTH
 

@@ -12,13 +12,16 @@
 
 class AccountId;
 
+namespace ash {
+class FakeAuthPolicyClient;
+}
+
 namespace base {
 class CommandLine;
 }  // namespace base
 
 namespace chromeos {
 class FakeSessionManagerClient;
-class FakeAuthPolicyClient;
 }  // namespace chromeos
 
 namespace policy {
@@ -37,7 +40,7 @@ class AffiliationTestHelper {
   // Directory accounts). The pointers must outlive this object.
   static AffiliationTestHelper CreateForActiveDirectory(
       chromeos::FakeSessionManagerClient* fake_session_manager_client,
-      chromeos::FakeAuthPolicyClient* fake_authpolicy_client);
+      ash::FakeAuthPolicyClient* fake_authpolicy_client);
 
   // Allow move construction, so the static constructors can be used despite
   // deleted constructors.
@@ -52,7 +55,7 @@ class AffiliationTestHelper {
   // some device policies and have device affiliation ID valid use |test_helper|
   // modified by this function.
   void SetDeviceAffiliationIDs(
-      policy::DevicePolicyCrosTestHelper* test_helper,
+      DevicePolicyCrosTestHelper* test_helper,
       const std::set<std::string>& device_affiliation_ids);
 
   // Sets user affiliation IDs to |user_affiliation_ids| in
@@ -60,7 +63,7 @@ class AffiliationTestHelper {
   // contains correct values of user affiliation IDs for future use. To add user
   // policies and have user affiliation IDs valid please use |user_policy|
   // modified by this function.
-  void SetUserAffiliationIDs(policy::UserPolicyBuilder* user_policy,
+  void SetUserAffiliationIDs(UserPolicyBuilder* user_policy,
                              const AccountId& user_account_id,
                              const std::set<std::string>& user_affiliation_ids);
 
@@ -87,7 +90,7 @@ class AffiliationTestHelper {
   AffiliationTestHelper(
       ManagementType management_type,
       chromeos::FakeSessionManagerClient* fake_session_manager_client,
-      chromeos::FakeAuthPolicyClient* fake_authpolicy_client);
+      ash::FakeAuthPolicyClient* fake_authpolicy_client);
 
   // ASSERTs on pointer validity.
   void CheckPreconditions();
@@ -95,7 +98,7 @@ class AffiliationTestHelper {
   ManagementType management_type_;
   chromeos::FakeSessionManagerClient*
       fake_session_manager_client_;                         // Not owned.
-  chromeos::FakeAuthPolicyClient* fake_authpolicy_client_;  // Not owned.
+  ash::FakeAuthPolicyClient* fake_authpolicy_client_;       // Not owned.
 };
 
 }  // namespace policy

@@ -57,7 +57,7 @@ If the test is crashing/timing out on a proper subset of the major platforms
 
 ```none
 // Crashes on Mac/Win only.  <http://crbug.com/2345>
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #define MAYBE_CrashingTest DISABLED_CrashingTest
 #else
 #define MAYBE_CrashingTest CrashingTest

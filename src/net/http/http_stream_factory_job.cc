@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
@@ -34,7 +35,6 @@
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
@@ -56,7 +56,7 @@
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/ssl_cert_request_info.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 #include "url/scheme_host_port.h"
 #include "url/url_constants.h"
 
@@ -90,8 +90,7 @@ base::Value NetLogHttpStreamJobParams(const NetLogSource& source,
   return dict;
 }
 
-// Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
-// stream.
+// Returns parameters associated with the ALPN protocol of a HTTP stream.
 base::Value NetLogHttpStreamProtoParams(NextProto negotiated_protocol) {
   base::Value dict(base::Value::Type::DICTIONARY);
 
@@ -125,14 +124,13 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
           base::BindRepeating(&Job::OnIOComplete, base::Unretained(this))),
       connection_(new ClientSocketHandle),
       session_(session),
-      next_state_(STATE_NONE),
       destination_(std::move(destination)),
       origin_url_(origin_url),
       is_websocket_(is_websocket),
-      try_websocket_over_http2_(is_websocket_ &&
-                                origin_url_.SchemeIs(url::kWssScheme) &&
-                                proxy_info_.is_direct() &&
-                                session_->params().enable_websocket_over_http2),
+      try_websocket_over_http2_(
+          is_websocket_ && origin_url_.SchemeIs(url::kWssScheme) &&
+          // TODO(https://crbug.com/1277306): Remove the proxy check.
+          proxy_info_.is_direct()),
       // Don't use IP connection pooling for HTTP over HTTPS proxies. It doesn't
       // get us much, and testing it is more effort than its worth.
       enable_ip_based_pooling_(
@@ -148,15 +146,7 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
           (ShouldForceQuic(session, destination_, proxy_info, using_ssl_))),
       quic_version_(quic_version),
       expect_spdy_(alternative_protocol == kProtoHTTP2 && !using_quic_),
-      using_spdy_(false),
-      should_reconsider_proxy_(false),
       quic_request_(session_->quic_stream_factory()),
-      expect_on_quic_host_resolution_(false),
-      using_existing_quic_session_(false),
-      establishing_tunnel_(false),
-      was_alpn_negotiated_(false),
-      negotiated_protocol_(kProtoUnknown),
-      num_streams_(0),
       pushed_stream_id_(kNoPushedStreamFound),
       spdy_session_key_(
           using_quic_ ? SpdySessionKey()
@@ -165,12 +155,12 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
                                           request_info_.privacy_mode,
                                           request_info_.socket_tag,
                                           request_info_.network_isolation_key,
-                                          request_info_.secure_dns_policy)),
-      stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
-      init_connection_already_resumed_(false) {
+                                          request_info_.secure_dns_policy)) {
   // Websocket `destination` schemes should be converted to HTTP(S).
-  DCHECK(base::LowerCaseEqualsASCII(destination_.scheme(), url::kHttpScheme) ||
-         base::LowerCaseEqualsASCII(destination_.scheme(), url::kHttpsScheme));
+  DCHECK(base::EqualsCaseInsensitiveASCII(destination_.scheme(),
+                                          url::kHttpScheme) ||
+         base::EqualsCaseInsensitiveASCII(destination_.scheme(),
+                                          url::kHttpsScheme));
 
   // This class is specific to a single `ProxyServer`, so `proxy_info_` must be
   // non-empty. Entries beyond the first are ignored. It should simply take a
@@ -309,6 +299,12 @@ void HttpStreamFactory::Job::SetPriority(RequestPriority priority) {
   // TODO(akalin): Maybe Propagate this to the preconnect state.
 }
 
+bool HttpStreamFactory::Job::HasAvailableSpdySession() const {
+  return !using_quic_ && CanUseExistingSpdySession() &&
+         session_->spdy_session_pool()->HasAvailableSession(spdy_session_key_,
+                                                            is_websocket_);
+}
+
 bool HttpStreamFactory::Job::was_alpn_negotiated() const {
   return was_alpn_negotiated_;
 }
@@ -319,14 +315,6 @@ NextProto HttpStreamFactory::Job::negotiated_protocol() const {
 
 bool HttpStreamFactory::Job::using_spdy() const {
   return using_spdy_;
-}
-
-const SSLConfig& HttpStreamFactory::Job::server_ssl_config() const {
-  return server_ssl_config_;
-}
-
-const SSLConfig& HttpStreamFactory::Job::proxy_ssl_config() const {
-  return proxy_ssl_config_;
 }
 
 const ProxyInfo& HttpStreamFactory::Job::proxy_info() const {
@@ -365,7 +353,8 @@ bool HttpStreamFactory::Job::ShouldForceQuic(
           base::Contains(quic_params->origins_to_force_quic_on,
                          HostPortPair::FromSchemeHostPort(destination))) &&
          proxy_info.is_direct() &&
-         base::LowerCaseEqualsASCII(destination.scheme(), url::kHttpsScheme);
+         base::EqualsCaseInsensitiveASCII(destination.scheme(),
+                                          url::kHttpsScheme);
 }
 
 // static
@@ -418,7 +407,7 @@ void HttpStreamFactory::Job::OnStreamReadyCallback() {
   DCHECK_NE(job_type_, PRECONNECT);
   DCHECK(!is_websocket_ || try_websocket_over_http2_);
 
-  MaybeCopyConnectionAttemptsFromSocketOrHandle();
+  MaybeCopyConnectionAttemptsFromHandle();
 
   delegate_->OnStreamReady(this, server_ssl_config_);
   // |this| may be deleted after this call.
@@ -429,7 +418,7 @@ void HttpStreamFactory::Job::OnWebSocketHandshakeStreamReadyCallback() {
   DCHECK_NE(job_type_, PRECONNECT);
   DCHECK(is_websocket_);
 
-  MaybeCopyConnectionAttemptsFromSocketOrHandle();
+  MaybeCopyConnectionAttemptsFromHandle();
 
   delegate_->OnWebSocketHandshakeStreamReady(
       this, server_ssl_config_, proxy_info_, std::move(websocket_stream_));
@@ -439,7 +428,7 @@ void HttpStreamFactory::Job::OnWebSocketHandshakeStreamReadyCallback() {
 void HttpStreamFactory::Job::OnBidirectionalStreamImplReadyCallback() {
   DCHECK(bidirectional_stream_impl_);
 
-  MaybeCopyConnectionAttemptsFromSocketOrHandle();
+  MaybeCopyConnectionAttemptsFromHandle();
 
   delegate_->OnBidirectionalStreamImplReady(this, server_ssl_config_,
                                             proxy_info_);
@@ -449,7 +438,7 @@ void HttpStreamFactory::Job::OnBidirectionalStreamImplReadyCallback() {
 void HttpStreamFactory::Job::OnStreamFailedCallback(int result) {
   DCHECK_NE(job_type_, PRECONNECT);
 
-  MaybeCopyConnectionAttemptsFromSocketOrHandle();
+  MaybeCopyConnectionAttemptsFromHandle();
 
   delegate_->OnStreamFailed(this, result, server_ssl_config_);
   // |this| may be deleted after this call.
@@ -461,7 +450,7 @@ void HttpStreamFactory::Job::OnCertificateErrorCallback(
   DCHECK_NE(job_type_, PRECONNECT);
   DCHECK(!spdy_session_request_);
 
-  MaybeCopyConnectionAttemptsFromSocketOrHandle();
+  MaybeCopyConnectionAttemptsFromHandle();
 
   delegate_->OnCertificateError(this, result, server_ssl_config_, ssl_info);
   // |this| may be deleted after this call.
@@ -728,6 +717,18 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     server_ssl_config_.renego_allowed_for_protos.push_back(kProtoHTTP11);
   }
 
+  server_ssl_config_.alpn_protos = session_->GetAlpnProtos();
+  proxy_ssl_config_.alpn_protos = session_->GetAlpnProtos();
+  server_ssl_config_.application_settings = session_->GetApplicationSettings();
+  proxy_ssl_config_.application_settings = session_->GetApplicationSettings();
+  server_ssl_config_.ignore_certificate_errors =
+      session_->params().ignore_certificate_errors;
+  proxy_ssl_config_.ignore_certificate_errors =
+      session_->params().ignore_certificate_errors;
+
+  // TODO(https://crbug.com/964642): Also enable 0-RTT for TLS proxies.
+  server_ssl_config_.early_data_enabled = session_->params().enable_early_data;
+
   if (using_quic_)
     return DoInitConnectionImplQuic();
 
@@ -816,11 +817,18 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     DCHECK(!is_websocket_);
     DCHECK(request_info_.socket_tag == SocketTag());
 
+    // The lifeime of the preconnect tasks is not controlled by |connection_|.
+    // It may outlives |this|. So we can't use |io_callback_| which holds
+    // base::Unretained(this).
+    auto callback =
+        base::BindOnce(&Job::OnIOComplete, ptr_factory_.GetWeakPtr());
+
     return PreconnectSocketsForHttpRequest(
         destination_, request_info_.load_flags, priority_, session_,
         proxy_info_, server_ssl_config_, proxy_ssl_config_,
         request_info_.privacy_mode, request_info_.network_isolation_key,
-        request_info_.secure_dns_policy, net_log_, num_streams_);
+        request_info_.secure_dns_policy, net_log_, num_streams_,
+        std::move(callback));
   }
 
   ClientSocketPool::ProxyAuthCallback proxy_auth_callback =
@@ -829,8 +837,17 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
   if (is_websocket_) {
     DCHECK(request_info_.socket_tag == SocketTag());
     DCHECK_EQ(SecureDnsPolicy::kAllow, request_info_.secure_dns_policy);
+    // Only offer HTTP/1.1 for WebSockets. Although RFC 8441 defines WebSockets
+    // over HTTP/2, a single WSS/HTTPS origin may support HTTP over HTTP/2
+    // without supporting WebSockets over HTTP/2. Offering HTTP/2 for a fresh
+    // connection would break such origins.
+    //
+    // However, still offer HTTP/1.1 rather than skipping ALPN entirely. While
+    // this will not change the application protocol (HTTP/1.1 is default), it
+    // provides hardens against cross-protocol attacks and allows for the False
+    // Start (RFC 7918) optimization.
     SSLConfig websocket_server_ssl_config = server_ssl_config_;
-    websocket_server_ssl_config.alpn_protos.clear();
+    websocket_server_ssl_config.alpn_protos = {kProtoHTTP11};
     return InitSocketHandleForWebSocketRequest(
         destination_, request_info_.load_flags, priority_, session_,
         proxy_info_, websocket_server_ssl_config, proxy_ssl_config_,
@@ -868,7 +885,8 @@ int HttpStreamFactory::Job::DoInitConnectionImplQuic() {
       std::move(destination), quic_version_, request_info_.privacy_mode,
       priority_, request_info_.socket_tag, request_info_.network_isolation_key,
       request_info_.secure_dns_policy, proxy_info_.is_direct(),
-      ssl_config->GetCertVerifyFlags(), url, net_log_, &net_error_details_,
+      /*require_dns_https_alpn=*/false, ssl_config->GetCertVerifyFlags(), url,
+      net_log_, &net_error_details_,
       base::BindOnce(&Job::OnFailedOnDefaultNetwork, ptr_factory_.GetWeakPtr()),
       io_callback_);
   if (rv == OK) {
@@ -912,56 +930,51 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
 
   resolve_error_info_ = connection_->resolve_error_info();
 
-  // |result| may be the result of any of the stacked pools. The following
-  // logic is used when determining how to interpret an error.
-  // If |result| < 0:
-  //   and connection_->socket() != NULL, then the SSL handshake ran and it
-  //     is a potentially recoverable error.
-  //   and connection_->socket == NULL and connection_->is_ssl_error() is true,
-  //     then the SSL handshake ran with an unrecoverable error.
-  //   otherwise, the error came from one of the other pools.
-  bool ssl_started = using_ssl_ && (result == OK || connection_->socket() ||
-                                    connection_->is_ssl_error());
-
-  if (ssl_started && result == OK) {
+  // Determine the protocol (HTTP/1.1, HTTP/2, or HTTP/3). This covers both the
+  // origin and some proxy cases. First, if the URL is HTTPS (or WSS), we may
+  // negotiate HTTP/2 or HTTP/3 with the origin. Second, non-tunneled requests
+  // (i.e. HTTP URLs) through an HTTPS or QUIC proxy work by sending the request
+  // to the proxy directly. In that case, this logic also handles the proxy's
+  // negotiated protocol. HTTPS requests are always tunneled, so at most one of
+  // these applies.
+  //
+  // Tunneled requests may also negotiate ALPN at the proxy, but
+  // HttpProxyConnectJob handles ALPN. The resulting StreamSocket will not
+  // report an ALPN protocol.
+  if (result == OK) {
     if (using_quic_) {
-      was_alpn_negotiated_ = true;
-      negotiated_protocol_ = kProtoQUIC;
-    } else {
-      if (connection_->socket()->WasAlpnNegotiated()) {
+      // TODO(davidben): Record these values consistently between QUIC and TCP
+      // below. In the QUIC case, we only record it for origin connections. In
+      // the TCP case, we also record it for non-tunneled, proxied requests.
+      if (using_ssl_) {
         was_alpn_negotiated_ = true;
-        negotiated_protocol_ = connection_->socket()->GetNegotiatedProtocol();
-        net_log_.AddEvent(NetLogEventType::HTTP_STREAM_REQUEST_PROTO, [&] {
-          return NetLogHttpStreamProtoParams(negotiated_protocol_);
-        });
-        if (negotiated_protocol_ == kProtoHTTP2) {
-          if (is_websocket_) {
-            // WebSocket is not supported over a fresh HTTP/2 connection.
-            return ERR_NOT_IMPLEMENTED;
-          }
-
-          using_spdy_ = true;
-        }
+        negotiated_protocol_ = kProtoQUIC;
       }
-    }
-  } else if (proxy_info_.is_secure_http_like() && connection_->socket() &&
-             result == OK) {
-    ProxyClientSocket* proxy_socket =
-        static_cast<ProxyClientSocket*>(connection_->socket());
-    // http://crbug.com/642354
-    if (!proxy_socket->IsConnected())
-      return ERR_CONNECTION_CLOSED;
-    if (proxy_socket->IsUsingSpdy()) {
+    } else if (connection_->socket()->WasAlpnNegotiated()) {
+      // Only connections that use TLS can negotiate ALPN.
+      DCHECK(using_ssl_ || proxy_info_.is_secure_http_like());
       was_alpn_negotiated_ = true;
-      negotiated_protocol_ = proxy_socket->GetProxyNegotiatedProtocol();
-      using_spdy_ = true;
+      negotiated_protocol_ = connection_->socket()->GetNegotiatedProtocol();
+      net_log_.AddEvent(NetLogEventType::HTTP_STREAM_REQUEST_PROTO, [&] {
+        return NetLogHttpStreamProtoParams(negotiated_protocol_);
+      });
+      if (negotiated_protocol_ == kProtoHTTP2) {
+        if (is_websocket_) {
+          // WebSocket is not supported over a fresh HTTP/2 connection. This
+          // should not be reachable. For the origin, we do not request HTTP/2
+          // on fresh WebSockets connections, because not all HTTP/2 servers
+          // implement RFC 8441. For proxies, WebSockets are always tunneled.
+          //
+          // TODO(davidben): This isn't a CHECK() because, previously, it was
+          // reachable in https://crbug.com/828865. However, if reachable, it
+          // means a bug in the socket pools. The socket pools have since been
+          // cleaned up, so this may no longer be reachable. Restore the CHECK
+          // and see if this is still needed.
+          return ERR_NOT_IMPLEMENTED;
+        }
 
-      // Using unencrypted websockets over an H2 proxy is not currently
-      // supported.
-      // TODO(mmenke): Should this case be treated like
-      // |try_websocket_over_http2_|, or should we force HTTP/1.1?
-      if (is_websocket_ && !try_websocket_over_http2_)
-        return ERR_NOT_IMPLEMENTED;
+        using_spdy_ = true;
+      }
     }
   }
 
@@ -971,6 +984,16 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
   if (expect_spdy_ && !using_spdy_)
     return ERR_ALPN_NEGOTIATION_FAILED;
 
+  // |result| may be the result of any of the stacked protocols. The following
+  // logic is used when determining how to interpret an error.
+  // If |result| < 0:
+  //   and connection_->socket() != NULL, then the SSL handshake ran and it
+  //     is a potentially recoverable error.
+  //   and connection_->socket == NULL and connection_->is_ssl_error() is true,
+  //     then the SSL handshake ran with an unrecoverable error.
+  //   otherwise, the error came from one of the other protocols.
+  bool ssl_started = using_ssl_ && (result == OK || connection_->socket() ||
+                                    connection_->is_ssl_error());
   if (!ssl_started && result < 0 && (expect_spdy_ || using_quic_))
     return result;
 
@@ -1051,8 +1074,8 @@ int HttpStreamFactory::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
     DCHECK(delegate_->websocket_handshake_stream_create_helper());
 
     if (!try_websocket_over_http2_) {
-      // Plaintext WebSocket is not supported over HTTP/2 proxy,
-      // see https://crbug.com/684681.
+      // TODO(davidben): Is this reachable? We shouldn't receive a SpdySession
+      // if not requested.
       return ERR_NOT_IMPLEMENTED;
     }
 
@@ -1222,21 +1245,12 @@ int HttpStreamFactory::Job::ReconsiderProxyAfterError(int error) {
   return error;
 }
 
-// If the connection succeeds, failed connection attempts leading up to the
-// success will be returned via the successfully connected socket. If the
-// connection fails, failed connection attempts will be returned via the
-// ClientSocketHandle. Check whether a socket was returned and copy the
-// connection attempts from the proper place.
-void HttpStreamFactory::Job::MaybeCopyConnectionAttemptsFromSocketOrHandle() {
+void HttpStreamFactory::Job::MaybeCopyConnectionAttemptsFromHandle() {
   if (!connection_)
     return;
 
-  ConnectionAttempts socket_attempts = connection_->connection_attempts();
-  if (connection_->socket()) {
-    connection_->socket()->GetConnectionAttempts(&socket_attempts);
-  }
-
-  delegate_->AddConnectionAttemptsToRequest(this, socket_attempts);
+  delegate_->AddConnectionAttemptsToRequest(this,
+                                            connection_->connection_attempts());
 }
 
 HttpStreamFactory::JobFactory::JobFactory() = default;

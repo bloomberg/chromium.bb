@@ -13,6 +13,7 @@
 #include <string.h>
 
 #define LIST_EXTENSIONS(OP)                            \
+    OP(ANDROID_extension_pack_es31a)                   \
     OP(ANGLE_base_vertex_base_instance_shader_builtin) \
     OP(ANGLE_multi_draw)                               \
     OP(ANGLE_texture_multisample)                      \
@@ -29,6 +30,7 @@
     OP(EXT_shader_io_blocks)                           \
     OP(EXT_gpu_shader5)                                \
     OP(EXT_primitive_bounding_box)                     \
+    OP(OES_primitive_bounding_box)                     \
     OP(EXT_shader_framebuffer_fetch)                   \
     OP(EXT_shader_framebuffer_fetch_non_coherent)      \
     OP(EXT_shader_non_constant_global_initializers)    \
@@ -38,6 +40,7 @@
     OP(EXT_texture_buffer)                             \
     OP(EXT_texture_cube_map_array)                     \
     OP(EXT_YUV_target)                                 \
+    OP(KHR_blend_equation_advanced)                    \
     OP(NV_EGL_stream_consumer_external)                \
     OP(NV_shader_framebuffer_fetch)                    \
     OP(NV_shader_noperspective_interpolation)          \

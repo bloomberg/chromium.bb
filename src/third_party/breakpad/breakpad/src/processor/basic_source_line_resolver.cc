@@ -319,6 +319,7 @@ void BasicSourceLineResolver::Module::LookupAddress(
       address >= function_base && address - function_base < function_size) {
     frame->function_name = func->name;
     frame->function_base = frame->module->base_address() + function_base;
+    frame->is_multiple = func->is_multiple;
 
     linked_ptr<Line> line;
     MemAddr line_base;
@@ -341,6 +342,7 @@ void BasicSourceLineResolver::Module::LookupAddress(
              (!func.get() || public_address > function_base)) {
     frame->function_name = public_symbol->name;
     frame->function_base = frame->module->base_address() + public_address;
+    frame->is_multiple = public_symbol->is_multiple;
   }
 }
 

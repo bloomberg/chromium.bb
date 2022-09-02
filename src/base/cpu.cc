@@ -14,11 +14,11 @@
 #include <sstream>
 #include <utility>
 
-#include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
-    defined(OS_AIX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_AIX)
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/notreached.h"
@@ -31,7 +31,7 @@
 #endif
 
 #if defined(ARCH_CPU_ARM_FAMILY) && \
-    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
+    (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 #include <asm/hwcap.h>
 #include <sys/auxv.h>
 #include "base/files/file_util.h"
@@ -40,9 +40,12 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
-// Temporary definitions until a new hwcap.h is pulled in.
+// Temporary definitions until a new hwcap.h is pulled in everywhere.
+// https://crbug.com/1265965
+#ifndef HWCAP2_MTE
 #define HWCAP2_MTE (1 << 18)
 #define HWCAP2_BTI (1 << 17)
+#endif
 
 struct ProcCpuInfo {
   std::string brand;
@@ -151,7 +154,7 @@ uint64_t xgetbv(uint32_t xcr) {
 #endif  // ARCH_CPU_X86_FAMILY
 
 #if defined(ARCH_CPU_ARM_FAMILY) && \
-    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
+    (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 StringPairs::const_iterator FindFirstProcCpuKey(const StringPairs& pairs,
                                                 StringPiece key) {
   return ranges::find_if(pairs, [key](const StringPairs::value_type& pair) {
@@ -215,8 +218,8 @@ const ProcCpuInfo& ParseProcCpu() {
 
   return *info;
 }
-#endif  // defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) ||
-        // defined(OS_LINUX) || defined(OS_CHROMEOS))
+#endif  // defined(ARCH_CPU_ARM_FAMILY) && (BUILDFLAG(IS_ANDROID) ||
+        // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 
 }  // namespace
 
@@ -240,7 +243,7 @@ void CPU::Initialize(bool require_branding) {
   int num_ids = cpu_info[0];
   std::swap(cpu_info[2], cpu_info[3]);
   static constexpr size_t kVendorNameSize = 3 * sizeof(cpu_info[1]);
-  static_assert(kVendorNameSize < base::size(cpu_string),
+  static_assert(kVendorNameSize < std::size(cpu_string),
                 "cpu_string too small");
   memcpy(cpu_string, &cpu_info[1], kVendorNameSize);
   cpu_string[kVendorNameSize] = '\0';
@@ -276,7 +279,7 @@ void CPU::Initialize(bool require_branding) {
     // This is checking for any hypervisor. Hypervisors may choose not to
     // announce themselves. Hypervisors trap CPUID and sometimes return
     // different results to underlying hardware.
-    is_running_in_vm_ = (cpu_info[2] & 0x80000000) != 0;
+    is_running_in_vm_ = (static_cast<uint32_t>(cpu_info[2]) & 0x80000000) != 0;
 
     // AVX instructions will generate an illegal instruction exception unless
     //   a) they are supported by the CPU,
@@ -299,20 +302,21 @@ void CPU::Initialize(bool require_branding) {
   }
 
   // Get the brand string of the cpu.
-  __cpuid(cpu_info, 0x80000000);
-  const int max_parameter = cpu_info[0];
+  __cpuid(cpu_info, static_cast<int>(0x80000000));
+  const uint32_t max_parameter = static_cast<uint32_t>(cpu_info[0]);
 
-  static constexpr int kParameterStart = 0x80000002;
-  static constexpr int kParameterEnd = 0x80000004;
-  static constexpr int kParameterSize = kParameterEnd - kParameterStart + 1;
-  static_assert(kParameterSize * sizeof(cpu_info) + 1 == base::size(cpu_string),
+  static constexpr uint32_t kParameterStart = 0x80000002;
+  static constexpr uint32_t kParameterEnd = 0x80000004;
+  static constexpr uint32_t kParameterSize =
+      kParameterEnd - kParameterStart + 1;
+  static_assert(kParameterSize * sizeof(cpu_info) + 1 == std::size(cpu_string),
                 "cpu_string has wrong size");
 
   if (max_parameter >= kParameterEnd) {
     size_t i = 0;
-    for (int parameter = kParameterStart; parameter <= kParameterEnd;
+    for (uint32_t parameter = kParameterStart; parameter <= kParameterEnd;
          ++parameter) {
-      __cpuid(cpu_info, parameter);
+      __cpuid(cpu_info, static_cast<int>(parameter));
       memcpy(&cpu_string[i], cpu_info, sizeof(cpu_info));
       i += sizeof(cpu_info);
     }
@@ -320,9 +324,11 @@ void CPU::Initialize(bool require_branding) {
     cpu_brand_ = cpu_string;
   }
 
-  static constexpr int kParameterContainingNonStopTimeStampCounter = 0x80000007;
+  static constexpr uint32_t kParameterContainingNonStopTimeStampCounter =
+      0x80000007;
   if (max_parameter >= kParameterContainingNonStopTimeStampCounter) {
-    __cpuid(cpu_info, kParameterContainingNonStopTimeStampCounter);
+    __cpuid(cpu_info,
+            static_cast<int>(kParameterContainingNonStopTimeStampCounter));
     has_non_stop_time_stamp_counter_ = (cpu_info[3] & (1 << 8)) != 0;
   }
 
@@ -343,7 +349,7 @@ void CPU::Initialize(bool require_branding) {
     }
   }
 #elif defined(ARCH_CPU_ARM_FAMILY)
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (require_branding) {
     const ProcCpuInfo& info = ParseProcCpu();
     cpu_brand_ = info.brand;
@@ -358,7 +364,7 @@ void CPU::Initialize(bool require_branding) {
   has_bti_ = hwcap2 & HWCAP2_BTI;
 #endif
 
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   // Windows makes high-resolution thread timing information available in
   // user-space.
   has_non_stop_time_stamp_counter_ = true;
@@ -366,6 +372,7 @@ void CPU::Initialize(bool require_branding) {
 #endif
 }
 
+#if defined(ARCH_CPU_X86_FAMILY)
 CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
   if (has_avx2()) return AVX2;
   if (has_fma3()) return FMA3;
@@ -378,9 +385,10 @@ CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
   if (has_sse()) return SSE;
   return PENTIUM;
 }
+#endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
-  defined(OS_AIX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_AIX)
 namespace {
 
 constexpr char kTimeInStatePath[] =
@@ -635,8 +643,8 @@ bool CPU::GetCumulativeCoreIdleTimes(CoreIdleTimes& idle_times) {
 
   return success;
 }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) ||
-        // defined(OS_AIX)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_AIX)
 
 const CPU& CPU::GetInstanceNoAllocation() {
   static const base::NoDestructor<const CPU> cpu(CPU(false));

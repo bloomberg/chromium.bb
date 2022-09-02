@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/time/time.h"
 #include "ios/web/public/favicon/favicon_status.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/referrer.h"
@@ -49,8 +50,8 @@ class NavigationItemImpl : public web::NavigationItem {
   const std::u16string& GetTitleForDisplay() const override;
   void SetTransitionType(ui::PageTransition transition_type) override;
   ui::PageTransition GetTransitionType() const override;
-  const FaviconStatus& GetFavicon() const override;
-  FaviconStatus& GetFavicon() override;
+  const FaviconStatus& GetFaviconStatus() const override;
+  void SetFaviconStatus(const FaviconStatus& favicon_status) override;
   const SSLStatus& GetSSL() const override;
   SSLStatus& GetSSL() override;
   void SetTimestamp(base::Time timestamp) override;
@@ -135,7 +136,7 @@ class NavigationItemImpl : public web::NavigationItem {
   std::u16string title_;
   PageDisplayState page_display_state_;
   ui::PageTransition transition_type_;
-  FaviconStatus favicon_;
+  FaviconStatus favicon_status_;
   SSLStatus ssl_;
   base::Time timestamp_;
   UserAgentType user_agent_type_;

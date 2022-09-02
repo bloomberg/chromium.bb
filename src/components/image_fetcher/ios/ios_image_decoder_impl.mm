@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #import "base/ios/ios_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -38,6 +37,7 @@ class IOSImageDecoderImpl : public ImageDecoder {
   // (http://crbug/697596).
   void DecodeImage(const std::string& image_data,
                    const gfx::Size& desired_image_frame_size,
+                   data_decoder::DataDecoder* data_decoder,
                    ImageDecodedCallback callback) override;
 
  private:
@@ -63,6 +63,7 @@ IOSImageDecoderImpl::~IOSImageDecoderImpl() {}
 
 void IOSImageDecoderImpl::DecodeImage(const std::string& image_data,
                                       const gfx::Size& desired_image_frame_size,
+                                      data_decoder::DataDecoder* data_decoder,
                                       ImageDecodedCallback callback) {
   // Convert the |image_data| std::string to an NSData buffer.
   // The data is copied as it may have to outlive the caller in

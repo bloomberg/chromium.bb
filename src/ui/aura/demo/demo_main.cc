@@ -42,7 +42,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/display/win/dpi.h"
 #endif
 
@@ -90,7 +90,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
     // Fill with a non-solid color so that the compositor will exercise its
     // texture upload path.
     while (!r.IsEmpty()) {
-      r.Inset(2, 2);
+      r.Inset(2);
       recorder.canvas()->FillRect(r, color_, SkBlendMode::kXor);
     }
   }
@@ -169,9 +169,9 @@ int DemoMain() {
   ui::OzonePlatform::InitializeForUI(params);
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
-  gl::init::InitializeGLOneOff();
+  gl::init::InitializeGLOneOff(/*system_device_id=*/0);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   display::win::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
@@ -188,8 +188,7 @@ int DemoMain() {
   host_frame_sink_manager.SetLocalManager(&frame_sink_manager);
   frame_sink_manager.SetLocalClient(&host_frame_sink_manager);
   auto context_factory = std::make_unique<ui::InProcessContextFactory>(
-      &host_frame_sink_manager, &frame_sink_manager);
-  context_factory->set_use_test_surface(false);
+      &host_frame_sink_manager, &frame_sink_manager, /*output_to_window=*/true);
 
   base::PowerMonitor::Initialize(
       std::make_unique<base::PowerMonitorDeviceSource>());

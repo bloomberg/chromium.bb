@@ -5,14 +5,17 @@
  * found in the LICENSE file.
  */
 
-#include "include/private/SkSLStatement.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/sksl/SkSLOperator.h"
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/analysis/SkSLProgramVisitor.h"
-#include "src/sksl/ir/SkSLDoStatement.h"
-#include "src/sksl/ir/SkSLForStatement.h"
-#include "src/sksl/ir/SkSLFunctionDeclaration.h"
-#include "src/sksl/ir/SkSLIfStatement.h"
-#include "src/sksl/ir/SkSLSwitchStatement.h"
+#include "src/sksl/ir/SkSLBinaryExpression.h"
+#include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLVariable.h"
+#include "src/sksl/ir/SkSLVariableReference.h"
+
+#include <set>
 
 namespace SkSL {
 
@@ -46,8 +49,14 @@ public:
                 return !fLoopIndices || fLoopIndices->find(v) == fLoopIndices->end();
             }
 
-            // ... expressions composed of both of the above
+            // ... not a sequence expression (skia:13311)...
             case Expression::Kind::kBinary:
+                if (e.as<BinaryExpression>().getOperator().kind() == Operator::Kind::COMMA) {
+                    return true;
+                }
+                [[fallthrough]];
+
+            // ... expressions composed of both of the above
             case Expression::Kind::kConstructorArray:
             case Expression::Kind::kConstructorArrayCast:
             case Expression::Kind::kConstructorCompound:
@@ -80,7 +89,6 @@ public:
             case Expression::Kind::kExternalFunctionReference:
             case Expression::Kind::kMethodReference:
             case Expression::Kind::kTypeReference:
-            case Expression::Kind::kCodeString:
                 return true;
 
             default:

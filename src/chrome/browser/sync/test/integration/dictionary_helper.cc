@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
 
-#include <algorithm>
 #include <set>
 
 #include "base/format_macros.h"
@@ -48,8 +47,9 @@ SpellcheckCustomDictionary* GetDictionary(int index) {
 }
 
 void LoadDictionary(SpellcheckCustomDictionary* dictionary) {
-  if (dictionary->IsLoaded())
+  if (dictionary->IsLoaded()) {
     return;
+  }
   base::RunLoop run_loop;
   DictionaryLoadObserver observer(
       content::GetDeferredQuitTaskForRunLoop(&run_loop));

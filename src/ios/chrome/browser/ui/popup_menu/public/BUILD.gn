@@ -31,12 +31,12 @@ source_set("popup_menu_ui") {
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/image_util",
+    "//ios/chrome/browser/ui/popup_menu:metrics_protocols",
     "//ios/chrome/browser/ui/popup_menu/cells",
     "//ios/chrome/browser/ui/popup_menu/overflow_menu:feature_flags",
     "//ios/chrome/browser/ui/popup_menu/public/",
     "//ios/chrome/browser/ui/popup_menu/public/cells",
     "//ios/chrome/browser/ui/presenters",
-    "//ios/chrome/browser/ui/reading_list:features",
     "//ios/chrome/browser/ui/reading_list:reading_list_constants",
     "//ios/chrome/browser/ui/resources:menu_shadow",
     "//ios/chrome/browser/ui/table_view",
@@ -57,5 +57,17 @@ source_set("ui_constants") {
   sources = [
     "popup_menu_ui_constants.h",
     "popup_menu_ui_constants.mm",
+  ]
+}
+
+source_set("features") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/strings",
   ]
 }

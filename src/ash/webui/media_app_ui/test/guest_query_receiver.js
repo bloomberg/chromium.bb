@@ -134,7 +134,8 @@ const SIMPLE_TEST_QUERIES = {
     /**
      * @typedef {{
      *   acceptTypeKeys: !Array<string>,
-     *   explicitToken: (number|undefined)
+     *   explicitToken: (number|undefined),
+     *   singleFile: ?boolean,
      * }}
      */
     let Args;
@@ -144,7 +145,7 @@ const SIMPLE_TEST_QUERIES = {
       existingFile = {token: args.explicitToken};
     }
     await assertLastReceivedFileList().openFilesWithFilePicker(
-        args.acceptTypeKeys, existingFile);
+        args.acceptTypeKeys, existingFile, args.singleFile);
     return 'openFilesWithFilePicker resolved';
   },
 };
@@ -250,9 +251,6 @@ async function runTestQuery(data) {
     }
   } else if (data.getFileErrors) {
     result = assertLastReceivedFileList().files.map(file => file.error).join();
-  } else if (data.openFile) {
-    // Call open file on file list, simulating a user trying to open a new file.
-    await assertLastReceivedFileList().openFile();
   } else if (data.suppressCrashReports) {
     // TODO(b/172981864): Remove this once we stop triggering crash reports for
     // NotAFile errors.

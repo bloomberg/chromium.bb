@@ -19,7 +19,6 @@ namespace ash {
 namespace {
 
 constexpr int kPillButtonHeight = 32;
-constexpr int kPillButtonHorizontalSpacing = 16;
 constexpr int kPillButtonMinimumWidth = 56;
 constexpr int kIconSize = 20;
 constexpr int kIconPillButtonImageLabelSpacingDp = 8;
@@ -31,7 +30,7 @@ bool IsFloatingPillButton(PillButton::Type type) {
          type == PillButton::Type::kIconlessAccentFloating;
 }
 
-SkColor GetPillButtonBackgroundColor(PillButton::Type type) {
+SkColor GetDefaultBackgroundColor(PillButton::Type type) {
   AshColorProvider::ControlsLayerType color_id =
       AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive;
   switch (type) {
@@ -54,16 +53,16 @@ SkColor GetPillButtonBackgroundColor(PillButton::Type type) {
   return AshColorProvider::Get()->GetControlsLayerColor(color_id);
 }
 
-SkColor GetPillButtonTextColor(PillButton::Type type) {
+SkColor GetDefaultButtonTextColor(PillButton::Type type) {
   AshColorProvider::ContentLayerType color_id =
       AshColorProvider::ContentLayerType::kButtonLabelColor;
   switch (type) {
     case PillButton::Type::kIcon:
     case PillButton::Type::kIconless:
-    case PillButton::Type::kIconlessProminent:
     case PillButton::Type::kIconlessFloating:
       break;
     case PillButton::Type::kIconlessAlert:
+    case PillButton::Type::kIconlessProminent:
       color_id = AshColorProvider::ContentLayerType::kButtonLabelColorPrimary;
       break;
     case PillButton::Type::kIconlessAccent:
@@ -74,32 +73,27 @@ SkColor GetPillButtonTextColor(PillButton::Type type) {
   return AshColorProvider::Get()->GetContentLayerColor(color_id);
 }
 
-int GetPillButtonWidth(bool has_icon) {
-  int button_width = 2 * kPillButtonHorizontalSpacing;
-  if (has_icon)
-    button_width += (kIconSize + kIconPillButtonImageLabelSpacingDp);
-  return button_width;
-}
-
 }  // namespace
 
 PillButton::PillButton(PressedCallback callback,
                        const std::u16string& text,
                        PillButton::Type type,
                        const gfx::VectorIcon* icon,
+                       int horizontal_spacing,
                        bool use_light_colors,
                        bool rounded_highlight_path)
     : views::LabelButton(std::move(callback), text),
       type_(type),
       icon_(icon),
-      use_light_colors_(use_light_colors) {
+      use_light_colors_(use_light_colors),
+      horizontal_spacing_(horizontal_spacing) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   const int vertical_spacing =
       std::max(kPillButtonHeight - GetPreferredSize().height() / 2, 0);
   SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(vertical_spacing, kPillButtonHorizontalSpacing)));
+      gfx::Insets::VH(vertical_spacing, horizontal_spacing_)));
   label()->SetSubpixelRenderingEnabled(false);
   // TODO: Unify the font size, weight under ash/style as well.
   label()->SetFontList(views::Label::GetDefaultFontList().Derive(
@@ -116,7 +110,7 @@ PillButton::PillButton(PressedCallback callback,
   }
   if (!IsFloatingPillButton(type_)) {
     SetBackground(views::CreateRoundedRectBackground(
-        GetPillButtonBackgroundColor(type), kPillButtonHeight / 2.f));
+        GetDefaultBackgroundColor(type), kPillButtonHeight / 2.f));
   }
   SetTooltipText(text);
 }
@@ -124,9 +118,12 @@ PillButton::PillButton(PressedCallback callback,
 PillButton::~PillButton() = default;
 
 gfx::Size PillButton::CalculatePreferredSize() const {
-  gfx::Size size(label()->GetPreferredSize().width() +
-                     GetPillButtonWidth(type_ == PillButton::Type::kIcon),
-                 kPillButtonHeight);
+  int button_width =
+      2 * horizontal_spacing_ + label()->GetPreferredSize().width();
+  if (type_ == PillButton::Type::kIcon)
+    button_width += (kIconSize + kIconPillButtonImageLabelSpacingDp);
+
+  gfx::Size size(button_width, kPillButtonHeight);
   size.SetToMax(gfx::Size(kPillButtonMinimumWidth, kPillButtonHeight));
   return size;
 }
@@ -140,25 +137,32 @@ void PillButton::OnThemeChanged() {
 
   auto* color_provider = AshColorProvider::Get();
 
-  SkColor enabled_icon_color = color_provider->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kButtonIconColor);
-  SkColor enabled_text_color = GetPillButtonTextColor(type_);
+  SkColor enabled_icon_color =
+      icon_color_.value_or(color_provider->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kButtonIconColor));
+  SkColor enabled_text_color =
+      text_color_.value_or(GetDefaultButtonTextColor(type_));
   views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
-  if (!IsFloatingPillButton(type_))
-    background()->SetNativeControlColor(GetPillButtonBackgroundColor(type_));
+  SkColor background_color =
+      background_color_.value_or(GetDefaultBackgroundColor(type_));
+  if (background())
+    background()->SetNativeControlColor(background_color);
 
   // Override the colors to light mode if `use_light_colors_` is true when D/L
   // is not enabled.
   if (use_light_colors_ && !features::IsDarkLightModeEnabled()) {
     ScopedLightModeAsDefault scoped_light_mode_as_default;
-    enabled_icon_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kButtonIconColor);
-    enabled_text_color = GetPillButtonTextColor(type_);
+    enabled_icon_color =
+        icon_color_.value_or(color_provider->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kButtonIconColor));
+    enabled_text_color = text_color_.value_or(GetDefaultButtonTextColor(type_));
     views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
         AshColorProvider::ControlsLayerType::kFocusRingColor));
-    if (!IsFloatingPillButton(type_))
-      background()->SetNativeControlColor(GetPillButtonBackgroundColor(type_));
+    background_color =
+        background_color_.value_or(GetDefaultBackgroundColor(type_));
+    if (background())
+      background()->SetNativeControlColor(background_color);
   }
 
   if (type_ == PillButton::Type::kIcon) {
@@ -175,6 +179,35 @@ void PillButton::OnThemeChanged() {
   SetEnabledTextColors(enabled_text_color);
   SetTextColor(views::Button::STATE_DISABLED,
                AshColorProvider::GetDisabledColor(enabled_text_color));
+}
+
+void PillButton::SetBackgroundColor(const SkColor background_color) {
+  if (background_color_ == background_color)
+    return;
+
+  background_color_ = background_color;
+  DCHECK(background());
+  background()->SetNativeControlColor(background_color_.value());
+}
+
+void PillButton::SetButtonTextColor(const SkColor text_color) {
+  if (text_color_ == text_color)
+    return;
+
+  text_color_ = text_color;
+  OnThemeChanged();
+}
+
+void PillButton::SetIconColor(const SkColor icon_color) {
+  if (icon_color_ == icon_color)
+    return;
+
+  icon_color_ = icon_color;
+  OnThemeChanged();
+}
+
+void PillButton::SetUseDefaultLabelFont() {
+  label()->SetFontList(views::Label::GetDefaultFontList());
 }
 
 BEGIN_METADATA(PillButton, views::LabelButton)

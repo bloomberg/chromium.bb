@@ -10,10 +10,12 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_encode_options.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
@@ -108,7 +110,6 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
       } else if (IsWebGL()) {
         CreateCanvasResourceProviderWebGL();
       } else {
-        DCHECK(IsRenderingContext2D() || IsImageBitmapRenderingContext());
         CreateCanvasResourceProvider2D(hint);
       }
     }
@@ -218,7 +219,7 @@ void CanvasRenderingContextHost::CreateCanvasResourceProviderWebGL() {
 
 void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
     RasterModeHint hint) {
-  DCHECK(IsRenderingContext2D());
+  DCHECK(IsRenderingContext2D() || IsImageBitmapRenderingContext());
   base::WeakPtr<CanvasResourceDispatcher> dispatcher =
       GetOrCreateResourceDispatcher()
           ? GetOrCreateResourceDispatcher()->GetWeakPtr()
@@ -316,7 +317,8 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
 SkColorInfo CanvasRenderingContextHost::GetRenderingContextSkColorInfo() const {
   if (RenderingContext())
     return RenderingContext()->CanvasRenderingContextSkColorInfo();
-  return SkColorInfo(kN32_SkColorType, kPremul_SkAlphaType, nullptr);
+  return SkColorInfo(kN32_SkColorType, kPremul_SkAlphaType,
+                     SkColorSpace::MakeSRGB());
 }
 
 ScriptPromise CanvasRenderingContextHost::convertToBlob(
@@ -375,7 +377,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
     auto* execution_context = ExecutionContext::From(script_state);
     auto* async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
         image_bitmap, options, function_type, start_time, execution_context,
-        IdentifiabilityStudySettings::Get()->IsTypeAllowed(
+        IdentifiabilityStudySettings::Get()->ShouldSampleType(
             IdentifiableSurface::Type::kCanvasReadback)
             ? IdentifiabilityInputDigest(context)
             : 0,

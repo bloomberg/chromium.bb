@@ -14,10 +14,11 @@
 // Delegate of sync screen view controller.
 @protocol SyncScreenViewControllerDelegate <PromoStyleViewControllerDelegate>
 
-// Called when the user taps to see sync settings.
-- (void)showSyncSettings;
-
+// Adds consent string ID.
 - (void)addConsentStringID:(const int)stringID;
+
+// Logs scrollability metric on view appears.
+- (void)logScrollButtonVisible:(BOOL)scrollButtonVisible;
 
 @end
 

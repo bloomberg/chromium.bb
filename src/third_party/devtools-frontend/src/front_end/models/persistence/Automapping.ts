@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
-import * as i18n from '../../core/i18n/i18n.js';
+import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
@@ -13,22 +13,12 @@ import type {FileSystem} from './FileSystemWorkspaceBinding.js';
 import {FileSystemWorkspaceBinding} from './FileSystemWorkspaceBinding.js';
 import {PathEncoder, PersistenceImpl} from './PersistenceImpl.js';
 
-const UIStrings = {
-  /**
-  *@description Error message when attempting to create a binding from a malformed URI.
-  *@example {file://%E0%A4%A} PH1
-  */
-  theAttemptToBindSInTheWorkspace: 'The attempt to bind "{PH1}" in the workspace failed as this URI is malformed.',
-};
-const str_ = i18n.i18n.registerUIStrings('models/persistence/Automapping.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-
 export class Automapping {
   private readonly workspace: Workspace.Workspace.WorkspaceImpl;
   private readonly onStatusAdded: (arg0: AutomappingStatus) => Promise<void>;
   private readonly onStatusRemoved: (arg0: AutomappingStatus) => Promise<void>;
   private readonly statuses: Set<AutomappingStatus>;
-  private readonly fileSystemUISourceCodes: Map<string, Workspace.UISourceCode.UISourceCode>;
+  private readonly fileSystemUISourceCodes: FileSystemUISourceCodes;
   private readonly sweepThrottler: Common.Throttler.Throttler;
   private readonly sourceCodeToProcessingPromiseMap: WeakMap<Workspace.UISourceCode.UISourceCode, Promise<void>>;
   private readonly sourceCodeToAutoMappingStatusMap: WeakMap<Workspace.UISourceCode.UISourceCode, AutomappingStatus>;
@@ -47,7 +37,7 @@ export class Automapping {
     this.onStatusRemoved = onStatusRemoved;
     this.statuses = new Set();
 
-    this.fileSystemUISourceCodes = new Map();
+    this.fileSystemUISourceCodes = new FileSystemUISourceCodes();
     this.sweepThrottler = new Common.Throttler.Throttler(100);
 
     this.sourceCodeToProcessingPromiseMap = new WeakMap();
@@ -92,13 +82,13 @@ export class Automapping {
   }
 
   private scheduleSweep(): void {
-    this.sweepThrottler.schedule(sweepUnmapped.bind(this));
+    void this.sweepThrottler.schedule(sweepUnmapped.bind(this));
 
     function sweepUnmapped(this: Automapping): Promise<void> {
       const networkProjects = this.workspace.projectsForType(Workspace.Workspace.projectTypes.Network);
       for (const networkProject of networkProjects) {
         for (const uiSourceCode of networkProject.uiSourceCodes()) {
-          this.computeNetworkStatus(uiSourceCode);
+          void this.computeNetworkStatus(uiSourceCode);
         }
       }
       this.onSweepHappenedForTest();
@@ -144,10 +134,10 @@ export class Automapping {
         return;
       }
       this.filesIndex.addPath(uiSourceCode.url());
-      this.fileSystemUISourceCodes.set(uiSourceCode.url(), uiSourceCode);
+      this.fileSystemUISourceCodes.add(uiSourceCode);
       this.scheduleSweep();
     } else if (project.type() === Workspace.Workspace.projectTypes.Network) {
-      this.computeNetworkStatus(uiSourceCode);
+      void this.computeNetworkStatus(uiSourceCode);
     }
   }
 
@@ -179,24 +169,28 @@ export class Automapping {
     }
 
     this.filesIndex.addPath(uiSourceCode.url());
-    this.fileSystemUISourceCodes.set(uiSourceCode.url(), uiSourceCode);
+    this.fileSystemUISourceCodes.add(uiSourceCode);
     this.scheduleSweep();
   }
 
-  private computeNetworkStatus(networkSourceCode: Workspace.UISourceCode.UISourceCode): void {
-    if (this.sourceCodeToProcessingPromiseMap.has(networkSourceCode) ||
-        this.sourceCodeToAutoMappingStatusMap.has(networkSourceCode)) {
-      return;
+  computeNetworkStatus(networkSourceCode: Workspace.UISourceCode.UISourceCode): Promise<void> {
+    const processingPromise = this.sourceCodeToProcessingPromiseMap.get(networkSourceCode);
+    if (processingPromise) {
+      return processingPromise;
+    }
+    if (this.sourceCodeToAutoMappingStatusMap.has(networkSourceCode)) {
+      return Promise.resolve();
     }
     if (this.interceptors.some(interceptor => interceptor(networkSourceCode))) {
-      return;
+      return Promise.resolve();
     }
     if (networkSourceCode.url().startsWith('wasm://')) {
-      return;
+      return Promise.resolve();
     }
     const createBindingPromise =
         this.createBinding(networkSourceCode).then(validateStatus.bind(this)).then(onStatus.bind(this));
     this.sourceCodeToProcessingPromiseMap.set(networkSourceCode, createBindingPromise);
+    return createBindingPromise;
 
     async function validateStatus(this: Automapping, status: AutomappingStatus|null): Promise<AutomappingStatus|null> {
       if (!status) {
@@ -252,7 +246,7 @@ export class Automapping {
       } else {
         if (networkContent.content) {
           // Trim trailing whitespaces because V8 adds trailing newline.
-          isValid = fileContent.trimRight() === networkContent.content.trimRight();
+          isValid = fileContent.trimEnd() === networkContent.content.trimEnd();
         }
       }
       if (!isValid) {
@@ -262,18 +256,19 @@ export class Automapping {
       return status;
     }
 
-    function onStatus(this: Automapping, status: AutomappingStatus|null): void {
+    async function onStatus(this: Automapping, status: AutomappingStatus|null): Promise<void> {
       if (this.sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
         return;
       }
-      this.sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
       if (!status) {
         this.onBindingFailedForTest();
+        this.sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
         return;
       }
       // TODO(lushnikov): remove this check once there's a single uiSourceCode per url. @see crbug.com/670180
       if (this.sourceCodeToAutoMappingStatusMap.has(status.network) ||
           this.sourceCodeToAutoMappingStatusMap.has(status.fileSystem)) {
+        this.sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
         return;
       }
 
@@ -287,7 +282,8 @@ export class Automapping {
           this.scheduleSweep();
         }
       }
-      this.onStatusAdded.call(null, status);
+      await this.onStatusAdded.call(null, status);
+      this.sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
     }
   }
 
@@ -316,17 +312,13 @@ export class Automapping {
         this.activeFoldersIndex.removeFolder(projectFolder);
       }
     }
-    this.onStatusRemoved.call(null, status);
+    void this.onStatusRemoved.call(null, status);
   }
 
   private createBinding(networkSourceCode: Workspace.UISourceCode.UISourceCode): Promise<AutomappingStatus|null> {
     const url = networkSourceCode.url();
     if (url.startsWith('file://') || url.startsWith('snippet://')) {
-      const decodedUrl = sanitizeSourceUrl(url);
-      if (!decodedUrl) {
-        return Promise.resolve(null as AutomappingStatus | null);
-      }
-      const fileSourceCode = this.fileSystemUISourceCodes.get(decodedUrl);
+      const fileSourceCode = this.fileSystemUISourceCodes.get(url);
       const status = fileSourceCode ? new AutomappingStatus(networkSourceCode, fileSourceCode, false) : null;
       return Promise.resolve(status);
     }
@@ -337,32 +329,17 @@ export class Automapping {
     }
 
     if (networkPath.endsWith('/')) {
-      networkPath += 'index.html';
-    }
-
-    const urlDecodedNetworkPath = sanitizeSourceUrl(networkPath);
-    if (!urlDecodedNetworkPath) {
-      return Promise.resolve(null as AutomappingStatus | null);
+      networkPath = Common.ParsedURL.ParsedURL.concatenate(networkPath, 'index.html');
     }
 
     const similarFiles =
-        this.filesIndex.similarFiles(urlDecodedNetworkPath).map(path => this.fileSystemUISourceCodes.get(path)) as
+        this.filesIndex.similarFiles(networkPath).map(path => this.fileSystemUISourceCodes.get(path)) as
         Workspace.UISourceCode.UISourceCode[];
     if (!similarFiles.length) {
       return Promise.resolve(null as AutomappingStatus | null);
     }
 
     return this.pullMetadatas(similarFiles.concat(networkSourceCode)).then(onMetadatas.bind(this));
-
-    function sanitizeSourceUrl(url: string): string|null {
-      try {
-        const decodedUrl = decodeURI(url);
-        return decodedUrl;
-      } catch (error) {
-        Common.Console.Console.instance().error(i18nString(UIStrings.theAttemptToBindSInTheWorkspace, {PH1: url}));
-        return null;
-      }
-    }
 
     function onMetadatas(this: Automapping): AutomappingStatus|null {
       const activeFiles =
@@ -421,17 +398,17 @@ class FilePathIndex {
     this.reversedIndex = new Common.Trie.Trie();
   }
 
-  addPath(path: string): void {
+  addPath(path: Platform.DevToolsPath.UrlString): void {
     const encodedPath = this.encoder.encode(path);
     this.reversedIndex.add(Platform.StringUtilities.reverse(encodedPath));
   }
 
-  removePath(path: string): void {
+  removePath(path: Platform.DevToolsPath.UrlString): void {
     const encodedPath = this.encoder.encode(path);
     this.reversedIndex.remove(Platform.StringUtilities.reverse(encodedPath));
   }
 
-  similarFiles(networkPath: string): string[] {
+  similarFiles(networkPath: Platform.DevToolsPath.EncodedPathString): Platform.DevToolsPath.UrlString[] {
     const encodedPath = this.encoder.encode(networkPath);
     const reversedEncodedPath = Platform.StringUtilities.reverse(encodedPath);
     const longestCommonPrefix = this.reversedIndex.longestPrefix(reversedEncodedPath, false);
@@ -439,7 +416,8 @@ class FilePathIndex {
       return [];
     }
     return this.reversedIndex.words(longestCommonPrefix)
-        .map(encodedPath => this.encoder.decode(Platform.StringUtilities.reverse(encodedPath)));
+               .map(encodedPath => this.encoder.decode(Platform.StringUtilities.reverse(encodedPath))) as
+        Platform.DevToolsPath.UrlString[];
   }
 }
 
@@ -453,9 +431,9 @@ class FolderIndex {
     this.folderCount = new Map();
   }
 
-  addFolder(path: string): boolean {
+  addFolder(path: Platform.DevToolsPath.UrlString): boolean {
     if (path.endsWith('/')) {
-      path = path.substring(0, path.length - 1);
+      path = Common.ParsedURL.ParsedURL.substring(path, 0, path.length - 1);
     }
     const encodedPath = this.encoder.encode(path);
     this.index.add(encodedPath);
@@ -464,9 +442,9 @@ class FolderIndex {
     return count === 0;
   }
 
-  removeFolder(path: string): boolean {
+  removeFolder(path: Platform.DevToolsPath.UrlString): boolean {
     if (path.endsWith('/')) {
-      path = path.substring(0, path.length - 1);
+      path = Common.ParsedURL.ParsedURL.substring(path, 0, path.length - 1);
     }
     const encodedPath = this.encoder.encode(path);
     const count = this.folderCount.get(encodedPath) || 0;
@@ -482,10 +460,37 @@ class FolderIndex {
     return true;
   }
 
-  closestParentFolder(path: string): string {
+  closestParentFolder(path: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString {
     const encodedPath = this.encoder.encode(path);
     const commonPrefix = this.index.longestPrefix(encodedPath, true);
-    return this.encoder.decode(commonPrefix);
+    return this.encoder.decode(commonPrefix) as Platform.DevToolsPath.UrlString;
+  }
+}
+
+class FileSystemUISourceCodes {
+  private readonly sourceCodes: Map<Platform.DevToolsPath.UrlString, Workspace.UISourceCode.UISourceCode>;
+
+  constructor() {
+    this.sourceCodes = new Map();
+  }
+
+  private getPlatformCanonicalFileUrl(path: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString {
+    return Host.Platform.isWin() ? Common.ParsedURL.ParsedURL.toLowerCase(path) : path;
+  }
+
+  add(sourceCode: Workspace.UISourceCode.UISourceCode): void {
+    const fileUrl = this.getPlatformCanonicalFileUrl(sourceCode.url());
+    this.sourceCodes.set(fileUrl, sourceCode);
+  }
+
+  get(fileUrl: Platform.DevToolsPath.UrlString): Workspace.UISourceCode.UISourceCode|undefined {
+    fileUrl = this.getPlatformCanonicalFileUrl(fileUrl);
+    return this.sourceCodes.get(fileUrl);
+  }
+
+  delete(fileUrl: Platform.DevToolsPath.UrlString): void {
+    fileUrl = this.getPlatformCanonicalFileUrl(fileUrl);
+    this.sourceCodes.delete(fileUrl);
   }
 }
 

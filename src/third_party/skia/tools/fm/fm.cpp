@@ -16,10 +16,11 @@
 #include "src/core/SkMD5.h"
 #include "src/core/SkOSFile.h"
 #include "src/core/SkTaskGroup.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGpu.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGpu.h"
 #include "src/utils/SkOSPath.h"
 #include "tests/Test.h"
+#include "tests/TestHarness.h"
 #include "tools/AutoreleasePool.h"
 #include "tools/CrashHandler.h"
 #include "tools/HashAndEncode.h"
@@ -40,6 +41,7 @@
 #if defined(SK_ENABLE_SVG)
 #include "modules/svg/include/SkSVGDOM.h"
 #include "modules/svg/include/SkSVGNode.h"
+#include "modules/svg/include/SkSVGOpenTypeSVGDecoder.h"
 #endif
 
 #if defined(SK_ENABLE_SKOTTIE)
@@ -121,20 +123,15 @@ static bool parse_flag(const CommandLineFlags::StringArray& flag,
 }
 
 struct Result {
-    enum { Ok, Skip, Fail} status;
-    SkString               failure;
+    enum { Ok, Skip, Fail } status;
+    SkString                failure;
 };
-static const Result ok = {Result::Ok,   {}},
-                  skip = {Result::Skip, {}};
+static const Result ok   = {Result::Ok,   {}},
+                    skip = {Result::Skip, {}};
 
-static Result fail(const char* why) {
-    return { Result::Fail, SkString(why) };
+static Result fail(SkString why) {
+    return {Result::Fail, why};
 }
-template <typename... Args>
-static Result fail(const char* whyFmt, Args... args) {
-    return { Result::Fail, SkStringPrintf(whyFmt, args...) };
-}
-
 
 struct Source {
     SkString                               name;
@@ -153,13 +150,13 @@ static void init(Source* source, std::shared_ptr<skiagm::GM> gm) {
         switch (gm->gpuSetup(direct, canvas, &err)) {
             case skiagm::DrawResult::kOk  : break;
             case skiagm::DrawResult::kSkip: return skip;
-            case skiagm::DrawResult::kFail: return fail(err.c_str());
+            case skiagm::DrawResult::kFail: return fail(err);
         }
 
         switch (gm->draw(canvas, &err)) {
             case skiagm::DrawResult::kOk:   break;
             case skiagm::DrawResult::kSkip: return skip;
-            case skiagm::DrawResult::kFail: return fail(err.c_str());
+            case skiagm::DrawResult::kFail: return fail(err);
         }
         return ok;
     };
@@ -186,7 +183,7 @@ static void init(Source* source, std::shared_ptr<SkCodec> codec) {
             canvas->drawImage(image, 0,0);
             return ok;
         }
-        return fail("codec->getPixels() failed: %d\n", result);
+        return fail(SkStringPrintf("codec->getPixels() failed: %d\n", result));
     };
 }
 
@@ -254,7 +251,7 @@ static void init(Source* source, const skiatest::Test& test) {
         }
 
         canvas->clear(SK_ColorRED);
-        return fail(reporter.msg.c_str());
+        return fail(reporter.msg);
     };
 }
 
@@ -375,6 +372,10 @@ static sk_sp<SkImage> draw_with_gpu(std::function<bool(SkCanvas*)> draw,
     return image;
 }
 
+TestHarness CurrentTestHarness() {
+    return TestHarness::kFM;
+}
+
 extern bool gUseSkVMBlitter;
 extern bool gSkVMAllowJIT;
 extern bool gSkVMJITViaDylib;
@@ -387,6 +388,10 @@ int main(int argc, char** argv) {
     if (FLAGS_cpuDetect) {
         SkGraphics::Init();
     }
+#if defined(SK_ENABLE_SVG)
+    SkGraphics::SetOpenTypeSVGDecoderFactory(SkSVGOpenTypeSVGDecoder::Make);
+#endif
+
     gUseSkVMBlitter  = FLAGS_skvm;
     gSkVMAllowJIT    = FLAGS_jit;
     gSkVMJITViaDylib = FLAGS_dylib;
@@ -507,15 +512,15 @@ int main(int argc, char** argv) {
         { "angle_d3d11_es3", GrContextFactory::kANGLE_D3D11_ES3_ContextType },
         { "angle_gl_es2"   , GrContextFactory::kANGLE_GL_ES2_ContextType },
         { "angle_gl_es3"   , GrContextFactory::kANGLE_GL_ES3_ContextType },
-        { "cmdbuffer_es2"  , GrContextFactory::kCommandBuffer_ES2_ContextType },
-        { "cmdbuffer_es3"  , GrContextFactory::kCommandBuffer_ES3_ContextType },
+        { "angle_mtl_es2"  , GrContextFactory::kANGLE_Metal_ES2_ContextType },
+        { "angle_mtl_es3"  , GrContextFactory::kANGLE_Metal_ES3_ContextType },
         { "vk"             , GrContextFactory::kVulkan_ContextType },
         { "mtl"            , GrContextFactory::kMetal_ContextType },
         { "mock"           , GrContextFactory::kMock_ContextType },
     };
     const FlagOption<SkColorType> kColorTypes[] = {
         { "a8",                  kAlpha_8_SkColorType },
-        { "g8",                   kGray_8_SkColorType },
+        { "r8",                 kR8_unorm_SkColorType },
         { "565",                 kRGB_565_SkColorType },
         { "4444",              kARGB_4444_SkColorType },
         { "8888",                    kN32_SkColorType },

@@ -15,6 +15,7 @@
 #include "ash/system/accessibility/tray_accessibility.h"
 #include "ash/test/ash_test_base.h"
 #include "base/barrier_closure.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 
@@ -427,7 +428,7 @@ TEST_F(FloatingAccessibilityControllerTest, ActiveFeaturesButtons) {
 
   {
     base::RunLoop loop_enable;
-    SetOnLayoutCallback(base::BarrierClosure(base::size(kFeatureButtons),
+    SetOnLayoutCallback(base::BarrierClosure(std::size(kFeatureButtons),
                                              loop_enable.QuitClosure()));
     // Enable all features.
     for (FeatureWithButton feature : kFeatureButtons)
@@ -441,7 +442,7 @@ TEST_F(FloatingAccessibilityControllerTest, ActiveFeaturesButtons) {
   EXPECT_TRUE(window_bounds.Contains(GetMenuViewBounds()));
   {
     base::RunLoop loop_disable;
-    SetOnLayoutCallback(base::BarrierClosure(base::size(kFeatureButtons),
+    SetOnLayoutCallback(base::BarrierClosure(std::size(kFeatureButtons),
                                              loop_disable.QuitClosure()));
     // Enable all features.
     // Dicable all features.

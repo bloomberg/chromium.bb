@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/cpu_time_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_web_scheduling_task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
@@ -75,14 +76,14 @@ WorkerThreadScheduler* WorkerSchedulerImpl::GetWorkerThreadScheduler() const {
 }
 
 std::unique_ptr<WorkerSchedulerImpl::PauseHandle> WorkerSchedulerImpl::Pause() {
-  thread_scheduler_->helper()->CheckOnValidThread();
+  thread_scheduler_->GetHelper().CheckOnValidThread();
   if (is_disposed_)
     return nullptr;
   return std::make_unique<PauseHandleImpl>(GetWeakPtr());
 }
 
 void WorkerSchedulerImpl::PauseImpl() {
-  thread_scheduler_->helper()->CheckOnValidThread();
+  thread_scheduler_->GetHelper().CheckOnValidThread();
   paused_count_++;
   if (paused_count_ == 1) {
     for (const auto& pair : task_runners_) {
@@ -94,7 +95,7 @@ void WorkerSchedulerImpl::PauseImpl() {
 }
 
 void WorkerSchedulerImpl::ResumeImpl() {
-  thread_scheduler_->helper()->CheckOnValidThread();
+  thread_scheduler_->GetHelper().CheckOnValidThread();
   paused_count_--;
   if (paused_count_ == 0 && !is_disposed_) {
     for (const auto& pair : task_runners_) {
@@ -154,7 +155,6 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerSchedulerImpl::GetTaskRunner(
     case TaskType::kDOMManipulation:
     case TaskType::kUserInteraction:
     case TaskType::kNetworking:
-    case TaskType::kNetworkingWithURLLoaderAnnotation:
     case TaskType::kNetworkingControl:
     case TaskType::kHistoryTraversal:
     case TaskType::kEmbed:
@@ -278,6 +278,9 @@ WorkerSchedulerImpl::ThrottleableTaskQueue() {
 void WorkerSchedulerImpl::OnStartedUsingFeature(
     SchedulingPolicy::Feature feature,
     const SchedulingPolicy& policy) {
+  if (policy.disable_align_wake_ups)
+    scheduler::DisableAlignWakeUpsForProcess();
+
   if (!policy.disable_back_forward_cache) {
     return;
   }

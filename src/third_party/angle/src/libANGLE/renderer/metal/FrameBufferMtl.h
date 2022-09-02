@@ -12,6 +12,7 @@
 
 #import <Metal/Metal.h>
 
+#include "common/FixedVector.h"
 #include "libANGLE/renderer/FramebufferImpl.h"
 #include "libANGLE/renderer/metal/RenderTargetMtl.h"
 #include "libANGLE/renderer/metal/mtl_render_utils.h"
@@ -29,6 +30,7 @@ class FramebufferMtl : public FramebufferImpl
 {
   public:
     explicit FramebufferMtl(const gl::FramebufferState &state,
+                            ContextMtl *context,
                             bool flipY,
                             WindowSurfaceMtl *backbuffer);
     ~FramebufferMtl() override;
@@ -123,7 +125,9 @@ class FramebufferMtl : public FramebufferImpl
   private:
     void reset();
     gl::FramebufferStatus checkPackedDepthStencilAttachment() const;
-    angle::Result invalidateImpl(ContextMtl *contextMtl, size_t count, const GLenum *attachments);
+    angle::Result invalidateImpl(const gl::Context *context,
+                                 size_t count,
+                                 const GLenum *attachments);
     angle::Result blitWithDraw(const gl::Context *context,
                                FramebufferMtl *srcFrameBuffer,
                                bool blitColorBuffer,
@@ -203,12 +207,15 @@ class FramebufferMtl : public FramebufferImpl
                                      uint32_t dstBufferRowPitch,
                                      const mtl::BufferRef *dstBuffer) const;
 
+    bool totalBitsUsedIsLessThanOrEqualToMaxBitsSupported(const gl::Context *context) const;
+
     RenderTargetMtl *getColorReadRenderTargetNoCache(const gl::Context *context) const;
+    bool prepareForUse(const gl::Context *context) const;
 
     // NOTE: we cannot use RenderTargetCache here because it doesn't support separate
     // depth & stencil attachments as of now. Separate depth & stencil could be useful to
     // save spaces on iOS devices. See doc/PackedDepthStencilSupport.md.
-    std::array<RenderTargetMtl *, mtl::kMaxRenderTargets> mColorRenderTargets;
+    angle::FixedVector<RenderTargetMtl *, mtl::kMaxRenderTargets> mColorRenderTargets;
     RenderTargetMtl *mDepthRenderTarget   = nullptr;
     RenderTargetMtl *mStencilRenderTarget = nullptr;
     mtl::RenderPassDesc mRenderPassDesc;

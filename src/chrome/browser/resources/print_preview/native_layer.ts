@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert.m.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 import {Cdd} from './data/cdd.js';
-import {PrinterType} from './data/destination_match.js';
+import {PrinterType} from './data/destination.js';
 import {LocalDestinationInfo} from './data/local_parsers.js';
 import {MeasurementSystemUnitType} from './data/measurement_system.js';
 
@@ -46,7 +45,7 @@ export enum DuplexModeRestriction {
   DUPLEX = 0x6,
 }
 
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 /**
  * Enumeration of PIN printing mode restrictions used by Chromium.
  * This has to coincide with |printing::PinModeRestriction| as defined in
@@ -66,19 +65,19 @@ export type Policies = {
   headerFooter?: {allowedMode?: boolean, defaultMode?: boolean},
   cssBackground?: {
     allowedMode?: BackgroundGraphicsModeRestriction,
-    defaultMode?: BackgroundGraphicsModeRestriction
+    defaultMode?: BackgroundGraphicsModeRestriction,
   },
   mediaSize?: {defaultMode?: {width: number, height: number}},
   sheets?: {value?: number},
   color?: {
     allowedMode?: ColorModeRestriction,
-    defaultMode?: ColorModeRestriction
+    defaultMode?: ColorModeRestriction,
   },
   duplex?: {
     allowedMode?: DuplexModeRestriction,
-    defaultMode?: DuplexModeRestriction
+    defaultMode?: DuplexModeRestriction,
   },
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   pin?: {allowedMode?: PinModeRestriction, defaultMode?: PinModeRestriction},
   // </if>
   printPdfAsImage?: {defaultMode?: boolean},
@@ -106,7 +105,6 @@ export type NativeInitialSettings = {
           serializedDefaultDestinationSelectionRulesStr: string|null,
           pdfPrinterDisabled: boolean,
           destinationsManaged: boolean,
-  cloudPrintURL?: string,
   isDriveMounted?: boolean,
 };
 
@@ -174,7 +172,7 @@ export interface NativeLayer {
    */
   saveAppState(appStateStr: string): void;
 
-  // <if expr="not chromeos and not lacros and not is_win">
+  // <if expr="not chromeos_ash and not chromeos_lacros and not is_win">
   /** Shows the system's native printing dialog. */
   showSystemDialog(): void;
   // </if>
@@ -190,12 +188,6 @@ export interface NativeLayer {
 
   /** Hide the print preview dialog and allow the native layer to close it. */
   hidePreview(): void;
-
-  /**
-   * Opens the Google Cloud Print sign-in tab. If the user signs in
-   * successfully, the user-accounts-updated event will be sent in response.
-   */
-  signIn(): void;
 
   /**
    * Notifies the metrics handler to record a histogram value.
@@ -239,7 +231,7 @@ export class NativeLayerImpl implements NativeLayer {
     chrome.send('saveAppState', [appStateStr]);
   }
 
-  // <if expr="not chromeos and not lacros and not is_win">
+  // <if expr="not chromeos_ash and not chromeos_lacros and not is_win">
   showSystemDialog() {
     chrome.send('showSystemDialog');
   }
@@ -254,10 +246,6 @@ export class NativeLayerImpl implements NativeLayer {
 
   hidePreview() {
     chrome.send('hidePreview');
-  }
-
-  signIn() {
-    chrome.send('signIn');
   }
 
   recordInHistogram(histogram: string, bucket: number, maxBucket: number) {

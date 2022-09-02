@@ -49,7 +49,7 @@ def read_tree(tree_root):
       dirs.remove(d)
     for f in [join(root, f) for f in files if not f.startswith('.')]:
       filepath = f[len(tree_root) + 1:].replace(os.sep, '/')
-      assert len(filepath), f
+      assert len(filepath) > 0, f
       with io.open(join(root, f), encoding='utf-8') as f:
         tree[filepath] = f.read()
   return tree

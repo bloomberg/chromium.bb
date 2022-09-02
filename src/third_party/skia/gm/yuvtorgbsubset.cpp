@@ -19,12 +19,12 @@
 #include "include/core/SkYUVAInfo.h"
 #include "include/core/SkYUVAPixmaps.h"
 #include "src/core/SkCanvasPriv.h"
-#include "src/gpu/GrSamplerState.h"
-#include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/GrYUVATextureProxies.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrYUVtoRGBEffect.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/ganesh/GrSamplerState.h"
+#include "src/gpu/ganesh/GrTextureProxy.h"
+#include "src/gpu/ganesh/GrYUVATextureProxies.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/effects/GrYUVtoRGBEffect.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 
 #include <memory>
 #include <utility>
@@ -140,13 +140,12 @@ protected:
 
                 const SkRect* subset = j > 0 ? &kColorRect : nullptr;
 
-                GrSamplerState samplerState;
-                samplerState.setFilterMode(kFilters[i]);
+                auto wm = GrSamplerState::WrapMode::kClamp;
                 if (j > 0) {
-                    auto wm = static_cast<GrSamplerState::WrapMode>(j - 1);
-                    samplerState.setWrapModeX(wm);
-                    samplerState.setWrapModeY(wm);
+                    wm = static_cast<GrSamplerState::WrapMode>(j - 1);
                 }
+                GrSamplerState samplerState(wm, kFilters[i]);
+
                 const auto& caps = *rContext->priv().caps();
                 std::unique_ptr<GrFragmentProcessor> fp =
                         GrYUVtoRGBEffect::Make(fProxies, samplerState, caps, SkMatrix::I(), subset);

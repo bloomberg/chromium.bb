@@ -59,7 +59,7 @@ found in the LICENSE file. -->
         [[i18nDynamic(locale, 'guestTosGoogleEulaTitle')]]
       </h1>
       <div slot="content" class="flex layout vertical">
-        <webview id="googleEulaWebview" role="document"
+        <webview id="guestTosGoogleEulaWebview" role="document"
             class="oobe-tos-webview tos-webview"
             on-contentload="onGoogleEulaContentLoad_">
         </webview>
@@ -80,7 +80,7 @@ found in the LICENSE file. -->
         [[i18nDynamic(locale, 'guestTosCrosEulaTitle')]]
       </h1>
       <div slot="content" class="flex layout vertical">
-        <webview id="crosEulaWebview" role="document"
+        <webview id="guestTosCrosEulaWebview" role="document"
             class="oobe-tos-webview tos-webview">
         </webview>
       </div>
@@ -108,15 +108,14 @@ found in the LICENSE file. -->
         </div>
 
         <!-- Usage stats toggle row -->
-        <div class="layout horizontal center oobe-optin-row">
+        <div id="usageStats" class="layout horizontal center oobe-optin-row">
           <div class="oobe-optin-content">
             <span id="usageTitle" class="oobe-optin-title">
               [[i18nDynamic(locale, 'guestTosUsageOptinTitle')]]
             </span>
             [[i18nDynamic(locale, 'guestTosUsageOptin')]]
             <a id="usageLearnMore" on-click="onUsageLearnMoreClick_"
-                class="oobe-local-link" is="action-link"
-                aria-describedby="usageTitle">
+                class="oobe-local-link" is="action-link">
               [[i18nDynamic(locale, 'guestTosLearnMore')]]
             </a>
           </div>

@@ -111,7 +111,11 @@ struct ShortcutInfo {
     // events.
     SOURCE_WEBAPK_SHARE_TARGET_FILE = 15,
 
-    SOURCE_COUNT = 16
+    // Used for WebAPKs added by the Chrome Android service after the
+    // install was requested by another app.
+    SOURCE_CHROME_SERVICE = 16,
+
+    SOURCE_COUNT = 17
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);
@@ -127,6 +131,10 @@ struct ShortcutInfo {
 
   // Updates the source of the shortcut.
   void UpdateSource(const Source source);
+
+  // Returns a set of icons including |best_primary_icon_url|,
+  // |splash_image_url| and |best_shortcut_icon_urls| if they are not empty
+  std::set<GURL> GetWebApkIcons();
 
   GURL manifest_url;
   GURL url;

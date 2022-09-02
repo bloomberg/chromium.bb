@@ -13,6 +13,7 @@
 #include "ash/components/arc/session/arc_session.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/lock_screen_apps/fake_lock_screen_profile_creator.h"
+#include "chrome/browser/ash/lock_screen_apps/lock_screen_helper.h"
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/note_taking_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
@@ -33,7 +35,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/disable_reason.h"
@@ -97,14 +99,12 @@ class LockScreenEventObserver
       return;
     }
     ASSERT_TRUE(event.event_args);
-    const base::Value* arg_value = nullptr;
-    ASSERT_TRUE(event.event_args->Get(0, &arg_value));
-    ASSERT_TRUE(arg_value);
+    const base::Value& arg_value = event.event_args->GetListDeprecated()[0];
     if (event.restrict_to_browser_context)
       EXPECT_EQ(context_, event.restrict_to_browser_context);
 
     std::unique_ptr<extensions::api::app_runtime::LaunchData> launch_data =
-        extensions::api::app_runtime::LaunchData::FromValue(*arg_value);
+        extensions::api::app_runtime::LaunchData::FromValue(arg_value);
     ASSERT_TRUE(launch_data);
     ASSERT_TRUE(launch_data->action_data);
     EXPECT_EQ(extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE,
@@ -154,7 +154,7 @@ class LockScreenAppManagerImplTest
     // Need to initialize DBusThreadManager before ArcSessionManager's
     // constructor calls DBusThreadManager::Get().
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     // Initialize command line so `ash::NoteTakingHelper` thinks note taking
     // on lock screen is enabled.
@@ -174,8 +174,7 @@ class LockScreenAppManagerImplTest
             base::BindRepeating(&ArcSessionFactory)));
 
     ash::NoteTakingHelper::Initialize();
-    ash::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
-        profile());
+    ash::LockScreenHelper::GetInstance().Initialize(profile());
 
     lock_screen_profile_creator_ =
         std::make_unique<lock_screen_apps::FakeLockScreenProfileCreator>(
@@ -192,11 +191,12 @@ class LockScreenAppManagerImplTest
     app_manager_.reset();
 
     lock_screen_profile_creator_.reset();
+    ash::LockScreenHelper::GetInstance().Shutdown();
     ash::NoteTakingHelper::Shutdown();
     arc_session_manager_.reset();
     extensions::ExtensionSystem::Get(profile())->Shutdown();
 
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

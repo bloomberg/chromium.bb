@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.flags.DoubleCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -100,7 +100,26 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
                     TAB_GROUP_SHARING_PARAM, false);
 
+    // Field trial parameter for enabling launch polish for the grid tab switcher for tablets.
+    private static final String GRID_TAB_SWITCHER_FOR_TABLETS_POLISH_PARAM = "enable_launch_polish";
+    public static final BooleanCachedFieldTrialParameter GRID_TAB_SWITCHER_FOR_TABLETS_POLISH =
+            new BooleanCachedFieldTrialParameter(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS,
+                    GRID_TAB_SWITCHER_FOR_TABLETS_POLISH_PARAM, false);
+
+    // Field trial parameter for controlling delay grid tab switcher creation for tablets.
+    private static final String DELAY_GTS_CREATION_PARAM = "delay_creation";
+    public static final BooleanCachedFieldTrialParameter DELAY_GTS_CREATION =
+            new BooleanCachedFieldTrialParameter(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS,
+                    DELAY_GTS_CREATION_PARAM, false);
+
+    // Field trial parameter for defining tab width for tab strip improvements.
+    private static final String TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM = "min_tab_width";
+    public static final DoubleCachedFieldTrialParameter TAB_STRIP_TAB_WIDTH =
+            new DoubleCachedFieldTrialParameter(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS,
+                    TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM, 190.f);
+
     private static Boolean sTabManagementModuleSupportedForTesting;
+    private static Boolean sGridTabSwitcherPolishEnabledForTesting;
 
     /**
      * Set whether the tab management module is supported for testing.
@@ -125,14 +144,49 @@ public class TabUiFeatureUtilities {
      * @param context The activity context.
      */
     public static boolean isGridTabSwitcherEnabled(Context context) {
-        // Only enable grid tab switcher for tablet if flag is enabled.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
+            return isTabletGridTabSwitcherEnabled(context);
         }
 
         // Having Tab Groups or Start implies Grid Tab Switcher.
         return isTabManagementModuleSupported() || isTabGroupsAndroidEnabled(context)
-                || ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(context);
+                || ReturnToChromeUtil.isStartSurfaceEnabled(context);
+    }
+
+    /**
+     * @return Whether the tablet Grid Tab Switcher UI is enabled and available for use.
+     * @param context The activity context.
+     */
+    public static boolean isTabletGridTabSwitcherEnabled(Context context) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
+    }
+
+    /**
+     * Set whether the tablet grid tab switcher polish is enabled for testing.
+     */
+    public static void setTabletGridTabSwitcherPolishEnabledForTesting(@Nullable Boolean enabled) {
+        sGridTabSwitcherPolishEnabledForTesting = enabled;
+    }
+
+    /**
+     * @return Whether the tablet Grid Tab Switcher Polish is enabled.
+     * @param context The activity context.
+     */
+    public static boolean isTabletGridTabSwitcherPolishEnabled(Context context) {
+        if (sGridTabSwitcherPolishEnabledForTesting != null) {
+            return sGridTabSwitcherPolishEnabledForTesting;
+        }
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && GRID_TAB_SWITCHER_FOR_TABLETS_POLISH.getValue();
+    }
+
+    /**
+     * @return Whether the tablet Grid Tab Switcher creation should be delayed to on GTS load
+     *         instead of on startup.
+     */
+    public static boolean isTabletGridTabSwitcherDelayCreationEnabled() {
+        return DELAY_GTS_CREATION.getValue();
     }
 
     /**
@@ -142,12 +196,23 @@ public class TabUiFeatureUtilities {
     public static boolean isTabGroupsAndroidEnabled(Context context) {
         // Disable tab group for tablet.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
+            return isTabletTabGroupsEnabled(context);
         }
 
         return !DeviceClassManager.enableAccessibilityLayout(context)
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
                 && isTabManagementModuleSupported();
+    }
+  
+    /**
+     * @return Whether tab groups are enabled for tablet.
+     * @param context The activity context.
+     */
+    public static boolean isTabletTabGroupsEnabled(Context context) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
     }
 
     /**
@@ -205,6 +270,26 @@ public class TabUiFeatureUtilities {
      */
     public static boolean isLaunchPolishEnabled() {
         return ENABLE_LAUNCH_POLISH.getValue();
+    }
+
+    private static Float sTabMinWidthForTesting;
+
+    /**
+     * Set the min tab width for testing.
+     */
+    public static void setTabMinWidthForTesting(@Nullable Float minWidth) {
+        sTabMinWidthForTesting = minWidth;
+    }
+
+    /**
+     * @return The min tab width.
+     */
+    public static float getTabMinWidth() {
+        if (sTabMinWidthForTesting != null) {
+            return sTabMinWidthForTesting;
+        }
+
+        return (float) TAB_STRIP_TAB_WIDTH.getValue();
     }
 
     /**

@@ -27,20 +27,23 @@ bool GetSpatialLayerFrameSize(const DecoderBuffer& decoder_buffer,
   if (!cue_data)
     return true;
 
+  bool enable_vp9_ksvc =
 // On windows, currently only d3d11 supports decoding VP9 kSVC stream, we
 // shouldn't combine the switch kD3D11Vp9kSVCHWDecoding to kVp9kSVCHWDecoding
 // due to we want keep returning false to MediaCapability.
-#if defined(OS_WIN)
-  if (!base::FeatureList::IsEnabled(media::kD3D11Vp9kSVCHWDecoding)) {
-    DLOG(ERROR) << "Vp9 k-SVC hardware decoding is disabled";
-    return false;
-  }
+#if BUILDFLAG(IS_WIN)
+      base::FeatureList::IsEnabled(media::kD3D11Vp9kSVCHWDecoding);
+#elif BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+      // V4L2 stateless API decoder is not capable of decoding VP9 k-SVC stream.
+      false;
 #else
-  if (!base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding)) {
+      base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding);
+#endif
+
+  if (!enable_vp9_ksvc) {
     DLOG(ERROR) << "Vp9 k-SVC hardware decoding is disabled";
     return false;
   }
-#endif
 
   size_t num_of_layers = decoder_buffer.side_data_size() / sizeof(uint32_t);
   if (num_of_layers > 3u) {
@@ -92,6 +95,10 @@ VP9Decoder::VP9Accelerator::VP9Accelerator() {}
 
 VP9Decoder::VP9Accelerator::~VP9Accelerator() {}
 
+bool VP9Decoder::VP9Accelerator::SupportsContextProbabilityReadback() const {
+  return false;
+}
+
 VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator,
                        VideoCodecProfile profile,
                        const VideoColorSpace& container_color_space)
@@ -100,7 +107,8 @@ VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator,
       // TODO(hiroh): Set profile to UNKNOWN.
       profile_(profile),
       accelerator_(std::move(accelerator)),
-      parser_(accelerator_->IsFrameContextRequired()) {}
+      parser_(accelerator_->NeedsCompressedHeaderParsed(),
+              accelerator_->SupportsContextProbabilityReadback()) {}
 
 VP9Decoder::~VP9Decoder() = default;
 

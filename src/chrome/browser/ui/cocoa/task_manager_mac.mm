@@ -14,7 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -25,15 +25,11 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/cocoa/controls/button_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/views/image_model_utils.h"
 
 namespace {
 
@@ -252,9 +248,9 @@ NSString* ColumnIdentifier(int id) {
 
   // Create the button that terminates the selected process in the table.
   _endProcessButton =
-      [ButtonUtils buttonWithTitle:l10n_util::GetNSString(IDS_TASK_MANAGER_KILL)
-                            action:@selector(killSelectedProcesses:)
-                            target:self];
+      [NSButton buttonWithTitle:l10n_util::GetNSString(IDS_TASK_MANAGER_KILL)
+                         target:self
+                         action:@selector(killSelectedProcesses:)];
   [_endProcessButton setAutoresizingMask:NSViewMinXMargin | NSViewMaxYMargin];
   [_endProcessButton sizeToFit];
   NSRect buttonFrame = [_endProcessButton frame];
@@ -317,8 +313,8 @@ NSString* ColumnIdentifier(int id) {
   id dataCell = [column.get() dataCell];
 
   NSTextAlignment textAlignment = (columnData.align == ui::TableColumn::LEFT)
-                                      ? NSLeftTextAlignment
-                                      : NSRightTextAlignment;
+                                      ? NSTextAlignmentLeft
+                                      : NSTextAlignmentRight;
 
   NSString* columnTitle = l10n_util::GetNSStringWithFixup(columnData.id);
   [headerCell setStringValue:columnTitle];
@@ -651,8 +647,9 @@ TaskManagerMac::TaskManagerMac()
   table_model_.SetObserver(this);  // Hook up the ui::TableModelObserver.
   table_model_.RetrieveSavedColumnsSettingsAndUpdateTable();
 
-  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
+  on_app_terminating_subscription_ =
+      browser_shutdown::AddAppTerminatingCallback(base::BindOnce(
+          &TaskManagerMac::OnAppTerminating, base::Unretained(this)));
 }
 
 // static
@@ -715,8 +712,8 @@ void TaskManagerMac::WindowWasClosed() {
 
 NSImage* TaskManagerMac::GetImageForRow(int row) {
   const NSSize kImageSize = NSMakeSize(16.0, 16.0);
-  NSImage* image = gfx::NSImageFromImageSkia(
-      views::GetImageSkiaFromImageModel(table_model_.GetIcon(row), nullptr));
+  NSImage* image =
+      gfx::NSImageFromImageSkia(table_model_.GetIcon(row).Rasterize(nullptr));
   if (image)
     image.size = kImageSize;
   else
@@ -725,10 +722,7 @@ NSImage* TaskManagerMac::GetImageForRow(int row) {
   return image;
 }
 
-void TaskManagerMac::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+void TaskManagerMac::OnAppTerminating() {
   Hide();
 }
 

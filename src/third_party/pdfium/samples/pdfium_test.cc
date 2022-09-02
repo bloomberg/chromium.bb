@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,6 +37,7 @@
 #include "samples/pdfium_test_dump_helper.h"
 #include "samples/pdfium_test_event_helper.h"
 #include "samples/pdfium_test_write_helper.h"
+#include "testing/font_renamer.h"
 #include "testing/fx_string_testhelpers.h"
 #include "testing/test_loader.h"
 #include "testing/utils/file_util.h"
@@ -138,6 +140,7 @@ struct Options {
 #if defined(__APPLE__) || (defined(__linux__) && !defined(__ANDROID__))
   bool linux_no_system_fonts = false;
 #endif
+  bool croscore_font_names = false;
   OutputFormat output_format = OutputFormat::kNone;
   std::string password;
   std::string scale_factor_as_string;
@@ -224,9 +227,9 @@ FPDF_FORMFILLINFO_PDFiumTest* ToPDFiumTestFormFillInfo(
   return static_cast<FPDF_FORMFILLINFO_PDFiumTest*>(form_fill_info);
 }
 
-void OutputMD5Hash(const char* file_name, const uint8_t* buffer, int len) {
+void OutputMD5Hash(const char* file_name, pdfium::span<const uint8_t> output) {
   // Get the MD5 hash and write it to stdout.
-  std::string hash = GenerateMD5Base16(buffer, len);
+  std::string hash = GenerateMD5Base16(output);
   printf("MD5:%s:%s\n", file_name, hash.c_str());
 }
 
@@ -350,6 +353,10 @@ FPDF_BOOL ExamplePopupMenu(FPDF_FORMFILLINFO* pInfo,
   return true;
 }
 #endif  // PDF_ENABLE_XFA
+
+void ExampleNamedAction(FPDF_FORMFILLINFO* pInfo, FPDF_BYTESTRING name) {
+  printf("Execute named action: %s\n", name);
+}
 
 void ExampleUnsupportedHandler(UNSUPPORT_INFO*, int type) {
   std::string feature = "Unknown";
@@ -495,6 +502,8 @@ bool ParseCommandLine(const std::vector<std::string>& args,
     } else if (cur_arg == "--no-system-fonts") {
       options->linux_no_system_fonts = true;
 #endif
+    } else if (cur_arg == "--croscore-font-names") {
+      options->croscore_font_names = true;
     } else if (cur_arg == "--ppm") {
       if (options->output_format != OutputFormat::kNone) {
         fprintf(stderr, "Duplicate or conflicting --ppm argument\n");
@@ -866,7 +875,8 @@ bool ProcessPage(const std::string& name,
     // file.
     if (options.md5 && !image_file_name.empty()) {
       OutputMD5Hash(image_file_name.c_str(),
-                    static_cast<const uint8_t*>(buffer), stride * height);
+                    {static_cast<const uint8_t*>(buffer),
+                     static_cast<size_t>(stride) * height});
     }
   } else {
     fprintf(stderr, "Page was too large to be rendered.\n");
@@ -979,6 +989,7 @@ void ProcessPdf(const std::string& name,
 #else   // PDF_ENABLE_XFA
   form_callbacks.version = 1;
 #endif  // PDF_ENABLE_XFA
+  form_callbacks.FFI_ExecuteNamedAction = ExampleNamedAction;
   form_callbacks.FFI_GetPage = GetPageForIndex;
 
 #ifdef PDF_ENABLE_V8
@@ -1133,6 +1144,7 @@ constexpr char kUsageString[] =
 #if defined(__APPLE__) || (defined(__linux__) && !defined(__ANDROID__))
     "  --no-system-fonts      - do not use system fonts, overrides --font-dir\n"
 #endif
+    "  --croscore-font-names  - use Croscore font names\n"
     "  --bin-dir=<path>       - override path to v8 external data\n"
     "  --font-dir=<path>      - override path to external fonts\n"
     "  --scale=<number>       - scale output size by number (e.g. 0.5)\n"
@@ -1162,6 +1174,8 @@ constexpr char kUsageString[] =
 }  // namespace
 
 int main(int argc, const char* argv[]) {
+  setlocale(LC_CTYPE, "en_US.UTF-8");  // For printf() of high-characters.
+
   std::vector<std::string> args(argv, argv + argc);
   Options options;
   std::vector<std::string> files;
@@ -1232,6 +1246,10 @@ int main(int argc, const char* argv[]) {
 
   FPDF_InitLibraryWithConfig(&config);
 
+  std::unique_ptr<FontRenamer> font_renamer;
+  if (options.croscore_font_names)
+    font_renamer = std::make_unique<FontRenamer>();
+
   UNSUPPORT_INFO unsupported_info = {};
   unsupported_info.version = 1;
   unsupported_info.FSDK_UnSupport_Handler = ExampleUnsupportedHandler;
@@ -1281,7 +1299,6 @@ int main(int argc, const char* argv[]) {
 
     ProcessPdf(filename, file_contents.get(), file_length, options, events,
                idler);
-    idler();
 
 #ifdef ENABLE_CALLGRIND
     if (options.callgrind_delimiters)

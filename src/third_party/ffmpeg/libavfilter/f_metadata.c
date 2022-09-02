@@ -23,6 +23,8 @@
  * filter for manipulating frame metadata
  */
 
+#include "config_components.h"
+
 #include <float.h>
 
 #include "libavutil/avassert.h"
@@ -391,7 +393,8 @@ const AVFilter ff_af_ametadata = {
     .uninit        = uninit,
     FILTER_INPUTS(ainputs),
     FILTER_OUTPUTS(aoutputs),
-    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |
+                     AVFILTER_FLAG_METADATA_ONLY,
 };
 #endif /* CONFIG_AMETADATA_FILTER */
 
@@ -424,6 +427,7 @@ const AVFilter ff_vf_metadata = {
     .uninit      = uninit,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
-    .flags       = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
+    .flags       = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |
+                   AVFILTER_FLAG_METADATA_ONLY,
 };
 #endif /* CONFIG_METADATA_FILTER */

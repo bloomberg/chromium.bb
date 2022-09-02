@@ -79,11 +79,11 @@ wtf_size_t NGGridTrackList::RepeaterCount() const {
   return repeaters_.size();
 }
 
-wtf_size_t NGGridTrackList::TotalTrackCount() const {
-  return total_track_count_;
+wtf_size_t NGGridTrackList::TrackCountWithoutAutoRepeat() const {
+  return track_count_without_auto_repeat_;
 }
 
-wtf_size_t NGGridTrackList::AutoRepeatSize() const {
+wtf_size_t NGGridTrackList::AutoRepeatTrackCount() const {
   return HasAutoRepeater() ? repeaters_[auto_repeater_index_].repeat_size : 0;
 }
 
@@ -107,13 +107,12 @@ bool NGGridTrackList::AddRepeater(
     case NGGridTrackRepeater::RepeatType::kInteger:
       if (repeat_size > AvailableTrackCount() / repeat_count)
         return false;
-      total_track_count_ += repeat_size * repeat_count;
+      track_count_without_auto_repeat_ += repeat_size * repeat_count;
       break;
     case NGGridTrackRepeater::RepeatType::kAutoFill:
     case NGGridTrackRepeater::RepeatType::kAutoFit:  // Intentional Fallthrough.
       if (HasAutoRepeater() || repeat_size > AvailableTrackCount())
         return false;
-      total_track_count_ += repeat_size;
       // Update auto repeater index and append repeater.
       auto_repeater_index_ = repeaters_.size();
       break;
@@ -143,18 +142,18 @@ bool NGGridTrackList::HasAutoRepeater() const {
 }
 
 wtf_size_t NGGridTrackList::AvailableTrackCount() const {
-  return kNotFound - 1 - total_track_count_;
+  return kNotFound - 1 - track_count_without_auto_repeat_;
 }
 
 void NGGridTrackList::operator=(const NGGridTrackList& other) {
   repeaters_ = other.repeaters_;
   repeater_track_sizes_ = other.repeater_track_sizes_;
   auto_repeater_index_ = other.auto_repeater_index_;
-  total_track_count_ = other.total_track_count_;
+  track_count_without_auto_repeat_ = other.track_count_without_auto_repeat_;
 }
 
 bool NGGridTrackList::operator==(const NGGridTrackList& other) const {
-  return TotalTrackCount() == other.TotalTrackCount() &&
+  return TrackCountWithoutAutoRepeat() == other.TrackCountWithoutAutoRepeat() &&
          RepeaterCount() == other.RepeaterCount() &&
          auto_repeater_index_ == other.auto_repeater_index_ &&
          repeaters_ == other.repeaters_ &&
@@ -166,7 +165,7 @@ GridTrackList::GridTrackList(const GridTrackList& other) {
 }
 
 GridTrackList::GridTrackList(const GridTrackSize& default_track_size) {
-  if (RuntimeEnabledFeatures::LayoutNGGridEnabled())
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
     ng_track_list_.AddRepeater({default_track_size});
 
   legacy_track_list_.push_back(default_track_size);
@@ -174,7 +173,7 @@ GridTrackList::GridTrackList(const GridTrackSize& default_track_size) {
 
 GridTrackList::GridTrackList(Vector<GridTrackSize, 1>& legacy_tracks)
     : legacy_track_list_(std::move(legacy_tracks)) {
-  if (RuntimeEnabledFeatures::LayoutNGGridEnabled())
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
     ng_track_list_.AddRepeater(legacy_track_list_);
 }
 
@@ -187,11 +186,11 @@ const Vector<GridTrackSize, 1>& GridTrackList::LegacyTrackList() const {
 }
 
 NGGridTrackList& GridTrackList::NGTrackList() {
-  DCHECK(RuntimeEnabledFeatures::LayoutNGGridEnabled());
+  DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
   return ng_track_list_;
 }
 const NGGridTrackList& GridTrackList::NGTrackList() const {
-  DCHECK(RuntimeEnabledFeatures::LayoutNGGridEnabled());
+  DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
   return ng_track_list_;
 }
 
@@ -200,7 +199,7 @@ void GridTrackList::operator=(const GridTrackList& other) {
 }
 
 bool GridTrackList::operator==(const GridTrackList& other) const {
-  if (RuntimeEnabledFeatures::LayoutNGGridEnabled())
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
     return ng_track_list_ == other.ng_track_list_;
 
   return LegacyTrackList() == other.LegacyTrackList();
@@ -211,7 +210,7 @@ bool GridTrackList::operator!=(const GridTrackList& other) const {
 }
 
 void GridTrackList::AssignFrom(const GridTrackList& other) {
-  if (RuntimeEnabledFeatures::LayoutNGGridEnabled())
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
     ng_track_list_ = other.ng_track_list_;
 
   legacy_track_list_ = other.legacy_track_list_;

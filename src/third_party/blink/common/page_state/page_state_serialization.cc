@@ -29,7 +29,7 @@ namespace blink {
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 float g_device_scale_factor_for_testing = 0.0;
 #endif
 
@@ -189,8 +189,9 @@ struct SerializeObject {
 // 26: Switch to mojo-based serialization.
 // 27: Add serialized scroll anchor to FrameState.
 // 28: Add initiator origin to FrameState.
-// 29: Add app history key.
-// 30: Add app history state.
+// 29: Add navigation API key.
+// 30: Add navigation API state.
+// 31: Add protect url in navigation API bit.
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See ReadPageState.
 //
@@ -198,7 +199,7 @@ const int kMinVersion = 11;
 // NOTE: When changing the version, please add a backwards compatibility test.
 // See PageStateSerializationTest.DumpExpectedPageStateForBackwardsCompat for
 // instructions on how to generate the new test case.
-const int kCurrentVersion = 30;
+const int kCurrentVersion = 31;
 
 // A bunch of convenience functions to write to/read from SerializeObjects.  The
 // de-serializers assume the input data will be in the correct format and fall
@@ -565,7 +566,7 @@ void ReadFrameState(
   if (obj->version < 14)
     ReadString(obj);  // Skip unused referrer string.
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (obj->version == 11) {
     // Now-unused values that shipped in this version of Chrome for Android when
     // it was on a private branch.
@@ -669,12 +670,12 @@ void WritePageState(const ExplodedPageState& state, SerializeObject* obj) {
 void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
                               mojom::RequestBody* mojo_body) {
   for (const auto& element : *request_body.elements()) {
-    mojom::ElementPtr data_element = mojom::Element::New();
+    mojom::ElementPtr data_element;
     switch (element.type()) {
       case network::DataElement::Tag::kBytes: {
         const auto& bytes = element.As<network::DataElementBytes>().bytes();
         const char* data = reinterpret_cast<const char*>(bytes.data());
-        data_element->set_bytes(
+        data_element = mojom::Element::NewBytes(
             std::vector<unsigned char>(data, data + bytes.size()));
         break;
       }
@@ -683,12 +684,12 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
         mojom::FilePtr file = mojom::File::New(
             element_file.path().AsUTF16Unsafe(), element_file.offset(),
             element_file.length(), element_file.expected_modification_time());
-        data_element->set_file(std::move(file));
+        data_element = mojom::Element::NewFile(std::move(file));
         break;
       }
       case network::DataElement::Tag::kDataPipe:
         NOTIMPLEMENTED();
-        break;
+        continue;
       case network::DataElement::Tag::kChunkedDataPipe:
         NOTREACHED();
         continue;
@@ -704,22 +705,22 @@ void ReadResourceRequestBody(
   for (const auto& element : mojo_body->elements) {
     mojom::Element::Tag tag = element->which();
     switch (tag) {
-      case mojom::Element::Tag::BYTES:
+      case mojom::Element::Tag::kBytes:
         AppendDataToRequestBody(
             request_body,
             reinterpret_cast<const char*>(element->get_bytes().data()),
             element->get_bytes().size());
         break;
-      case mojom::Element::Tag::FILE: {
+      case mojom::Element::Tag::kFile: {
         mojom::File* file = element->get_file().get();
         AppendFileRangeToRequestBody(request_body, file->path, file->offset,
                                      file->length, file->modification_time);
         break;
       }
-      case mojom::Element::Tag::BLOB_UUID:
+      case mojom::Element::Tag::kBlobUuid:
         // No longer supported.
         break;
-      case mojom::Element::Tag::DEPRECATED_FILE_SYSTEM_FILE:
+      case mojom::Element::Tag::kDeprecatedFileSystemFile:
         // No longer supported.
         break;
     }
@@ -790,9 +791,10 @@ void WriteFrameState(const ExplodedFrameState& state,
   frame->http_body = mojom::HttpBody::New();
   WriteHttpBody(state.http_body, frame->http_body.get());
 
-  frame->app_history_key = state.app_history_key;
-  frame->app_history_id = state.app_history_id;
-  frame->app_history_state = state.app_history_state;
+  frame->navigation_api_key = state.navigation_api_key;
+  frame->navigation_api_id = state.navigation_api_id;
+  frame->navigation_api_state = state.navigation_api_state;
+  frame->protect_url_in_navigation_api = state.protect_url_in_navigation_api;
 
   // Subitems
   const std::vector<ExplodedFrameState>& children = state.children;
@@ -846,9 +848,10 @@ void ReadFrameState(mojom::FrameState* frame, ExplodedFrameState* state) {
     state->http_body.request_body = nullptr;
   }
 
-  state->app_history_key = frame->app_history_key;
-  state->app_history_id = frame->app_history_id;
-  state->app_history_state = frame->app_history_state;
+  state->navigation_api_key = frame->navigation_api_key;
+  state->navigation_api_id = frame->navigation_api_id;
+  state->navigation_api_state = frame->navigation_api_state;
+  state->protect_url_in_navigation_api = frame->protect_url_in_navigation_api;
 
   state->children.resize(frame->children.size());
   int i = 0;
@@ -968,9 +971,10 @@ void ExplodedFrameState::assign(const ExplodedFrameState& other) {
   scroll_anchor_selector = other.scroll_anchor_selector;
   scroll_anchor_offset = other.scroll_anchor_offset;
   scroll_anchor_simhash = other.scroll_anchor_simhash;
-  app_history_key = other.app_history_key;
-  app_history_id = other.app_history_id;
-  app_history_state = other.app_history_state;
+  navigation_api_key = other.navigation_api_key;
+  navigation_api_id = other.navigation_api_id;
+  navigation_api_state = other.navigation_api_state;
+  protect_url_in_navigation_api = other.protect_url_in_navigation_api;
   children = other.children;
 }
 
@@ -1016,7 +1020,7 @@ void LegacyEncodePageStateForTesting(const ExplodedPageState& exploded,
   *encoded = obj.GetAsString();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool DecodePageStateWithDeviceScaleFactorForTesting(
     const std::string& encoded,
     float device_scale_factor,

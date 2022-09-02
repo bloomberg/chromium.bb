@@ -349,13 +349,37 @@ interface FrameWidgetInputHandler {
   // Expects a MoveRangeSelectionExtent_ACK message when finished.
   MoveRangeSelectionExtent(gfx.mojom.Point extent);
 
-  // Tells the renderer to scroll the currently focused node into rect only if
+  // Tells the renderer to scroll the currently focused node into view only if
   // the currently focused node is a Text node (textfield, text area or content
   // editable divs).
-  ScrollFocusedEditableNodeIntoRect(gfx.mojom.Rect rect);
+  ScrollFocusedEditableNodeIntoView();
+
+  // Replies when the next PageScaleAnimation has completed. Can only be called
+  // on the outermost main frame. Can be used to reliably wait for a
+  // ScrollFocusedEditableNodeIntoView to complete since that may create a
+  // PageScaleAnimation which can take several frames to complete.
+  // ScrollFocusedEditableNodeIntoView cannot use a reply callback for this
+  // since it may be called on a subframe but the scroll will be completed in
+  // another renderer when it bubbles up to the root. Additionally, the caller
+  // may not be the one to have called ScrollFocusedEditableNodeIntoView; for
+  // example, a test that simulates tapping an input box.
+  WaitForPageScaleAnimationForTesting() => ();
 
   // Requests the renderer to move the caret selection toward the point.
   MoveCaret(gfx.mojom.Point point);
+};
+
+// An enumeration describing the active and focus states. If a widget is
+// focused then it must also be active, therefore there is no focused and
+// not active value in this enumeration. All widgets in a tab will have
+// the same active state. Active state is tab specific, and focus state is
+// frame specific. See
+// https://www.chromium.org/developers/design-documents/aura/focus-and-activation/
+enum FocusState
+{
+  kFocused,
+  kNotFocusedAndActive,
+  kNotFocusedAndNotActive
 };
 
 // Interface exposed by the renderer to the browser. This class represents
@@ -363,7 +387,7 @@ interface FrameWidgetInputHandler {
 // for an interface at the frame level.
 interface WidgetInputHandler {
   // Tells widget focus has been changed.
-  SetFocus(bool focused);
+  SetFocus(FocusState state);
 
   // Tells widget mouse capture has been lost.
   MouseCaptureLost();

@@ -23,7 +23,7 @@ const char kBlinkSettings[] = "blink-settings";
 // the default dark mode settings is used. Valid params are given below.
 // "InversionAlgorithm" takes int value of DarkModeInversionAlgorithm enum.
 // "ImagePolicy" takes int value of DarkModeImagePolicy enum.
-// "TextBrightnessThreshold" takes 0 to 255 int value.
+// "ForegroundBrightnessThreshold" takes 0 to 255 int value.
 // "BackgroundBrightnessThreshold" takes 0 to 255 int value.
 // "ContrastPercent" takes -1.0 to 1.0 float value. Higher the value, more
 // the contrast.
@@ -127,6 +127,26 @@ const char kShowPaintRects[] = "show-paint-rects";
 // the platform default is used.
 const char kTouchTextSelectionStrategy[] = "touch-selection-strategy";
 
+// Used to communicate managed policy for the SetTimeoutWithoutClamp feature.
+// This feature is typically controlled by base::Feature (see
+// blink/common/features.*) but requires an enterprise policy override.
+// This is implicitly a tri-state, and can be either unset, or
+// set to "1" for force enable, or "0" for force disable.
+extern const char kSetTimeoutWithout1MsClampPolicy[] =
+    "set-timeout-without-1ms-clamp-policy";
+extern const char kSetTimeoutWithout1MsClampPolicy_ForceDisable[] = "0";
+extern const char kSetTimeoutWithout1MsClampPolicy_ForceEnable[] = "1";
+
+// Used to communicate managed policy for the MaxUnthrottledTimeoutNestingLevel
+// feature. This feature is typically controlled by base::Feature (see
+// blink/common/features.*) but requires an enterprise policy override. This is
+// implicitly a tri-state, and can be either unset, or set to "1" for force
+// enable, or "0" for force disable.
+extern const char kUnthrottledNestedTimeoutPolicy[] =
+    "unthrottled-nested-timeout-level-policy";
+extern const char kUnthrottledNestedTimeoutPolicy_ForceDisable[] = "0";
+extern const char kUnthrottledNestedTimeoutPolicy_ForceEnable[] = "1";
+
 // Comma-separated list of origins that can use SharedArrayBuffer without
 // enabling cross-origin isolation.
 const char kSharedArrayBufferAllowedOrigins[] =
@@ -135,11 +155,11 @@ const char kSharedArrayBufferAllowedOrigins[] =
 // Allows overriding the conditional focus window's length.
 const char kConditionalFocusWindowMs[] = "conditional-focus-window-ms";
 
-const char kWebSQLInThirdPartyContextEnabled[] =
-    "web-sql-in-third-party-context-enabled";
-
 // Specifies the flags passed to JS engine.
 const char kJavaScriptFlags[] = "js-flags";
+
+// Controls whether WebSQL is force enabled.
+const char kWebSQLAccess[] = "web-sql-access";
 
 }  // namespace switches
 }  // namespace blink

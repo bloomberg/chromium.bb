@@ -1,4 +1,0 @@
-half4 main(float2 xy) {
-    mix;
-    return half4(0);
-}

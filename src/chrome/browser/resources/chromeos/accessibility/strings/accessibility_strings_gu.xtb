@@ -52,7 +52,7 @@
 <translation id="1251750620252348585">આગલા સ્તર 6 નું મથાળું</translation>
 <translation id="1268366246392928616">કોઈ પાછલું ગાણિતિક પદ નથી</translation>
 <translation id="1273314450961659276">'ટેક્સ્ટ-ટૂ-સ્પીચ' સેટિંગ</translation>
-<translation id="1275718070701477396">પસંદ કરેલું</translation>
+<translation id="1275718070701477396">પસંદ કરેલ</translation>
 <translation id="1284576163386164372">તમે હંમેશા ચાર આંગળી વડે ટૅપ કરીને મેનૂ ખોલીને ટ્યૂટૉરિઅલ જોઈ શકો છો. પછી “ChromeVox” વિભાગ હેઠળ ટ્યૂટૉરિઅલ સક્રિય કરો.</translation>
 <translation id="1291286136605998134">ટૉગલ બટન</translation>
 <translation id="1299774449519412690">આછો આસમાની ભૂરો</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">કોષ્ટક <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">આગલા કી દબાણને અવગણે છે</translation>
 <translation id="4623097797855662355">પુષ્પિકા</translation>
+<translation id="4624970070706497034">TalkBack હવે Chromebooks પર કસ્ટમાઇઝેશનની સુવિધા આપતું નથી. તેમ છતાં તમે તેનો ઉપયોગ કરી શકો છો, પરંતુ તેના માટે TalkBackના ડિફૉલ્ટ કીબોર્ડ શૉર્ટકટનો ઉપયોગ કરો. ઉપલબ્ધ શૉર્ટકટ જોવા માટે કૃપા કરીને Search+A અને પછી K દબાવો. આમ છતાં જો તમે TalkBackનો ઉપયોગ કરવા માગતા હો, તો ફરી કમાંડ દબાવો.</translation>
 <translation id="463135993322337640">નવું શું છે તે શોધવા માટે ChromeVox o, n દબાવો</translation>
 <translation id="4649220074413114917">સ્ક્રીન પર બે આંગળી વડે ટૅપ કરવાથી કોઈપણ વર્તમાન સ્પીચ રોકી શકાય છે. જ્યારે તમે તેવું નથી ઈચ્છતા કે ChromeVox કંઈ વાંચે ત્યારે આ સહાયરૂપ થાય છે. ચાલુ રાખવા માટે, સ્ક્રીન પર બે આંગળી વડે ટૅપ કરો.</translation>
 <translation id="4660783501463101648">ક્લાસિક કાઢી નાખ્યું. ChromeVox ક્લાસિક પર સ્વિચ કરવા માટે કીબોર્ડ ટૉગલ કાઢી નાખવામાં આવ્યું છે.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">બ્રેઇલ કૅપ્શન ચાલુ કર્યા છે</translation>
 <translation id="5183440668879371625">પાછલી પંક્તિને બ્રેઇલમાં લખો</translation>
 <translation id="5189244881767082992">લાઇન</translation>
-<translation id="5234747236692380506">ટાઇપ કરો <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">મકાઈ જેવો સોનેરી</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">સમાપ્ત</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">ઝડપી ઓરિએન્ટેશનનો પાઠ પૂરો થયો!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">આછો ગ્રે</translation>
+<translation id="554893713779400387">શ્રુતલેખન ટૉગલ કરો</translation>
 <translation id="5549179427201066174">સાઉન્ડ પ્રતિસાદ (ઇઅરકોન)ને ચાલુ અથવા બંધ કરો</translation>
 <translation id="556042886152191864">બટન</translation>
 <translation id="5561345396546889625">આગલી સૂચિ</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">લૉગ</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ગ્રાફિક્સ પ્રતીક</translation>
+<translation id="5648939288050772726">અભિનંદન! તમે ChromeVoxનો સફળતાપૂર્વક ઉપયોગ કરવા માટેની જરૂરી વસ્તુઓ શીખી લીધી છે. યાદ રાખો કે તમે Search+Period દબાવીને કોઈપણ સમયે ChromeVoxનું આદેશ મેનૂ ખોલી શકો છો. ChromeVox અને ChromeOS વિશે હજી વધુ જાણવા માટે, નીચે આપેલા લેખો વાંચો.
+    જો તમે ટ્યૂટૉરિઅલ પૂરું કરી લીધું હોય, તો બંધ કરો બટન પર નૅવિગેટ કરવા અને તેને ક્લિક કરવા માટે ChromeVoxનો ઉપયોગ કરો.</translation>
 <translation id="5653397561111110475">Chromebook ટચ સ્ક્રીન ઍક્સેસિબિલિટી સુવિધાઓનો ઉપયોગ કરો</translation>
 <translation id="5655682562155942719">જંપ આદેશો</translation>
 <translation id="56637627897541303">ટેક્સ્ટ ક્ષેત્ર</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{મહાવિરામ}one{# મહાવિરામ}other{# મહાવિરામ}}</translation>
 <translation id="6444046323172968959">ચેતવણી સંવાદ</translation>
 <translation id="6452403590345320472">અનુક્રમણિકા</translation>
+<translation id="6457542714329819968">પ્રકાર</translation>
 <translation id="6468049171101508116">આગલું બટન</translation>
 <translation id="646954774886932461">અનુક્રમણિકા</translation>
 <translation id="6475604559827479857">શબ્દ હાઇલાઇટ કરવા માટેનો રંગ:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">સાહજિક અવાજ</translation>
 <translation id="7714340021005120797">કોઈ આગલું કૉમ્બો બૉક્સ નથી</translation>
-<translation id="772146615414628379">અભિનંદન! તમે ChromeVoxનો સફળતાપૂર્વક ઉપયોગ કરવા માટેની જરૂરી વસ્તુઓ શીખી લીધી છે. યાદ રાખો કે તમે Search+Period દબાવીને કોઈપણ સમયે ChromeVox આદેશ મેનૂ ખોલી શકો છો. ChromeVox અને Chrome OS વિશે હજી વધુ જાણવા માટે, નીચે આપેલા લેખો વાંચો.
-    જો તમે ટ્યૂટૉરિઅલ પૂરું કરી લીધું હોય, તો બંધ કરો બટન પર નૅવિગેટ કરવા અને તેને ક્લિક કરવા માટે ChromeVoxનો ઉપયોગ કરો.</translation>
 <translation id="7724603315864178912">કાપો</translation>
 <translation id="7731785449856576010">કોઈ આગલું મીડિયા વિજેટ નથી</translation>
 <translation id="7735498529470878067">'ટચ કરીને શોધખોળ કરો' સુવિધા તમને સ્ક્રીન પર શું છે તે ઝડપથી સમજવામાં સહાય કરે છે.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">ઘાટો લાલ</translation>
 <translation id="923331726185079994">ChromeVox અપડેટ થયું</translation>
 <translation id="93384979447910801">ઘેરો દરિયાઈ લીલો</translation>
+<translation id="937605981140327129">TalkBack હાલમાં ઇન્સ્ટૉલ કરવામાં આવ્યું નથી. કૃપા કરીને Play Store મારફતે Android AccessibilitySuite ઇન્સ્ટૉલ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="948171205378458592">ભાષણનો રેટ ઘટાડો</translation>
 <translation id="957570623732056069">આ પાઠ પર નૅવિગેટ કરવા માટે, એક આંગળી વડે ડાબે અથવા જમણે સ્વાઇપ કરો</translation>
 <translation id="958854023026327378">એક આંગળી નીચેની બાજુ સ્વાઇપ કરો</translation>

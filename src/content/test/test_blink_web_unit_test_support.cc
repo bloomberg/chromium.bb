@@ -18,6 +18,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/null_task_runner.h"
+#include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -43,7 +44,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "v8/include/v8.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
@@ -107,7 +108,7 @@ namespace content {
 
 TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     TestBlinkWebUnitTestSupport::SchedulerType scheduler_type) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
@@ -141,8 +142,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     main_thread_scheduler_ =
         blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
             base::MessagePump::Create(base::MessagePumpType::DEFAULT));
-    base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
-        "BlinkTestSupport");
+    base::test::TaskEnvironment::CreateThreadPool();
+    base::ThreadPoolInstance::Get()->StartWithDefaultParams();
   }
 
   // Initialize mojo firstly to enable Blink initialization to use it.
@@ -150,6 +151,10 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
 
   // Set V8 flags.
   v8::V8::SetFlagsFromString(v8_flags.c_str(), v8_flags.size());
+
+  // Makes Mojo calls to the browser. This is called inside
+  // blink::Initialize so it needs to be set first.
+  blink::WebRuntimeFeatures::EnableAndroidDownloadableFontsMatching(false);
 
   mojo::BinderMap binders;
   blink::Initialize(this, &binders, main_thread_scheduler_.get());
@@ -175,6 +180,10 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {
+  return blink::WebString::FromUTF8("test_runner/0.0.0.0");
+}
+
+blink::WebString TestBlinkWebUnitTestSupport::FullUserAgent() {
   return blink::WebString::FromUTF8("test_runner/0.0.0.0");
 }
 
@@ -256,10 +265,6 @@ bool TestBlinkWebUnitTestSupport::IsThreadedAnimationEnabled() {
   return threaded_animation_;
 }
 
-bool TestBlinkWebUnitTestSupport::IsUseZoomForDSFEnabled() {
-  return use_zoom_for_dsf_;
-}
-
 cc::TaskGraphRunner* TestBlinkWebUnitTestSupport::GetTaskGraphRunner() {
   return &test_task_graph_runner_;
 }
@@ -270,15 +275,6 @@ bool TestBlinkWebUnitTestSupport::SetThreadedAnimationEnabled(bool enabled) {
       << "Not using TestBlinkWebUnitTestSupport as blink::Platform";
   bool old = g_test_platform->threaded_animation_;
   g_test_platform->threaded_animation_ = enabled;
-  return old;
-}
-
-// static
-bool TestBlinkWebUnitTestSupport::SetUseZoomForDsfEnabled(bool enabled) {
-  DCHECK(g_test_platform)
-      << "Not using TestBlinkWebUnitTestSupport as blink::Platform";
-  bool old = g_test_platform->use_zoom_for_dsf_;
-  g_test_platform->use_zoom_for_dsf_ = enabled;
   return old;
 }
 

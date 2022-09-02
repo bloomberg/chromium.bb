@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_type.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_consumer.h"
 
+@protocol AdaptiveToolbarMenusProvider;
 @class AdaptiveToolbarViewController;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
@@ -32,9 +33,15 @@
 // Button factory.
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 // Dispatcher for the ViewController.
+// TODO(crbug.com/1323764): The only commands used here are PopupMenuCommands
+// and OmniboxCommands; these (and only these) should be provided by separate
+// dedicated handlers.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 // Delegate for the long press gesture recognizer triggering popup menu.
 @property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
+
+// Provider for the context menus.
+@property(nonatomic, weak) id<AdaptiveToolbarMenusProvider> menuProvider;
 
 // Returns the tools menu button.
 - (ToolbarToolsMenuButton*)toolsMenuButton;

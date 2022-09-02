@@ -27,8 +27,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -55,7 +55,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #include "base/critical_closure.h"
 #endif
 
@@ -101,12 +101,11 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
-                        const RedirectList& redirects,
                         base::Time visit_time) override {
     service_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&HistoryService::NotifyURLVisited, history_service_,
-                       transition, row, redirects, visit_time));
+                       transition, row, visit_time));
   }
 
   void NotifyURLsModified(const URLRows& changed_urls) override {
@@ -135,6 +134,15 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
         FROM_HERE,
         base::BindOnce(&HistoryService::NotifyKeywordSearchTermDeleted,
                        history_service_, url_id));
+  }
+
+  void NotifyContentModelAnnotationModified(
+      const URLRow& row,
+      const VisitContentModelAnnotations& model_annotations) override {
+    service_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HistoryService::NotifyContentModelAnnotationModified,
+                       history_service_, row, model_annotations));
   }
 
   void DBLoaded() override {
@@ -167,7 +175,7 @@ bool HistoryService::BackendLoaded() {
   return backend_loaded_;
 }
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 void HistoryService::HandleBackgrounding() {
   TRACE_EVENT0("browser", "HistoryService::HandleBackgrounding");
 
@@ -176,9 +184,10 @@ void HistoryService::HandleBackgrounding() {
 
   ScheduleTask(
       PRIORITY_NORMAL,
-      base::MakeCriticalClosure("HistoryService::HandleBackgrounding",
-                                base::BindOnce(&HistoryBackend::PersistState,
-                                               history_backend_.get())));
+      base::MakeCriticalClosure(
+          "HistoryService::HandleBackgrounding",
+          base::BindOnce(&HistoryBackend::PersistState, history_backend_.get()),
+          /*is_immediate=*/true));
 }
 #endif
 
@@ -283,31 +292,32 @@ base::CancelableTaskTracker::TaskId HistoryService::GetAnnotatedVisits(
       std::move(callback));
 }
 
-base::CancelableTaskTracker::TaskId
-HistoryService::GetRecentClusterIdsAndAnnotatedVisits(
-    base::Time minimum_time,
-    int max_results,
-    base::OnceCallback<void(ClusterIdsAndAnnotatedVisitsResult)> callback,
+base::CancelableTaskTracker::TaskId HistoryService::ReplaceClusters(
+    const std::vector<int64_t>& ids_to_delete,
+    const std::vector<Cluster>& clusters_to_add,
+    base::OnceClosure callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return tracker->PostTaskAndReplyWithResult(
+  return tracker->PostTaskAndReply(
       backend_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&HistoryBackend::GetRecentClusterIdsAndAnnotatedVisits,
-                     history_backend_, minimum_time, max_results),
+      base::BindOnce(&HistoryBackend::ReplaceClusters, history_backend_,
+                     ids_to_delete, clusters_to_add),
       std::move(callback));
 }
 
-base::CancelableTaskTracker::TaskId HistoryService::GetClusters(
-    int max_results,
+base::CancelableTaskTracker::TaskId HistoryService::GetMostRecentClusters(
+    base::Time inclusive_min_time,
+    base::Time exclusive_max_time,
+    int max_clusters,
     base::OnceCallback<void(std::vector<Cluster>)> callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&HistoryBackend::GetClusters, history_backend_,
-                     max_results),
+      base::BindOnce(&HistoryBackend::GetMostRecentClusters, history_backend_,
+                     inclusive_min_time, exclusive_max_time, max_clusters),
       std::move(callback));
 }
 
@@ -460,15 +470,15 @@ void HistoryService::UpdateWithPageEndTime(ContextID context_id,
                      context_id, nav_entry_id, url, end_ts));
 }
 
-void HistoryService::SetFlocAllowed(ContextID context_id,
-                                    int nav_entry_id,
-                                    const GURL& url) {
-  TRACE_EVENT0("browser", "HistoryService::SetFlocAllowed");
+void HistoryService::SetBrowsingTopicsAllowed(ContextID context_id,
+                                              int nav_entry_id,
+                                              const GURL& url) {
+  TRACE_EVENT0("browser", "HistoryService::SetBrowsingTopicsAllowed");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ScheduleTask(PRIORITY_NORMAL,
-               base::BindOnce(&HistoryBackend::SetFlocAllowed, history_backend_,
-                              context_id, nav_entry_id, url));
+               base::BindOnce(&HistoryBackend::SetBrowsingTopicsAllowed,
+                              history_backend_, context_id, nav_entry_id, url));
 }
 
 void HistoryService::AddContentModelAnnotationsForVisit(
@@ -492,6 +502,30 @@ void HistoryService::AddRelatedSearchesForVisit(
   ScheduleTask(PRIORITY_NORMAL,
                base::BindOnce(&HistoryBackend::AddRelatedSearchesForVisit,
                               history_backend_, visit_id, related_searches));
+}
+
+void HistoryService::AddSearchMetadataForVisit(
+    const GURL& search_normalized_url,
+    const std::u16string& search_terms,
+    VisitID visit_id) {
+  TRACE_EVENT0("browser", "HistoryService::AddSearchMetadataForVisit");
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::BindOnce(&HistoryBackend::AddSearchMetadataForVisit,
+                              history_backend_, visit_id, search_normalized_url,
+                              search_terms));
+}
+
+void HistoryService::AddPageMetadataForVisit(
+    const std::string& alternative_title,
+    VisitID visit_id) {
+  TRACE_EVENT0("browser", "HistoryService::AddPageMetadataForVisit");
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::BindOnce(&HistoryBackend::AddPageMetadataForVisit,
+                              history_backend_, visit_id, alternative_title));
 }
 
 void HistoryService::AddPageWithDetails(const GURL& url,
@@ -1022,7 +1056,6 @@ base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryMostVisitedURLs(
     int result_count,
-    int days_back,
     QueryMostVisitedURLsCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
@@ -1030,7 +1063,7 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryMostVisitedURLs(
   return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryMostVisitedURLs, history_backend_,
-                     result_count, days_back),
+                     result_count),
       std::move(callback));
 }
 
@@ -1151,6 +1184,18 @@ HistoryService::GetTypedURLSyncControllerDelegate() {
                           base::Unretained(history_backend_.get())));
 }
 
+std::unique_ptr<syncer::ModelTypeControllerDelegate>
+HistoryService::GetHistorySyncControllerDelegate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Note that a callback is bound for GetHistorySyncControllerDelegate()
+  // because this getter itself must also run in the backend sequence, and the
+  // proxy object below will take care of that.
+  return std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+      backend_task_runner_,
+      base::BindRepeating(&HistoryBackend::GetHistorySyncControllerDelegate,
+                          base::Unretained(history_backend_.get())));
+}
+
 void HistoryService::ProcessLocalDeleteDirective(
     const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1233,8 +1278,8 @@ void HistoryService::DeleteLocalAndRemoteHistoryBetween(
   // TODO(crbug.com/929111): This should be factored out into a separate class
   // that dispatches deletions to the proper places.
   if (web_history) {
-    delete_directive_handler_->CreateDeleteDirectives(std::set<int64_t>(),
-                                                      begin_time, end_time);
+    delete_directive_handler_->CreateTimeRangeDeleteDirective(begin_time,
+                                                              end_time);
 
     // Attempt online deletion from the history server, but ignore the result.
     // Deletion directives ensure that the results will eventually be deleted.
@@ -1320,11 +1365,10 @@ void HistoryService::OnDBLoaded() {
 
 void HistoryService::NotifyURLVisited(ui::PageTransition transition,
                                       const URLRow& row,
-                                      const RedirectList& redirects,
                                       base::Time visit_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (HistoryServiceObserver& observer : observers_)
-    observer.OnURLVisited(this, transition, row, redirects, visit_time);
+    observer.OnURLVisited(this, transition, row, visit_time);
 }
 
 void HistoryService::NotifyURLsModified(const URLRows& changed_urls) {
@@ -1399,6 +1443,14 @@ void HistoryService::NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                                            const GURL& icon_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   favicons_changed_callback_list_.Notify(page_urls, icon_url);
+}
+
+void HistoryService::NotifyContentModelAnnotationModified(
+    const URLRow& row,
+    const VisitContentModelAnnotations& model_annotations) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (HistoryServiceObserver& observer : observers_)
+    observer.OnContentModelAnnotationModified(this, row, model_annotations);
 }
 
 }  // namespace history

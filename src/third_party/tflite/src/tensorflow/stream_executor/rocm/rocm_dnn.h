@@ -21,7 +21,6 @@ limitations under the License.
 
 #include "absl/synchronization/mutex.h"
 #include "rocm/include/miopen/miopen.h"
-#include "tensorflow/core/platform/thread_annotations.h"
 #include "tensorflow/stream_executor/dnn.h"
 #include "tensorflow/stream_executor/lib/status.h"
 #include "tensorflow/stream_executor/plugin_registry.h"
@@ -251,9 +250,9 @@ class MIOpenSupport : public dnn::DnnSupport {
       override;
 
   port::StatusOr<std::unique_ptr<const dnn::ConvRunner>> ConvolveRunnerFromDesc(
-      const dnn::AlgorithmDesc& algorithm_desc, dnn::ConvolutionKind kind,
-      dnn::DataType input_type, dnn::DataType output_type,
-      const dnn::BatchDescriptor& input_descriptor,
+      Stream* stream, const dnn::AlgorithmDesc& algorithm_desc,
+      dnn::ConvolutionKind kind, dnn::DataType input_type,
+      dnn::DataType output_type, const dnn::BatchDescriptor& input_descriptor,
       const dnn::FilterDescriptor& filter_descriptor,
       const dnn::BatchDescriptor& output_descriptor,
       const dnn::ConvolutionDescriptor& convolution_descriptor) override;
@@ -439,59 +438,23 @@ class MIOpenSupport : public dnn::DnnSupport {
                   const DeviceMemory<float>& input_data,
                   DeviceMemory<float>* output_data, uint64_t options) override;
 
-  bool DoPoolForward(Stream* stream,
-                     const dnn::PoolingDescriptor& pooling_dimensions,
-                     const dnn::BatchDescriptor& input_dimensions,
-                     const DeviceMemory<double>& input_data,
-                     const dnn::BatchDescriptor& output_dimensions,
-                     DeviceMemory<double>* output_data,
-                     ScratchAllocator* workspace_allocator = nullptr) override;
+  port::Status DoPoolForward(dnn::DataType element_type, Stream* stream,
+                             const dnn::PoolingDescriptor& pooling_dimensions,
+                             const dnn::BatchDescriptor& input_dimensions,
+                             DeviceMemoryBase input_data,
+                             const dnn::BatchDescriptor& output_dimensions,
+                             DeviceMemoryBase output_data,
+                             ScratchAllocator* workspace_allocator) override;
 
-  bool DoPoolForward(Stream* stream,
-                     const dnn::PoolingDescriptor& pooling_dimensions,
-                     const dnn::BatchDescriptor& input_dimensions,
-                     const DeviceMemory<float>& input_data,
-                     const dnn::BatchDescriptor& output_dimensions,
-                     DeviceMemory<float>* output_data,
-                     ScratchAllocator* workspace_allocator = nullptr) override;
-
-  bool DoPoolForward(Stream* stream,
-                     const dnn::PoolingDescriptor& pooling_dimensions,
-                     const dnn::BatchDescriptor& input_dimensions,
-                     const DeviceMemory<Eigen::half>& input_data,
-                     const dnn::BatchDescriptor& output_dimensions,
-                     DeviceMemory<Eigen::half>* output_data,
-                     ScratchAllocator* workspace_allocator = nullptr) override;
-
-  bool DoPoolBackward(Stream* stream,
-                      const dnn::PoolingDescriptor& pooling_dimensions,
-                      const dnn::BatchDescriptor& input_dimensions,
-                      const DeviceMemory<double>& input_data,
-                      const dnn::BatchDescriptor& output_dimensions,
-                      const DeviceMemory<double>& output_data,
-                      const DeviceMemory<double>& input_diff_data,
-                      DeviceMemory<double>* output_diff_data,
-                      ScratchAllocator* workspace_allocator = nullptr) override;
-
-  bool DoPoolBackward(Stream* stream,
-                      const dnn::PoolingDescriptor& pooling_dimensions,
-                      const dnn::BatchDescriptor& input_dimensions,
-                      const DeviceMemory<float>& input_data,
-                      const dnn::BatchDescriptor& output_dimensions,
-                      const DeviceMemory<float>& output_data,
-                      const DeviceMemory<float>& input_diff_data,
-                      DeviceMemory<float>* output_diff_data,
-                      ScratchAllocator* workspace_allocator = nullptr) override;
-
-  bool DoPoolBackward(Stream* stream,
-                      const dnn::PoolingDescriptor& pooling_dimensions,
-                      const dnn::BatchDescriptor& input_dimensions,
-                      const DeviceMemory<Eigen::half>& input_data,
-                      const dnn::BatchDescriptor& output_dimensions,
-                      const DeviceMemory<Eigen::half>& output_data,
-                      const DeviceMemory<Eigen::half>& input_diff_data,
-                      DeviceMemory<Eigen::half>* output_diff_data,
-                      ScratchAllocator* workspace_allocator = nullptr) override;
+  port::Status DoPoolBackward(dnn::DataType element_type, Stream* stream,
+                              const dnn::PoolingDescriptor& pooling_dimensions,
+                              const dnn::BatchDescriptor& input_dimensions,
+                              DeviceMemoryBase input_data,
+                              const dnn::BatchDescriptor& output_dimensions,
+                              DeviceMemoryBase output_data,
+                              DeviceMemoryBase input_diff_data,
+                              DeviceMemoryBase output_diff_data,
+                              ScratchAllocator* workspace_allocator) override;
 
   bool DoNormalizeWithDimensions(
       Stream* stream, const dnn::NormalizeDescriptor& normalize_descriptor,
@@ -846,17 +809,6 @@ class MIOpenSupport : public dnn::DnnSupport {
       const dnn::ConvolutionDescriptor& convolution_descriptor,
       ScratchAllocator* scratch_allocator,
       std::vector<dnn::ProfileResult>* out_algorithms);
-
-  template <class T>
-  bool DoPoolBackwardImpl(Stream* stream,
-                          const dnn::PoolingDescriptor& pooling_dimensions,
-                          const dnn::BatchDescriptor& input_dimensions,
-                          const DeviceMemory<T>& input_data,
-                          const dnn::BatchDescriptor& output_dimensions,
-                          const DeviceMemory<T>& output_data,
-                          const DeviceMemory<T>& input_diff_data,
-                          DeviceMemory<T>* output_diff_data,
-                          ScratchAllocator* workspace_allocator = nullptr);
 
   SE_DISALLOW_COPY_AND_ASSIGN(MIOpenSupport);
 };

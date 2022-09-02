@@ -45,7 +45,7 @@ const wchar_t* FX_wcsstr(const wchar_t* haystack,
   const wchar_t* end_ptr = haystack + haystack_len - needle_len;
   while (haystack <= end_ptr) {
     size_t i = 0;
-    while (1) {
+    while (true) {
       if (haystack[i] != needle[i])
         break;
 
@@ -288,6 +288,13 @@ static_assert(sizeof(WideString) <= sizeof(wchar_t*),
               "Strings must not require more space than pointers");
 
 // static
+WideString WideString::FormatInteger(int i) {
+  wchar_t wbuf[32];
+  swprintf(wbuf, std::size(wbuf), L"%d", i);
+  return WideString(wbuf);
+}
+
+// static
 WideString WideString::FormatV(const wchar_t* format, va_list argList) {
   va_list argListCopy;
   va_copy(argListCopy, argList);
@@ -388,6 +395,14 @@ WideString::WideString(const std::initializer_list<WideStringView>& list) {
 }
 
 WideString::~WideString() = default;
+
+void WideString::clear() {
+  if (m_pData && m_pData->CanOperateInPlace(0)) {
+    m_pData->m_nDataLength = 0;
+    return;
+  }
+  m_pData.Reset();
+}
 
 WideString& WideString::operator=(const wchar_t* str) {
   if (!str || !str[0])
@@ -809,7 +824,7 @@ absl::optional<size_t> WideString::ReverseFind(wchar_t ch) const {
 }
 
 void WideString::MakeLower() {
-  if (!m_pData)
+  if (IsEmpty())
     return;
 
   ReallocBeforeWrite(m_pData->m_nDataLength);
@@ -817,7 +832,7 @@ void WideString::MakeLower() {
 }
 
 void WideString::MakeUpper() {
-  if (!m_pData)
+  if (IsEmpty())
     return;
 
   ReallocBeforeWrite(m_pData->m_nDataLength);
@@ -825,7 +840,7 @@ void WideString::MakeUpper() {
 }
 
 size_t WideString::Remove(wchar_t chRemove) {
-  if (!m_pData || m_pData->m_nDataLength == 0)
+  if (IsEmpty())
     return 0;
 
   wchar_t* pstrSource = m_pData->m_String;
@@ -867,7 +882,7 @@ size_t WideString::Replace(WideStringView pOld, WideStringView pNew) {
   size_t count = 0;
   const wchar_t* pStart = m_pData->m_String;
   wchar_t* pEnd = m_pData->m_String + m_pData->m_nDataLength;
-  while (1) {
+  while (true) {
     const wchar_t* pTarget =
         FX_wcsstr(pStart, static_cast<size_t>(pEnd - pStart),
                   pOld.unterminated_c_str(), nSourceLen);

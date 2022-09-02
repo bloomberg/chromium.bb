@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_VARIABLES_H_
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
@@ -73,6 +74,23 @@ class CORE_EXPORT StyleVariables {
  private:
   DataMap data_;
   Persistent<ValueMap> values_;
+
+  // Cache for speeding up operator==. Some pages tend to set large numbers
+  // of custom properties on elements high up in the DOM, and the sets of
+  // custom properties generally inherit wholesale, requiring us to
+  // compare the same pair of StyleVariables against each other over and over
+  // again. Thus, we cache the last comparison we did, with its result.
+  //
+  // For the cache to be valid, the two elements must have each other as
+  // cached partner. This allows us to easily and safely invalidate the cache
+  // from either side when a mutation happens: Just set our side to
+  // nullptr, without worrying about invalidating the other side (which may have
+  // been freed in the meantime). It also lets us easily catch the (relatively
+  // obscure) case where the other side has been deallocated and a newly
+  // constructed object has reused its address, since it will be constructed
+  // with a nullptr partner.
+  mutable const StyleVariables* equality_cache_partner_ = nullptr;
+  mutable bool equality_cached_result_;
 };
 
 }  // namespace blink

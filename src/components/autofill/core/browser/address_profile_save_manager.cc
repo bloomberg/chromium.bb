@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 
@@ -25,7 +26,8 @@ void AddressProfileSaveManager::ImportProfileFromForm(
     const AutofillProfile& observed_profile,
     const std::string& app_locale,
     const GURL& url,
-    bool allow_only_silent_updates) {
+    bool allow_only_silent_updates,
+    ProfileImportMetadata import_metadata) {
   // Without a personal data manager, profile storage is not possible.
   if (!personal_data_manager_)
     return;
@@ -34,8 +36,9 @@ void AddressProfileSaveManager::ImportProfileFromForm(
   // behavior and directly import the observed profile without recording any
   // additional metrics. However, if only silent updates are allowed, proceed
   // with the profile import process.
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillAddressProfileSavePrompt) &&
+  if ((!base::FeatureList::IsEnabled(
+           features::kAutofillAddressProfileSavePrompt) ||
+       personal_data_manager_->auto_accept_address_imports_for_testing()) &&
       !allow_only_silent_updates) {
     personal_data_manager_->SaveImportedProfile(observed_profile);
     return;
@@ -43,7 +46,7 @@ void AddressProfileSaveManager::ImportProfileFromForm(
 
   auto process_ptr = std::make_unique<ProfileImportProcess>(
       observed_profile, app_locale, url, personal_data_manager_,
-      allow_only_silent_updates);
+      allow_only_silent_updates, import_metadata);
 
   MaybeOfferSavePrompt(std::move(process_ptr));
 }
@@ -71,13 +74,6 @@ void AddressProfileSaveManager::MaybeOfferSavePrompt(
     case AutofillProfileImportType::kNewProfile:
     case AutofillProfileImportType::kConfirmableMerge:
     case AutofillProfileImportType::kConfirmableMergeAndSilentUpdate:
-      // Emulates manually accepting new profiles and profile updates for
-      // testing purposes. This should only be applied in tests.
-      if (personal_data_manager_->auto_accept_address_imports_for_testing()) {
-        import_process->AcceptWithoutEdits();
-        FinalizeProfileImport(std::move(import_process));
-        return;
-      }
       OfferSavePrompt(std::move(import_process));
       return;
 
@@ -158,6 +154,12 @@ void AddressProfileSaveManager::FinalizeProfileImport(
       personal_data_manager_->RemoveStrikesToBlockProfileUpdate(
           import_process->merge_candidate()->guid());
     }
+  }
+
+  // If an import is declined, all multi-step candidates should be cleared to
+  // avoid showing a similar import prompt again.
+  if (import_process->UserDeclined() && client_->GetFormDataImporter()) {
+    client_->GetFormDataImporter()->ClearMultiStepImportCandidates();
   }
 
   import_process->CollectMetrics();

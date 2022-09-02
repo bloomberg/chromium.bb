@@ -5,7 +5,9 @@
 #include <string>
 
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -20,7 +22,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/data_url.h"
-#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -36,6 +37,12 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
  public:
   AccessibilityActionBrowserTest() {}
   ~AccessibilityActionBrowserTest() override {}
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kDisableAXMenuList);
+    ContentBrowserTest::SetUp();
+  }
 
  protected:
   BrowserAccessibility* FindNode(ax::mojom::Role role,
@@ -71,7 +78,7 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLoadComplete);
     GURL html_data_url("data:text/html," +
-                       net::EscapeQueryParamValue(html, false));
+                       base::EscapeQueryParamValue(html, false));
     EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
     waiter.WaitForNotification();
   }
@@ -152,7 +159,7 @@ class AccessibilityCanvasActionBrowserTest
  public:
   void SetUp() override {
     EnablePixelOutput();
-    ContentBrowserTest::SetUp();
+    AccessibilityActionBrowserTest::SetUp();
   }
 };
 
@@ -256,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                      ax::mojom::FloatAttribute::kValueForRange));
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, VerticalScroll) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <div role="group" style="width:100; height:50; overflow:scroll"
           aria-label="shakespeare">
@@ -278,15 +285,102 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
   data.action = ax::mojom::Action::kScrollDown;
   data.target_node_id = target->GetId();
 
-  target->manager()->delegate()->AccessibilityPerformAction(data);
+  target->AccessibilityPerformAction(data);
   waiter2.WaitForNotification();
 
-  int y_after = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+  int y_step_1 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
 
-  EXPECT_GT(y_after, y_before);
+  EXPECT_GT(y_step_1, y_before);
+
+  data.action = ax::mojom::Action::kScrollUp;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int y_step_2 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  EXPECT_EQ(y_step_2, y_before);
+
+  data.action = ax::mojom::Action::kScrollForward;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int y_step_3 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  EXPECT_GT(y_step_3, y_before);
+  EXPECT_EQ(y_step_3, y_step_1);
+
+  data.action = ax::mojom::Action::kScrollBackward;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int y_step_4 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  EXPECT_EQ(y_step_4, y_before);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest, CanvasGetImage) {
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, HorizontalScroll) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div role="group" aria-label="shakespeare"
+          style="width:100; height:50; overflow:scroll; white-space: nowrap;">
+        To be or not to be, that is the question.
+      </div>
+      )HTML");
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kGroup, "shakespeare");
+  EXPECT_NE(target, nullptr);
+
+  int x_before = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED);
+
+  ui::AXActionData data;
+  data.action = ax::mojom::Action::kScrollRight;
+  data.target_node_id = target->GetId();
+
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int x_step_1 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  EXPECT_GT(x_step_1, x_before);
+
+  data.action = ax::mojom::Action::kScrollLeft;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int x_step_2 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  EXPECT_EQ(x_step_2, x_before);
+
+  data.action = ax::mojom::Action::kScrollForward;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int x_step_3 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  EXPECT_GT(x_step_3, x_before);
+  EXPECT_EQ(x_step_3, x_step_1);
+
+  data.action = ax::mojom::Action::kScrollBackward;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int x_step_4 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  EXPECT_EQ(x_step_4, x_before);
+}
+
+// Flaky on Mac https://crbug.com/1337760.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CanvasGetImage DISABLED_CanvasGetImage
+#else
+#define MAYBE_CanvasGetImage CanvasGetImage
+#endif
+IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest,
+                       MAYBE_CanvasGetImage) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <body>
         <canvas aria-label="canvas" id="c" width="4" height="2">
@@ -330,8 +424,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest, CanvasGetImage) {
   EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(3, 1));
 }
 
+// Flaky on Mac https://crbug.com/1337760.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CanvasGetImageScale DISABLED_CanvasGetImageScale
+#else
+#define MAYBE_CanvasGetImageScale CanvasGetImageScale
+#endif
 IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest,
-                       CanvasGetImageScale) {
+                       MAYBE_CanvasGetImageScale) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <body>
       <canvas aria-label="canvas" id="c" width="40" height="20">
@@ -468,13 +568,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, TextareaSetValue) {
   // which contain all of the line break information.
   //
   // We should do it with accessibility flags instead. http://crbug.com/672205
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Check that it really does contain two lines.
   BrowserAccessibility::AXPosition start_position =
       target->CreateTextPositionAt(0);
   BrowserAccessibility::AXPosition end_of_line_1 =
       start_position->CreateNextLineEndPosition(
-          ui::AXBoundaryBehavior::CrossBoundary);
+          {ui::AXBoundaryBehavior::kCrossBoundary,
+           ui::AXBoundaryDetection::kDontCheckInitialPosition});
   EXPECT_EQ(5, end_of_line_1->text_offset());
 #endif
 }
@@ -490,11 +591,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   ASSERT_NE(nullptr, target);
   EXPECT_EQ(u"Before", target->GetValueForControl());
 
-  AccessibilityNotificationWaiter waiter2(
+  AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
       ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED);
   GetManager()->SetValue(*target, "Line1\nLine2");
-  waiter2.WaitForNotification();
+  waiter.WaitForNotification();
 
   EXPECT_EQ(u"Line1\nLine2", target->GetValueForControl());
 
@@ -502,13 +603,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   // which contain all of the line break information.
   //
   // We should do it with accessibility flags instead. http://crbug.com/672205
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Check that it really does contain two lines.
   BrowserAccessibility::AXPosition start_position =
       target->CreateTextPositionAt(0);
   BrowserAccessibility::AXPosition end_of_line_1 =
       start_position->CreateNextLineEndPosition(
-          ui::AXBoundaryBehavior::CrossBoundary);
+          {ui::AXBoundaryBehavior::kCrossBoundary,
+           ui::AXBoundaryDetection::kDontCheckInitialPosition});
   EXPECT_EQ(5, end_of_line_1->text_offset());
 #endif
 }
@@ -818,7 +920,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusLostOnDeletedNode) {
 
 // Action::kScrollToMakeVisible does not seem reliable on Android and we are
 // currently only using it for desktop screen readers.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <!DOCTYPE html>
@@ -956,7 +1058,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
     EXPECT_FALSE(doc_left_third.Contains(bounds));
   }
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ClickSVG) {
   // Create an svg link element that has the shape of a small, red square.
@@ -981,22 +1083,19 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ClickSVG) {
   EXPECT_EQ(1U, target_node->PlatformChildCount());
   GetManager()->DoDefaultAction(*target_node);
   click_waiter.WaitForNotification();
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // This waiter times out on some Android try bots.
   // TODO(akihiroota): Refactor test to be applicable to all platforms.
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
                                                 "SVG link was clicked!");
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
-// This test ony makes sense on platforms where the popup menu is implemented
+// These tests only makes sense on platforms where the popup menu is implemented
 // internally as an HTML page in a popup, not where it's a native popup.
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(USE_ATK)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(USE_ATK)
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                        OpenSelectPopupWithNoAXMenuList) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kDisableAXMenuList);
-
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <head><title>No AXMenuList</title></head>
       <body>
@@ -1031,6 +1130,36 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   ASSERT_TRUE(listbox);
   EXPECT_EQ(3U, listbox->PlatformChildCount());
 }
-#endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(USE_ATK)
 
+// This test was added after a bug was causing popup's accessible nodes to not
+// be added to the tree when the AXMenuList feature was disabled to prevent a
+// similar regression to occur again.
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
+                       OpenInputColorPopupWithNoAXMenuList) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <body>
+        <input type="color" aria-label="color picker">
+      </body>
+      )HTML");
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kColorWell, "color picker");
+  ASSERT_NE(nullptr, target);
+
+  EXPECT_EQ(0U, target->PlatformChildCount());
+
+  // Call DoDefaultAction.
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kClicked);
+  GetManager()->DoDefaultAction(*target);
+  waiter.WaitForNotification();
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Format toggler");
+
+  ASSERT_EQ(1U, target->PlatformChildCount());
+  BrowserAccessibility* popup_web_area = target->PlatformGetChild(0);
+  EXPECT_EQ(ax::mojom::Role::kRootWebArea, popup_web_area->GetRole());
+}
+#endif  // BUILDFLAG(OS_WIN) || BUILDFLAG(OS_CHROMEOS) || BUILDFLAG(USE_ATK)
 }  // namespace content

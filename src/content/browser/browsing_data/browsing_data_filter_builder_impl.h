@@ -27,6 +27,10 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
   // BrowsingDataFilterBuilder implementation:
   void AddOrigin(const url::Origin& origin) override;
   void AddRegisterableDomain(const std::string& registrable_domain) override;
+  void SetCookiePartitionKeyCollection(
+      const net::CookiePartitionKeyCollection& cookie_partition_key_collection)
+      override;
+  bool IsCrossSiteClearSiteData() const override;
   bool MatchesAllOriginsAndDomains() override;
   base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter() override;
   base::RepeatingCallback<bool(const url::Origin&)> BuildOriginFilter()
@@ -37,13 +41,16 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
       override;
   Mode GetMode() override;
   std::unique_ptr<BrowsingDataFilterBuilder> Copy() override;
-  bool operator==(const BrowsingDataFilterBuilder& other) override;
 
  private:
+  bool IsEqual(const BrowsingDataFilterBuilder& other) const override;
+
   Mode mode_;
 
   std::set<url::Origin> origins_;
   std::set<std::string> domains_;
+  net::CookiePartitionKeyCollection cookie_partition_key_collection_ =
+      net::CookiePartitionKeyCollection::ContainsAll();
 };
 
 }  // content

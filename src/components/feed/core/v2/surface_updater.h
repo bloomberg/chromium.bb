@@ -12,7 +12,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
-#include "base/observer_list.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/v2/enums.h"
@@ -20,6 +19,7 @@
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/stream_surface_set.h"
 #include "components/feed/core/v2/types.h"
+#include "components/feed/core/v2/xsurface_datastore.h"
 
 namespace feedui {
 class StreamUpdate;
@@ -32,9 +32,11 @@ class MetricsReporter;
 // Updates are triggered when |StreamModel| changes, or when loading state
 // changes (for spinners and zero-state).
 class SurfaceUpdater : public StreamModel::Observer,
-                       public StreamSurfaceSet::Observer {
+                       public StreamSurfaceSet::Observer,
+                       public XsurfaceDatastoreDataReader::Observer {
  public:
   explicit SurfaceUpdater(MetricsReporter* metrics_reporter,
+                          XsurfaceDatastoreDataReader* global_datastore_slice,
                           StreamSurfaceSet* surfaces);
   ~SurfaceUpdater() override;
   SurfaceUpdater(const SurfaceUpdater&) = delete;
@@ -45,8 +47,7 @@ class SurfaceUpdater : public StreamModel::Observer,
   // surfaces, so they will keep any content they may have been displaying
   // before. We don't send a zero-state in this case, since we might want to
   // immediately trigger a load.
-  void SetModel(StreamModel* model,
-                const LoggingParameters& logging_parameters);
+  void SetModel(StreamModel* model);
 
   // StreamModel::Observer.
   void OnUiUpdate(const StreamModel::UiUpdate& update) override;
@@ -56,6 +57,12 @@ class SurfaceUpdater : public StreamModel::Observer,
       FeedStreamSurface* surface,
       feedwire::DiscoverLaunchResult loading_not_allowed_reason) override;
   void SurfaceRemoved(FeedStreamSurface* surface) override;
+
+  // XsurfaceDatastoreDataReader::Observer.
+  void DatastoreEntryUpdated(XsurfaceDatastoreDataReader* source,
+                             const std::string& key) override;
+  void DatastoreEntryRemoved(XsurfaceDatastoreDataReader* source,
+                             const std::string& key) override;
 
   // Called to indicate the initial model load is in progress.
   void LoadStreamStarted(bool manual_refreshing);
@@ -104,13 +111,16 @@ class SurfaceUpdater : public StreamModel::Observer,
   // Owned by |FeedStream|.
   raw_ptr<MetricsReporter> metrics_reporter_;
   raw_ptr<StreamSurfaceSet> surfaces_;
+  // Per-StreamType xsurface data.
+  XsurfaceDatastoreSlice surface_data_slice_;
+  // Combines `surface_data_slice_`, and the global data.
+  XsurfaceDatastoreAggregate aggregate_data_;
 
   // Members that affect what is sent to surfaces. A value change of these may
   // require sending an update to surfaces.
   bool loading_more_ = false;
   bool loading_initial_ = false;
   bool load_stream_failed_ = false;
-  LoggingParameters logging_parameters_;
   LoadStreamStatus load_stream_status_ = LoadStreamStatus::kNoStatus;
 
   // The |DrawState| when the last update was sent to all surfaces.
@@ -118,10 +128,6 @@ class SurfaceUpdater : public StreamModel::Observer,
 
   // The set of content that has been sent to all attached surfaces.
   base::flat_set<ContentRevision> sent_content_;
-
-  // XSurface datastore entries that should be sent to all surfaces.
-  // Cached here so that we don't need to recompute for a new surface.
-  std::map<std::string, std::string> xsurface_datastore_entries_;
 
   // Owned by |FeedStream|. Null when the model is not loaded.
   raw_ptr<StreamModel> model_ = nullptr;

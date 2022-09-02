@@ -17,9 +17,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/share/share_submenu_model.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
+#include "chrome/browser/autofill/autofill_context_menu_manager.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
@@ -44,6 +42,7 @@
 #endif
 
 class AccessibilityLabelsMenuObserver;
+class Browser;
 class ClickToCallContextMenuObserver;
 class LinkToTextMenuObserver;
 class PrintPreviewContextMenuObserver;
@@ -52,6 +51,10 @@ class QuickAnswersMenuObserver;
 class SharedClipboardContextMenuObserver;
 class SpellingMenuObserver;
 class SpellingOptionsSubMenuObserver;
+
+namespace ash {
+class SystemWebAppDelegate;
+}
 
 namespace content {
 class RenderFrameHost;
@@ -75,10 +78,6 @@ class MediaPlayerAction;
 
 namespace ui {
 class DataTransferEndpoint;
-}
-
-namespace web_app {
-class SystemWebAppDelegate;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -182,7 +181,7 @@ class RenderViewContextMenu
 
   // RenderViewContextMenuBase:
   void InitMenu() override;
-  void RecordShownItem(int id) override;
+  void RecordShownItem(int id, bool is_submenu) override;
 #if BUILDFLAG(ENABLE_PLUGINS)
   void HandleAuthorizeAllPlugins() override;
 #endif
@@ -214,6 +213,7 @@ class RenderViewContextMenu
   void AppendLinkToTextItems();
   void AppendPrintItem();
   void AppendMediaRouterItem();
+  void AppendReadAnythingItem();
   void AppendRotationItems();
   void AppendEditableItems();
   void AppendLanguageSettings();
@@ -233,12 +233,16 @@ class RenderViewContextMenu
   void AppendPasswordItems();
   void AppendPictureInPictureItem();
   void AppendSharingItems();
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
   void AppendClickToCallItem();
 #endif
   void AppendSharedClipboardItem();
   void AppendRegionSearchItem();
-  void AppendQRCodeGeneratorItem(bool for_image, bool draw_icon);
+  bool AppendFollowUnfollowItem();
+  void AppendSendTabToSelfItem(bool add_separator);
+  bool AppendQRCodeGeneratorItem(bool for_image,
+                                 bool draw_icon,
+                                 bool add_separator);
 
   std::unique_ptr<ui::DataTransferEndpoint> CreateDataEndpoint(
       bool notify_if_restricted) const;
@@ -294,6 +298,8 @@ class RenderViewContextMenu
   void ExecLanguageSettings(int event_flags);
   void ExecProtocolHandlerSettings(int event_flags);
   void ExecPictureInPicture();
+  // Implemented in RenderViewContextMenuViews.
+  void ExecOpenInReadAnything() override {}
 
   void MediaPlayerActionAt(const gfx::Point& location,
                            const blink::mojom::MediaPlayerAction& action);
@@ -307,6 +313,11 @@ class RenderViewContextMenu
 
   // ProtocolHandlerRegistry::Observer:
   void OnProtocolHandlerRegistryChanged() override;
+
+  // Cleans |link_to_text_menu_observer_|. It is useful to clean unused
+  // resources as |RenderViewContextMenu| gets destroyed only with next context
+  // menu is opened.
+  void OnLinkToTextMenuCompleted();
 
   // The destination URL to use if the user tries to search for or navigate to
   // a text selection.
@@ -338,19 +349,20 @@ class RenderViewContextMenu
       accessibility_labels_menu_observer_;
   ui::SimpleMenuModel accessibility_labels_submenu_model_;
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // An observer that handles the submenu for showing spelling options. This
   // submenu lets users select the spelling language, for example.
   std::unique_ptr<SpellingOptionsSubMenuObserver>
       spelling_options_submenu_observer_;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // An observer that handles "Open with <app>" items.
   std::unique_ptr<RenderViewContextMenuObserver> open_with_menu_observer_;
   // An observer that handles smart text selection action items.
   std::unique_ptr<RenderViewContextMenuObserver>
       start_smart_selection_action_menu_observer_;
+  // An observer that generate Quick answers queries.
   std::unique_ptr<QuickAnswersMenuObserver> quick_answers_menu_observer_;
 #endif
 
@@ -366,13 +378,6 @@ class RenderViewContextMenu
   // |source_web_contents_|.
   const raw_ptr<content::WebContents> embedder_web_contents_;
 
-  // Send tab to self submenu.
-  std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
-      send_tab_to_self_sub_menu_model_;
-
-  // Sharing submenu, if present.
-  std::unique_ptr<share::ShareSubmenuModel> share_submenu_model_;
-
   // Click to call menu observer.
   std::unique_ptr<ClickToCallContextMenuObserver>
       click_to_call_context_menu_observer_;
@@ -382,7 +387,7 @@ class RenderViewContextMenu
       shared_clipboard_context_menu_observer_;
 
   // The system app (if any) associated with the WebContents we're in.
-  raw_ptr<const web_app::SystemWebAppDelegate> system_app_ = nullptr;
+  raw_ptr<const ash::SystemWebAppDelegate> system_app_ = nullptr;
 
   // A one-time callback that will be called the next time a plugin action is
   // executed from a given render frame.
@@ -398,6 +403,11 @@ class RenderViewContextMenu
   std::unique_ptr<lens::LensRegionSearchController>
       lens_region_search_controller_;
 #endif
+
+  // Responsible for handling autofill related context menu items.
+  autofill::AutofillContextMenuManager autofill_context_menu_manager_;
+
+  base::WeakPtrFactory<RenderViewContextMenu> weak_pointer_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_H_

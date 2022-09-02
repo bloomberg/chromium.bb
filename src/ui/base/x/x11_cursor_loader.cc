@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -20,11 +19,10 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -199,8 +197,7 @@ std::vector<std::string> GetBaseThemes(const base::FilePath& abspath) {
 }
 
 base::FilePath CanonicalizePath(base::FilePath path) {
-  std::vector<std::string> components;
-  path.GetComponents(&components);
+  std::vector<std::string> components = path.GetComponents();
   if (components[0] == "~") {
     path = base::GetHomeDir();
     for (size_t i = 1; i < components.size(); i++)
@@ -313,7 +310,7 @@ XCursorLoader::XCursorLoader(x11::Connection* connection)
   if (auto pf_reply = pf_cookie.Sync())
     pict_format_ = GetRenderARGBFormat(*pf_reply.reply);
 
-  for (uint16_t i = 0; i < base::size(cursor_names); i++)
+  for (uint16_t i = 0; i < std::size(cursor_names); i++)
     cursor_name_to_char_[cursor_names[i]] = i;
 }
 

@@ -38,7 +38,7 @@ namespace blpwtk2 {
                         // ---------------------
 
 WebViewHostImpl::WebViewHostImpl(
-        mojom::WebViewClientPtr&&                    clientPtr,
+        mojo::Remote<mojom::WebViewClient>           clientPtr,
         const mojom::WebViewCreateParams&            params,
         BrowserContextImpl                          *browserContext,
         unsigned int                                 hostAffinity,

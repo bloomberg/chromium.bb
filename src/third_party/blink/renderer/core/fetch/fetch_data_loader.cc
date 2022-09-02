@@ -70,7 +70,11 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
     data_pipe_loader_->Start(consumer_, this);
   }
 
-  void Cancel() override { consumer_->Cancel(); }
+  void Cancel() override {
+    load_canceled_ = true;
+    blob_handle_.reset();
+    consumer_->Cancel();
+  }
 
   void DidFetchDataStartedDataPipe(
       mojo::ScopedDataPipeConsumerHandle handle) override {
@@ -105,6 +109,8 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
  private:
   void FinishedCreatingFromDataPipe(
       const scoped_refptr<BlobDataHandle>& blob_handle) {
+    if (load_canceled_)
+      return;
     if (!blob_handle) {
       DidFetchDataLoadFailed();
       return;
@@ -124,6 +130,7 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<BlobDataHandle> blob_handle_;
   bool load_complete_ = false;
+  bool load_canceled_ = false;
 };
 
 class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
@@ -154,8 +161,7 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
         if (available > 0) {
           bool ok = Append(buffer, SafeCast<wtf_size_t>(available));
           if (!ok) {
-            auto unused = consumer_->EndRead(0);
-            ALLOW_UNUSED_LOCAL(unused);
+            [[maybe_unused]] auto unused = consumer_->EndRead(0);
             consumer_->Cancel();
             client_->DidFetchDataLoadFailed();
             return;
@@ -531,8 +537,11 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : data_pipe_watcher_(FROM_HERE,
                            mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                           std::move(task_runner)) {}
-  ~FetchDataLoaderAsDataPipe() override {}
+                           task_runner),
+        data_pipe_close_watcher_(FROM_HERE,
+                                 mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                                 std::move(task_runner)) {}
+  ~FetchDataLoaderAsDataPipe() override = default;
 
   void Start(BytesConsumer* consumer,
              FetchDataLoader::Client* client) override {
@@ -572,8 +581,14 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
           out_data_pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
           WTF::BindRepeating(&FetchDataLoaderAsDataPipe::OnWritable,
                              WrapWeakPersistent(this)));
+      data_pipe_close_watcher_.Watch(
+          out_data_pipe_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+          MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+          WTF::BindRepeating(&FetchDataLoaderAsDataPipe::OnPeerClosed,
+                             WrapWeakPersistent(this)));
 
       data_pipe_watcher_.ArmOrNotify();
+      data_pipe_close_watcher_.ArmOrNotify();
     }
 
     // Give the resulting pipe consumer handle to the client.
@@ -586,6 +601,11 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
     if (consumer->GetPublicState() !=
         BytesConsumer::PublicState::kReadableOrWaiting)
       OnStateChange();
+  }
+
+  void OnPeerClosed(MojoResult result, const mojo::HandleSignalsState& state) {
+    StopInternal();
+    client_->DidFetchDataLoadFailed();
   }
 
   void OnWritable(MojoResult) { OnStateChange(); }
@@ -652,17 +672,21 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
  private:
   void StopInternal() {
     consumer_->Cancel();
-    data_pipe_watcher_.Cancel();
-    out_data_pipe_.reset();
+    Dispose();
   }
 
-  void Dispose() { data_pipe_watcher_.Cancel(); }
+  void Dispose() {
+    data_pipe_watcher_.Cancel();
+    data_pipe_close_watcher_.Cancel();
+    out_data_pipe_.reset();
+  }
 
   Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
 
   mojo::ScopedDataPipeProducerHandle out_data_pipe_;
   mojo::SimpleWatcher data_pipe_watcher_;
+  mojo::SimpleWatcher data_pipe_close_watcher_;
 };
 
 }  // namespace

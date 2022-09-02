@@ -36,14 +36,17 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HAR from '../../models/har/har.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
+import * as Persistence from '../../models/persistence/persistence.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as Sources from '../../panels/sources/sources.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -57,7 +60,11 @@ import {Events, NetworkGroupNode, NetworkRequestNode} from './NetworkDataGridNod
 import {NetworkFrameGrouper} from './NetworkFrameGrouper.js';
 import {NetworkLogViewColumns} from './NetworkLogViewColumns.js';
 import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js';
-import {NetworkTimeBoundary, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator} from './NetworkTimeCalculator.js';
+import {
+  NetworkTimeBoundary,
+  NetworkTransferDurationCalculator,
+  NetworkTransferTimeCalculator,
+} from './NetworkTimeCalculator.js';
 
 const UIStrings = {
   /**
@@ -342,6 +349,11 @@ const UIStrings = {
   *@description Text in Network Log View of the Network panel
   */
   areYouSureYouWantToClearBrowserCookies: 'Are you sure you want to clear browser cookies?',
+  /**
+  *@description A context menu item in the Network Log View of the Network panel
+  * for creating a header override
+  */
+  createResponseHeaderOverride: 'Create response header override',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkLogView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -750,7 +762,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
     }
     const file = items[0].getAsFile();
     if (file) {
-      this.onLoadFromFile(file);
+      void this.onLoadFromFile(file);
     }
   }
 
@@ -1572,6 +1584,12 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
 
     contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAllAsHarWithContent), this.exportAll.bind(this));
 
+    if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
+      contextMenu.editSection().appendItem(
+          i18nString(UIStrings.createResponseHeaderOverride),
+          this.#handleCreateResponseHeaderOverrideClick.bind(this, request));
+      contextMenu.editSection().appendSeparator();
+    }
     contextMenu.editSection().appendItem(i18nString(UIStrings.clearBrowserCache), this.clearBrowserCache.bind(this));
     contextMenu.editSection().appendItem(
         i18nString(UIStrings.clearBrowserCookies), this.clearBrowserCookies.bind(this));
@@ -1582,16 +1600,16 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
       let patterns = manager.blockedPatterns();
 
       function addBlockedURL(url: string): void {
-        patterns.push({enabled: true, url: url});
+        patterns.push({enabled: true, url: url as Platform.DevToolsPath.UrlString});
         manager.setBlockedPatterns(patterns);
         manager.setBlockingEnabled(true);
-        UI.ViewManager.ViewManager.instance().showView('network.blocked-urls');
+        void UI.ViewManager.ViewManager.instance().showView('network.blocked-urls');
       }
 
       function removeBlockedURL(url: string): void {
         patterns = patterns.filter(pattern => pattern.url !== url);
         manager.setBlockedPatterns(patterns);
-        UI.ViewManager.ViewManager.instance().showView('network.blocked-urls');
+        void UI.ViewManager.ViewManager.instance().showView('network.blocked-urls');
       }
 
       const urlWithoutScheme = request.parsedURL.urlWithoutScheme();
@@ -1673,10 +1691,10 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
     }
     const url = mainTarget.inspectedURL();
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
-    const filename = parsedURL ? parsedURL.host : 'network-log';
+    const filename = (parsedURL ? parsedURL.host : 'network-log') as Platform.DevToolsPath.RawPathString;
     const stream = new Bindings.FileUtils.FileOutputStream();
 
-    if (!await stream.open(filename + '.har')) {
+    if (!await stream.open(Common.ParsedURL.ParsedURL.concatenate(filename, '.har'))) {
       return;
     }
 
@@ -1684,7 +1702,28 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
     this.progressBarContainer.appendChild(progressIndicator.element);
     await HAR.Writer.Writer.write(stream, this.harRequests(), progressIndicator);
     progressIndicator.done();
-    stream.close();
+    void stream.close();
+  }
+
+  async #handleCreateResponseHeaderOverrideClick(request: SDK.NetworkRequest.NetworkRequest): Promise<void> {
+    if (Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().project()) {
+      await this.#revealHeaderOverrideEditor(request);
+    } else {  // If folder for local overrides has not been provided yet
+      UI.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async(): Promise<void> => {
+        await Sources.SourcesNavigator.OverridesNavigatorView.instance().setupNewWorkspace();
+        await this.#revealHeaderOverrideEditor(request);
+      });
+    }
+  }
+
+  async #revealHeaderOverrideEditor(request: SDK.NetworkRequest.NetworkRequest): Promise<void> {
+    const networkPersistanceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+    const uiSourceCode = await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
+    if (uiSourceCode) {
+      const sourcesPanel = Sources.SourcesPanel.SourcesPanel.instance();
+      sourcesPanel.showUISourceCode(uiSourceCode);
+      sourcesPanel.revealInNavigator(uiSourceCode);
+    }
   }
 
   private clearBrowserCache(): void {
@@ -1716,7 +1755,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
       return false;
     }
     if (this.onlyIssuesFilterUI.checked() &&
-        !IssuesManager.RelatedIssue.hasIssueOfCategory(request, IssuesManager.Issue.IssueCategory.SameSiteCookie)) {
+        !IssuesManager.RelatedIssue.hasIssueOfCategory(request, IssuesManager.Issue.IssueCategory.Cookie)) {
       return false;
     }
     if (this.onlyBlockedRequestsUI.checked() && !request.wasBlocked() && !request.corsErrorStatus()) {
@@ -2265,15 +2304,11 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
   }
 
   static getDCLEventColor(): string {
-    if (ThemeSupport.ThemeSupport.instance().themeName() === 'dark') {
-      return '#03A9F4';
-    }
-    return '#0867CB';
+    return ThemeSupport.ThemeSupport.instance().getComputedValue('--color-syntax-3');
   }
 
   static getLoadEventColor(): string {
-    return ThemeSupport.ThemeSupport.instance().patchColorText(
-        '#B31412', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    return ThemeSupport.ThemeSupport.instance().getComputedValue('--color-syntax-1');
   }
 }
 

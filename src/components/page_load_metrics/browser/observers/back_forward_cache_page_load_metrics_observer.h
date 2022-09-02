@@ -18,9 +18,7 @@ namespace internal {
 extern const char
     kAverageUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore
         [];
-extern const char
-    kSlowUserInteractionLatencyOverBudgetHighPercentile_MaxEventDuration_AfterBackForwardCacheRestore
-        [];
+extern const char kNumInteractions_AfterBackForwardCacheRestore[];
 extern const char
     kSlowUserInteractionLatencyOverBudgetHighPercentile2_MaxEventDuration_AfterBackForwardCacheRestore
         [];
@@ -28,28 +26,10 @@ extern const char
     kSumOfUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore
         [];
 extern const char
+    kUserInteractionLatencyHighPercentile2_MaxEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
     kWorstUserInteractionLatency_MaxEventDuration_AfterBackForwardCacheRestore
-        [];
-extern const char
-    kWorstUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore
-        [];
-extern const char
-    kAverageUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore
-        [];
-extern const char
-    kSlowUserInteractionLatencyOverBudgetHighPercentile_TotalEventDuration_AfterBackForwardCacheRestore
-        [];
-extern const char
-    kSlowUserInteractionLatencyOverBudgetHighPercentile2_TotalEventDuration_AfterBackForwardCacheRestore
-        [];
-extern const char
-    kSumOfUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore
-        [];
-extern const char
-    kWorstUserInteractionLatency_TotalEventDuration_AfterBackForwardCacheRestore
-        [];
-extern const char
-    kWorstUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore
         [];
 
 extern const char kHistogramFirstPaintAfterBackForwardCacheRestore[];
@@ -85,6 +65,9 @@ class BackForwardCachePageLoadMetricsObserver
       content::NavigationHandle* navigation_handle,
       const GURL& currently_committed_url,
       bool started_in_foreground) override;
+  page_load_metrics::PageLoadMetricsObserver::ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy OnHidden(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy

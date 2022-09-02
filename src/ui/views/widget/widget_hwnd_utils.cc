@@ -14,7 +14,7 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/win/hwnd_message_handler.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/base/win/shell.h"
 #endif
 
@@ -93,9 +93,6 @@ void CalculateWindowStylesFromInitParams(
     case Widget::InitParams::TYPE_CONTROL:
       *style |= WS_VISIBLE;
       break;
-    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
-      *style |= WS_POPUP;
-      break;
     case Widget::InitParams::TYPE_BUBBLE:
       *style |= WS_POPUP;
       *style |= WS_CLIPCHILDREN;
@@ -120,7 +117,9 @@ void CalculateWindowStylesFromInitParams(
       if (!params.force_show_in_taskbar)
         *ex_style |= WS_EX_TOOLWINDOW;
       break;
+    case Widget::InitParams::TYPE_DRAG:
     case Widget::InitParams::TYPE_TOOLTIP:
+    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
       *style |= WS_POPUP;
       break;
     default:

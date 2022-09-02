@@ -12,8 +12,10 @@
 #include <utility>
 
 #include "base/as_const.h"
-#include "base/check_op.h"
+#include "base/check.h"
 #include "base/containers/vector_buffer.h"
+#include "base/dcheck_is_on.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/ranges/algorithm.h"
 #include "base/template_util.h"
 
@@ -297,16 +299,16 @@ class circular_deque_const_iterator {
     // Since circular_deque doesn't guarantee stability, any attempt to
     // dereference this iterator after a mutation (i.e. the generation doesn't
     // match the original) in the container is illegal.
-    DCHECK_EQ(created_generation_, parent_deque_->generation_)
+    DCHECK(created_generation_ == parent_deque_->generation_)
         << "circular_deque iterator dereferenced after mutation.";
   }
   void CheckComparable(const circular_deque_const_iterator& other) const {
-    DCHECK_EQ(parent_deque_, other.parent_deque_);
+    DCHECK(parent_deque_ == other.parent_deque_);
     // Since circular_deque doesn't guarantee stability, two iterators that
     // are compared must have been generated without mutating the container.
     // If this fires, the container was mutated between generating the two
     // iterators being compared.
-    DCHECK_EQ(created_generation_, other.created_generation_);
+    DCHECK(created_generation_ == other.created_generation_);
   }
 #else
   inline void CheckUnstableUsage() const {}
@@ -317,7 +319,7 @@ class circular_deque_const_iterator {
   // on-stack pointer, pointing back to the collection being iterated, owned by
   // object that iterates over it.  Additionally this is supported by the
   // analysis of sampling profiler data and tab_search:top100:2020.
-  const circular_deque<T>* parent_deque_;
+  RAW_PTR_EXCLUSION const circular_deque<T>* parent_deque_;
 
   size_t index_;
 
@@ -718,9 +720,12 @@ class circular_deque {
   insert(const_iterator pos, InputIterator first, InputIterator last) {
     ValidateIterator(pos);
 
-    size_t inserted_items = std::distance(first, last);
-    if (inserted_items == 0)
+    const difference_type inserted_items_signed = std::distance(first, last);
+    if (inserted_items_signed == 0)
       return;  // Can divide by 0 when doing modulo below, so return early.
+    CHECK(inserted_items_signed > 0);
+    const size_type inserted_items =
+        static_cast<size_type>(inserted_items_signed);
 
     // Make a hole to copy the items into.
     iterator insert_cur;

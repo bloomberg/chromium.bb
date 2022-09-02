@@ -60,17 +60,14 @@ void CellularInhibitor::RecordInhibitOperationResult(
 
 CellularInhibitor::CellularInhibitor() = default;
 
-CellularInhibitor::~CellularInhibitor() {
-  if (network_state_handler_)
-    network_state_handler_->RemoveObserver(this, FROM_HERE);
-}
+CellularInhibitor::~CellularInhibitor() = default;
 
 void CellularInhibitor::Init(NetworkStateHandler* network_state_handler,
                              NetworkDeviceHandler* network_device_handler) {
   network_state_handler_ = network_state_handler;
   network_device_handler_ = network_device_handler;
 
-  network_state_handler_->AddObserver(this, FROM_HERE);
+  network_state_handler_observer_.Observe(network_state_handler_);
 }
 
 void CellularInhibitor::InhibitCellularScanning(InhibitReason reason,
@@ -285,10 +282,8 @@ void CellularInhibitor::OnSetPropertySuccess() {
   CheckInhibitPropertyIfNeeded();
 }
 
-void CellularInhibitor::OnSetPropertyError(
-    bool attempted_inhibit,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void CellularInhibitor::OnSetPropertyError(bool attempted_inhibit,
+                                           const std::string& error_name) {
   NET_LOG(ERROR) << (attempted_inhibit ? "Inhibit" : "Uninhibit")
                  << "CellularScanning() failed: " << error_name;
   ReturnSetInhibitPropertyResult(/*success=*/false,
@@ -383,6 +378,9 @@ std::ostream& operator<<(
       break;
     case chromeos::CellularInhibitor::InhibitReason::kResettingEuiccMemory:
       stream << "[Resetting EUICC memory]";
+      break;
+    case chromeos::CellularInhibitor::InhibitReason::kDisablingProfile:
+      stream << "[Disabling profile]";
       break;
   }
   return stream;

@@ -38,7 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
 #else
 #include "chrome/browser/ui/browser.h"
@@ -75,7 +75,7 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
 
     // Close the tab only if there is a browser for it (which is not the case
     // for example in a <webview>).
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     if (!chrome::FindBrowserWithWebContents(web_contents))
       return;
 #endif
@@ -94,7 +94,7 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
 
   void CloseTabImpl() {
     // On Android, FindBrowserWithWebContents and TabStripModel don't exist.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     Browser* browser = chrome::FindBrowserWithWebContents(&GetWebContents());
     DCHECK(browser);
     TabStripModel* tab_strip = browser->tab_strip_model();
@@ -158,7 +158,7 @@ std::unique_ptr<SupervisedUserInterstitial> SupervisedUserInterstitial::Create(
       base::WrapUnique(new SupervisedUserInterstitial(
           web_contents, url, reason, frame_id, interstitial_navigation_id));
 
-  if (web_contents->GetMainFrame()->GetFrameTreeNodeId() == frame_id)
+  if (web_contents->GetPrimaryMainFrame()->GetFrameTreeNodeId() == frame_id)
     CleanUpInfoBar(web_contents);
 
   // Caller is responsible for deleting the interstitial.
@@ -213,7 +213,8 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
 
 void SupervisedUserInterstitial::GoBack() {
   // GoBack only for main frame.
-  DCHECK_EQ(web_contents()->GetMainFrame()->GetFrameTreeNodeId(), frame_id());
+  DCHECK_EQ(web_contents()->GetPrimaryMainFrame()->GetFrameTreeNodeId(),
+            frame_id());
 
   UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand", BACK,
                             HISTOGRAM_BOUNDING_VALUE);
@@ -227,7 +228,7 @@ void SupervisedUserInterstitial::RequestUrlAccessRemote(
                             ACCESS_REQUEST, HISTOGRAM_BOUNDING_VALUE);
 
   RequestPermissionSource source;
-  if (web_contents()->GetMainFrame()->GetFrameTreeNodeId() == frame_id())
+  if (web_contents()->GetPrimaryMainFrame()->GetFrameTreeNodeId() == frame_id())
     source = RequestPermissionSource::MAIN_FRAME;
   else
     source = RequestPermissionSource::SUB_FRAME;
@@ -248,7 +249,7 @@ void SupervisedUserInterstitial::RequestUrlAccessLocal(
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->web_approvals_manager().RequestLocalApproval(
-      url_, std::move(callback));
+      web_contents(), url_, std::move(callback));
 }
 
 void SupervisedUserInterstitial::ShowFeedback() {
@@ -262,7 +263,7 @@ void SupervisedUserInterstitial::ShowFeedback() {
           reason_, second_custodian.empty()));
   std::string message = l10n_util::GetStringFUTF8(
       IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT, reason);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ReportChildAccountFeedback(web_contents_, message, url_);
 #else
   chrome::ShowFeedbackPage(

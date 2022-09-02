@@ -12,11 +12,6 @@
 
 namespace {
 
-constexpr char kSRTPromptSeedParam[] = "Seed";
-
-constexpr base::FeatureParam<std::string> kSRTPromptGroupNameParam{
-    &safe_browsing::kChromeCleanupInBrowserPromptFeature, "Group", "Off"};
-
 // The download links of the Software Removal Tool.
 constexpr char kDownloadRootPath[] =
     "https://dl.google.com/dl/softwareremovaltool/win/";
@@ -33,15 +28,8 @@ constexpr char kSRTX64StableDownloadURL[] =
 
 namespace safe_browsing {
 
-const base::Feature kChromeCleanupInBrowserPromptFeature{
-    "InBrowserCleanerUI", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kChromeCleanupDistributionFeature{
     "ChromeCleanupDistribution", base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsSRTPromptFeatureEnabled() {
-  return base::FeatureList::IsEnabled(kChromeCleanupInBrowserPromptFeature);
-}
 
 GURL GetStableDownloadURL() {
   const std::string url = base::win::OSInfo::GetArchitecture() ==
@@ -72,21 +60,10 @@ GURL GetSRTDownloadURL() {
 
   // Ensure URL construction didn't change origin.
   const GURL download_root(kDownloadRootPath);
-  const url::Origin known_good_origin = url::Origin::Create(download_root);
-  url::Origin current_origin = url::Origin::Create(download_url);
-  if (!current_origin.IsSameOriginWith(known_good_origin))
+  if (!url::IsSameOriginWith(download_url, download_root))
     return GetStableDownloadURL();
 
   return download_url;
-}
-
-std::string GetIncomingSRTSeed() {
-  return base::GetFieldTrialParamValueByFeature(
-      kChromeCleanupInBrowserPromptFeature, kSRTPromptSeedParam);
-}
-
-std::string GetSRTPromptGroupName() {
-  return kSRTPromptGroupNameParam.Get();
 }
 
 void RecordPromptNotShownWithReasonHistogram(

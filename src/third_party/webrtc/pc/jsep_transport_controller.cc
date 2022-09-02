@@ -12,9 +12,9 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <functional>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -62,6 +62,7 @@ JsepTransportController::JsepTransportController(
   RTC_DCHECK(config_.rtcp_handler);
   RTC_DCHECK(config_.ice_transport_factory);
   RTC_DCHECK(config_.on_dtls_handshake_error_);
+  RTC_DCHECK(config_.field_trials);
 }
 
 JsepTransportController::~JsepTransportController() {
@@ -106,7 +107,7 @@ RTCError JsepTransportController::SetRemoteDescription(
 }
 
 RtpTransportInternal* JsepTransportController::GetRtpTransport(
-    const std::string& mid) const {
+    absl::string_view mid) const {
   RTC_DCHECK_RUN_ON(network_thread_);
   auto jsep_transport = GetJsepTransportForMid(mid);
   if (!jsep_transport) {
@@ -399,6 +400,7 @@ JsepTransportController::CreateIceTransport(const std::string& transport_name,
   init.set_port_allocator(port_allocator_);
   init.set_async_dns_resolver_factory(async_dns_resolver_factory_);
   init.set_event_log(config_.event_log);
+  init.set_field_trials(config_.field_trials);
   return config_.ice_transport_factory->CreateIceTransport(
       transport_name, component, std::move(init));
 }
@@ -477,8 +479,8 @@ JsepTransportController::CreateSdesTransport(
     cricket::DtlsTransportInternal* rtp_dtls_transport,
     cricket::DtlsTransportInternal* rtcp_dtls_transport) {
   RTC_DCHECK_RUN_ON(network_thread_);
-  auto srtp_transport =
-      std::make_unique<webrtc::SrtpTransport>(rtcp_dtls_transport == nullptr);
+  auto srtp_transport = std::make_unique<webrtc::SrtpTransport>(
+      rtcp_dtls_transport == nullptr, *config_.field_trials);
   RTC_DCHECK(rtp_dtls_transport);
   srtp_transport->SetRtpPacketTransport(rtp_dtls_transport);
   if (rtcp_dtls_transport) {
@@ -497,7 +499,7 @@ JsepTransportController::CreateDtlsSrtpTransport(
     cricket::DtlsTransportInternal* rtcp_dtls_transport) {
   RTC_DCHECK_RUN_ON(network_thread_);
   auto dtls_srtp_transport = std::make_unique<webrtc::DtlsSrtpTransport>(
-      rtcp_dtls_transport == nullptr);
+      rtcp_dtls_transport == nullptr, *config_.field_trials);
   if (config_.enable_external_auth) {
     dtls_srtp_transport->EnableExternalAuth();
   }
@@ -996,6 +998,15 @@ const cricket::JsepTransport* JsepTransportController::GetJsepTransportForMid(
 
 cricket::JsepTransport* JsepTransportController::GetJsepTransportForMid(
     const std::string& mid) {
+  return transports_.GetTransportForMid(mid);
+}
+const cricket::JsepTransport* JsepTransportController::GetJsepTransportForMid(
+    absl::string_view mid) const {
+  return transports_.GetTransportForMid(mid);
+}
+
+cricket::JsepTransport* JsepTransportController::GetJsepTransportForMid(
+    absl::string_view mid) {
   return transports_.GetTransportForMid(mid);
 }
 

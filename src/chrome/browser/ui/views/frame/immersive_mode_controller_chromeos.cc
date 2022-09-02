@@ -51,13 +51,14 @@ ToImmersiveFullscreenControllerAnimateReveal(
   return chromeos::ImmersiveFullscreenController::ANIMATE_REVEAL_NO;
 }
 
-class ImmersiveRevealedLockAsh : public ImmersiveRevealedLock {
+class ImmersiveRevealedLockChromeos : public ImmersiveRevealedLock {
  public:
-  explicit ImmersiveRevealedLockAsh(chromeos::ImmersiveRevealedLock* lock)
+  explicit ImmersiveRevealedLockChromeos(chromeos::ImmersiveRevealedLock* lock)
       : lock_(lock) {}
 
-  ImmersiveRevealedLockAsh(const ImmersiveRevealedLockAsh&) = delete;
-  ImmersiveRevealedLockAsh& operator=(const ImmersiveRevealedLockAsh&) = delete;
+  ImmersiveRevealedLockChromeos(const ImmersiveRevealedLockChromeos&) = delete;
+  ImmersiveRevealedLockChromeos& operator=(
+      const ImmersiveRevealedLockChromeos&) = delete;
 
  private:
   std::unique_ptr<chromeos::ImmersiveRevealedLock> lock_;
@@ -112,10 +113,11 @@ int ImmersiveModeControllerChromeos::GetTopContainerVerticalOffset(
                           (visible_fraction_ - 1));
 }
 
-ImmersiveRevealedLock* ImmersiveModeControllerChromeos::GetRevealedLock(
-    AnimateReveal animate_reveal) {
-  return new ImmersiveRevealedLockAsh(controller_.GetRevealedLock(
-      ToImmersiveFullscreenControllerAnimateReveal(animate_reveal)));
+std::unique_ptr<ImmersiveRevealedLock>
+ImmersiveModeControllerChromeos::GetRevealedLock(AnimateReveal animate_reveal) {
+  return std::make_unique<ImmersiveRevealedLockChromeos>(
+      controller_.GetRevealedLock(
+          ToImmersiveFullscreenControllerAnimateReveal(animate_reveal)));
 }
 
 void ImmersiveModeControllerChromeos::OnFindBarVisibleBoundsChanged(

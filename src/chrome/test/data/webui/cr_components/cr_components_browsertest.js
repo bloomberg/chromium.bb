@@ -11,6 +11,7 @@ GEN('#include "chrome/browser/browser_features.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "build/chromeos_buildflags.h"');
+GEN('#include "crypto/crypto_buildflags.h"');
 
 /* eslint-disable no-var */
 
@@ -42,7 +43,7 @@ TEST_F('CrComponentsColorChangeListenerTest', 'All', function() {
 var CrComponentsManagedFootnoteTest = class extends CrComponentsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_components/managed_footnote_test.js';
+    return 'chrome://test/test_loader.html?module=cr_components/managed_footnote_test.js&host=webui-test';
   }
 };
 
@@ -50,7 +51,7 @@ TEST_F('CrComponentsManagedFootnoteTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(USE_NSS_CERTS)');
+GEN('#if BUILDFLAG(USE_NSS_CERTS)');
 
 /**
  * Test fixture for chrome://settings/certificates. This tests the
@@ -59,7 +60,7 @@ GEN('#if defined(USE_NSS_CERTS)');
 var CrComponentsCertificateManagerTest = class extends CrComponentsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_test.js';
+    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_test.js&host=webui-test';
   }
 };
 
@@ -67,10 +68,10 @@ TEST_F('CrComponentsCertificateManagerTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif  // defined(USE_NSS_CERTS)');
+GEN('#endif  // BUILDFLAG(USE_NSS_CERTS)');
 
 
-GEN('#if defined(USE_NSS_CERTS) && BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#if BUILDFLAG(USE_NSS_CERTS) && BUILDFLAG(IS_CHROMEOS_ASH)');
 
 /**
  * ChromeOS specific test fixture for chrome://settings/certificates, testing
@@ -81,7 +82,7 @@ var CrComponentsCertificateManagerProvisioningTest =
     class extends CrComponentsCertificateManagerTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_provisioning_test.js';
+    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_provisioning_test.js&host=webui-test';
   }
 };
 
@@ -89,15 +90,62 @@ TEST_F('CrComponentsCertificateManagerProvisioningTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif  // defined(USE_NSS_CERTS) && BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif  // BUILDFLAG(USE_NSS_CERTS) && BUILDFLAG(IS_CHROMEOS_ASH)');
 
 var CrComponentsManagedDialogTest = class extends CrComponentsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_components/managed_dialog_test.js';
+    return 'chrome://test/test_loader.html?module=cr_components/managed_dialog_test.js&host=webui-test';
   }
 };
 
 TEST_F('CrComponentsManagedDialogTest', 'All', function() {
+  mocha.run();
+});
+
+var CrComponentsLocalizedLinkTest = class extends CrComponentsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_components/localized_link_test.js';
+  }
+};
+
+TEST_F('CrComponentsLocalizedLinkTest', 'All', function() {
+  mocha.run();
+});
+
+var CrComponentsAppManagementPermissionItemTest =
+    class extends CrComponentsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_components/app_management/permission_item_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrComponentsAppManagementPermissionItemTest', 'All', function() {
+  mocha.run();
+});
+
+var CrComponentsAppManagementFileHandlingItemTest =
+    class extends CrComponentsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_components/app_management/file_handling_item_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrComponentsAppManagementFileHandlingItemTest', 'All', function() {
+  mocha.run();
+});
+
+var CrComponentsAppManagementWindowModeTest =
+    class extends CrComponentsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_components/app_management/window_mode_item_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrComponentsAppManagementWindowModeTest', 'All', function() {
   mocha.run();
 });

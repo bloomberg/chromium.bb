@@ -24,7 +24,7 @@ class DlpReportingManager;
 class DlpRulesManagerImpl : public DlpRulesManager {
  public:
   using RuleId = int;
-  using UrlConditionId = url_matcher::URLMatcherConditionSet::ID;
+  using UrlConditionId = base::MatcherStringPattern::ID;
 
   ~DlpRulesManagerImpl() override;
 
@@ -52,9 +52,6 @@ class DlpRulesManagerImpl : public DlpRulesManager {
                                   Restriction restriction,
                                   Level level) const override;
   size_t GetClipboardCheckSizeLimitInBytes() const override;
-  std::vector<uint64_t> GetDisallowedFileTransfers(
-      const std::vector<FileMetadata>& transferred_files,
-      const GURL& destination) const override;
 
  protected:
   friend class DlpRulesManagerFactory;

@@ -10,6 +10,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
@@ -173,6 +174,79 @@ void UpdateSwapChainTransform(const gfx::Size& quad_size,
   float swap_chain_scale_y =
       quad_size.height() * 1.0f / swap_chain_size.height();
   transform->Scale(swap_chain_scale_x, swap_chain_scale_y);
+}
+
+const GUID GUID_INTEL_VPE_INTERFACE = {
+    0xedd1d4b9,
+    0x8659,
+    0x4cbc,
+    {0xa4, 0xd6, 0x98, 0x31, 0xa2, 0x16, 0x3a, 0xc3}};
+
+enum : UINT {
+  kIntelVpeFnVersion = 0x01,
+  kIntelVpeFnMode = 0x20,
+  kIntelVpeFnScaling = 0x37,
+};
+
+enum : UINT {
+  kIntelVpeVersion3 = 0x0003,
+};
+
+enum : UINT {
+  kIntelVpeModeNone = 0x0,
+  kIntelVpeModePreproc = 0x01,
+};
+
+enum : UINT {
+  kIntelVpeScalingDefault = 0x0,
+  kIntelVpeScalingSuperResolution = 0x2,
+};
+
+struct IntelVpeExt {
+  UINT function;
+  raw_ptr<void> param;
+};
+
+void ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
+                                  ID3D11VideoProcessor* video_processor,
+                                  bool is_on_battery_power) {
+  TRACE_EVENT1("gpu", "ToggleIntelVpSuperResolution", "on",
+               !is_on_battery_power);
+
+  IntelVpeExt ext = {};
+  UINT param = 0;
+  ext.param = &param;
+
+  ext.function = kIntelVpeFnVersion;
+  param = kIntelVpeVersion3;
+  HRESULT hr = video_context->VideoProcessorSetOutputExtension(
+      video_processor, &GUID_INTEL_VPE_INTERFACE, sizeof(ext), &ext);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "VideoProcessorSetOutputExtension failed with error 0x"
+                << std::hex << hr;
+    return;
+  }
+
+  ext.function = kIntelVpeFnMode;
+  param = is_on_battery_power ? kIntelVpeModeNone : kIntelVpeModePreproc;
+  hr = video_context->VideoProcessorSetOutputExtension(
+      video_processor, &GUID_INTEL_VPE_INTERFACE, sizeof(ext), &ext);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "VideoProcessorSetOutputExtension failed with error 0x"
+                << std::hex << hr;
+    return;
+  }
+
+  ext.function = kIntelVpeFnScaling;
+  param = is_on_battery_power ? kIntelVpeScalingDefault
+                              : kIntelVpeScalingSuperResolution;
+
+  hr = video_context->VideoProcessorSetStreamExtension(
+      video_processor, 0, &GUID_INTEL_VPE_INTERFACE, sizeof(ext), &ext);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "VideoProcessorSetStreamExtension failed with error 0x"
+                << std::hex << hr;
+  }
 }
 
 }  // namespace
@@ -586,11 +660,11 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
     Microsoft::WRL::ComPtr<IDCompositionMatrixTransform> dcomp_transform;
     dcomp_device_->CreateMatrixTransform(&dcomp_transform);
     DCHECK(dcomp_transform);
-    // skia::Matrix44 is column-major, but D2D_MATRIX_3x2_F is row-major.
+    // D2D_MATRIX_3x2_F is row-major.
     D2D_MATRIX_3X2_F d2d_matrix = {
-        {{transform.matrix().get(0, 0), transform.matrix().get(1, 0),
-          transform.matrix().get(0, 1), transform.matrix().get(1, 1),
-          transform.matrix().get(0, 3), transform.matrix().get(1, 3)}}};
+        {{transform.matrix().rc(0, 0), transform.matrix().rc(1, 0),
+          transform.matrix().rc(0, 1), transform.matrix().rc(1, 1),
+          transform.matrix().rc(0, 3), transform.matrix().rc(1, 3)}}};
     dcomp_transform->SetMatrix(d2d_matrix);
     content_visual_->SetTransform(dcomp_transform.Get());
   }
@@ -1399,6 +1473,12 @@ bool SwapChainPresenter::VideoProcessorBlt(
         return false;
       }
       DCHECK(output_view_);
+    }
+
+    if (!layer_tree_->disable_vp_super_resolution() &&
+        base::FeatureList::IsEnabled(features::kIntelVpSuperResolution)) {
+      ToggleIntelVpSuperResolution(video_context.Get(), video_processor.Get(),
+                                   is_on_battery_power_);
     }
 
     hr = video_context->VideoProcessorBlt(video_processor.Get(),

@@ -73,10 +73,10 @@ bool MockIMEInputContextHandler::SetAutocorrectRange(const gfx::Range& range) {
   return true;
 }
 
-absl::optional<GrammarFragment> MockIMEInputContextHandler::GetGrammarFragment(
-    const gfx::Range& range) {
+absl::optional<GrammarFragment>
+MockIMEInputContextHandler::GetGrammarFragmentAtCursor() {
   for (const auto& fragment : grammar_fragments_) {
-    if (fragment.range.Contains(range)) {
+    if (fragment.range.Contains(cursor_range_)) {
       return fragment;
     }
   }
@@ -154,6 +154,10 @@ void MockIMEInputContextHandler::ConfirmCompositionText(bool reset_engine,
 
 bool MockIMEInputContextHandler::HasCompositionText() {
   return !last_update_composition_arg_.composition_text.text.empty();
+}
+
+std::u16string MockIMEInputContextHandler::GetCompositionText() {
+  return last_update_composition_arg_.composition_text.text;
 }
 
 ukm::SourceId MockIMEInputContextHandler::GetClientSourceForMetrics() {

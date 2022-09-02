@@ -1,3 +1,5 @@
+#!/usr/bin/env vpython3
+
 # Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
 #
 # Use of this source code is governed by a BSD-style license
@@ -7,35 +9,24 @@
 # be found in the AUTHORS file in the root of the source tree.
 
 
+# Runs PRESUBMIT.py in py3 mode by git cl presubmit.
+USE_PYTHON3 = True
+
+
 def _CommonChecks(input_api, output_api):
   results = []
 
-  # Run Pylint over the files in the directory.
-  pylint_checks = input_api.canned_checks.GetPylint(
-      input_api,
-      output_api,
-      version='2.7',
-      # Disabling certain python3-specific warnings until the conversion
-      # is complete.
-      disabled_warnings=[
-          'super-with-arguments',
-          'raise-missing-from',
-          'useless-object-inheritance',
-          'arguments-differ',
-      ],
-  )
-  results.extend(input_api.RunTests(pylint_checks))
-
   # Run the MB unittests.
-  results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api,
-      output_api,
-      '.',
-      [ r'^.+_unittest\.py$'],
-      skip_shebang_check=True))
+  results.extend(
+      input_api.canned_checks.RunUnitTestsInDirectory(input_api,
+                                                      output_api,
+                                                      '.',
+                                                      [r'^.+_unittest\.py$'],
+                                                      skip_shebang_check=False,
+                                                      run_on_python2=False))
 
   # Validate the format of the mb_config.pyl file.
-  cmd = [input_api.python_executable, 'mb.py', 'validate']
+  cmd = [input_api.python3_executable, 'mb.py', 'validate']
   kwargs = {'cwd': input_api.PresubmitLocalPath()}
   results.extend(input_api.RunTests([
       input_api.Command(name='mb_validate',

@@ -494,12 +494,12 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         def make_groups(group_ir_class, operations):
-            sort_key = lambda x: x.identifier
+            sort_key = lambda x: (x.is_static, x.identifier)
             return [
                 group_ir_class(list(operations_in_group))
-                for identifier, operations_in_group in itertools.groupby(
+                for key, operations_in_group in itertools.groupby(
                     sorted(operations, key=sort_key), key=sort_key)
-                if identifier
+                if key[1]  # This is the operation identifier.
             ]
 
         for old_ir in old_irs:
@@ -681,7 +681,11 @@ class IdlCompiler(object):
             self._ir_map.add(new_ir)
 
             assert not new_ir.exposed_constructs
-            global_names = new_ir.extended_attributes.values_of('Global')
+            # Not only [Global] but also [TargetOfExposed] will expose IDL
+            # constructs with [Exposed].
+            global_names = (
+                new_ir.extended_attributes.values_of('Global') +
+                new_ir.extended_attributes.values_of('TargetOfExposed'))
             if not global_names:
                 continue
             constructs = set()

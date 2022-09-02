@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
-#include "components/policy/core/browser/url_util.h"
 #include "components/url_matcher/url_matcher.h"
+#include "components/url_matcher/url_util.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents.h"
@@ -63,7 +63,7 @@ void WebTimeLimitEnforcer::OnTimeLimitAllowlistChanged(
 
   url_matcher::URLMatcherConditionSet::Vector condition_set_vector;
   auto* condition_factory = url_matcher_->condition_factory();
-  int id = 0;
+  base::MatcherStringPattern::ID id = 0;
   for (const auto& url : allowlisted_urls) {
     url_matcher::URLMatcherCondition condition =
         condition_factory->CreateURLMatchesCondition(url);
@@ -87,7 +87,7 @@ bool WebTimeLimitEnforcer::IsURLAllowlisted(const GURL& url) const {
   if (!url_matcher_)
     return false;
 
-  GURL effective_url = policy::url_util::Normalize(url);
+  GURL effective_url = url_matcher::util::Normalize(url);
   if (!effective_url.is_valid())
     effective_url = url;
 

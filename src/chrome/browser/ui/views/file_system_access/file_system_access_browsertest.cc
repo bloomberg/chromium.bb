@@ -10,6 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_path_override.h"
+#include "base/test/test_future.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/file_system_access/file_system_access_test_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
@@ -42,67 +44,9 @@
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/features.h"
-#include "ui/shell_dialogs/select_file_dialog.h"
-#include "ui/shell_dialogs/select_file_dialog_factory.h"
-#include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/webui/webui_allowlist.h"
 
 using safe_browsing::ClientDownloadRequest;
-
-namespace {
-
-// Fake ui::SelectFileDialog that selects one or more pre-determined files.
-class FakeSelectFileDialog : public ui::SelectFileDialog {
- public:
-  FakeSelectFileDialog(std::vector<base::FilePath> result,
-                       Listener* listener,
-                       std::unique_ptr<ui::SelectFilePolicy> policy)
-      : ui::SelectFileDialog(listener, std::move(policy)),
-        result_(std::move(result)) {}
-
- protected:
-  void SelectFileImpl(Type type,
-                      const std::u16string& title,
-                      const base::FilePath& default_path,
-                      const FileTypeInfo* file_types,
-                      int file_type_index,
-                      const base::FilePath::StringType& default_extension,
-                      gfx::NativeWindow owning_window,
-                      void* params) override {
-    if (result_.size() == 1)
-      listener_->FileSelected(result_[0], 0, params);
-    else
-      listener_->MultiFilesSelected(result_, params);
-  }
-
-  bool IsRunning(gfx::NativeWindow owning_window) const override {
-    return false;
-  }
-  void ListenerDestroyed() override {}
-  bool HasMultipleFileTypeChoicesImpl() override { return false; }
-
- private:
-  ~FakeSelectFileDialog() override = default;
-  std::vector<base::FilePath> result_;
-};
-
-class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
- public:
-  explicit FakeSelectFileDialogFactory(std::vector<base::FilePath> result)
-      : result_(std::move(result)) {}
-  ~FakeSelectFileDialogFactory() override = default;
-
-  ui::SelectFileDialog* Create(
-      ui::SelectFileDialog::Listener* listener,
-      std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new FakeSelectFileDialog(result_, listener, std::move(policy));
-  }
-
- private:
-  std::vector<base::FilePath> result_;
-};
-
-}  // namespace
 
 // End-to-end tests for the File System Access API. Among other things, these
 // test the integration between usage of the File System Access API and the
@@ -167,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest, SaveFile) {
   const std::string file_contents = "file contents to write";
 
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
   content::WebContents* web_contents =
@@ -210,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest, OpenFile) {
   const std::string file_contents = "file contents to write";
 
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
   content::WebContents* web_contents =
@@ -260,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest, FullscreenOpenFile) {
   GURL frame_url = embedded_test_server()->GetURL("/title1.html");
 
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
   content::WebContents* web_contents =
@@ -328,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserSlowLoadTest, WaitUntilLoaded) {
   const std::string file_contents = "file contents to write";
 
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
 
@@ -425,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest, SafeBrowsing) {
   GURL frame_url = embedded_test_server()->GetURL("/title1.html");
 
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), frame_url));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -482,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest,
   const std::string file_contents = "file contents to write";
 
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
 
   auto url = embedded_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -534,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest,
   const std::string file_contents = "file contents to write";
 
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
 
   auto url = embedded_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -586,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest,
                        RevokePermissionAfterNavigation) {
   const base::FilePath test_file = CreateTestFile("");
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
 
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
@@ -594,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest,
   content::SetupCrossSiteRedirector(&https_server);
   ASSERT_TRUE(https_server.Start());
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = browser()->profile();
 
   // Create three separate windows:
 
@@ -619,7 +563,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest,
       ChildFrameAt(third_party_web_contents, 0);
   ASSERT_TRUE(third_party_iframe);
   ASSERT_EQ(third_party_iframe->GetLastCommittedOrigin(),
-            first_party_web_contents->GetMainFrame()->GetLastCommittedOrigin());
+            first_party_web_contents->GetPrimaryMainFrame()
+                ->GetLastCommittedOrigin());
 
   // 3. Also showing https://b.com/title1.html
   Browser* third_window = CreateBrowser(profile);
@@ -729,7 +674,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest,
                        RevokePermissionAfterClosingTab) {
   const base::FilePath test_file = CreateTestFile("");
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
 
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
@@ -737,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest,
   content::SetupCrossSiteRedirector(&https_server);
   ASSERT_TRUE(https_server.Start());
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = browser()->profile();
 
   // Create two separate windows:
 
@@ -762,7 +707,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessBrowserTest,
       ChildFrameAt(third_party_web_contents, 0);
   ASSERT_TRUE(third_party_iframe);
   ASSERT_EQ(third_party_iframe->GetLastCommittedOrigin(),
-            first_party_web_contents->GetMainFrame()->GetLastCommittedOrigin());
+            first_party_web_contents->GetPrimaryMainFrame()
+                ->GetLastCommittedOrigin());
 
   // The b.com iframe inside a.com should wait to receive a handle from a
   // top-level b.com page.
@@ -989,11 +935,20 @@ class FencedFrameFileSystemAccessBrowserTest
       fenced_frame_helper_ =
           std::make_unique<content::test::FencedFrameTestHelper>();
     } else {
-      feature_list_.InitAndEnableFeatureWithParameters(
-          blink::features::kFencedFrames,
-          {{"implementation_type", "shadow_dom"}});
+      feature_list_.InitWithFeaturesAndParameters(
+          {{blink::features::kFencedFrames,
+            {{"implementation_type", "shadow_dom"}}},
+           {features::kPrivacySandboxAdsAPIsOverride, {}}},
+          {/* disabled_features */});
     }
   }
+
+  void SetUpOnMainThread() override {
+    FileSystemAccessBrowserTest::SetUpOnMainThread();
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.Start());
+  }
+
   ~FencedFrameFileSystemAccessBrowserTest() override = default;
 
   FencedFrameFileSystemAccessBrowserTest(
@@ -1026,17 +981,25 @@ class FencedFrameFileSystemAccessBrowserTest
     return new_frame;
   }
 
+ protected:
+  net::EmbeddedTestServer& https_server() { return https_server_; }
+
  private:
   std::unique_ptr<content::test::FencedFrameTestHelper> fenced_frame_helper_;
   base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 IN_PROC_BROWSER_TEST_P(FencedFrameFileSystemAccessBrowserTest,
                        RequestWriteAccess) {
+  std::unique_ptr<ChromeFileSystemAccessPermissionContext> permission_context =
+      std::make_unique<ChromeFileSystemAccessPermissionContext>(
+          browser()->profile());
+
   const base::FilePath test_file = CreateTestFile("");
 
   ui::SelectFileDialog::SetFactory(
-      new FakeSelectFileDialogFactory({test_file}));
+      new SelectPredeterminedFileDialogFactory({test_file}));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
   content::WebContents* web_contents =
@@ -1048,32 +1011,37 @@ IN_PROC_BROWSER_TEST_P(FencedFrameFileSystemAccessBrowserTest,
   EXPECT_FALSE(IsUsageIndicatorVisible());
 
   // Load a fenced frame.
-  GURL fenced_frame_url =
-      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  GURL fenced_frame_url = https_server().GetURL("/fenced_frames/title1.html");
   content::RenderFrameHost* fenced_frame_host =
-      CreateFencedFrame(web_contents->GetMainFrame(), fenced_frame_url);
+      CreateFencedFrame(web_contents->GetPrimaryMainFrame(), fenced_frame_url);
   ASSERT_TRUE(fenced_frame_host);
 
-  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
-            content::EvalJs(fenced_frame_host,
-                            "(async () => {"
-                            "  let [e] = await self.showOpenFilePicker();"
-                            "  self.entry = e;"
-                            "  return e.name; })()"));
+  // File system access is disabled for fenced frames.
+  EXPECT_FALSE(content::ExecJs(fenced_frame_host,
+                               "(async () => {"
+                               "  let [e] = await self.showOpenFilePicker();"
+                               "  self.entry = e;"
+                               "  return e.name; })()"));
 
   // Even read-only access should show a usage indicator.
-  EXPECT_TRUE(IsUsageIndicatorVisible());
+  EXPECT_FALSE(IsUsageIndicatorVisible());
 
-  // Write access in the fenced frame must fail.
-  EXPECT_EQ("Not allowed to request permissions in this context.",
-            content::EvalJs(fenced_frame_host,
-                            "(async () => {"
-                            "  try {"
-                            "    await self.entry.createWritable();"
-                            "  } catch (e) {"
-                            "    return e.message;"
-                            "  }"
-                            "  return 'no error'; })()"));
+  auto grant = permission_context->GetWritePermissionGrant(
+      url::Origin::Create(fenced_frame_url), test_file,
+      content::FileSystemAccessPermissionContext::HandleType::kFile,
+      content::FileSystemAccessPermissionContext::UserAction::kOpen);
+
+  base::test::TestFuture<
+      content::FileSystemAccessPermissionGrant::PermissionRequestOutcome>
+      future;
+
+  // RequestPermission() for the fenced frame must fail.
+  grant->RequestPermission(
+      fenced_frame_host->GetGlobalId(),
+      content::FileSystemAccessPermissionGrant::UserActivationState::kRequired,
+      future.GetCallback());
+  EXPECT_EQ(future.Get<>(), content::FileSystemAccessPermissionGrant::
+                                PermissionRequestOutcome::kInvalidFrame);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1137,7 +1105,7 @@ class FileSystemAccessBrowserTestForWebUI : public InProcessBrowserTest {
 
     // Open the dialog and choose the file.
     ui::SelectFileDialog::SetFactory(
-        new FakeSelectFileDialogFactory({test_file_path}));
+        new SelectPredeterminedFileDialogFactory({test_file_path}));
     EXPECT_EQ("ok",
               GetJsStatementValueAsString(web_contents,
                                           "window.showOpenFilePicker().then("
@@ -1170,7 +1138,7 @@ class FileSystemAccessBrowserTestForWebUI : public InProcessBrowserTest {
 
     // Open the dialog and choose the directory.
     ui::SelectFileDialog::SetFactory(
-        new FakeSelectFileDialogFactory({dir_path}));
+        new SelectPredeterminedFileDialogFactory({dir_path}));
 
     EXPECT_EQ("ok",
               GetJsStatementValueAsString(web_contents,

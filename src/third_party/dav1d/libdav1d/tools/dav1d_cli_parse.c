@@ -57,32 +57,38 @@ enum {
     ARG_OPPOINT,
     ARG_ALL_LAYERS,
     ARG_SIZE_LIMIT,
+    ARG_STRICT_STD_COMPLIANCE,
     ARG_CPU_MASK,
     ARG_NEG_STRIDE,
+    ARG_OUTPUT_INVISIBLE,
+    ARG_INLOOP_FILTERS,
 };
 
 static const struct option long_opts[] = {
-    { "input",          1, NULL, 'i' },
-    { "output",         1, NULL, 'o' },
-    { "quiet",          0, NULL, 'q' },
-    { "demuxer",        1, NULL, ARG_DEMUXER },
-    { "muxer",          1, NULL, ARG_MUXER },
-    { "version",        0, NULL, 'v' },
-    { "frametimes",     1, NULL, ARG_FRAME_TIMES },
-    { "limit",          1, NULL, 'l' },
-    { "skip",           1, NULL, 's' },
-    { "realtime",       2, NULL, ARG_REALTIME },
-    { "realtimecache",  1, NULL, ARG_REALTIME_CACHE },
-    { "threads",        1, NULL, ARG_THREADS },
-    { "framedelay",     1, NULL, ARG_FRAME_DELAY },
-    { "verify",         1, NULL, ARG_VERIFY },
-    { "filmgrain",      1, NULL, ARG_FILM_GRAIN },
-    { "oppoint",        1, NULL, ARG_OPPOINT },
-    { "alllayers",      1, NULL, ARG_ALL_LAYERS },
-    { "sizelimit",      1, NULL, ARG_SIZE_LIMIT },
-    { "cpumask",        1, NULL, ARG_CPU_MASK },
-    { "negstride",      0, NULL, ARG_NEG_STRIDE },
-    { NULL,             0, NULL, 0 },
+    { "input",           1, NULL, 'i' },
+    { "output",          1, NULL, 'o' },
+    { "quiet",           0, NULL, 'q' },
+    { "demuxer",         1, NULL, ARG_DEMUXER },
+    { "muxer",           1, NULL, ARG_MUXER },
+    { "version",         0, NULL, 'v' },
+    { "frametimes",      1, NULL, ARG_FRAME_TIMES },
+    { "limit",           1, NULL, 'l' },
+    { "skip",            1, NULL, 's' },
+    { "realtime",        2, NULL, ARG_REALTIME },
+    { "realtimecache",   1, NULL, ARG_REALTIME_CACHE },
+    { "threads",         1, NULL, ARG_THREADS },
+    { "framedelay",      1, NULL, ARG_FRAME_DELAY },
+    { "verify",          1, NULL, ARG_VERIFY },
+    { "filmgrain",       1, NULL, ARG_FILM_GRAIN },
+    { "oppoint",         1, NULL, ARG_OPPOINT },
+    { "alllayers",       1, NULL, ARG_ALL_LAYERS },
+    { "sizelimit",       1, NULL, ARG_SIZE_LIMIT },
+    { "strict",          1, NULL, ARG_STRICT_STD_COMPLIANCE },
+    { "cpumask",         1, NULL, ARG_CPU_MASK },
+    { "negstride",       0, NULL, ARG_NEG_STRIDE },
+    { "outputinvisible", 1, NULL, ARG_OUTPUT_INVISIBLE },
+    { "inloopfilters",   1, NULL, ARG_INLOOP_FILTERS },
+    { NULL,              0, NULL, 0 },
 };
 
 #if HAVE_XXHASH_H
@@ -114,9 +120,10 @@ static void usage(const char *const app, const char *const reason, ...) {
     fprintf(stderr, "Usage: %s [options]\n\n", app);
     fprintf(stderr, "Supported options:\n"
             " --input/-i $file:     input file\n"
-            " --output/-o $file:    output file\n"
+            " --output/-o $file:    output file (%%n, %%w or %%h will be filled in for per-frame files)\n"
             " --demuxer $name:      force demuxer type ('ivf', 'section5' or 'annexb'; default: detect from content)\n"
             " --muxer $name:        force muxer type (" AVAILABLE_MUXERS "; default: detect from extension)\n"
+            "                       use 'frame' as prefix to write per-frame files; if filename contains %%n, will default to writing per-frame files\n"
             " --quiet/-q:           disable status messages\n"
             " --frametimes $file:   dump frame times to file\n"
             " --limit/-l $num:      stop decoding after $num frames\n"
@@ -131,10 +138,14 @@ static void usage(const char *const app, const char *const reason, ...) {
             " --oppoint $num:       select an operating point of a scalable AV1 bitstream (0 - 31)\n"
             " --alllayers $num:     output all spatial layers of a scalable AV1 bitstream (default: 1)\n"
             " --sizelimit $num:     stop decoding if the frame size exceeds the specified limit\n"
+            " --strict $num:        whether to abort decoding on standard compliance violations\n"
+            "                       that don't affect bitstream decoding (default: 1)\n"
             " --verify $md5:        verify decoded md5. implies --muxer md5, no output\n"
             " --cpumask $mask:      restrict permitted CPU instruction sets (0" ALLOWED_CPU_MASKS "; default: -1)\n"
             " --negstride:          use negative picture strides\n"
-            "                       this is mostly meant as a developer option\n");
+            "                       this is mostly meant as a developer option\n"
+            " --outputinvisible $num: whether to output invisible (alt-ref) frames (default: 0)\n"
+            " --inloopfilters $str: which in-loop filters to enable (none, (no)deblock, (no)cdef, (no)restoration or all; default: all)\n");
     exit(1);
 }
 
@@ -213,6 +224,18 @@ static const EnumParseTable cpu_mask_tbl[] = {
     { "none",      0 },
 };
 
+static const EnumParseTable inloop_filters_tbl[] = {
+    { "none",          DAV1D_INLOOPFILTER_NONE },
+    { "deblock",       DAV1D_INLOOPFILTER_DEBLOCK },
+    { "nodeblock",     DAV1D_INLOOPFILTER_ALL - DAV1D_INLOOPFILTER_DEBLOCK },
+    { "cdef",          DAV1D_INLOOPFILTER_CDEF },
+    { "nocdef",        DAV1D_INLOOPFILTER_ALL - DAV1D_INLOOPFILTER_CDEF },
+    { "restoration",   DAV1D_INLOOPFILTER_RESTORATION },
+    { "norestoration", DAV1D_INLOOPFILTER_ALL - DAV1D_INLOOPFILTER_RESTORATION },
+    { "all",           DAV1D_INLOOPFILTER_ALL },
+    { 0 },
+};
+
 #define ARRAY_SIZE(n) (sizeof(n)/sizeof(*(n)))
 
 static unsigned parse_enum(char *optarg, const EnumParseTable *const tbl,
@@ -257,6 +280,7 @@ void parse(const int argc, char *const *const argv,
 
     memset(cli_settings, 0, sizeof(*cli_settings));
     dav1d_default_settings(lib_settings);
+    lib_settings->strict_std_compliance = 1; // override library default
     int grain_specified = 0;
 
     while ((o = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
@@ -335,6 +359,10 @@ void parse(const int argc, char *const *const argv,
             lib_settings->frame_size_limit = (unsigned) res;
             break;
         }
+        case ARG_STRICT_STD_COMPLIANCE:
+            lib_settings->strict_std_compliance =
+                parse_unsigned(optarg, ARG_STRICT_STD_COMPLIANCE, argv[0]);
+            break;
         case 'v':
             fprintf(stderr, "%s\n", dav1d_version());
             exit(0);
@@ -344,6 +372,15 @@ void parse(const int argc, char *const *const argv,
             break;
         case ARG_NEG_STRIDE:
             cli_settings->neg_stride = 1;
+            break;
+        case ARG_OUTPUT_INVISIBLE:
+            lib_settings->output_invisible_frames =
+                !!parse_unsigned(optarg, ARG_OUTPUT_INVISIBLE, argv[0]);
+            break;
+        case ARG_INLOOP_FILTERS:
+            lib_settings->inloop_filters =
+                parse_enum(optarg, inloop_filters_tbl,
+                           ARRAY_SIZE(inloop_filters_tbl),ARG_INLOOP_FILTERS, argv[0]);
             break;
         default:
             usage(argv[0], NULL);

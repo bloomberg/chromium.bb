@@ -17,7 +17,6 @@
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 
 namespace chromeos {
@@ -89,11 +88,11 @@ absl::optional<std::string> CellularConnectionHandler::ResultToErrorString(
       return NetworkConnectionHandler::kErrorCellularInhibitFailure;
 
     case PrepareCellularConnectionResult::kCouldNotFindRelevantEuicc:
-      FALLTHROUGH;
+      [[fallthrough]];
     case PrepareCellularConnectionResult::kRefreshProfilesFailed:
-      FALLTHROUGH;
+      [[fallthrough]];
     case PrepareCellularConnectionResult::kCouldNotFindRelevantESimProfile:
-      FALLTHROUGH;
+      [[fallthrough]];
     case PrepareCellularConnectionResult::kEnableProfileFailed:
       return NetworkConnectionHandler::kErrorESimProfileIssue;
 
@@ -127,10 +126,7 @@ CellularConnectionHandler::ConnectionRequestMetadata::
 
 CellularConnectionHandler::CellularConnectionHandler() = default;
 
-CellularConnectionHandler::~CellularConnectionHandler() {
-  if (network_state_handler_)
-    network_state_handler_->RemoveObserver(this, FROM_HERE);
-}
+CellularConnectionHandler::~CellularConnectionHandler() = default;
 
 void CellularConnectionHandler::Init(
     NetworkStateHandler* network_state_handler,
@@ -140,7 +136,7 @@ void CellularConnectionHandler::Init(
   cellular_inhibitor_ = cellular_inhibitor;
   cellular_esim_profile_handler_ = cellular_esim_profile_handler;
 
-  network_state_handler_->AddObserver(this, FROM_HERE);
+  network_state_handler_observer_.Observe(network_state_handler_);
 }
 
 void CellularConnectionHandler::PrepareExistingCellularNetworkForConnection(

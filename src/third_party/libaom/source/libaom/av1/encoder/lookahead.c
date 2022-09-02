@@ -82,7 +82,7 @@ struct lookahead_ctx *av1_lookahead_init(
       if (aom_realloc_frame_buffer(
               &ctx->buf[i].img, width, height, subsampling_x, subsampling_y,
               use_highbitdepth, border_in_pixels, byte_alignment, NULL, NULL,
-              NULL, enable_global_motion))
+              NULL, enable_global_motion, 0))
         goto fail;
     }
   }
@@ -126,7 +126,7 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, const YV12_BUFFER_CONFIG *src,
     memset(&new_img, 0, sizeof(new_img));
     if (aom_alloc_frame_buffer(&new_img, width, height, subsampling_x,
                                subsampling_y, use_highbitdepth,
-                               AOM_BORDER_IN_PIXELS, 0))
+                               AOM_BORDER_IN_PIXELS, 0, 0))
       return 1;
     aom_free_frame_buffer(&buf->img);
     buf->img = new_img;

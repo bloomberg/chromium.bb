@@ -8,10 +8,13 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/macros.h"
@@ -19,13 +22,14 @@
 #if BUILDFLAG(USE_V4L2_CODEC)
 #include "media/gpu/v4l2/v4l2_video_encode_accelerator.h"
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "media/gpu/android/android_video_encode_accelerator.h"
+#include "media/gpu/android/ndk_video_encode_accelerator.h"
 #endif
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "media/gpu/mac/vt_video_encode_accelerator_mac.h"
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #endif
 #if BUILDFLAG(USE_VAAPI)
@@ -52,27 +56,34 @@ std::unique_ptr<VideoEncodeAccelerator> CreateVaapiVEA() {
 }
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 std::unique_ptr<VideoEncodeAccelerator> CreateAndroidVEA() {
-  return base::WrapUnique<VideoEncodeAccelerator>(
-      new AndroidVideoEncodeAccelerator());
+  if (NdkVideoEncodeAccelerator::IsSupported()) {
+    return base::WrapUnique<VideoEncodeAccelerator>(
+        new NdkVideoEncodeAccelerator(base::ThreadTaskRunnerHandle::Get()));
+  } else {
+    return base::WrapUnique<VideoEncodeAccelerator>(
+        new AndroidVideoEncodeAccelerator());
+  }
 }
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA() {
   return base::WrapUnique<VideoEncodeAccelerator>(
       new VTVideoEncodeAccelerator());
 }
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Creates a MediaFoundationVEA for Win 7 or later. If |compatible_with_win7| is
 // true, VEA is limited to a subset of features that is compatible with Win 7.
 std::unique_ptr<VideoEncodeAccelerator> CreateMediaFoundationVEA(
-    bool compatible_with_win7) {
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds) {
   return base::WrapUnique<VideoEncodeAccelerator>(
-      new MediaFoundationVideoEncodeAccelerator(compatible_with_win7));
+      new MediaFoundationVideoEncodeAccelerator(gpu_preferences,
+                                                gpu_workarounds));
 }
 #endif
 
@@ -92,7 +103,7 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
     return vea_factory_functions;
 
 #if BUILDFLAG(USE_VAAPI)
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
   if (base::FeatureList::IsEnabled(kVaapiVideoEncodeLinux))
     vea_factory_functions.push_back(base::BindRepeating(&CreateVaapiVEA));
 #else
@@ -102,16 +113,15 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
 #if BUILDFLAG(USE_V4L2_CODEC)
   vea_factory_functions.push_back(base::BindRepeating(&CreateV4L2VEA));
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   vea_factory_functions.push_back(base::BindRepeating(&CreateAndroidVEA));
 #endif
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   vea_factory_functions.push_back(base::BindRepeating(&CreateVTVEA));
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   vea_factory_functions.push_back(base::BindRepeating(
-      &CreateMediaFoundationVEA,
-      gpu_preferences.enable_media_foundation_vea_on_windows7));
+      &CreateMediaFoundationVEA, gpu_preferences, gpu_workarounds));
 #endif
   return vea_factory_functions;
 }
@@ -146,13 +156,18 @@ GpuVideoEncodeAcceleratorFactory::CreateVEA(
     const VideoEncodeAccelerator::Config& config,
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences,
-    const gpu::GpuDriverBugWorkarounds& gpu_workarounds) {
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
+    std::unique_ptr<MediaLog> media_log) {
+  // NullMediaLog silently and safely does nothing.
+  if (!media_log)
+    media_log = std::make_unique<media::NullMediaLog>();
+
   for (const auto& create_vea :
        GetVEAFactoryFunctions(gpu_preferences, gpu_workarounds)) {
     std::unique_ptr<VideoEncodeAccelerator> vea = create_vea.Run();
     if (!vea)
       continue;
-    if (!vea->Initialize(config, client)) {
+    if (!vea->Initialize(config, client, media_log->Clone())) {
       DLOG(ERROR) << "VEA initialize failed (" << config.AsHumanReadableString()
                   << ")";
       continue;

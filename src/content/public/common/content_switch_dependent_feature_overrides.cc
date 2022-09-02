@@ -31,9 +31,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(net::features::kCookieSameSiteConsidersRedirectChain),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(network::features::kCrossOriginEmbedderPolicyCredentialless),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(features::kDocumentPolicyNegotiation),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -54,12 +51,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(features::kOriginIsolationHeader),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(features::kEnableCanvasContextLostInBackground),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(features::kEnableNewCanvas2DAPI),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(features::kEnableCanvas2DLayers),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
@@ -78,7 +69,7 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(features::kBlockInsecurePrivateNetworkRequestsFromUnknown),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(features::kWarnAboutSecurePrivateNetworkRequests),
+     std::cref(features::kPrivateNetworkAccessForWorkers),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(features::kPrivateNetworkAccessRespectPreflightResults),
@@ -90,13 +81,22 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(blink::features::kViewportHeightClientHintHeader),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(blink::features::kUserAgentClientHintFullVersionList),
-     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(blink::features::kClientHintsMetaHTTPEquivAcceptCH),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(blink::features::kClientHintsMetaNameAcceptCH),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnableExperimentalWebPlatformFeatures,
+     std::cref(blink::features::kClientHintThirdPartyDelegation),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnableExperimentalWebPlatformFeatures,
+     std::cref(blink::features::kClipboardCustomFormats),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnableExperimentalWebPlatformFeatures,
+     std::cref(blink::features::kEditContext),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnableExperimentalWebPlatformFeatures,
+     std::cref(network::features::kReduceAcceptLanguage),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
     // Overrides for --enable-experimental-cookie-features.
@@ -109,6 +109,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     {switches::kEnableExperimentalCookieFeatures,
      std::cref(net::features::kSchemefulSameSite),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnableExperimentalCookieFeatures,
+     std::cref(net::features::kPartitionedCookies),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
     // Overrides for --isolation-by-default.
     {switches::kIsolationByDefault,
@@ -118,24 +121,27 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(network::features::kCrossOriginOpenerPolicyByDefault),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
-    {network::switches::kUseFirstPartySet,
-     std::cref(net::features::kFirstPartySets),
+    {network::switches::kUseFirstPartySet, std::cref(features::kFirstPartySets),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
     // Overrides for headless
     {::switches::kHeadless, std::cref(blink::features::kPaintHolding),
      base::FeatureList::OVERRIDE_DISABLE_FEATURE},
 
-    // Override for --force-major-version-to-100.
-    {switches::kForceMajorVersionTo100,
-     std::cref(blink::features::kForceMajorVersion100InUserAgent),
+    // Override for --force-major-version-to-minor.
+    {switches::kForceMajorVersionToMinorPosition,
+     std::cref(blink::features::kForceMajorVersionInMinorPositionInUserAgent),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
-    // Override for --force-minor-version-to-100.
-    {switches::kForceMinorVersionTo100,
-     std::cref(blink::features::kForceMinorVersion100InUserAgent),
+    // Override for --durable-client-hints-cache.
+    {switches::kDurableClientHintsCache,
+     std::cref(blink::features::kDurableClientHintsCache),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
+    // Override for --reduce-user-agent-minor-version.
+    {switches::kReduceUserAgentMinorVersion,
+     std::cref(blink::features::kReduceUserAgentMinorVersion),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
   };
 
   std::vector<base::FeatureList::FeatureOverrideInfo> overrides;

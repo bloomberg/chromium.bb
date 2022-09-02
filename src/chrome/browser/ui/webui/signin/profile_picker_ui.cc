@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/profile_picker.h"
@@ -34,6 +35,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -41,6 +43,10 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "ui/chromeos/devicetype_utils.h"
+#endif
 
 namespace {
 
@@ -53,30 +59,37 @@ bool IsBrowserSigninAllowed() {
   const policy::PolicyMap& policies = policy_service->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
 
-  const base::Value* browser_signin_value =
-      policies.GetValue(policy::key::kBrowserSignin);
+  const base::Value* browser_signin_value = policies.GetValue(
+      policy::key::kBrowserSignin, base::Value::Type::INTEGER);
 
   if (!browser_signin_value)
     return true;
 
-  DCHECK(browser_signin_value->is_int());
   return static_cast<policy::BrowserSigninMode>(
              browser_signin_value->GetInt()) !=
          policy::BrowserSigninMode::kDisabled;
 }
 
 std::string GetManagedDeviceDisclaimer() {
-  absl::optional<std::string> device_manager =
-      chrome::GetDeviceManagerIdentity();
-  if (!device_manager)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  absl::optional<std::string> manager = chrome::GetSessionManagerIdentity();
+  int managed_id =
+      IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_SESSION_MANAGED_DESCRIPTION;
+  int managed_by_id =
+      IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_SESSION_MANAGED_BY_DESCRIPTION;
+#else
+  absl::optional<std::string> manager = chrome::GetDeviceManagerIdentity();
+  int managed_id =
+      IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_DEVICE_MANAGED_DESCRIPTION;
+  int managed_by_id =
+      IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_DEVICE_MANAGED_BY_DESCRIPTION;
+#endif
+  if (!manager)
     return std::string();
-  if (device_manager->empty()) {
-    return l10n_util::GetStringUTF8(
-        IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_DEVICE_MANAGED_DESCRIPTION);
+  if (manager->empty()) {
+    return l10n_util::GetStringUTF8(managed_id);
   }
-  return l10n_util::GetStringFUTF8(
-      IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_DEVICE_MANAGED_BY_DESCRIPTION,
-      base::UTF8ToUTF16(*device_manager));
+  return l10n_util::GetStringFUTF8(managed_by_id, base::UTF8ToUTF16(*manager));
 }
 
 void AddStrings(content::WebUIDataSource* html_source) {
@@ -122,13 +135,6 @@ void AddStrings(content::WebUIDataSource* html_source) {
      IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_SUBTITLE_LACROS
 #else
      IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_SUBTITLE
-#endif
-    },
-    {"signInButtonLabel",
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-     IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_SIGNIN_BUTTON_LABEL_LACROS
-#else
-     IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_SIGNIN_BUTTON_LABEL
 #endif
     },
     {"notNowButtonLabel",
@@ -192,6 +198,16 @@ void AddStrings(content::WebUIDataSource* html_source) {
 #endif
   html_source->AddLocalizedString("mainViewTitle", main_view_title_id);
 
+  int sign_in_button_label_id =
+      IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_SIGNIN_BUTTON_LABEL;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles)) {
+    sign_in_button_label_id =
+        IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_SIGNIN_BUTTON_LABEL_LACROS;
+  }
+#endif
+  html_source->AddLocalizedString("signInButtonLabel", sign_in_button_label_id);
+
   ProfilePicker::AvailabilityOnStartup availability_on_startup =
       static_cast<ProfilePicker::AvailabilityOnStartup>(
           g_browser_process->local_state()->GetInteger(
@@ -207,6 +223,13 @@ void AddStrings(content::WebUIDataSource* html_source) {
 #else
                           true);
 #endif
+  html_source->AddBoolean(
+      "localProfileCreationFlowSupported",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles));
+#else
+      true);
+#endif
 
   html_source->AddString("minimumPickerSize",
                          base::StringPrintf("%ipx", kMinimumPickerSizePx));
@@ -220,9 +243,11 @@ void AddStrings(content::WebUIDataSource* html_source) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   std::string remove_warning_profile = l10n_util::GetStringFUTF8(
       IDS_PROFILE_PICKER_REMOVE_WARNING_SIGNED_IN_PROFILE_LACROS,
+      ui::GetChromeOSDeviceName(),
       l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE),
       l10n_util::GetStringUTF16(IDS_OS_SETTINGS_PEOPLE_V2));
   html_source->AddString("removeWarningProfileLacros", remove_warning_profile);
+  html_source->AddString("deviceType", ui::GetChromeOSDeviceName());
 #endif
 
   // Add policies.
@@ -251,7 +276,9 @@ ProfilePickerUI::ProfilePickerUI(content::WebUI* web_ui)
   profile_picker_handler_ = handler.get();
   web_ui->AddMessageHandler(std::move(handler));
 
-  if (web_ui->GetWebContents()->GetURL().query() ==
+  // GetVisibleURL is used here because a WebUIController is created before the
+  // navigation commits.
+  if (web_ui->GetWebContents()->GetVisibleURL().query() ==
       chrome::kChromeUIProfilePickerStartupQuery) {
     profile_picker_handler_->EnableStartupMetrics();
   }

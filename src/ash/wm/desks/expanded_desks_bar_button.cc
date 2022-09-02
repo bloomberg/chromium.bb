@@ -16,6 +16,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/wm_highlight_item_border.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
@@ -188,7 +189,7 @@ void ExpandedDesksBarButton::Layout() {
       gfx::ELIDE_TAIL));
   const gfx::Size label_size = label_->GetPreferredSize();
   // Set the label to have the same height as the DeskNameView to keep them at
-  // the same horizotal level. Note, don't get the label's width from
+  // the same horizontal level. Note, don't get the label's width from
   // DeskNameView since desk's name is changeable, but this label here is not.
   const int label_height = desk_name_view->GetPreferredSize().height();
   label_->SetBoundsRect(gfx::Rect(
@@ -197,6 +198,11 @@ void ExpandedDesksBarButton::Layout() {
                      desk_mini_view->GetPreviewBorderInsets().bottom() +
                      kDeskBarButtonAndNameSpacing),
       gfx::Size(label_size.width(), label_height)));
+}
+
+void ExpandedDesksBarButton::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  UpdateBorderColor();
 }
 
 BEGIN_METADATA(ExpandedDesksBarButton, views::View)

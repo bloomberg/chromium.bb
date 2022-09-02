@@ -632,7 +632,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin<EventTypes, type
         menu.defaultSection().appendItem(tab.title, this.dropDownMenuItemSelected.bind(this, tab));
       }
     }
-    menu.show();
+    void menu.show();
   }
 
   private dropDownKeydown(event: Event): void {
@@ -1019,6 +1019,9 @@ export class TabbedPaneTab {
     this.titleInternal = title;
     if (this.titleElement) {
       this.titleElement.textContent = title;
+      const closeIconContainer = this.tabElementInternal?.querySelector('.close-button');
+      closeIconContainer?.setAttribute('title', i18nString(UIStrings.closeS, {PH1: title}));
+      closeIconContainer?.setAttribute('aria-label', i18nString(UIStrings.closeS, {PH1: title}));
     }
     delete this.measuredWidth;
   }
@@ -1144,7 +1147,7 @@ export class TabbedPaneTab {
       if (this.tabbedPane.allowTabReorder) {
         installDragHandle(
             tabElement, this.startTabDragging.bind(this), this.tabDragging.bind(this), this.endTabDragging.bind(this),
-            '-webkit-grabbing', 'pointer', 200);
+            null, null, 200);
       }
     }
 
@@ -1250,7 +1253,7 @@ export class TabbedPaneTab {
     if (this.delegate) {
       this.delegate.onContextMenu(this.id, contextMenu);
     }
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private startTabDragging(ev: Event): boolean {

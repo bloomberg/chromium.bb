@@ -12,42 +12,46 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
+#include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/dense_set.h"
-#include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
+class GURL;
+
+namespace ukm::builders {
+class Autofill_CreditCardFill;
+}
 
 namespace autofill {
 
 class AutofillField;
+class AutofillOfferData;
 class CreditCard;
-struct AutofillOfferData;
+class FormEventLoggerBase;
 
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
 
 class AutofillMetrics {
  public:
-  enum class MeasurementTime {
-    kFillTimeBeforeSecurityPolicy,
-    kFillTimeAfterSecurityPolicy,
-    kSubmissionTime,
-  };
-
   enum AutofillProfileAction {
     EXISTING_PROFILE_USED,
     EXISTING_PROFILE_UPDATED,
@@ -353,20 +357,6 @@ class AutofillMetrics {
     // The failure icon is clicked and the save card failure bubble is shown.
     CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN,
     NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS,
-  };
-
-  // Metrics to measure user interaction with the Manage Cards view
-  // shown when user clicks on the save card icon after accepting
-  // to save a card.
-  enum ManageCardsPromptMetric {
-    // The manage cards promo was shown.
-    MANAGE_CARDS_SHOWN,
-    // The user clicked on [Done].
-    MANAGE_CARDS_DONE,
-    // The user clicked on [Manage cards].
-    MANAGE_CARDS_MANAGE_CARDS,
-
-    NUM_MANAGE_CARDS_PROMPT_METRICS
   };
 
   // Metrics to measure user interaction with the virtual card manual fallback
@@ -937,14 +927,13 @@ class AutofillMetrics {
   };
 
   // For measuring the frequency of "required actions" returned by the Wallet
-  // server.  This is similar to the autofill::wallet::RequiredAction enum;
-  // but unlike that enum, the values in this one must remain constant over
-  // time, so that the metrics can be consistently interpreted on the
-  // server-side.
+  // server. This is similar to the wallet::RequiredAction enum; but unlike
+  // that enum, the values in this one must remain constant over time, so that
+  // the metrics can be consistently interpreted on the server-side.
   enum WalletRequiredActionMetric {
     // Baseline metric: Issued a request to the Wallet server.
     WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST = 0,
-    // Values from the autofill::wallet::RequiredAction enum:
+    // Values from the wallet::RequiredAction enum:
     UNKNOWN_REQUIRED_ACTION,  // Catch all type.
     GAIA_AUTH,
     PASSIVE_GAIA_AUTH,
@@ -1076,6 +1065,18 @@ class AutofillMetrics {
     kMaxValue = SECTION_UNION_IMPORT,
   };
 
+  // When parsing a nationally formatted phone number on profile import, a
+  // region has to be assumed. This enum represents if a phone number could be
+  // parsed by assuming the app locale and/or the variation country code as its
+  // region.
+  enum class PhoneNumberImportParsingResult {
+    CANNOT_PARSE = 0,
+    PARSED_WITH_APP_LOCALE = 1,
+    PARSED_WITH_VARIATION_COUNTRY_CODE = 2,
+    PARSED_WITH_BOTH = 3,
+    kMaxValue = PARSED_WITH_BOTH,
+  };
+
   // To record the source of the autofilled state field.
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -1179,34 +1180,59 @@ class AutofillMetrics {
     kMaxValue = kOtpMismatchError,
   };
 
-  // Emits a value that indicates which fields of a credit card form were
-  // filled:
-  //
-  // +-------------------------------------------------------------+
-  // |                            | Name | Number | Exp Date | CVC |
-  // |----------------------------+------+--------+----------+-----|
-  // | kFullFill                  |  X   |   X    |    X     |  X  |
-  // +----------------------------+------+--------+----------+-----+
-  // | kOptionalNameMissing       |      |   X    |    X     |  X  |
-  // +----------------------------+------+--------+----------+-----+
-  // | kOptionalCvcMissing        |  X   |   X    |    X     |     |
-  // +----------------------------+------+--------+----------+-----+
-  // | kOptionalNameAndCvcMissing |      |   X    |    X     |     |
-  // +----------------------------+------+--------+----------+-----+
-  // | kFullFillButExpDateMissing |  X   |   X    |          |  X  |
-  // +----------------------------+------+--------+----------+-----+
-  // | kPartialFill               |           otherwise            |
-  // +-------------------------------------------------------------+
-  //
-  // Keep consistent with FORM_EVENT_CREDIT_CARD_SEAMLESSNESS_*.
-  enum class CreditCardSeamlessFillMetric {
-    kFullFill = 0,
-    kOptionalNameMissing = 1,
-    kOptionalCvcMissing = 2,
-    kOptionalNameAndCvcMissing = 3,
-    kFullFillButExpDateMissing = 4,
-    kPartialFill = 5,
-    kMaxValue = kPartialFill,
+  // Utility class for determining the seamlessness of a credit card fill.
+  class CreditCardSeamlessness {
+   public:
+    // A qualitative representation of a fill seamlessness.
+    //
+    // Keep consistent with FORM_EVENT_CREDIT_CARD_SEAMLESSNESS_*.
+    //
+    // The different meaning of the categories is as follows:
+    enum class Metric {                // | Name | Number | Exp Date | CVC |
+      kFullFill = 0,                   // |  X   |   X    |    X     |  X  |
+      kOptionalNameMissing = 1,        // |      |   X    |    X     |  X  |
+      kOptionalCvcMissing = 2,         // |  X   |   X    |    X     |     |
+      kOptionalNameAndCvcMissing = 3,  // |      |   X    |    X     |     |
+      kFullFillButExpDateMissing = 4,  // |  X   |   X    |          |  X  |
+      kPartialFill = 5,                // |           otherwise            |
+      kMaxValue = kPartialFill,
+    };
+
+    explicit CreditCardSeamlessness(const ServerFieldTypeSet& filled_types);
+
+    explicit operator bool() const { return is_valid(); }
+    bool is_valid() const { return name_ || number_ || exp_ || cvc_; }
+
+    Metric QualitativeMetric() const;
+
+    uint64_t QualitativeMetricAsInt() const {
+      return static_cast<uint64_t>(QualitativeMetric());
+    }
+
+    // TODO(crbug.com/1275953): Remove once the new UKM metric has gained
+    // traction.
+    FormEvent QualitativeFillableFormEvent() const;
+    FormEvent QualitativeFillFormEvent() const;
+
+    // Returns a four-bit bitmask.
+    uint8_t BitmaskMetric() const;
+
+    static uint8_t BitmaskExclusiveMax() { return true << 4; }
+
+   private:
+    bool name_ = false;
+    bool number_ = false;
+    bool exp_ = false;
+    bool cvc_ = false;
+  };
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class SuggestionClickResult {
+    kAccepted = 0,
+    kIgnored = 1,
+    kAcceptedAfterIgnored = 2,
+    kMaxValue = kAcceptedAfterIgnored
   };
 
   // Utility to log URL keyed form interaction events.
@@ -1217,6 +1243,9 @@ class AutofillMetrics {
 
     bool has_pinned_timestamp() const { return !pinned_timestamp_.is_null(); }
     void set_pinned_timestamp(base::TimeTicks t) { pinned_timestamp_ = t; }
+
+    ukm::builders::Autofill_CreditCardFill CreateCreditCardFillBuilder() const;
+    void Record(ukm::builders::Autofill_CreditCardFill&& builder);
 
     // Initializes this logger with a source_id. Unless forms is parsed no
     // autofill UKM is recorded. However due to autofill_manager resets,
@@ -1259,7 +1288,8 @@ class AutofillMetrics {
                           const DenseSet<FormType>& form_types,
                           AutofillFormSubmittedState state,
                           const base::TimeTicks& form_parsed_timestamp,
-                          FormSignature form_signature);
+                          FormSignature form_signature,
+                          const FormInteractionCounts& form_interaction_counts);
     void LogFormEvent(FormEvent form_event,
                       const DenseSet<FormType>& form_types,
                       const base::TimeTicks& form_parsed_timestamp);
@@ -1386,8 +1416,6 @@ class AutofillMetrics {
   static void LogCreditCardUploadLegalMessageLinkClicked();
   static void LogCreditCardUploadFeedbackMetric(
       CreditCardUploadFeedbackMetric metric);
-  static void LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
-                                         bool is_uploading);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
   static void LogLocalCardMigrationDecisionMetric(
       LocalCardMigrationDecisionMetric metric);
@@ -1656,9 +1684,13 @@ class AutofillMetrics {
   // This should be called each time a new chrome profile is launched.
   static void LogIsAutofillCreditCardEnabledAtStartup(bool enabled);
 
-  // Records the number of stored address profiles. This is be called each time
-  // a new chrome profile is launched.
+  // Records the number of stored address profiles. This is called each time a
+  // new Chrome profile is launched.
   static void LogStoredProfileCount(size_t num_profiles);
+
+  // Records the number of profiles without a country. This is called each time
+  // a new Chrome profile is launched.
+  static void LogStoredProfilesWithoutCountry(size_t num_profiles);
 
   // Records the number of stored address profiles which have not been used in
   // a long time. This is be called each time a new chrome profile is launched.
@@ -1675,11 +1707,6 @@ class AutofillMetrics {
       const std::vector<std::unique_ptr<CreditCard>>& server_cards,
       size_t server_card_count_with_card_art_image,
       base::TimeDelta disused_data_threshold);
-
-  // Logs metrics about the offer data associated with a profile. This should be
-  // called each time a chrome profile is launched.
-  static void LogStoredOfferMetrics(
-      const std::vector<std::unique_ptr<AutofillOfferData>>& offers);
 
   // Logs whether the synced autofill offer data is valid.
   static void LogSyncedOfferDataBeingValid(bool invalid);
@@ -1717,6 +1744,10 @@ class AutofillMetrics {
   // Log the number of Autofill address suggestions presented to the user when
   // filling a form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);
+
+  // Log whether a click was handled, ignored, or the followup of an ignored
+  // click.
+  static void LogSuggestionClick(SuggestionClickResult value);
 
   // Log the index of the selected Autofill suggestion in the popup.
   static void LogAutofillSuggestionAcceptedIndex(int index,
@@ -1765,7 +1796,8 @@ class AutofillMetrics {
       const DenseSet<FormType>& form_types,
       const base::TimeTicks& form_parsed_timestamp,
       FormSignature form_signature,
-      FormInteractionsUkmLogger* form_interactions_ukm_logger);
+      FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      const FormInteractionCounts& form_interaction_counts);
 
   // Logs if every non-empty field in a submitted form was filled by Autofill.
   // If |is_address| an address was filled, otherwise it was a credit card.
@@ -1778,22 +1810,30 @@ class AutofillMetrics {
   static void LogNumberOfFramesWithAutofilledCreditCardFields(
       size_t num_frames);
 
-  // Logs the Autofill.CreditCard.SeamlessFills metric. See the enum for
-  // details. Note that this function does not check whether the form contains a
-  // credit card field.
-  // Returns the emitted metric, if any.
-  static absl::optional<CreditCardSeamlessFillMetric>
-  LogCreditCardSeamlessFills(const ServerFieldTypeSet& autofilled_types,
-                             MeasurementTime measurement_time);
+  struct LogCreditCardSeamlessnessParam {
+    const FormEventLoggerBase& event_logger;
+    const FormStructure& form;
+    const AutofillField& field;
+    const base::flat_set<FieldGlobalId>& newly_filled_fields;
+    const base::flat_set<FieldGlobalId>& safe_fields;
+    ukm::builders::Autofill_CreditCardFill& builder;
+  };
 
-  // Logs the Autofill.CreditCard.NumberFills metric.
-  static void LogCreditCardNumberFills(
-      const ServerFieldTypeSet& autofilled_types,
-      MeasurementTime measurement_time);
+  // Logs several metrics about seamlessness. These are qualitative and bitmask
+  // UMA and UKM metrics as well as a UKM metric indicating whether
+  // "shared-autofill" did or would make a difference.
+  //
+  // The metrics are:
+  // - UMA metrics "Autofill.CreditCard.Seamless{Fillable,Fills}.AtFillTime
+  //   {Before,After}SecurityPolicy[.Bitmask]".
+  // - UKM event "Autofill.CreditCardSeamlessness".
+  // - UKM event "Autofill.FormEvent" for FORM_EVENT_CREDIT_CARD_*.
+  static void LogCreditCardSeamlessnessAtFillTime(
+      const LogCreditCardSeamlessnessParam& p);
 
-  // This should be called when determining the heuristic types for a form's
-  // fields.
-  static void LogDetermineHeuristicTypesTiming(const base::TimeDelta& duration);
+  // Logs Autofill.CreditCard.SeamlessFills.AtSubmissionTime.
+  static void LogCreditCardSeamlessnessAtSubmissionTime(
+      const ServerFieldTypeSet& autofilled_types);
 
   // This should be called when parsing each form.
   static void LogParseFormTiming(const base::TimeDelta& duration);
@@ -1887,7 +1927,8 @@ class AutofillMetrics {
       const FormStructure& form,
       const AutofillField& field);
 
-  static void LogAddressFormImportStatustMetric(
+  // Logs the overall status of an address import upon form submission.
+  static void LogAddressFormImportStatusMetric(
       AddressProfileImportStatusMetric metric);
 
   // Records if the page was translated upon form submission.
@@ -1911,6 +1952,13 @@ class AutofillMetrics {
       size_t number_of_accepted_fields,
       size_t number_of_corrected_fields);
 
+  // Logs the number of autofilled fields with unrecognized autocomplete
+  // attribute at submission time.
+  static void
+  LogNumberOfAutofilledFieldsWithAutocompleteUnrecognizedAtSubmission(
+      size_t number_of_accepted_fields,
+      size_t number_of_corrected_fields);
+
   // Logs the type of a profile import.
   static void LogProfileImportType(AutofillProfileImportType import_type);
 
@@ -1918,18 +1966,52 @@ class AutofillMetrics {
   static void LogSilentUpdatesProfileImportType(
       AutofillProfileImportType import_type);
 
-  // Logs the user decision for importing a new profile
+  // Logs the type of profile import used for a silent update, which was only
+  // possible after an invalid phone number was removed.
+  // TODO(crbug.com/1298424): Cleanup when launched.
+  static void LogSilentUpdatesWithRemovedPhoneNumberProfileImportType(
+      AutofillProfileImportType import_type);
+
+  // Logs the user decision for importing a new profile.
   static void LogNewProfileImportDecision(
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs the user decision for importing a new profile with auto complemented
+  // country.
+  // TODO(crbug.com/1297032): Cleanup when launched.
+  static void LogNewProfileWithComplementedCountryImportDecision(
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs the user decision for importing a new profile, which was only possible
+  // after an invalid phone number was removed.
+  // TODO(crbug.com/1298424): Cleanup when launched.
+  static void LogNewProfileWithRemovedPhoneNumberImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs that a specific type was edited in a save prompt.
   static void LogNewProfileEditedType(ServerFieldType edited_type);
+
+  // Logs that the auto complemented country was edited in a save prompt.
+  // TODO(crbug.com/1297032): Cleanup when launched.
+  static void LogNewProfileEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile save.
   static void LogNewProfileNumberOfEditedFields(int number_of_edited_fields);
 
   // Logs the user decision for updating an exiting profile.
   static void LogProfileUpdateImportDecision(
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs the user decision for updating an exiting profile with auto
+  // complemented country.
+  // TODO(crbug.com/1297032): Cleanup when launched.
+  static void LogProfileUpdateWithComplementedCountryImportDecision(
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs the user decision for updating an existing profile, which was only
+  // possible after an invalid phone number was removed.
+  // TODO(crbug.com/1298424): Cleanup when launched.
+  static void LogProfileUpdateWithRemovedPhoneNumberImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs that a specific type changed in a profile update that received the
@@ -1942,6 +2024,10 @@ class AutofillMetrics {
   // Logs that a specific type was edited in an update prompt.
   static void LogProfileUpdateEditedType(ServerFieldType edited_type);
 
+  // Logs that the auto complemented country was edited in an update prompt.
+  // TODO(crbug.com/1297032): Cleanup when launched.
+  static void LogProfileUpdateEditedComplementedCountry();
+
   // Logs the number of edited fields for an accepted profile update.
   static void LogUpdateProfileNumberOfEditedFields(int number_of_edited_fields);
 
@@ -1951,6 +2037,19 @@ class AutofillMetrics {
   static void LogUpdateProfileNumberOfAffectedFields(
       int number_of_affected_fields,
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs if at least one setting-inaccessible field was removed on import.
+  static void LogRemovedSettingInaccessibleFields(bool did_remove);
+
+  // Logs that `field` was removed from a profile on import, because it is
+  // setting-inaccessible in the profile's country.
+  static void LogRemovedSettingInaccessibleField(ServerFieldType field);
+
+  // Logs the outcome of parsing a phone number on profile import when assuming
+  // either the variation country code or the app locale as its region.
+  static void LogPhoneNumberImportParsingResult(
+      bool with_variation_country_code,
+      bool with_app_locale);
 
   // Logs when the virtual card metadata for one card have been updated.
   static void LogVirtualCardMetadataSynced(bool existing_card);
@@ -2009,6 +2108,12 @@ class AutofillMetrics {
   // updated each time a new value is added.
   static const int kNumCardUploadDecisionMetrics = 19;
 
+  // Logs whether the submitted field value is same as the non-empty value
+  // to be autofilled in the field, when the field had a different prefilled
+  // value.
+  static void LogIsValueNotAutofilledOverExistingValueSameAsSubmittedValue(
+      bool is_same);
+
  private:
   static void Log(AutocompleteEvent event);
 };
@@ -2018,6 +2123,9 @@ int GetFieldTypeUserEditStatusMetric(
     ServerFieldType server_type,
     AutofillMetrics::AutofilledFieldUserEditingStatusMetric metric);
 #endif
+
+const std::string PaymentsRpcResultToMetricsSuffix(
+    AutofillClient::PaymentsRpcResult result);
 
 }  // namespace autofill
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_AUTOFILL_METRICS_H_

@@ -17,6 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/unload_controller.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sessions/core/session_id.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/zoom/zoom_observer.h"
@@ -45,7 +47,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #error This file should only be included on desktop.
 #endif
 
@@ -67,6 +69,12 @@ class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
 class TabMenuModelDelegate;
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+namespace screen_ai {
+class AXScreenAIAnnotator;
+}
+#endif
 
 namespace blink {
 enum class ProtocolHandlerSecurityLevel;
@@ -93,10 +101,6 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace viz {
-class SurfaceId;
-}
-
 namespace web_app {
 class AppBrowserController;
 }
@@ -108,6 +112,7 @@ class WebContentsModalDialogHost;
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public ChromeWebModalDialogManagerDelegate,
+                public base::SupportsUserData,
                 public BookmarkTabHelperObserver,
                 public zoom::ZoomObserver,
                 public content::PageNavigator,
@@ -145,6 +150,10 @@ class Browser : public TabStripModelObserver,
     // CustomTabToolbarview.
     TYPE_CUSTOM_TAB,
 #endif
+    // Document picture-in-picture browser.  It's mostly the same as a
+    // TYPE_POPUP, except that it floats above other windows.  It also has some
+    // additional restrictions, like it cannot navigated, to prevent misuse.
+    TYPE_PICTURE_IN_PICTURE,
     // If you add a new type, consider updating the test
     // BrowserTest.StartMaximized.
   };
@@ -199,6 +208,7 @@ class Browser : public TabStripModelObserver,
     kUnknown,
     kSessionRestore,
     kStartupCreator,
+    kLastAndUrlsStartupPref,
   };
 
   // The default value for a browser's `restore_id` param.
@@ -215,6 +225,7 @@ class Browser : public TabStripModelObserver,
     CreateParams(Type type, Profile* profile, bool user_gesture);
     CreateParams(const CreateParams& other);
     CreateParams& operator=(const CreateParams& other);
+    ~CreateParams();
 
     static CreateParams CreateForApp(const std::string& app_name,
                                      bool trusted_source,
@@ -259,13 +270,23 @@ class Browser : public TabStripModelObserver,
     // platform supports it.
     bool initial_visible_on_all_workspaces_state = false;
 
+    // Whether to enable the tab group feature in the tab strip.
+    bool are_tab_groups_enabled = true;
+
     ui::WindowShowState initial_show_state = ui::SHOW_STATE_DEFAULT;
 
     CreationSource creation_source = CreationSource::kUnknown;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     // The id from the restore data to restore the browser window.
     int32_t restore_id = kDefaultRestoreId;
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+    // When the browser window is shown, the desktop environment is notified
+    // using this ID.  In response, the desktop will stop playing the "waiting
+    // for startup" animation (if any).
+    std::string startup_id;
 #endif
 
     // Whether this browser was created by a user gesture. We track this
@@ -283,6 +304,9 @@ class Browser : public TabStripModelObserver,
 
     // User-set title of this browser window, if there is one.
     std::string user_title;
+
+    // Title if this is a picture in picture browser window.
+    std::string picture_in_picture_window_title;
 
     // Only applied when not in forced app mode. True if the browser is
     // resizeable.
@@ -662,12 +686,10 @@ class Browser : public TabStripModelObserver,
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) override;
   content::PictureInPictureResult EnterPictureInPicture(
-      content::WebContents* web_contents,
-      const viz::SurfaceId&,
-      const gfx::Size&) override;
+      content::WebContents* web_contents) override;
   void ExitPictureInPicture() override;
   bool IsBackForwardCacheSupported() override;
-  bool IsPrerender2Supported() override;
+  bool IsPrerender2Supported(content::WebContents& web_contents) override;
   std::unique_ptr<content::WebContents> ActivatePortalWebContents(
       content::WebContents* predecessor_contents,
       std::unique_ptr<content::WebContents> portal_contents) override;
@@ -691,6 +713,9 @@ class Browser : public TabStripModelObserver,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_type_custom_tab() const { return type_ == TYPE_CUSTOM_TAB; }
 #endif
+  bool is_type_picture_in_picture() const {
+    return type_ == TYPE_PICTURE_IN_PICTURE;
+  }
 
   // True when the mouse cursor is locked.
   bool IsMouseLocked() const;
@@ -719,6 +744,10 @@ class Browser : public TabStripModelObserver,
   void SetWindowUserTitle(const std::string& user_title);
 
   StatusBubble* GetStatusBubbleForTesting();
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  void RunScreenAIAnnotator();
+#endif
 
  private:
   friend class BrowserTest;
@@ -819,7 +848,7 @@ class Browser : public TabStripModelObserver,
       const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,
-      const content::StoragePartitionId& partition_id,
+      const content::StoragePartitionConfig& partition_config,
       content::SessionStorageNamespace* session_storage_namespace) override;
   void WebContentsCreated(content::WebContents* source_contents,
                           int opener_render_process_id,
@@ -843,6 +872,13 @@ class Browser : public TabStripModelObserver,
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
   bool GuestSaveFrame(content::WebContents* guest_web_contents) override;
+#if BUILDFLAG(IS_MAC)
+  std::unique_ptr<content::ColorChooser> OpenColorChooser(
+      content::WebContents* web_contents,
+      SkColor color,
+      const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
+      override;
+#endif  // BUILDFLAG(IS_MAC)
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
@@ -987,11 +1023,6 @@ class Browser : public TabStripModelObserver,
 
   // Getters for UI ///////////////////////////////////////////////////////////
 
-  // TODO(beng): remove, and provide AutomationProvider a better way to access
-  //             the LocationBarView's edit.
-  friend class AutomationProvider;
-  friend class BrowserProxy;
-
   // Returns the StatusBubble from the current toolbar. It is possible for
   // this to return NULL if called before the toolbar has initialized.
   // TODO(beng): remove this.
@@ -1061,6 +1092,10 @@ class Browser : public TabStripModelObserver,
   bool CustomTabBrowserSupportsWindowFeature(WindowFeature feature) const;
 #endif
 
+  bool PictureInPictureBrowserSupportsWindowFeature(
+      WindowFeature feature,
+      bool check_can_support) const;
+
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of
   // the browser, otherwise the set of features reflect the possible state of
@@ -1100,7 +1135,7 @@ class Browser : public TabStripModelObserver,
       bool is_new_browsing_instance,
       const std::string& frame_name,
       const GURL& target_url,
-      const content::StoragePartitionId& partition_id,
+      const content::StoragePartitionConfig& partition_config,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Data members /////////////////////////////////////////////////////////////
@@ -1236,6 +1271,8 @@ class Browser : public TabStripModelObserver,
 
   std::string user_title_;
 
+  std::string picture_in_picture_window_title_;
+
   // Controls both signin and sync consent.
   SigninViewController signin_view_controller_;
 
@@ -1250,6 +1287,11 @@ class Browser : public TabStripModelObserver,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
       extension_browser_window_helper_;
+#endif
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  // Manages the snapshot processing by ScreenAI, if enabled.
+  std::unique_ptr<screen_ai::AXScreenAIAnnotator> screen_ai_annotator_;
 #endif
 
   const base::ElapsedTimer creation_timer_;

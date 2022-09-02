@@ -148,9 +148,6 @@ class BufferPoolBufferHandleProvider
   base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() override {
     return buffer_pool_->DuplicateAsUnsafeRegion(buffer_id_);
   }
-  mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() override {
-    return buffer_pool_->DuplicateAsMojoBuffer(buffer_id_);
-  }
   gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override {
     return buffer_pool_->GetGpuMemoryBufferHandle(buffer_id_);
   }
@@ -320,14 +317,14 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 // see http://linuxtv.org/downloads/v4l-dvb-apis/packed-rgb.html.
 // Windows RGB24 defines blue at lowest byte,
 // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd407253
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
       fourcc_format = libyuv::FOURCC_RAW;
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
       fourcc_format = libyuv::FOURCC_24BG;
 #else
       NOTREACHED() << "RGB24 is only available in Linux and Windows platforms";
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       // TODO(wjia): Currently, for RGB24 on WIN, capture device always passes
       // in positive src_width and src_height. Remove this hardcoded value when
       // negative src_height is supported. The negative src_height indicates
@@ -508,8 +505,8 @@ ReadyFrameInBuffer VideoCaptureDeviceClient::CreateReadyFrameFromExternalBuffer(
   // Register the buffer with the receiver if it is new.
   if (!base::Contains(buffer_ids_known_by_receiver_, buffer_id)) {
     media::mojom::VideoBufferHandlePtr buffer_handle =
-        media::mojom::VideoBufferHandle::New();
-    buffer_handle->set_gpu_memory_buffer_handle(std::move(buffer.handle));
+        media::mojom::VideoBufferHandle::NewGpuMemoryBufferHandle(
+            std::move(buffer.handle));
     receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     buffer_ids_known_by_receiver_.push_back(buffer_id);
   }
@@ -569,10 +566,8 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
   DCHECK_NE(VideoCaptureBufferPool::kInvalidId, buffer_id);
 
   if (!base::Contains(buffer_ids_known_by_receiver_, buffer_id)) {
-    media::mojom::VideoBufferHandlePtr buffer_handle =
-        media::mojom::VideoBufferHandle::New();
     VideoCaptureBufferType target_buffer_type = target_buffer_type_;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // If MediaFoundationD3D11VideoCapture fails, a shared memory buffer may be
     // sent instead.
     if (target_buffer_type == VideoCaptureBufferType::kGpuMemoryBuffer &&
@@ -580,22 +575,25 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
       target_buffer_type = VideoCaptureBufferType::kSharedMemory;
     }
 #endif
+    media::mojom::VideoBufferHandlePtr buffer_handle;
     switch (target_buffer_type) {
       case VideoCaptureBufferType::kSharedMemory:
-        buffer_handle->set_shared_buffer_handle(
-            buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
+        buffer_handle = media::mojom::VideoBufferHandle::NewUnsafeShmemRegion(
+            buffer_pool_->DuplicateAsUnsafeRegion(buffer_id));
         break;
       case VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor:
-        buffer_handle->set_shared_memory_via_raw_file_descriptor(
-            buffer_pool_->CreateSharedMemoryViaRawFileDescriptorStruct(
-                buffer_id));
+        buffer_handle = media::mojom::VideoBufferHandle::
+            NewSharedMemoryViaRawFileDescriptor(
+                buffer_pool_->CreateSharedMemoryViaRawFileDescriptorStruct(
+                    buffer_id));
         break;
       case VideoCaptureBufferType::kMailboxHolder:
         NOTREACHED();
         break;
       case VideoCaptureBufferType::kGpuMemoryBuffer:
-        buffer_handle->set_gpu_memory_buffer_handle(
-            buffer_pool_->GetGpuMemoryBufferHandle(buffer_id));
+        buffer_handle =
+            media::mojom::VideoBufferHandle::NewGpuMemoryBufferHandle(
+                buffer_pool_->GetGpuMemoryBufferHandle(buffer_id));
         break;
     }
     receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));

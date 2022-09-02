@@ -48,6 +48,9 @@ enum class DeepScanAccessPoint {
 
   // A deep scan was initiated from pasting text.
   PASTE,
+
+  // A deep scan was initiated from printing a page.
+  PRINT,
 };
 std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point);
 
@@ -101,7 +104,8 @@ void ReportAnalysisConnectorWarningBypass(
     const std::string& trigger,
     DeepScanAccessPoint access_point,
     const int64_t content_size,
-    const enterprise_connectors::ContentAnalysisResponse& response);
+    const enterprise_connectors::ContentAnalysisResponse& response,
+    absl::optional<std::u16string> user_justification);
 
 // Helper functions to record DeepScanning UMA metrics for the duration of the
 // request split by its result and bytes/sec for successful requests.
@@ -116,18 +120,6 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
                            int64_t total_bytes,
                            const std::string& result,
                            bool success);
-
-// Returns an array of the file types supported for DLP scanning.
-const std::array<const base::FilePath::CharType*, 26>& SupportedDlpFileTypes();
-
-// Returns true if the given file type is supported for DLP scanning.
-bool FileTypeSupportedForDlp(const base::FilePath& path);
-
-// Returns an array of the mime types supported for DLP scanning.
-const std::array<const char*, 38>& SupportedDlpMimeTypes();
-
-// Returns true if the given mime type is supported for DLP scanning.
-bool MimeTypeSupportedForDlp(const std::string& mime_type);
 
 // Helper function to make ContentAnalysisResponses for tests.
 enterprise_connectors::ContentAnalysisResponse

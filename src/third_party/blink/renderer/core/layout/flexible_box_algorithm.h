@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLEXIBLE_BOX_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLEXIBLE_BOX_ALGORITHM_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
+#include "base/check_op.h"
 #include "third_party/blink/renderer/core/layout/geometry/flex_offset.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -166,6 +166,7 @@ class FlexItem {
   LayoutUnit FlowAwareMarginStart() const;
   LayoutUnit FlowAwareMarginEnd() const;
   LayoutUnit FlowAwareMarginBefore() const;
+  LayoutUnit MarginBlockEnd() const;
 
   LayoutUnit MainAxisMarginExtent() const;
   LayoutUnit CrossAxisMarginExtent() const;
@@ -225,7 +226,7 @@ class FlexItem {
   bool needs_relayout_for_stretch_;
 
   NGBlockNode ng_input_node_;
-  scoped_refptr<const NGLayoutResult> layout_result_;
+  Member<const NGLayoutResult> layout_result_;
 };
 
 class FlexItemVectorView {
@@ -367,7 +368,7 @@ class FlexLine {
 //        line->ComputeLineItemsPosition(main_axis_offset, cross_axis_offset);
 //     }
 // The final position of each flex item is in item.offset
-class FlexLayoutAlgorithm {
+class CORE_EXPORT FlexLayoutAlgorithm {
   DISALLOW_NEW();
 
  public:
@@ -421,14 +422,15 @@ class FlexLayoutAlgorithm {
   // FlexItem::desired_position. When lines stretch, also modifies
   // FlexLine::cross_axis_extent.
   void AlignFlexLines(LayoutUnit cross_axis_content_extent,
-                      Vector<NGFlexLine>* flex_line_outputs = nullptr);
+                      HeapVector<NGFlexLine>* flex_line_outputs = nullptr);
 
   // Positions flex items by modifying FlexItem::offset.
   // When lines stretch, also modifies FlexItem::cross_axis_size.
   void AlignChildren();
 
   void FlipForWrapReverse(LayoutUnit cross_axis_start_edge,
-                          LayoutUnit cross_axis_content_size);
+                          LayoutUnit cross_axis_content_size,
+                          HeapVector<NGFlexLine>* flex_line_outputs = nullptr);
 
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 
@@ -437,6 +439,14 @@ class FlexLayoutAlgorithm {
   static StyleContentAlignmentData ResolvedAlignContent(const ComputedStyle&);
   static ItemPosition AlignmentForChild(const ComputedStyle& flexbox_style,
                                         const ComputedStyle& child_style);
+
+  // Translates [self-]{start,end}, left, right to flex-{start,end} based on the
+  // flex flow and container/item writing-modes. Note that callers of this
+  // function treat flex-{start,end} as {start,end}. That convention will be
+  // easy to fix when legacy flex code is deleted.
+  static ItemPosition TranslateItemPosition(const ComputedStyle& flexbox_style,
+                                            const ComputedStyle& child_style,
+                                            ItemPosition align);
 
   static LayoutUnit InitialContentPositionOffset(
       const ComputedStyle& style,

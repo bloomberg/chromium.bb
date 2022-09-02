@@ -123,7 +123,7 @@
 
       @media (prefers-color-scheme: dark) {
         #time-gap-separator {
-          border-color: var(--google-grey-refresh-500);
+          border-color: var(--google-grey-500);
         }
       }
 
@@ -143,7 +143,7 @@
         clip: rect(auto 999px 500px -5px); /* Clip the top edge. */
       }
 
-      :host-context([enable-branding-update]):host([is-card-start]) #background-clip {
+      :host([is-card-start]) #background-clip {
         clip: auto;
       }
 
@@ -224,6 +224,7 @@
             <template is="dom-if" if="[[item.starred]]">
               <cr-icon-button id="bookmark-star" iron-icon="cr:star"
                   on-click="onRemoveBookmarkTap_"
+                  title="$i18n{removeBookmark}"
                   aria-hidden="true">
               </cr-icon-button>
             </template>
@@ -232,6 +233,7 @@
             <cr-icon-button id="menu-button" iron-icon="cr:more-vert"
                 focus-row-control focus-type="cr-menu-button"
                 title="$i18n{actionMenuDescription}" on-click="onMenuButtonTap_"
+                on-keydown="onMenuButtonKeydown_"
                 aria-haspopup="menu"
                 aria-describedby$="[[ariaDescribedByForHeading_]]">
             </cr-icon-button>

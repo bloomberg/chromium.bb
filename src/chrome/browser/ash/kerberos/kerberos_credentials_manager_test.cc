@@ -23,8 +23,8 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/kerberos/kerberos_client.h"
-#include "chromeos/dbus/kerberos/kerberos_service.pb.h"
+#include "chromeos/ash/components/dbus/kerberos/kerberos_client.h"
+#include "chromeos/ash/components/dbus/kerberos/kerberos_service.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -138,7 +138,7 @@ class MockKerberosFilesHandler : public KerberosFilesHandler {
   explicit MockKerberosFilesHandler(base::RepeatingClosure get_kerberos_files)
       : KerberosFilesHandler(get_kerberos_files) {}
 
-  ~MockKerberosFilesHandler() = default;
+  ~MockKerberosFilesHandler() override = default;
 
   MOCK_METHOD(void, DeleteFiles, ());
 };

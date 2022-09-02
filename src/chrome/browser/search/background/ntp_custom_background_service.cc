@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
+#include "base/observer_list.h"
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -97,7 +97,7 @@ void RemoveLocalBackgroundImageCopy(Profile* profile) {
       chrome::kChromeUIUntrustedNewTabPageBackgroundFilename);
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(base::GetDeleteFileCallback(), path));
+      base::GetDeleteFileCallback(path));
 }
 
 }  // namespace
@@ -255,7 +255,7 @@ void NtpCustomBackgroundService::SelectLocalBackgroundImage(
 
 void NtpCustomBackgroundService::RefreshBackgroundIfNeeded() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::DictionaryValue* background_info =
+  const base::Value* background_info =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
   int64_t refresh_timestamp = 0;
   const base::Value* timestamp_value =
@@ -295,7 +295,7 @@ NtpCustomBackgroundService::GetCustomBackground() {
   // Attempt to get custom background URL from preferences.
   if (IsCustomBackgroundPrefValid()) {
     auto custom_background = absl::make_optional<CustomBackground>();
-    const base::DictionaryValue* background_info =
+    const base::Value* background_info =
         pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
     GURL custom_background_url(
         background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
@@ -400,7 +400,7 @@ void NtpCustomBackgroundService::SetBackgroundToLocalResource() {
 
 bool NtpCustomBackgroundService::IsCustomBackgroundPrefValid() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::DictionaryValue* background_info =
+  const base::Value* background_info =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
   if (!background_info)
     return false;

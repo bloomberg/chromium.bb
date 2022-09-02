@@ -115,6 +115,15 @@ const UIStrings = {
   *@description The aria label for the drawer hidden.
   */
   drawerHidden: 'Drawer hidden',
+  /**
+  * @description Request for the user to select a local file system folder for DevTools
+  * to store local overrides in.
+  */
+  selectOverrideFolder: 'Select a folder to store override files in.',
+  /**
+  *@description Label for a button which opens a file picker.
+  */
+  selectFolder: 'Select folder',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/InspectorView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -133,6 +142,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
   private focusRestorer?: WidgetFocusRestorer|null;
   private ownerSplitWidget?: SplitWidget;
   private reloadRequiredInfobar?: Infobar;
+  #selectOverrideFolderInfobar?: Infobar;
 
   constructor() {
     super();
@@ -198,7 +208,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
         Host.InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
 
     function showPanel(this: InspectorView, {data: panelName}: Common.EventTarget.EventTargetEvent<string>): void {
-      this.showPanel(panelName);
+      void this.showPanel(panelName);
     }
 
     if (shouldShowLocaleInfobar()) {
@@ -259,7 +269,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     if (!view) {
       throw new Error(`Expected view for panel '${panelName}'`);
     }
-    return /** @type {!Promise.<!Panel>} */ view.widget() as Promise<Panel>;
+    return view.widget() as Promise<Panel>;
   }
 
   onSuspendStateChanged(allTargetsSuspended: boolean): void {
@@ -375,7 +385,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
         const panelName = this.tabbedPane.tabIds()[panelIndex];
         if (panelName) {
           if (!Dialog.hasInstance() && !this.currentPanelLocked) {
-            this.showPanel(panelName);
+            void this.showPanel(panelName);
           }
           event.consume(true);
         }
@@ -439,6 +449,25 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     }
   }
 
+  displaySelectOverrideFolderInfobar(callback: () => void): void {
+    if (!this.#selectOverrideFolderInfobar) {
+      const infobar = new Infobar(InfobarType.Info, i18nString(UIStrings.selectOverrideFolder), [
+        {
+          text: i18nString(UIStrings.selectFolder),
+          highlight: true,
+          delegate: (): void => callback(),
+          dismiss: true,
+        },
+      ]);
+      infobar.setParentView(this);
+      this.attachInfobar(infobar);
+      this.#selectOverrideFolderInfobar = infobar;
+      infobar.setCloseCallback(() => {
+        this.#selectOverrideFolderInfobar = undefined;
+      });
+    }
+  }
+
   private createInfoBarDiv(): void {
     if (!this.infoBarDiv) {
       this.infoBarDiv = document.createElement('div');
@@ -478,10 +507,9 @@ function shouldShowLocaleInfobar(): boolean {
 function createLocaleInfobar(): Infobar {
   const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
   const closestSupportedLocale = devtoolsLocale.lookupClosestDevToolsLocale(navigator.language);
-  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const locale = new Intl.Locale(closestSupportedLocale);
   const closestSupportedLanguageInCurrentLocale =
-      new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(locale.language || 'en');
+      new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(locale.language || 'en') || 'English';
 
   const languageSetting = Common.Settings.Settings.instance().moduleSetting<string>('language');
   return new Infobar(

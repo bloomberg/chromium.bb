@@ -8,10 +8,9 @@
 #ifndef SkSLAnalysis_DEFINED
 #define SkSLAnalysis_DEFINED
 
-#include "include/core/SkSpan.h"
-#include "include/private/SkSLDefines.h"
 #include "include/private/SkSLSampleUsage.h"
 
+#include <stdint.h>
 #include <memory>
 #include <set>
 
@@ -19,18 +18,20 @@ namespace SkSL {
 
 class ErrorReporter;
 class Expression;
-class ForStatement;
 class FunctionDeclaration;
 class FunctionDefinition;
-struct LoadedModule;
-struct Program;
+class Position;
 class ProgramElement;
 class ProgramUsage;
 class Statement;
-struct LoopUnrollInfo;
 class Variable;
 class VariableReference;
 enum class VariableRefKind : int8_t;
+struct ForLoopPositions;
+struct LoadedModule;
+struct LoopUnrollInfo;
+struct ParsedModule;
+struct Program;
 
 /**
  * Provides utilities for analyzing SkSL statically before it's composed into a full program.
@@ -56,13 +57,22 @@ bool ReferencesFragCoords(const Program& program);
 
 bool CallsSampleOutsideMain(const Program& program);
 
+bool CallsColorTransformIntrinsics(const Program& program);
+
 /**
- * Computes the size of the program in a completely flattened state--loops fully unrolled,
+ * Determines if `function` always returns an opaque color (a vec4 where the last component is known
+ * to be 1). This is conservative, and based on constant expression analysis.
+ */
+bool ReturnsOpaqueColor(const FunctionDefinition& function);
+
+/**
+ * Checks for recursion or overly-deep function-call chains, and rejects programs which have them.
+ * Also, computes the size of the program in a completely flattened state--loops fully unrolled,
  * function calls inlined--and rejects programs that exceed an arbitrary upper bound. This is
  * intended to prevent absurdly large programs from overwhemling SkVM. Only strict-ES2 mode is
  * supported; complex control flow is not SkVM-compatible (and this becomes the halting problem)
  */
-bool CheckProgramUnrolledSize(const Program& program);
+bool CheckProgramStructure(const Program& program, bool enforceSizeLimit);
 
 /**
  * Detect an orphaned variable declaration outside of a scope, e.g. if (true) int a;. Returns
@@ -85,7 +95,7 @@ bool SwitchCaseContainsUnconditionalExit(Statement& stmt);
 bool SwitchCaseContainsConditionalExit(Statement& stmt);
 
 std::unique_ptr<ProgramUsage> GetUsage(const Program& program);
-std::unique_ptr<ProgramUsage> GetUsage(const LoadedModule& module);
+std::unique_ptr<ProgramUsage> GetUsage(const LoadedModule& module, const ParsedModule& base);
 
 bool StatementWritesToVariable(const Statement& stmt, const Variable& var);
 
@@ -115,7 +125,7 @@ bool UpdateVariableRefKind(Expression* expr, VariableRefKind kind, ErrorReporter
  *
  * Trivial-ness is stackable. Somewhat large expressions can occasionally make the cut:
  * - half4(myColor.a)
- * - myStruct.myArrayField[7].xyz
+ * - myStruct.myArrayField[7].xzy
  */
 bool IsTrivialExpression(const Expression& expr);
 
@@ -157,7 +167,8 @@ bool IsConstantIndexExpression(const Expression& expr,
  * If the requirements are not met, the problem is reported via `errors` (if not nullptr), and
  * null is returned.
  */
-std::unique_ptr<LoopUnrollInfo> GetLoopUnrollInfo(int line,
+std::unique_ptr<LoopUnrollInfo> GetLoopUnrollInfo(Position pos,
+                                                  const ForLoopPositions& positions,
                                                   const Statement* loopInitializer,
                                                   const Expression* loopTest,
                                                   const Expression* loopNext,
@@ -170,10 +181,12 @@ void ValidateIndexingForES2(const ProgramElement& pe, ErrorReporter& errors);
 bool CanExitWithoutReturningValue(const FunctionDeclaration& funcDecl, const Statement& body);
 
 /**
- * Searches for @if/@switch statements that didn't optimize away, or dangling
- * FunctionReference or TypeReference expressions, and reports them as errors.
+ * Runs at finalization time to perform any last-minute correctness checks:
+ * - Reports @if/@switch statements that didn't optimize away
+ * - Reports dangling FunctionReference or TypeReference expressions
+ * - Reports function `out` params which are never written to (structs are currently exempt)
  */
-void VerifyStaticTestsAndExpressions(const Program& program);
+void DoFinalizationChecks(const Program& program);
 
 }  // namespace Analysis
 }  // namespace SkSL

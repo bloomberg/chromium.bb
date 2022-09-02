@@ -140,4 +140,19 @@ extern NSString* const kSettingsHandoffCellId;
 // The accessibility identifier of the Cookies cell.
 extern NSString* const kSettingsCookiesCellId;
 
+// The accessibility identifier of the Default Site Mode cell.
+extern NSString* const kSettingsDefaultSiteModeCellId;
+
+// The accessibility identifier of the default browser settings TableView.
+extern NSString* const kDefaultBrowserSettingsTableViewId;
+
+extern NSString* const kSettingsHttpsOnlyModeCellId;
+
+// The accessibility identifier of the Incognito interstitial setting.
+extern NSString* const kSettingsIncognitoInterstitialId;
+
+// The accessibility identifier of the Incognito interstitial setting
+// when the setting is disabled because of Enterprise policy.
+extern NSString* const kSettingsIncognitoInterstitialDisabledId;
+
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_TABLE_VIEW_CONTROLLER_CONSTANTS_H_

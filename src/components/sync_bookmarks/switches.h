@@ -9,14 +9,13 @@
 
 namespace switches {
 
+inline constexpr base::Feature kSyncOmitLargeBookmarkFaviconUrl{
+    "SyncOmitLargeBookmarkFaviconUrl", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // TODO(crbug.com/1232951): remove the feature toggle once most of bookmarks
 // have been reuploaded.
-extern const base::Feature kSyncReuploadBookmarks;
-extern const base::Feature kSyncUseClientTagForBookmarkCommits;
-
-// TODO(crbug.com/1177798): remove this code after a quick verification that it
-// doesn't cause issues.
-extern const base::Feature kSyncBookmarksEnforceLateMaxEntriesToCommit;
+inline constexpr base::Feature kSyncReuploadBookmarks{
+    "SyncReuploadBookmarks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace switches
 

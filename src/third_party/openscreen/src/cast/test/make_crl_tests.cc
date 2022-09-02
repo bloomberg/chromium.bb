@@ -6,8 +6,9 @@
 #include <unistd.h>
 
 #include "cast/common/certificate/cast_crl.h"
+#include "cast/common/certificate/date_time.h"
 #include "cast/common/certificate/testing/test_helpers.h"
-#include "cast/common/certificate/types.h"
+#include "cast/common/public/certificate_types.h"
 #include "platform/test/paths.h"
 #include "util/crypto/certificate_utils.h"
 #include "util/crypto/digest_sign.h"

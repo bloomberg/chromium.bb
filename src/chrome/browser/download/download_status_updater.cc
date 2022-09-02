@@ -11,9 +11,10 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 
 namespace {
 
@@ -104,7 +105,8 @@ void DownloadStatusUpdater::OnDownloadCreated(content::DownloadManager* manager,
   // Ignore downloads loaded from history, which are in a terminal state.
   // TODO(benjhayden): Use the Observer interface to distinguish between
   // historical and started downloads.
-  if (item->GetState() == download::DownloadItem::IN_PROGRESS) {
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS &&
+      !item->IsTransient()) {
     UpdateAppIconDownloadProgress(item);
     new WasInProgressData(item);
   }
@@ -114,7 +116,9 @@ void DownloadStatusUpdater::OnDownloadCreated(content::DownloadManager* manager,
 
 void DownloadStatusUpdater::OnDownloadUpdated(content::DownloadManager* manager,
                                               download::DownloadItem* item) {
-  if (item->GetState() == download::DownloadItem::IN_PROGRESS) {
+  UpdatePrefsOnDownloadUpdated(manager, item);
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS &&
+      !item->IsTransient()) {
     // If the item was interrupted/cancelled and then resumed/restarted, then
     // set WasInProgress so that UpdateAppIconDownloadProgress() will be called
     // when it completes.
@@ -177,9 +181,24 @@ void DownloadStatusUpdater::UpdateProfileKeepAlive(
   }
 }
 
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
     download::DownloadItem* download) {
   // TODO(avi): Implement for Android?
 }
 #endif
+
+void DownloadStatusUpdater::UpdatePrefsOnDownloadUpdated(
+    content::DownloadManager* manager,
+    download::DownloadItem* download) {
+  if (!manager) {
+    // Can be null in tests.
+    return;
+  }
+
+  if (download->GetState() == download::DownloadItem::COMPLETE &&
+      !download->IsTransient()) {
+    DownloadPrefs::FromDownloadManager(manager)->SetLastCompleteTime(
+        base::Time::Now());
+  }
+}

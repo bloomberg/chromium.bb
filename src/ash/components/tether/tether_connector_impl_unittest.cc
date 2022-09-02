@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/tether/connect_tethering_operation.h"
 #include "ash/components/tether/device_id_tether_network_guid_map.h"
 #include "ash/components/tether/fake_active_host.h"
@@ -18,25 +20,23 @@
 #include "ash/components/tether/mock_host_connection_metrics_logger.h"
 #include "ash/components/tether/mock_tether_host_response_recorder.h"
 #include "ash/components/tether/tether_connector.h"
+#include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
-#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 using testing::StrictMock;
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -836,4 +836,4 @@ TEST_F(TetherConnectorImplTest,
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

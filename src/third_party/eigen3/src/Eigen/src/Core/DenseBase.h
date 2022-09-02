@@ -105,8 +105,7 @@ template<typename Derived> class DenseBase
           * \sa MatrixBase::rows(), MatrixBase::cols(), RowsAtCompileTime, SizeAtCompileTime */
 
 
-      SizeAtCompileTime = (internal::size_at_compile_time<internal::traits<Derived>::RowsAtCompileTime,
-                                                   internal::traits<Derived>::ColsAtCompileTime>::ret),
+      SizeAtCompileTime = (internal::size_of_xpr_at_compile_time<Derived>::ret),
         /**< This is equal to the number of coefficients, i.e. the number of
           * rows times the number of columns, or to \a Dynamic if this is not
           * known at compile-time. \sa RowsAtCompileTime, ColsAtCompileTime */
@@ -133,8 +132,8 @@ template<typename Derived> class DenseBase
           * \sa ColsAtCompileTime, MaxRowsAtCompileTime, MaxSizeAtCompileTime
           */
 
-      MaxSizeAtCompileTime = (internal::size_at_compile_time<internal::traits<Derived>::MaxRowsAtCompileTime,
-                                                      internal::traits<Derived>::MaxColsAtCompileTime>::ret),
+      MaxSizeAtCompileTime = internal::size_at_compile_time(internal::traits<Derived>::MaxRowsAtCompileTime,
+                                                            internal::traits<Derived>::MaxColsAtCompileTime),
         /**< This value is equal to the maximum possible number of coefficients that this expression
           * might have. If this expression might have an arbitrarily high number of coefficients,
           * this value is set to \a Dynamic.
@@ -201,13 +200,8 @@ template<typename Derived> class DenseBase
       * the return type of eval() is a const reference to a matrix, not a matrix! It is however guaranteed
       * that the return type of eval() is either PlainObject or const PlainObject&.
       */
-    typedef typename internal::conditional<internal::is_same<typename internal::traits<Derived>::XprKind,MatrixXpr >::value,
-                                 PlainMatrix, PlainArray>::type PlainObject;
-
-    /** \returns the number of nonzero coefficients which is in practice the number
-      * of stored coefficients. */
-    EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR
-    inline Index nonZeros() const { return size(); }
+    typedef std::conditional_t<internal::is_same<typename internal::traits<Derived>::XprKind,MatrixXpr >::value,
+                                 PlainMatrix, PlainArray> PlainObject;
 
     /** \returns the outer size.
       *
@@ -319,9 +313,9 @@ template<typename Derived> class DenseBase
     typedef Transpose<Derived> TransposeReturnType;
     EIGEN_DEVICE_FUNC
     TransposeReturnType transpose();
-    typedef typename internal::add_const<Transpose<const Derived> >::type ConstTransposeReturnType;
+    typedef Transpose<const Derived> ConstTransposeReturnType;
     EIGEN_DEVICE_FUNC
-    ConstTransposeReturnType transpose() const;
+    const ConstTransposeReturnType transpose() const;
     EIGEN_DEVICE_FUNC
     void transposeInPlace();
 
@@ -382,15 +376,15 @@ template<typename Derived> class DenseBase
     EIGEN_DEVICE_FUNC bool isZero(const RealScalar& prec = NumTraits<Scalar>::dummy_precision()) const;
     EIGEN_DEVICE_FUNC bool isOnes(const RealScalar& prec = NumTraits<Scalar>::dummy_precision()) const;
 
-    inline bool hasNaN() const;
-    inline bool allFinite() const;
+    EIGEN_DEVICE_FUNC inline bool hasNaN() const;
+    EIGEN_DEVICE_FUNC inline bool allFinite() const;
 
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Derived& operator*=(const Scalar& other);
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Derived& operator/=(const Scalar& other);
 
-    typedef typename internal::add_const_on_value_type<typename internal::eval<Derived>::type>::type EvalReturnType;
+    typedef internal::add_const_on_value_type_t<typename internal::eval<Derived>::type> EvalReturnType;
     /** \returns the matrix or vector obtained by evaluating this expression.
       *
       * Notice that in the case of a plain matrix or vector (not an expression) this function just returns
@@ -434,9 +428,9 @@ template<typename Derived> class DenseBase
     EIGEN_DEVICE_FUNC inline const ForceAlignedAccess<Derived> forceAlignedAccess() const;
     EIGEN_DEVICE_FUNC inline ForceAlignedAccess<Derived> forceAlignedAccess();
     template<bool Enable> EIGEN_DEVICE_FUNC
-    inline const typename internal::conditional<Enable,ForceAlignedAccess<Derived>,Derived&>::type forceAlignedAccessIf() const;
+    inline const std::conditional_t<Enable,ForceAlignedAccess<Derived>,Derived&> forceAlignedAccessIf() const;
     template<bool Enable> EIGEN_DEVICE_FUNC
-    inline typename internal::conditional<Enable,ForceAlignedAccess<Derived>,Derived&>::type forceAlignedAccessIf();
+    inline std::conditional_t<Enable,ForceAlignedAccess<Derived>,Derived&> forceAlignedAccessIf();
 
     EIGEN_DEVICE_FUNC Scalar sum() const;
     EIGEN_DEVICE_FUNC Scalar mean() const;
@@ -616,27 +610,21 @@ template<typename Derived> class DenseBase
     /** This is the const version of iterator (aka read-only) */
     typedef random_access_iterator_type const_iterator;
     #else
-    typedef typename internal::conditional< (Flags&DirectAccessBit)==DirectAccessBit,
-                                            internal::pointer_based_stl_iterator<Derived>,
-                                            internal::generic_randaccess_stl_iterator<Derived>
-                                          >::type iterator_type;
+    typedef std::conditional_t< (Flags&DirectAccessBit)==DirectAccessBit,
+                                     internal::pointer_based_stl_iterator<Derived>,
+                                     internal::generic_randaccess_stl_iterator<Derived>
+                                   > iterator_type;
 
-    typedef typename internal::conditional< (Flags&DirectAccessBit)==DirectAccessBit,
-                                            internal::pointer_based_stl_iterator<const Derived>,
-                                            internal::generic_randaccess_stl_iterator<const Derived>
-                                          >::type const_iterator_type;
+    typedef std::conditional_t< (Flags&DirectAccessBit)==DirectAccessBit,
+                                     internal::pointer_based_stl_iterator<const Derived>,
+                                     internal::generic_randaccess_stl_iterator<const Derived>
+                                   > const_iterator_type;
 
     // Stl-style iterators are supported only for vectors.
 
-    typedef typename internal::conditional< IsVectorAtCompileTime,
-                                            iterator_type,
-                                            void
-                                          >::type iterator;
+    typedef std::conditional_t<IsVectorAtCompileTime, iterator_type, void> iterator;
 
-    typedef typename internal::conditional< IsVectorAtCompileTime,
-                                            const_iterator_type,
-                                            void
-                                          >::type const_iterator;
+    typedef std::conditional_t<IsVectorAtCompileTime, const_iterator_type, void> const_iterator;
     #endif
 
     inline iterator begin();
@@ -679,8 +667,8 @@ template<typename Derived> class DenseBase
        * Only do it when debugging Eigen, as this borders on paranoia and could slow compilation down
        */
 #ifdef EIGEN_INTERNAL_DEBUGGING
-      EIGEN_STATIC_ASSERT((EIGEN_IMPLIES(MaxRowsAtCompileTime==1 && MaxColsAtCompileTime!=1, int(IsRowMajor))
-                        && EIGEN_IMPLIES(MaxColsAtCompileTime==1 && MaxRowsAtCompileTime!=1, int(!IsRowMajor))),
+      EIGEN_STATIC_ASSERT((internal::check_implication(MaxRowsAtCompileTime==1 && MaxColsAtCompileTime!=1, int(IsRowMajor))
+                        && internal::check_implication(MaxColsAtCompileTime==1 && MaxRowsAtCompileTime!=1, int(!IsRowMajor))),
                           INVALID_STORAGE_ORDER_FOR_THIS_VECTOR_EXPRESSION)
 #endif
     }

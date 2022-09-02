@@ -20,8 +20,6 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
-import com.google.protobuf.GeneratedMessageLite;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,9 +32,11 @@ import org.chromium.chrome.browser.autofill_assistant.proto.TriggerScriptProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.autofill_assistant.AutofillAssistantPreferencesUtil;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -50,17 +50,10 @@ public class InCctTriggeringFromGsaTest {
     private static final String TEST_PAGE_SUPPORTED = "cart.html";
 
     @Rule
-    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+    public final CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
 
     private String getTargetWebsiteUrl(String testPage) {
         return mTestRule.getTestServer().getURL(HTML_DIRECTORY + testPage);
-    }
-
-    private void setupTriggerScripts(GetTriggerScriptsResponseProto triggerScripts) {
-        AutofillAssistantTestServiceRequestSender testServiceRequestSender =
-                new AutofillAssistantTestServiceRequestSender();
-        testServiceRequestSender.setNextResponse(/* httpStatus = */ 200, triggerScripts);
-        testServiceRequestSender.scheduleForInjection();
     }
 
     @Before
@@ -72,10 +65,10 @@ public class InCctTriggeringFromGsaTest {
                         .putExtra(Browser.EXTRA_APPLICATION_ID, IntentHandler.PACKAGE_GSA));
 
         // Enable MSBB.
-        AutofillAssistantPreferencesUtil.setProactiveHelpSwitch(true);
+        AutofillAssistantPreferencesUtil.setProactiveHelpPreference(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
-                    AutofillAssistantUiController.getProfile(), true);
+                    Profile.getLastUsedRegularProfile(), true);
 
             // Force native to pick up the changes we made to Chrome preferences.
             AutofillAssistantTabHelper
@@ -84,7 +77,8 @@ public class InCctTriggeringFromGsaTest {
         });
     }
 
-    private GeneratedMessageLite createDefaultTriggerScriptResponse(String statusMessage) {
+    private GetTriggerScriptsResponseProto createDefaultTriggerScriptResponse(
+            String statusMessage) {
         return GetTriggerScriptsResponseProto.newBuilder()
                 .addTriggerScripts(TriggerScriptProto.newBuilder().setUserInterface(
                         createDefaultTriggerScriptUI(statusMessage,
@@ -135,7 +129,7 @@ public class InCctTriggeringFromGsaTest {
                 withText("TriggerScript"), isDisplayed(), 2 * DEFAULT_MAX_TIME_TO_POLL);
 
         // Disabling the proactive help setting should stop the trigger script.
-        AutofillAssistantPreferencesUtil.setProactiveHelpSwitch(false);
+        AutofillAssistantPreferencesUtil.setProactiveHelpPreference(false);
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> AutofillAssistantTabHelper
@@ -149,7 +143,7 @@ public class InCctTriggeringFromGsaTest {
         // still on a supported URL.
         testServiceRequestSender.setNextResponse(
                 /* httpStatus = */ 200, createDefaultTriggerScriptResponse("TriggerScript"));
-        AutofillAssistantPreferencesUtil.setProactiveHelpSwitch(true);
+        AutofillAssistantPreferencesUtil.setProactiveHelpPreference(true);
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> AutofillAssistantTabHelper

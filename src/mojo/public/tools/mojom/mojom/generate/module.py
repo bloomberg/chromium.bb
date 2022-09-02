@@ -12,11 +12,7 @@
 # method = interface.AddMethod('Tat', 0)
 # method.AddParameter('baz', 0, mojom.INT32)
 
-import sys
-if sys.version_info.major == 2:
-  import cPickle as pickle
-else:
-  import pickle
+import pickle
 from uuid import UUID
 
 
@@ -295,6 +291,8 @@ ATTRIBUTE_SYNC = 'Sync'
 ATTRIBUTE_UNLIMITED_SIZE = 'UnlimitedSize'
 ATTRIBUTE_UUID = 'Uuid'
 ATTRIBUTE_SERVICE_SANDBOX = 'ServiceSandbox'
+ATTRIBUTE_REQUIRE_CONTEXT = 'RequireContext'
+ATTRIBUTE_ALLOWED_CONTEXT = 'AllowedContext'
 
 
 class NamedValue(object):
@@ -415,7 +413,18 @@ class StructField(Field):
 
 
 class UnionField(Field):
-  pass
+  def __init__(self,
+               mojom_name=None,
+               kind=None,
+               ordinal=None,
+               default=None,
+               attributes=None):
+    Field.__init__(self, mojom_name, kind, ordinal, default, attributes)
+
+  @property
+  def is_default(self):
+    return self.attributes.get(ATTRIBUTE_DEFAULT, False) \
+        if self.attributes else False
 
 
 def _IsFieldBackwardCompatible(new_field, old_field, checker):
@@ -607,6 +616,7 @@ class Union(ReferenceKind):
   ReferenceKind.AddSharedProperty('name')
   ReferenceKind.AddSharedProperty('fields')
   ReferenceKind.AddSharedProperty('attributes')
+  ReferenceKind.AddSharedProperty('default_field')
 
   def __init__(self, mojom_name=None, module=None, attributes=None):
     if mojom_name is not None:
@@ -618,6 +628,7 @@ class Union(ReferenceKind):
     self.name = None
     self.fields = []
     self.attributes = attributes
+    self.default_field = None
 
   def Repr(self, as_ref=True):
     if as_ref:
@@ -684,6 +695,11 @@ class Union(ReferenceKind):
         return False
 
     return True
+
+  @property
+  def extensible(self):
+    return self.attributes.get(ATTRIBUTE_EXTENSIBLE, False) \
+        if self.attributes else False
 
   @property
   def stable(self):
@@ -1076,6 +1092,11 @@ class Method(object):
     return self.attributes.get(ATTRIBUTE_UNLIMITED_SIZE) \
         if self.attributes else False
 
+  @property
+  def allowed_context(self):
+    return self.attributes.get(ATTRIBUTE_ALLOWED_CONTEXT) \
+        if self.attributes else None
+
   def _tuple(self):
     return (self.mojom_name, self.ordinal, self.parameters,
             self.response_parameters, self.attributes)
@@ -1211,7 +1232,22 @@ class Interface(ReferenceKind):
   def service_sandbox(self):
     if not self.attributes:
       return None
-    return self.attributes.get(ATTRIBUTE_SERVICE_SANDBOX, None)
+    service_sandbox = self.attributes.get(ATTRIBUTE_SERVICE_SANDBOX, None)
+    if service_sandbox is None:
+      return None
+    # Constants are only allowed to refer to an enum here, so replace.
+    if isinstance(service_sandbox, Constant):
+      service_sandbox = service_sandbox.value
+    if not isinstance(service_sandbox, EnumValue):
+      raise Exception("ServiceSandbox attribute on %s must be an enum value." %
+                      self.module.name)
+    return service_sandbox
+
+  @property
+  def require_context(self):
+    if not self.attributes:
+      return None
+    return self.attributes.get(ATTRIBUTE_REQUIRE_CONTEXT, None)
 
   @property
   def stable(self):
@@ -1490,7 +1526,7 @@ class Module(object):
       imported_module.Stylize(stylizer)
 
   def Dump(self, f):
-    pickle.dump(self, f, 2)
+    pickle.dump(self, f)
 
   @classmethod
   def Load(cls, f):

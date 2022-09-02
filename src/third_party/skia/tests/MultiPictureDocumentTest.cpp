@@ -4,22 +4,26 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
- * This test confirms that a MultiPictureDocument can be serialized and deserailzied without error.
+ * This test confirms that a MultiPictureDocument can be serialized and deserialized without error.
  * And that the pictures within it are re-created accurately
  */
 
 #include "include/core/SkCanvas.h"
-#include "include/core/SkColorPriv.h"
-#include "include/core/SkColorSpace.h"
+#include "include/core/SkColor.h"
 #include "include/core/SkDocument.h"
 #include "include/core/SkFont.h"
 #include "include/core/SkImage.h"
+#include "include/core/SkImageInfo.h"
 #include "include/core/SkPicture.h"
 #include "include/core/SkPictureRecorder.h"
+#include "include/core/SkRRect.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkSerialProcs.h"
+#include "include/core/SkStream.h"
 #include "include/core/SkString.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkTextBlob.h"
-#include "src/gpu/GrCaps.h"
+#include "src/gpu/ganesh/GrCaps.h"
 #include "src/utils/SkMultiPictureDocument.h"
 #include "tests/Test.h"
 #include "tools/SkSharingProc.h"
@@ -170,9 +174,12 @@ DEF_TEST(SkMultiPictureDocument_Serialize_and_deserialize, reporter) {
 
 #if SK_SUPPORT_GPU && defined(SK_BUILD_FOR_ANDROID) && __ANDROID_API__ >= 26
 
+#include "include/core/SkBitmap.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkColorType.h"
 #include "include/gpu/GrDirectContext.h"
-#include "src/gpu/GrAHardwareBufferUtils.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrAHardwareBufferUtils_impl.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
 
 #include <android/hardware_buffer.h>
 

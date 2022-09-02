@@ -41,7 +41,9 @@ DEFAULT_LONG_TIMEOUT = DEFAULT_TIMEOUT * 10
 DEFAULT_SUPER_LONG_TIMEOUT = DEFAULT_LONG_TIMEOUT * 2
 DEFAULT_RETRIES = 2
 
-_ADB_VERSION_RE = re.compile(r'Android Debug Bridge version (\d+\.\d+\.\d+)')
+_ADB_PROTOCOL_VERSION_RE = re.compile(
+    r'Android Debug Bridge version (\d+\.\d+\.\d+)')
+_ADB_RELEASE_VERSION_RE = re.compile(r'Version (\d+\.\d+\.\d+)')
 _EMULATOR_RE = re.compile(r'^emulator-[0-9]+$')
 _DEVICE_NOT_FOUND_RE = re.compile(r"device '(?P<serial>.+)' not found")
 _READY_STATE = 'device'
@@ -89,14 +91,31 @@ def _FindAdb():
     raise device_errors.NoAdbError()
 
 
-def _GetVersion():
+def _GetProtocolVersion():
   # pylint: disable=protected-access
   raw_version = AdbWrapper._RunAdbCmd(['version'], timeout=2, retries=0)
   for l in raw_version.splitlines():
-    m = _ADB_VERSION_RE.search(l)
+    m = _ADB_PROTOCOL_VERSION_RE.search(l)
     if m:
       return m.group(1)
   return None
+
+
+def _GetReleaseVersion():
+  # pylint: disable=protected-access
+  raw_version = AdbWrapper._RunAdbCmd(['version'], timeout=2, retries=0)
+  for l in raw_version.splitlines():
+    m = _ADB_RELEASE_VERSION_RE.search(l)
+    if m:
+      return m.group(1)
+  return None
+
+
+def _GetSdkVersion():
+  # pylint: disable=protected-access
+  raw_version = AdbWrapper._RunAdbCmd(
+      ['shell', 'getprop', 'ro.build.version.sdk'], timeout=2, retries=0)
+  return int(raw_version.rstrip())
 
 
 def _ShouldRetryAdbCmd(exc):
@@ -159,7 +178,9 @@ class AdbWrapper(object):
   _ADB_ENV = _CreateAdbEnvironment()
 
   _adb_path = lazy.WeakConstant(_FindAdb)
-  _adb_version = lazy.WeakConstant(_GetVersion)
+  _adb_protocol_version = lazy.WeakConstant(_GetProtocolVersion)
+  _adb_release_version = lazy.WeakConstant(_GetReleaseVersion)
+  _adb_sdk_version = lazy.WeakConstant(_GetSdkVersion)
 
   def __init__(self, device_serial):
     """Initializes the AdbWrapper.
@@ -281,7 +302,35 @@ class AdbWrapper(object):
 
   @classmethod
   def Version(cls):
-    return cls._adb_version.read()
+    """Returns the adb "protocol version number" (obsolete).
+
+    This is referred to by the adb team as the "protocol version number" and is
+    no longer being incremented for new features due to it being too disruptive
+    and forcing a server restart.
+
+    Prefer to call ReleaseVersion instead. Context:
+    http://issuetracker.google.com/218716282#comment8
+    """
+    return cls._adb_protocol_version.read()
+
+  @classmethod
+  def ReleaseVersion(cls):
+    """Returns the adb "release version number".
+
+    Prefer to use this to gate features and fixes as this is the platform-tools
+    version and it is incremented with each release. Context:
+    http://issuetracker.google.com/218716282#comment8
+    """
+    return cls._adb_release_version.read()
+
+  @classmethod
+  def SdkVersion(cls):
+    """Returns the adb "shell getprop ro.build.version.sdk"
+
+    Used for when using arguments that are only supported on later
+    Android versions
+    """
+    return cls._adb_sdk_version.read()
 
   @classmethod
   def _BuildAdbCmd(cls, args, device_serial, cpu_affinity=None):
@@ -496,6 +545,18 @@ class AdbWrapper(object):
     output = cls._RunAdbCmd(cmd, timeout=timeout, retries=retries)
     return [line.split() for line in output.splitlines()[1:]]
 
+  def _CheckSdkVersion(self, expected_sdk, error_message):
+    """Checks the SDK version reported by the device and throws an error if
+    it is too low
+
+    Throws: device_errors.DeviceVersionError
+    """
+    device_version = self.SdkVersion()
+    if device_version < expected_sdk:
+      raise device_errors.DeviceVersionError(
+          '%s: SDK version %d expected but %d reported' %
+          (error_message, expected_sdk, device_version))
+
   def GetDeviceSerial(self):
     """Gets the device serial number associated with this object.
 
@@ -641,7 +702,9 @@ class AdbWrapper(object):
     if expect_status is None:
       args = ['shell', command]
     else:
-      args = ['shell', '( %s );echo %%$?' % command.rstrip()]
+      # Pipe stderr->stdout to ensure the echo'ed exit code is not interleaved
+      # with the command's stderr (as seen in https://crbug.com/1314912).
+      args = ['shell', '( %s ) 2>&1;echo %%$?' % command.rstrip()]
     output = self._RunDeviceAdbCmd(args, timeout, retries, check_error=False)
     if expect_status is not None:
       output_end = output.rfind('%')
@@ -869,7 +932,9 @@ class AdbWrapper(object):
               sd_card=False,
               streaming=None,
               timeout=DEFAULT_LONG_TIMEOUT,
-              retries=DEFAULT_RETRIES):
+              retries=DEFAULT_RETRIES,
+              instant_app=False,
+              force_queryable=False):
     """Install an apk on the device.
 
     Args:
@@ -884,6 +949,10 @@ class AdbWrapper(object):
         Note this option is not supported prior to adb version 1.0.40
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
+      instant_app (optional): Install the APK as an instant app
+      force_queryable (optional): Allows the installed application to
+        be queryable by all other applications regardless of if they
+        have declared the package as queryable in their manifests
     """
     VerifyLocalFileExists(apk_path)
     cmd = ['install']
@@ -895,9 +964,15 @@ class AdbWrapper(object):
       cmd.append('-s')
     if allow_downgrade:
       cmd.append('-d')
+    if instant_app:
+      self._CheckSdkVersion(29, error_message='Instant apps not supported')
+      cmd.append('--instant')
+    if force_queryable:
+      self._CheckSdkVersion(30, error_message='Force queryable not supported')
+      cmd.append('--force-queryable')
     if streaming in (True, False):
       if (du_version.LooseVersion(self.Version()) <
-        du_version.LooseVersion('1.0.40')):
+          du_version.LooseVersion('1.0.40')):
         logging.warning(
             'adb: streaming options not supported prior to version 1.0.40 '
             '(current: %s)', self.Version())
@@ -920,7 +995,9 @@ class AdbWrapper(object):
                       partial=False,
                       streaming=None,
                       timeout=DEFAULT_LONG_TIMEOUT,
-                      retries=DEFAULT_RETRIES):
+                      retries=DEFAULT_RETRIES,
+                      instant_app=False,
+                      force_queryable=False):
     """Install an apk with splits on the device.
 
     Args:
@@ -936,10 +1013,21 @@ class AdbWrapper(object):
         Note this option is not supported prior to adb version 1.0.40
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
+      instant_app (optional): Install the APK as an instant app
+      force_queryable (optional): Allows the installed application to
+        be queryable by all other applications regardless of if they
+        have declared the package as queryable in their manifests
     """
     for path in apk_paths:
       VerifyLocalFileExists(path)
     cmd = ['install-multiple']
+    if (du_version.LooseVersion(self.ReleaseVersion()) <
+        du_version.LooseVersion('33.0.1')):
+      # Workaround for http://issuetracker.google.com/218716282. In adb versions
+      # before the one in platform-tools 33.0.1, the first arg is ignored for
+      # install-multiple. Pass an extra arg in this case to avoid one of the
+      # other arguments being ignored.
+      cmd.append('unused-arg-workaround')
     if forward_lock:
       cmd.append('-l')
     if reinstall:
@@ -948,9 +1036,15 @@ class AdbWrapper(object):
       cmd.append('-s')
     if allow_downgrade:
       cmd.append('-d')
+    if instant_app:
+      self._CheckSdkVersion(29, error_message='Instant apps not supported')
+      cmd.append('--instant')
+    if force_queryable:
+      self._CheckSdkVersion(30, error_message='Force queryable not supported')
+      cmd.append('--force-queryable')
     if streaming in (True, False):
       if (du_version.LooseVersion(self.Version()) <
-        du_version.LooseVersion('1.0.40')):
+          du_version.LooseVersion('1.0.40')):
         logging.warning(
             'adb: streaming options not supported prior to version 1.0.40 '
             '(current: %s)', self.Version())

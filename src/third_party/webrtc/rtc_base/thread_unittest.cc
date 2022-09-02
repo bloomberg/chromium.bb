@@ -204,6 +204,10 @@ struct FunctorD {
  public:
   explicit FunctorD(AtomicBool* flag) : flag_(flag) {}
   FunctorD(FunctorD&&) = default;
+
+  FunctorD(const FunctorD&) = delete;
+  FunctorD& operator=(const FunctorD&) = delete;
+
   FunctorD& operator=(FunctorD&&) = default;
   void operator()() {
     if (flag_)
@@ -212,7 +216,6 @@ struct FunctorD {
 
  private:
   AtomicBool* flag_;
-  RTC_DISALLOW_COPY_AND_ASSIGN(FunctorD);
 };
 
 // See: https://code.google.com/p/webrtc/issues/detail?id=2409
@@ -257,12 +260,12 @@ TEST(ThreadTest, DISABLED_Main) {
 }
 
 TEST(ThreadTest, CountBlockingCalls) {
+  rtc::AutoThread current;
+
   // When the test runs, this will print out:
   //   (thread_unittest.cc:262): Blocking TestBody: total=2 (actual=1, could=1)
   RTC_LOG_THREAD_BLOCK_COUNT();
 #if RTC_DCHECK_IS_ON
-  rtc::Thread* current = rtc::Thread::Current();
-  ASSERT_TRUE(current);
   rtc::Thread::ScopedCountBlockingCalls blocked_calls(
       [&](uint32_t actual_block, uint32_t could_block) {
         EXPECT_EQ(1u, actual_block);
@@ -277,7 +280,7 @@ TEST(ThreadTest, CountBlockingCalls) {
   // invoke, but should still count as an invoke that could block since we
   // that the call to Invoke serves a purpose in some configurations (and should
   // not be used a general way to call methods on the same thread).
-  current->Invoke<void>(RTC_FROM_HERE, []() {});
+  current.Invoke<void>(RTC_FROM_HERE, []() {});
   EXPECT_EQ(0u, blocked_calls.GetBlockingCallCount());
   EXPECT_EQ(1u, blocked_calls.GetCouldBeBlockingCallCount());
   EXPECT_EQ(1u, blocked_calls.GetTotalBlockedCallCount());
@@ -299,22 +302,20 @@ TEST(ThreadTest, CountBlockingCalls) {
 
 #if RTC_DCHECK_IS_ON
 TEST(ThreadTest, CountBlockingCallsOneCallback) {
-  rtc::Thread* current = rtc::Thread::Current();
-  ASSERT_TRUE(current);
+  rtc::AutoThread current;
   bool was_called_back = false;
   {
     rtc::Thread::ScopedCountBlockingCalls blocked_calls(
         [&](uint32_t actual_block, uint32_t could_block) {
           was_called_back = true;
         });
-    current->Invoke<void>(RTC_FROM_HERE, []() {});
+    current.Invoke<void>(RTC_FROM_HERE, []() {});
   }
   EXPECT_TRUE(was_called_back);
 }
 
 TEST(ThreadTest, CountBlockingCallsSkipCallback) {
-  rtc::Thread* current = rtc::Thread::Current();
-  ASSERT_TRUE(current);
+  rtc::AutoThread current;
   bool was_called_back = false;
   {
     rtc::Thread::ScopedCountBlockingCalls blocked_calls(
@@ -324,7 +325,7 @@ TEST(ThreadTest, CountBlockingCallsSkipCallback) {
     // Changed `blocked_calls` to not issue the callback if there are 1 or
     // fewer blocking calls (i.e. we set the minimum required number to 2).
     blocked_calls.set_minimum_call_count_for_callback(2);
-    current->Invoke<void>(RTC_FROM_HERE, []() {});
+    current.Invoke<void>(RTC_FROM_HERE, []() {});
   }
   // We should not have gotten a call back.
   EXPECT_FALSE(was_called_back);
@@ -368,17 +369,18 @@ TEST(ThreadTest, Wrap) {
 
 #if (!defined(NDEBUG) || RTC_DCHECK_IS_ON)
 TEST(ThreadTest, InvokeToThreadAllowedReturnsTrueWithoutPolicies) {
+  rtc::AutoThread main_thread;
   // Create and start the thread.
   auto thread1 = Thread::CreateWithSocketServer();
   auto thread2 = Thread::CreateWithSocketServer();
 
   thread1->PostTask(ToQueuedTask(
       [&]() { EXPECT_TRUE(thread1->IsInvokeToThreadAllowed(thread2.get())); }));
-  Thread* th_main = Thread::Current();
-  th_main->ProcessMessages(100);
+  main_thread.ProcessMessages(100);
 }
 
 TEST(ThreadTest, InvokeAllowedWhenThreadsAdded) {
+  rtc::AutoThread main_thread;
   // Create and start the thread.
   auto thread1 = Thread::CreateWithSocketServer();
   auto thread2 = Thread::CreateWithSocketServer();
@@ -393,11 +395,11 @@ TEST(ThreadTest, InvokeAllowedWhenThreadsAdded) {
     EXPECT_TRUE(thread1->IsInvokeToThreadAllowed(thread3.get()));
     EXPECT_FALSE(thread1->IsInvokeToThreadAllowed(thread4.get()));
   }));
-  Thread* th_main = Thread::Current();
-  th_main->ProcessMessages(100);
+  main_thread.ProcessMessages(100);
 }
 
 TEST(ThreadTest, InvokesDisallowedWhenDisallowAllInvokes) {
+  rtc::AutoThread main_thread;
   // Create and start the thread.
   auto thread1 = Thread::CreateWithSocketServer();
   auto thread2 = Thread::CreateWithSocketServer();
@@ -407,20 +409,19 @@ TEST(ThreadTest, InvokesDisallowedWhenDisallowAllInvokes) {
   thread1->PostTask(ToQueuedTask([&]() {
     EXPECT_FALSE(thread1->IsInvokeToThreadAllowed(thread2.get()));
   }));
-  Thread* th_main = Thread::Current();
-  th_main->ProcessMessages(100);
+  main_thread.ProcessMessages(100);
 }
 #endif  // (!defined(NDEBUG) || RTC_DCHECK_IS_ON)
 
 TEST(ThreadTest, InvokesAllowedByDefault) {
+  rtc::AutoThread main_thread;
   // Create and start the thread.
   auto thread1 = Thread::CreateWithSocketServer();
   auto thread2 = Thread::CreateWithSocketServer();
 
   thread1->PostTask(ToQueuedTask(
       [&]() { EXPECT_TRUE(thread1->IsInvokeToThreadAllowed(thread2.get())); }));
-  Thread* th_main = Thread::Current();
-  th_main->ProcessMessages(100);
+  main_thread.ProcessMessages(100);
 }
 
 TEST(ThreadTest, Invoke) {
@@ -650,6 +651,7 @@ TEST_F(ThreadQueueTest, DiposeHandlerWithPostedMessagePending) {
 // all messages (both delayed and non delayed) up until the current time, on
 // all registered message queues.
 TEST(ThreadManager, ProcessAllMessageQueues) {
+  rtc::AutoThread main_thread;
   Event entered_process_all_message_queues(true, false);
   auto a = Thread::CreateWithSocketServer();
   auto b = Thread::CreateWithSocketServer();
@@ -675,7 +677,7 @@ TEST(ThreadManager, ProcessAllMessageQueues) {
   b->PostTask(ToQueuedTask(incrementer));
   a->PostDelayedTask(ToQueuedTask(incrementer), 0);
   b->PostDelayedTask(ToQueuedTask(incrementer), 0);
-  rtc::Thread::Current()->PostTask(ToQueuedTask(event_signaler));
+  main_thread.PostTask(ToQueuedTask(event_signaler));
 
   ThreadManager::ProcessAllMessageQueuesForTesting();
   EXPECT_EQ(4, AtomicOps::AcquireLoad(&messages_processed));
@@ -692,6 +694,7 @@ TEST(ThreadManager, ProcessAllMessageQueuesWithQuittingThread) {
 // Test that ProcessAllMessageQueues doesn't hang if a queue clears its
 // messages.
 TEST(ThreadManager, ProcessAllMessageQueuesWithClearedQueue) {
+  rtc::AutoThread main_thread;
   Event entered_process_all_message_queues(true, false);
   auto t = Thread::CreateWithSocketServer();
   t->Start();
@@ -709,8 +712,8 @@ TEST(ThreadManager, ProcessAllMessageQueuesWithClearedQueue) {
   };
 
   // Post messages (both delayed and non delayed) to both threads.
-  t->PostTask(RTC_FROM_HERE, clearer);
-  rtc::Thread::Current()->PostTask(RTC_FROM_HERE, event_signaler);
+  t->PostTask(clearer);
+  main_thread.PostTask(event_signaler);
   ThreadManager::ProcessAllMessageQueuesForTesting();
 }
 
@@ -756,6 +759,7 @@ class DEPRECATED_AsyncInvokeTest : public ::testing::Test {
   enum { kWaitTimeout = 1000 };
   DEPRECATED_AsyncInvokeTest() : int_value_(0), expected_thread_(nullptr) {}
 
+  rtc::AutoThread main_thread_;
   int int_value_;
   Thread* expected_thread_;
 };
@@ -920,7 +924,7 @@ TEST(ThreadPostTaskTest, InvokesWithLambda) {
   background_thread->Start();
 
   Event event;
-  background_thread->PostTask(RTC_FROM_HERE, [&event] { event.Set(); });
+  background_thread->PostTask([&event] { event.Set(); });
   event.Wait(Event::kForever);
 }
 
@@ -931,7 +935,7 @@ TEST(ThreadPostTaskTest, InvokesWithCopiedFunctor) {
   LifeCycleFunctor::Stats stats;
   Event event;
   LifeCycleFunctor functor(&stats, &event);
-  background_thread->PostTask(RTC_FROM_HERE, functor);
+  background_thread->PostTask(functor);
   event.Wait(Event::kForever);
 
   EXPECT_EQ(1u, stats.copy_count);
@@ -945,7 +949,7 @@ TEST(ThreadPostTaskTest, InvokesWithMovedFunctor) {
   LifeCycleFunctor::Stats stats;
   Event event;
   LifeCycleFunctor functor(&stats, &event);
-  background_thread->PostTask(RTC_FROM_HERE, std::move(functor));
+  background_thread->PostTask(std::move(functor));
   event.Wait(Event::kForever);
 
   EXPECT_EQ(0u, stats.copy_count);
@@ -960,7 +964,7 @@ TEST(ThreadPostTaskTest, InvokesWithReferencedFunctorShouldCopy) {
   Event event;
   LifeCycleFunctor functor(&stats, &event);
   LifeCycleFunctor& functor_ref = functor;
-  background_thread->PostTask(RTC_FROM_HERE, functor_ref);
+  background_thread->PostTask(functor_ref);
   event.Wait(Event::kForever);
 
   EXPECT_EQ(1u, stats.copy_count);
@@ -975,7 +979,7 @@ TEST(ThreadPostTaskTest, InvokesWithCopiedFunctorDestroyedOnTargetThread) {
   bool was_invoked_on_background_thread = false;
   DestructionFunctor functor(background_thread.get(),
                              &was_invoked_on_background_thread, &event);
-  background_thread->PostTask(RTC_FROM_HERE, functor);
+  background_thread->PostTask(functor);
   event.Wait(Event::kForever);
 
   EXPECT_TRUE(was_invoked_on_background_thread);
@@ -989,7 +993,7 @@ TEST(ThreadPostTaskTest, InvokesWithMovedFunctorDestroyedOnTargetThread) {
   bool was_invoked_on_background_thread = false;
   DestructionFunctor functor(background_thread.get(),
                              &was_invoked_on_background_thread, &event);
-  background_thread->PostTask(RTC_FROM_HERE, std::move(functor));
+  background_thread->PostTask(std::move(functor));
   event.Wait(Event::kForever);
 
   EXPECT_TRUE(was_invoked_on_background_thread);
@@ -1005,7 +1009,7 @@ TEST(ThreadPostTaskTest,
   DestructionFunctor functor(background_thread.get(),
                              &was_invoked_on_background_thread, &event);
   DestructionFunctor& functor_ref = functor;
-  background_thread->PostTask(RTC_FROM_HERE, functor_ref);
+  background_thread->PostTask(functor_ref);
   event.Wait(Event::kForever);
 
   EXPECT_TRUE(was_invoked_on_background_thread);
@@ -1019,7 +1023,6 @@ TEST(ThreadPostTaskTest, InvokesOnBackgroundThread) {
   bool was_invoked_on_background_thread = false;
   Thread* background_thread_ptr = background_thread.get();
   background_thread->PostTask(
-      RTC_FROM_HERE,
       [background_thread_ptr, &was_invoked_on_background_thread, &event] {
         was_invoked_on_background_thread = background_thread_ptr->IsCurrent();
         event.Set();
@@ -1037,10 +1040,11 @@ TEST(ThreadPostTaskTest, InvokesAsynchronously) {
   // thread. The second event ensures that the message is processed.
   Event event_set_by_test_thread;
   Event event_set_by_background_thread;
-  background_thread->PostTask(RTC_FROM_HERE, [&event_set_by_test_thread,
-                                              &event_set_by_background_thread] {
-    WaitAndSetEvent(&event_set_by_test_thread, &event_set_by_background_thread);
-  });
+  background_thread->PostTask(
+      [&event_set_by_test_thread, &event_set_by_background_thread] {
+        WaitAndSetEvent(&event_set_by_test_thread,
+                        &event_set_by_background_thread);
+      });
   event_set_by_test_thread.Set();
   event_set_by_background_thread.Wait(Event::kForever);
 }
@@ -1055,11 +1059,11 @@ TEST(ThreadPostTaskTest, InvokesInPostedOrder) {
   Event fourth;
 
   background_thread->PostTask(
-      RTC_FROM_HERE, [&first, &second] { WaitAndSetEvent(&first, &second); });
+      [&first, &second] { WaitAndSetEvent(&first, &second); });
   background_thread->PostTask(
-      RTC_FROM_HERE, [&second, &third] { WaitAndSetEvent(&second, &third); });
+      [&second, &third] { WaitAndSetEvent(&second, &third); });
   background_thread->PostTask(
-      RTC_FROM_HERE, [&third, &fourth] { WaitAndSetEvent(&third, &fourth); });
+      [&third, &fourth] { WaitAndSetEvent(&third, &fourth); });
 
   // All tasks have been posted before the first one is unblocked.
   first.Set();
@@ -1076,7 +1080,6 @@ TEST(ThreadPostDelayedTaskTest, InvokesAsynchronously) {
   Event event_set_by_test_thread;
   Event event_set_by_background_thread;
   background_thread->PostDelayedTask(
-      RTC_FROM_HERE,
       [&event_set_by_test_thread, &event_set_by_background_thread] {
         WaitAndSetEvent(&event_set_by_test_thread,
                         &event_set_by_background_thread);
@@ -1097,13 +1100,13 @@ TEST(ThreadPostDelayedTaskTest, InvokesInDelayOrder) {
   Event fourth;
 
   background_thread->PostDelayedTask(
-      RTC_FROM_HERE, [&third, &fourth] { WaitAndSetEvent(&third, &fourth); },
+      [&third, &fourth] { WaitAndSetEvent(&third, &fourth); },
       /*milliseconds=*/11);
   background_thread->PostDelayedTask(
-      RTC_FROM_HERE, [&first, &second] { WaitAndSetEvent(&first, &second); },
+      [&first, &second] { WaitAndSetEvent(&first, &second); },
       /*milliseconds=*/9);
   background_thread->PostDelayedTask(
-      RTC_FROM_HERE, [&second, &third] { WaitAndSetEvent(&second, &third); },
+      [&second, &third] { WaitAndSetEvent(&second, &third); },
       /*milliseconds=*/10);
 
   // All tasks have been posted before the first one is unblocked.

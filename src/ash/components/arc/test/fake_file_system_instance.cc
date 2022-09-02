@@ -50,11 +50,19 @@ mojom::RootPtr MakeRoot(const FakeFileSystemInstance::Root& in_root) {
   return root;
 }
 
-// Generates unique document ID on each calls.
+// Generates unique document ID on each call.
 std::string GenerateDocumentId() {
   static int count = 0;
   std::ostringstream ss;
   ss << "doc_" << count++;
+  return ss.str();
+}
+
+// Generates unique URL ID on each call.
+std::string GenerateUrlId() {
+  static int count = 0;
+  std::ostringstream ss;
+  ss << "url_" << count++;
   return ss.str();
 }
 
@@ -192,12 +200,37 @@ void FakeFileSystemInstance::AddRecentDocument(const std::string& root_id,
   recent_documents_[key].push_back(document);
 }
 
+void FakeFileSystemInstance::RemoveRecentDocument(const Document& document) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // Unfortunately we don't know the root_id when deleting a document, so
+  // here we need to loop through all available roots to find the document.
+  for (auto const& doc : recent_documents_) {
+    const auto iter = std::find_if(
+        doc.second.begin(), doc.second.end(),
+        [&document](const Document& recent_document) {
+          return document.authority == recent_document.authority &&
+                 document.document_id == recent_document.document_id;
+        });
+    if (iter != doc.second.end()) {
+      recent_documents_[doc.first].erase(iter);
+      return;
+    }
+  }
+}
+
 void FakeFileSystemInstance::AddRoot(const Root& root) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   roots_list_.push_back(root);
   RootKey key(root.authority, root.root_id);
   DCHECK_EQ(0u, roots_.count(key));
   roots_.insert(std::make_pair(key, root));
+}
+
+void FakeFileSystemInstance::AddOpenSession(const std::string& url_id,
+                                            const int fd) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_EQ(0u, open_urls_.count(url_id));
+  open_urls_.insert(std::make_pair(url_id, fd));
 }
 
 void FakeFileSystemInstance::SetGetLastChangeTimeCallback(
@@ -245,8 +278,7 @@ bool FakeFileSystemInstance::DocumentExists(const std::string& authority,
                                             const std::string& root_document_id,
                                             const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  std::vector<std::string> path_components;
-  path.GetComponents(&path_components);
+  std::vector<std::string> path_components = path.GetComponents();
   std::string document_id =
       FindChildDocumentId(authority, root_document_id, path_components);
   return DocumentExists(authority, document_id);
@@ -274,8 +306,7 @@ FakeFileSystemInstance::Document FakeFileSystemInstance::GetDocument(
     const std::string& root_document_id,
     const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  std::vector<std::string> path_components;
-  path.GetComponents(&path_components);
+  std::vector<std::string> path_components = path.GetComponents();
   std::string document_id =
       FindChildDocumentId(authority, root_document_id, path_components);
   return GetDocument(authority, document_id);
@@ -360,36 +391,25 @@ void FakeFileSystemInstance::GetMimeType(const std::string& url,
       FROM_HERE, base::BindOnce(std::move(callback), file.mime_type));
 }
 
-void FakeFileSystemInstance::OpenFileToRead(const std::string& url,
-                                            OpenFileToReadCallback callback) {
+void FakeFileSystemInstance::CloseFileSession(
+    const std::string& url_id,
+    const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto iter = files_.find(url);
-  if (iter == files_.end()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), mojo::ScopedHandle()));
+  auto iter = open_urls_.find(url_id);
+  if (iter != open_urls_.end())
     return;
-  }
-  const File& file = iter->second;
-  base::ScopedFD fd =
-      file.seekable == File::Seekable::YES
-          ? CreateRegularFileDescriptor(file, base::File::Flags::FLAG_OPEN |
-                                                  base::File::Flags::FLAG_READ)
-          : CreateStreamFileDescriptorToRead(file.content);
-  mojo::ScopedHandle wrapped_handle =
-      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
-  DCHECK(wrapped_handle.is_valid());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), std::move(wrapped_handle)));
+  open_urls_.erase(url_id);
 }
 
-void FakeFileSystemInstance::OpenFileToWrite(const std::string& url,
-                                             OpenFileToWriteCallback callback) {
+void FakeFileSystemInstance::OpenFileSessionToWrite(
+    const GURL& url,
+    OpenFileSessionToWriteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto iter = files_.find(url);
+  auto iter = files_.find(url.spec());
   if (iter == files_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), mojo::ScopedHandle()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), mojom::FileSessionPtr()));
     return;
   }
   const File& file = iter->second;
@@ -398,12 +418,47 @@ void FakeFileSystemInstance::OpenFileToWrite(const std::string& url,
           ? CreateRegularFileDescriptor(file, base::File::Flags::FLAG_OPEN |
                                                   base::File::Flags::FLAG_WRITE)
           : CreateStreamFileDescriptorToWrite(file.url);
+  DCHECK(fd.is_valid());
+  std::string url_id = GenerateUrlId();
+  AddOpenSession(url_id, fd.get());
   mojo::ScopedHandle wrapped_handle =
       mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
   DCHECK(wrapped_handle.is_valid());
+  mojom::FileSessionPtr file_session = mojom::FileSession::New();
+  file_session->url_id = std::move(url_id);
+  file_session->fd = std::move(wrapped_handle);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), std::move(wrapped_handle)));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(file_session)));
+}
+
+void FakeFileSystemInstance::OpenFileSessionToRead(
+    const GURL& url,
+    OpenFileSessionToReadCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto iter = files_.find(url.spec());
+  if (iter == files_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), mojom::FileSessionPtr()));
+    return;
+  }
+  const File& file = iter->second;
+  base::ScopedFD fd =
+      file.seekable == File::Seekable::YES
+          ? CreateRegularFileDescriptor(file, base::File::Flags::FLAG_OPEN |
+                                                  base::File::Flags::FLAG_READ)
+          : CreateStreamFileDescriptorToRead(file.content);
+  DCHECK(fd.is_valid());
+  std::string url_id = GenerateUrlId();
+  AddOpenSession(url_id, fd.get());
+  mojo::ScopedHandle wrapped_handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
+  DCHECK(wrapped_handle.is_valid());
+  mojom::FileSessionPtr file_session = mojom::FileSession::New();
+  file_session->url_id = std::move(url_id);
+  file_session->fd = std::move(wrapped_handle);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(file_session)));
 }
 
 void FakeFileSystemInstance::OpenThumbnail(const std::string& url,
@@ -538,6 +593,9 @@ void FakeFileSystemInstance::DeleteDocument(const std::string& authority,
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
+  // We also need to remove the document from the recent_documents_ if it was
+  // being added there.
+  RemoveRecentDocument(iter->second);
   documents_.erase(iter);
   size_t erased = child_documents_.erase(key);
   DCHECK_NE(0u, erased);
@@ -630,11 +688,6 @@ void FakeFileSystemInstance::MoveDocument(
       base::BindOnce(std::move(callback), MakeDocument(iter->second)));
 }
 
-void FakeFileSystemInstance::InitDeprecated(
-    mojo::PendingRemote<mojom::FileSystemHost> host_remote) {
-  Init(std::move(host_remote), base::DoNothing());
-}
-
 void FakeFileSystemInstance::Init(
     mojo::PendingRemote<mojom::FileSystemHost> host_remote,
     InitCallback callback) {
@@ -721,9 +774,9 @@ void FakeFileSystemInstance::ReindexDirectory(
   RequestMediaScan(paths);
 }
 
-void FakeFileSystemInstance::OpenUrlsWithPermission(
+void FakeFileSystemInstance::DEPRECATED_OpenUrlsWithPermission(
     mojom::OpenUrlsRequestPtr request,
-    OpenUrlsWithPermissionCallback callback) {
+    DEPRECATED_OpenUrlsWithPermissionCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   handled_url_requests_.emplace_back(std::move(request));
 }
@@ -731,7 +784,7 @@ void FakeFileSystemInstance::OpenUrlsWithPermission(
 void FakeFileSystemInstance::OpenUrlsWithPermissionAndWindowInfo(
     mojom::OpenUrlsRequestPtr request,
     mojom::WindowInfoPtr window_info,
-    OpenUrlsWithPermissionCallback callback) {
+    OpenUrlsWithPermissionAndWindowInfoCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   handled_url_requests_.emplace_back(std::move(request));
 }

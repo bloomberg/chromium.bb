@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/media/media_devices_util.h"
 #include "content/browser/media/media_stream_web_contents_observer.h"
 #include "content/common/content_export.h"
@@ -59,6 +60,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   }
 
  private:
+  friend class MediaStreamDispatcherHostTest;
   friend class MockMediaStreamDispatcherHost;
 
   struct PendingAccessRequest;
@@ -72,12 +74,12 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void CancelAllRequests();
 
   // mojom::MediaStreamDispatcherHost implementation
-  void GenerateStream(
+  void GenerateStreams(
       int32_t request_id,
       const blink::StreamControls& controls,
       bool user_gesture,
       blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
-      GenerateStreamCallback callback) override;
+      GenerateStreamsCallback callback) override;
   void CancelRequest(int32_t request_id) override;
   void StopStreamDevice(
       const std::string& device_id,
@@ -92,24 +94,32 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       blink::mojom::MediaStreamType type,
       bool is_secure) override;
   void OnStreamStarted(const std::string& label) override;
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   void FocusCapturedSurface(const std::string& label, bool focus) override;
   void Crop(const base::UnguessableToken& device_id,
             const base::Token& crop_id,
+            uint32_t crop_version,
             CropCallback callback) override;
 
   void OnCropValidationComplete(const base::UnguessableToken& device_id,
                                 const base::Token& crop_id,
+                                uint32_t crop_version,
                                 CropCallback callback,
                                 bool crop_id_passed_validation);
 #endif
-
-  void DoGenerateStream(
+  void GetOpenDevice(int32_t page_request_id,
+                     const base::UnguessableToken& session_id,
+                     GetOpenDeviceCallback callback) override;
+  void DoGetOpenDevice(int32_t page_request_id,
+                       const base::UnguessableToken& session_id,
+                       GetOpenDeviceCallback callback,
+                       MediaDeviceSaltAndOrigin salt_and_origin);
+  void DoGenerateStreams(
       int32_t request_id,
       const blink::StreamControls& controls,
       bool user_gesture,
       blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
-      GenerateStreamCallback callback,
+      GenerateStreamsCallback callback,
       MediaDeviceSaltAndOrigin salt_and_origin);
   void DoOpenDevice(int32_t request_id,
                     const std::string& device_id,
@@ -133,6 +143,13 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       std::unique_ptr<MediaStreamWebContentsObserver,
                       BrowserThread::DeleteOnUIThread> web_contents_observer);
 
+  void ReceivedBadMessage(int render_process_id,
+                          bad_message::BadMessageReason reason);
+
+  void SetBadMessageCallbackForTesting(
+      base::RepeatingCallback<void(int, bad_message::BadMessageReason)>
+          callback);
+
   static int next_requester_id_;
 
   const int render_process_id_;
@@ -146,6 +163,9 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   std::unique_ptr<MediaStreamWebContentsObserver,
                   BrowserThread::DeleteOnUIThread>
       web_contents_observer_;
+
+  base::RepeatingCallback<void(int, bad_message::BadMessageReason)>
+      bad_message_callback_for_testing_;
 
   base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_{this};
 };

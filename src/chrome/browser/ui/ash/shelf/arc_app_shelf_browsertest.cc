@@ -248,7 +248,7 @@ class ArcAppShelfBrowserTest : public extensions::ExtensionBrowserTest {
     shortcut.name = name;
     shortcut.package_name = kTestAppPackage;
     shortcut.intent_uri = CreateIntentUriWithShelfGroup(shelf_group);
-    const std::string shortcut_id =
+    std::string shortcut_id =
         ArcAppListPrefs::GetAppId(shortcut.package_name, shortcut.intent_uri);
     app_host()->OnInstallShortcut(arc::mojom::ShortcutInfo::From(shortcut));
     base::RunLoop().RunUntilIdle();
@@ -656,6 +656,11 @@ IN_PROC_BROWSER_TEST_F(ArcAppShelfBrowserTest, ShelfGroup) {
 
   // Disable ARC, this removes app and as result kills shelf group 3.
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
+  // Wait for the asynchronous ArcAppListPrefs::RemoveAllAppsAndPackages to be
+  // called.
+  base::RunLoop run_loop;
+  app_prefs()->SetRemoveAllCallbackForTesting(run_loop.QuitClosure());
+  run_loop.Run();
   EXPECT_FALSE(GetShelfItemDelegate(shelf_id3));
 }
 

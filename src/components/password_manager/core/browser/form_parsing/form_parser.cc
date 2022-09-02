@@ -64,16 +64,18 @@ AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
     return AutocompleteFlag::kNone;
 
   const base::StringPiece& field_type = tokens.back();
-  if (base::LowerCaseEqualsASCII(field_type, kAutocompleteUsername))
+  if (base::EqualsCaseInsensitiveASCII(field_type, kAutocompleteUsername))
     return AutocompleteFlag::kUsername;
-  if (base::LowerCaseEqualsASCII(field_type, kAutocompleteCurrentPassword))
+  if (base::EqualsCaseInsensitiveASCII(field_type,
+                                       kAutocompleteCurrentPassword))
     return AutocompleteFlag::kCurrentPassword;
-  if (base::LowerCaseEqualsASCII(field_type, kAutocompleteNewPassword))
+  if (base::EqualsCaseInsensitiveASCII(field_type, kAutocompleteNewPassword))
     return AutocompleteFlag::kNewPassword;
-  if (base::LowerCaseEqualsASCII(field_type, kAutocompleteWebAuthn))
+  if (base::EqualsCaseInsensitiveASCII(field_type, kAutocompleteWebAuthn))
     return AutocompleteFlag::kWebAuthn;
 
-  if (base::LowerCaseEqualsASCII(field_type, kAutocompleteOneTimePassword) ||
+  if (base::EqualsCaseInsensitiveASCII(field_type,
+                                       kAutocompleteOneTimePassword) ||
       base::StartsWith(field_type, kAutocompleteCreditCardPrefix,
                        base::CompareCase::SENSITIVE)) {
     return AutocompleteFlag::kNonPassword;
@@ -200,7 +202,7 @@ struct SignificantFields {
   bool is_fallback = false;
 
   // True iff the new password field was found with server hints or autocomplete
-  // attributes or the kTreatNewPasswordHeuristicsAsReliable feature is enabled.
+  // attributes.
   bool is_new_password_reliable = false;
 
   // True if the current form has only username, but no passwords.
@@ -818,7 +820,7 @@ void ParseUsingBaseHeuristics(
 // the iOS specific parts of PasswordForm are also built on fuzzer enabled
 // platforms. See http://crbug.com/896594
 std::u16string GetPlatformSpecificIdentifier(const FormFieldData& field) {
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   return field.unique_id;
 #else
   return field.name;
@@ -1100,9 +1102,7 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(const FormData& form_data,
   // user saves the already entered one.
   significant_fields.is_new_password_reliable =
       mode == Mode::kFilling && significant_fields.new_password &&
-      (new_password_found_before_heuristic ||
-       base::FeatureList::IsEnabled(
-           features::kTreatNewPasswordHeuristicsAsReliable));
+      new_password_found_before_heuristic;
 
   if (mode == Mode::kFilling) {
     for (const auto& field : processed_fields) {

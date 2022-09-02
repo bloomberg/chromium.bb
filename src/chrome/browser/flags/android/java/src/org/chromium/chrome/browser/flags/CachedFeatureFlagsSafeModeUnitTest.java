@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.task.test.ShadowPostTask;
@@ -31,6 +32,7 @@ import java.util.Map;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(shadows = {ShadowPostTask.class})
+@LooperMode(LooperMode.Mode.LEGACY)
 public class CachedFeatureFlagsSafeModeUnitTest {
     private static final String CRASHY_FEATURE = "CrashyFeature";
     private static final String OK_FEATURE = "OkFeature";
@@ -108,16 +110,129 @@ public class CachedFeatureFlagsSafeModeUnitTest {
         assertEquals(Behavior.ENGAGED_WITH_SAFE_VALUES,
                 CachedFeatureFlags.getSafeModeBehaviorForTesting());
         // TODO(crbug.com/1217708): Assert cached flags values are false/true.
+        endCleanRun(true, false);
+        // Cached values became true(crashy)/false, cached from native.
+
+        startRun();
+        // Second run of Safe Mode.
+        // Safe values are false/true, and are used during this run.
+        // Cached values true(crashy)/false are used, cached from native last run, but are not used
+        // because Safe Mode is engaged.
+        assertEquals(Behavior.ENGAGED_WITH_SAFE_VALUES,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        // TODO(crbug.com/1217708): Assert cached flags values are false/true.
         endCleanRun(false, false);
         // Cached values became false/false, cached from native.
 
         startRun();
-        // Crash streak is 0. Do not engage Safe Mode.
+        // Crash streak is 1. Do not engage Safe Mode.
         // Safe values are false/true still.
         // Cached values false/false are used, cached from native last run.
         assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
                 CachedFeatureFlags.getSafeModeBehaviorForTesting());
         // TODO(crbug.com/1217708): Assert cached flags values are false/false.
+    }
+
+    @Test
+    public void testSafeModeFetchesBadConfig_keepsStreak() {
+        startRun();
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(false, true);
+
+        startRun();
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(true, true);
+
+        startRun();
+        // Crash streak is 0. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCrashyRun();
+
+        startRun();
+        // Crash streak is 1. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCrashyRun();
+
+        startRun();
+        // Crash streak is 2. Engage Safe Mode.
+        assertEquals(Behavior.ENGAGED_WITH_SAFE_VALUES,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(true, false);
+
+        startRun();
+        // Second run of safe mode.
+        assertEquals(Behavior.ENGAGED_WITH_SAFE_VALUES,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(true, false);
+
+        startRun();
+        // Crash streak is 1. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCrashyRun();
+
+        startRun();
+        // Crash streak is back directly to 2. Engage Safe Mode.
+        assertEquals(Behavior.ENGAGED_WITH_SAFE_VALUES,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+    }
+
+    @Test
+    public void testSafeModeFetchesGoodConfig_decreasesStreak() {
+        startRun();
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(false, true);
+
+        startRun();
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(true, true);
+
+        startRun();
+        // Crash streak is 0. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCrashyRun();
+
+        startRun();
+        // Crash streak is 1. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCrashyRun();
+
+        startRun();
+        // Crash streak is 2. Engage Safe Mode.
+        assertEquals(Behavior.ENGAGED_WITH_SAFE_VALUES,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(true, false);
+
+        startRun();
+        // Second run of safe mode.
+        assertEquals(Behavior.ENGAGED_WITH_SAFE_VALUES,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(true, false);
+
+        startRun();
+        // Crash streak is 1. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCleanRun(true, false);
+
+        startRun();
+        // Crash streak is down to 0. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        endCrashyRun();
+
+        startRun();
+        // Crash streak is 1. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
     }
 
     @Test
@@ -308,6 +423,40 @@ public class CachedFeatureFlagsSafeModeUnitTest {
         // Cached values are true(crashy)/true, but the default values false/false are returned
         // since Safe Mode is falling back to default.
         // TODO(crbug.com/1217708): Assert cached flags values are false/false.
+    }
+
+    @Test
+    public void testMultipleStartCheckpoints_normalMode() {
+        startRun();
+        // Crash streak is 0. Do not engage Safe Mode.
+        // There are no safe values.
+        // There are no cached flag values, so the defaults false/false are used.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        assertFalse(CachedFeatureFlags.isEnabled(CRASHY_FEATURE));
+        assertFalse(CachedFeatureFlags.isEnabled(OK_FEATURE));
+        endCleanRun(true, true);
+        // Safe values became false/false.
+        // Cached values became true(flaky)/true.
+
+        startRun();
+        startRun();
+        startRun();
+        startRun();
+        // Crash streak is 0. Do not engage Safe Mode.
+        // Safe values are false/false.
+        // Cached flag values are true(flaky)/true.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
+        assertTrue(CachedFeatureFlags.isEnabled(CRASHY_FEATURE));
+        assertTrue(CachedFeatureFlags.isEnabled(OK_FEATURE));
+        endCrashyRun();
+        // Cached values remain true(crashy)/true.
+
+        startRun();
+        // Crash streak is 1, despite the multiple startRun() calls above. Do not engage Safe Mode.
+        assertEquals(Behavior.NOT_ENGAGED_BELOW_THRESHOLD,
+                CachedFeatureFlags.getSafeModeBehaviorForTesting());
     }
 
     private void startRun() {

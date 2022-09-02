@@ -32,15 +32,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_RESOURCE_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_RESOURCE_TIMING_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/performance_mark_or_measure.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/performance_server_timing.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -106,9 +108,6 @@ class CORE_EXPORT PerformanceResourceTiming
  protected:
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
-  virtual AtomicString AlpnNegotiatedProtocol() const;
-  virtual AtomicString ConnectionInfo() const;
-
   base::TimeTicks TimeOrigin() const { return time_origin_; }
   bool CrossOriginIsolatedCapability() const {
     return cross_origin_isolated_capability_;
@@ -126,6 +125,9 @@ class CORE_EXPORT PerformanceResourceTiming
 
   double WorkerReady() const;
 
+  virtual AtomicString AlpnNegotiatedProtocol() const;
+  virtual AtomicString ConnectionInfo() const;
+
   virtual ResourceLoadTiming* GetResourceLoadTiming() const;
   virtual bool AllowTimingDetails() const;
   virtual bool DidReuseConnection() const;
@@ -133,6 +135,14 @@ class CORE_EXPORT PerformanceResourceTiming
   virtual uint64_t GetEncodedBodySize() const;
   virtual uint64_t GetDecodedBodySize() const;
 
+  virtual mojom::blink::RequestContextType ContextType() const;
+  virtual base::TimeTicks ResponseEnd() const;
+  virtual base::TimeTicks LastRedirectEndTime() const;
+  virtual bool AllowRedirectDetails() const;
+  virtual bool AllowNegativeValue() const;
+  virtual bool IsSecureTransport() const;
+
+  // Do not access private fields directly. Use getter methods.
   AtomicString initiator_type_;
   AtomicString alpn_negotiated_protocol_;
   AtomicString connection_info_;
@@ -146,15 +156,13 @@ class CORE_EXPORT PerformanceResourceTiming
   network::mojom::RequestDestination request_destination_ =
       network::mojom::RequestDestination::kEmpty;
   mojom::blink::CacheState cache_state_ = mojom::blink::CacheState::kNone;
-  uint64_t encoded_body_size_ = 0;
-  uint64_t decoded_body_size_ = 0;
-  bool did_reuse_connection_ = false;
-  // Do not access allow_timing_details_ directly.  Instead use the
-  // AllowTimingDetails() method which is overridden by some sub-classes.
-  bool allow_timing_details_ = false;
-  bool allow_redirect_details_ = false;
-  bool allow_negative_value_ = false;
-  bool is_secure_transport_ = false;
+  const uint64_t encoded_body_size_ = 0;
+  const uint64_t decoded_body_size_ = 0;
+  const bool did_reuse_connection_ = false;
+  const bool allow_timing_details_ = false;
+  const bool allow_redirect_details_ = false;
+  const bool allow_negative_value_ = false;
+  const bool is_secure_transport_ = false;
   HeapVector<Member<PerformanceServerTiming>> server_timing_;
   HeapVector<Member<PerformanceEntry>> worker_timing_;
 

@@ -36,12 +36,19 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
+import type * as Platform from '../platform/platform.js';
 
 import type {FunctionDetails} from './DebuggerModel.js';
 import {DebuggerModel} from './DebuggerModel.js';
 import {HeapProfilerModel} from './HeapProfilerModel.js';
 import type {ScopeRef} from './RemoteObject.js';
-import {RemoteFunction, RemoteObject, RemoteObjectImpl, RemoteObjectProperty, ScopeRemoteObject} from './RemoteObject.js';
+import {
+  RemoteFunction,
+  RemoteObject,
+  RemoteObjectImpl,
+  RemoteObjectProperty,
+  ScopeRemoteObject,
+} from './RemoteObject.js';
 import type {Target} from './Target.js';
 import {Capability, Type} from './Target.js';
 import {SDKModel} from './SDKModel.js';
@@ -56,13 +63,13 @@ export class RuntimeModel extends SDKModel<EventTypes> {
 
     this.agent = target.runtimeAgent();
     this.target().registerRuntimeDispatcher(new RuntimeDispatcher(this));
-    this.agent.invoke_enable();
+    void this.agent.invoke_enable();
     this.#executionContextById = new Map();
     this.#executionContextComparatorInternal = ExecutionContext.comparator;
     this.#hasSideEffectSupportInternal = null;
 
     if (Common.Settings.Settings.instance().moduleSetting('customFormatters').get()) {
-      this.agent.invoke_setCustomObjectFormatterEnabled({enabled: true});
+      void this.agent.invoke_setCustomObjectFormatterEnabled({enabled: true});
     }
 
     Common.Settings.Settings.instance()
@@ -115,7 +122,8 @@ export class RuntimeModel extends SDKModel<EventTypes> {
   executionContextCreated(context: Protocol.Runtime.ExecutionContextDescription): void {
     const data = context.auxData || {isDefault: true};
     const executionContext = new ExecutionContext(
-        this, context.id, context.uniqueId, context.name, context.origin, data['isDefault'], data['frameId']);
+        this, context.id, context.uniqueId, context.name, context.origin as Platform.DevToolsPath.UrlString,
+        data['isDefault'], data['frameId']);
     this.#executionContextById.set(executionContext.id, executionContext);
     this.dispatchEventToListeners(Events.ExecutionContextCreated, executionContext);
   }
@@ -174,11 +182,11 @@ export class RuntimeModel extends SDKModel<EventTypes> {
   }
 
   discardConsoleEntries(): void {
-    this.agent.invoke_discardConsoleEntries();
+    void this.agent.invoke_discardConsoleEntries();
   }
 
   releaseObjectGroup(objectGroup: string): void {
-    this.agent.invoke_releaseObjectGroup({objectGroup});
+    void this.agent.invoke_releaseObjectGroup({objectGroup});
   }
 
   releaseEvaluationResult(result: EvaluationResult): void {
@@ -193,11 +201,11 @@ export class RuntimeModel extends SDKModel<EventTypes> {
   }
 
   runIfWaitingForDebugger(): void {
-    this.agent.invoke_runIfWaitingForDebugger();
+    void this.agent.invoke_runIfWaitingForDebugger();
   }
 
   private customFormattersStateChanged({data: enabled}: Common.EventTarget.EventTargetEvent<boolean>): void {
-    this.agent.invoke_setCustomObjectFormatterEnabled({enabled});
+    void this.agent.invoke_setCustomObjectFormatterEnabled({enabled});
   }
 
   async compileScript(
@@ -281,17 +289,17 @@ export class RuntimeModel extends SDKModel<EventTypes> {
     }
 
     if (hints && 'queryObjects' in hints && hints.queryObjects) {
-      this.queryObjectsRequested(object, executionContextId);
+      void this.queryObjectsRequested(object, executionContextId);
       return;
     }
 
     if (object.isNode()) {
-      Common.Revealer.reveal(object).then(object.release.bind(object));
+      void Common.Revealer.reveal(object).then(object.release.bind(object));
       return;
     }
 
     if (object.type === 'function') {
-      RemoteFunction.objectAsFunction(object).targetFunctionDetails().then(didGetDetails);
+      void RemoteFunction.objectAsFunction(object).targetFunctionDetails().then(didGetDetails);
       return;
     }
 
@@ -300,7 +308,7 @@ export class RuntimeModel extends SDKModel<EventTypes> {
       if (!response || !response.location) {
         return;
       }
-      Common.Revealer.reveal(response.location);
+      void Common.Revealer.reveal(response.location);
     }
     object.release();
   }
@@ -321,7 +329,7 @@ export class RuntimeModel extends SDKModel<EventTypes> {
     }
 
     const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
-    object
+    void object
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
         // @ts-expect-error
         .callFunctionJSON(toStringForClipboard, [{
@@ -442,6 +450,16 @@ export class RuntimeModel extends SDKModel<EventTypes> {
   terminateExecution(): Promise<any> {
     return this.agent.invoke_terminateExecution();
   }
+
+  async getExceptionDetails(errorObjectId: Protocol.Runtime.RemoteObjectId):
+      Promise<Protocol.Runtime.ExceptionDetails|undefined> {
+    const response = await this.agent.invoke_getExceptionDetails({errorObjectId});
+    if (response.getError()) {
+      // This CDP method errors if called with non-Error object ids. Swallow that.
+      return undefined;
+    }
+    return response.exceptionDetails;
+  }
 }
 
 /**
@@ -545,14 +563,14 @@ export class ExecutionContext {
   uniqueId: string;
   name: string;
   #labelInternal: string|null;
-  origin: string;
+  origin: Platform.DevToolsPath.UrlString;
   isDefault: boolean;
   runtimeModel: RuntimeModel;
   debuggerModel: DebuggerModel;
   frameId: Protocol.Page.FrameId|undefined;
   constructor(
       runtimeModel: RuntimeModel, id: Protocol.Runtime.ExecutionContextId, uniqueId: string, name: string,
-      origin: string, isDefault: boolean, frameId?: Protocol.Page.FrameId) {
+      origin: Platform.DevToolsPath.UrlString, isDefault: boolean, frameId?: Protocol.Page.FrameId) {
     this.id = id;
     this.uniqueId = uniqueId;
     this.name = name;
@@ -644,7 +662,6 @@ export class ExecutionContext {
       return this.evaluateGlobal(options, userGesture, awaitPromise);
     }
 
-    /** @type {!EvaluationResult} */
     if (this.runtimeModel.hasSideEffectSupport() !== false) {
       await this.runtimeModel.checkSideEffectSupport();
       if (this.runtimeModel.hasSideEffectSupport()) {

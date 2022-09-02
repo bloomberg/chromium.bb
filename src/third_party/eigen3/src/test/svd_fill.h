@@ -64,8 +64,11 @@ void svd_fill_random(MatrixType &m, int Option = 0)
   }
   
   Matrix<Scalar,Dynamic,1> samples(9);
-  samples << 0, four_denorms<RealScalar>(),
-            -RealScalar(1)/NumTraits<RealScalar>::highest(), RealScalar(1)/NumTraits<RealScalar>::highest(), (std::numeric_limits<RealScalar>::min)(), pow((std::numeric_limits<RealScalar>::min)(),0.8);
+  samples << Scalar(0), four_denorms<RealScalar>(),
+            -RealScalar(1)/NumTraits<RealScalar>::highest(),
+            RealScalar(1)/NumTraits<RealScalar>::highest(),
+            (std::numeric_limits<RealScalar>::min)(),
+            pow((std::numeric_limits<RealScalar>::min)(), RealScalar(0.8));
   
   if(Option==Symmetric)
   {

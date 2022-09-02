@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 21
+// Next MinVersion: 23
 
 module arc.mojom;
 
@@ -139,13 +139,18 @@ struct OpenUrlsRequest {
 
 // Supported action types for SelectFilesRequest.
 // Corresponds to Android intent actions described in
-// http://developer.android.com/reference/android/content/Intent.html
+// http://developer.android.com/reference/android/content/Intent.html except
+// for OPEN_MEDIA_STORE_FILES, which is a dedicated intent action of
+// ArcDocumentsUI.
 [Extensible]
 enum SelectFilesActionType {
   GET_CONTENT,        // Intent.ACTION_GET_CONTENT
   OPEN_DOCUMENT,      // Intent.ACTION_OPEN_DOCUMENT
   OPEN_DOCUMENT_TREE, // Intent.ACTION_OPEN_DOCUMENT_TREE
   CREATE_DOCUMENT,    // Intent.ACTION_CREATE_DOCUMENT
+  // ArcDocumentsUI's intent action to open files indexed in Android's
+  // MediaStore with a customized file selector.
+  [MinVersion=22] OPEN_MEDIA_STORE_FILES,
 };
 
 // Request for having the user select files using ChromeOS file selector,
@@ -269,6 +274,16 @@ struct RootSize {
   int64 capacity_bytes;
 };
 
+// Returned output for OpenFileSessionToWrite.
+struct FileSession {
+  // Unique ID for the URL that is opened and mapped to a ParcelFileDescriptor
+  // object to be closed after the ChromeOS file operation(s).
+  string url_id;
+
+  // FD for writing or reading the file specified by the URL.
+  handle fd;
+};
+
 // Next method ID: 12
 interface FileSystemHost {
   // Returns the name of the file specified by the URL.
@@ -323,7 +338,10 @@ interface FileSystemHost {
       (FileSelectorElements elements);
 };
 
-// Next method ID: 24
+// The browser process is using this interface in ArcFileSystemOperationRunner,
+// the ARC process implements this interface used by ArcFileSystemService.
+// Deprecated method IDs: 2, 5, 18
+// Next method ID: 27
 interface FileSystemInstance {
   // Notes about Android Documents Provider:
   //
@@ -432,24 +450,29 @@ interface FileSystemInstance {
                                   string target_parent_document_id) =>
                                       (Document? document);
 
-  // DEPRECATED: Please use Init@10 instead.
-  [MinVersion=3] InitDeprecated@5(pending_remote<FileSystemHost> host_remote);
-
   // Establishes full-duplex communication with the host.
   [MinVersion=7] Init@10(pending_remote<FileSystemHost> host_remote) => ();
-
-  // Asks the ContentResolver to get a FD to read the file specified by the
-  // URL.
-  [MinVersion=1] OpenFileToRead@2(string url) => (handle? fd);
-
-  // Asks the ContentResolver to get a FD to write the file specified by the
-  // URL.
-  [MinVersion=13] OpenFileToWrite@18(string url) => (handle? fd);
 
   // Asks the ContentResolver to get a FD to read the thumbnail of a
   // DocumentsProvider file specified by the URL. The thumbnail should be close
   // in size (width and height) but not necessarily the same as |size_hint|.
   [MinVersion=15] OpenThumbnail@21(string url, Size size_hint) => (handle? fd);
+
+  // Closes the ParcelFileDescriptor corresponding to the url_id. An error
+  // message can be sent to the ContentProvider as needed.
+  [MinVersion=21] CloseFileSession@24(string url_id, string error_message);
+
+  // Asks the ContentResolver to get a FD to write to the file specified by the
+  // URL. FileSession is returned with a unique ID corresponding to the open
+  // session so the file can be closed properly after remote write operation.
+  [MinVersion=21] OpenFileSessionToWrite@25(url.mojom.Url url) =>
+      (FileSession? file_session);
+
+  // Asks the ContentResolver to get a FD to read the file specified by the
+  // URL. FileSession is returned with a unique ID corresponding to the open
+  // session so the file can be closed properly after remote read operation.
+  [MinVersion=21] OpenFileSessionToRead@26(url.mojom.Url url) =>
+      (FileSession? file_session);
 
   // Uninstalls a document watcher.
   //
@@ -478,7 +501,8 @@ interface FileSystemInstance {
   [MinVersion=14] RequestFileRemovalScan@20(array<string> directory_paths);
 
   // DEPRECATED. Use OpenUrlsWithPermissionAndWindowInfo() instead.
-  [MinVersion=8] OpenUrlsWithPermission@11(OpenUrlsRequest request) => ();
+  [MinVersion=8] DEPRECATED_OpenUrlsWithPermission@11(OpenUrlsRequest request)
+      => ();
 
   // Opens URLs by sending an intent to the specified activity with a specific
   // launch window info.
@@ -487,5 +511,5 @@ interface FileSystemInstance {
   // ensure that the user is correctly aware of the URLs and the activity they
   // are passing.
   [MinVersion=19] OpenUrlsWithPermissionAndWindowInfo@23(
-      OpenUrlsRequest request, WindowInfo window_info)  => ();
+      OpenUrlsRequest request, WindowInfo window_info) => ();
 };

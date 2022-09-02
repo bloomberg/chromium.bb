@@ -8,7 +8,6 @@
 
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/mojom/process.mojom.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 
 namespace arc {
@@ -129,9 +128,6 @@ bool ArcProcess::IsArcProtected() const {
 }
 
 bool ArcProcess::IsGmsCoreProtected() const {
-  if (!base::FeatureList::IsEnabled(arc::kGmsCoreLowMemoryKillerProtection))
-    return false;
-
   for (const char* service : kGmsCoreProtectedServices) {
     if (process_name() == service)
       return true;

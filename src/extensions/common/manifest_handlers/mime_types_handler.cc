@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
@@ -26,7 +25,7 @@ namespace {
 // This has to by in sync with MimeHandlerType enum.
 // Note that if multiple versions of quickoffice are installed, the
 // higher-indexed entry will clobber earlier entries.
-constexpr const char* const kMIMETypeHandlersAllowlist[] = {
+const char* kMIMETypeHandlersAllowlist[] = {
     extension_misc::kPdfExtensionId,
     extension_misc::kQuickOfficeComponentExtensionId,
     extension_misc::kQuickOfficeInternalExtensionId,
@@ -47,7 +46,7 @@ enum class MimeHandlerType {
 };
 
 static_assert(
-    base::size(kMIMETypeHandlersAllowlist) ==
+    std::size(kMIMETypeHandlersAllowlist) ==
         static_cast<size_t>(MimeHandlerType::kMaxValue) + 1,
     "MimeHandlerType enum is not in sync with kMIMETypeHandlersAllowlist.");
 
@@ -107,9 +106,7 @@ SkColor MimeTypesHandler::GetBackgroundColor() const {
   if (extension_id_ == extension_misc::kPdfExtensionId) {
     return kPdfExtensionBackgroundColor;
   }
-  if (extension_id_ == extension_misc::kQuickOfficeExtensionId ||
-      extension_id_ == extension_misc::kQuickOfficeInternalExtensionId ||
-      extension_id_ == extension_misc::kQuickOfficeComponentExtensionId) {
+  if (extension_misc::IsQuickOfficeExtension(extension_id_)) {
     return kQuickOfficeExtensionBackgroundColor;
   }
   return content::WebPluginInfo::kDefaultBackgroundColor;
@@ -157,10 +154,9 @@ bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
     info->handler_.AddMIMEType(entry.GetString());
   }
 
-  std::string mime_types_handler;
-  if (extension->manifest()->GetString(keys::kMimeTypesHandler,
-                                       &mime_types_handler)) {
-    info->handler_.set_handler_url(mime_types_handler);
+  if (const std::string* mime_types_handler =
+          extension->manifest()->FindStringPath(keys::kMimeTypesHandler)) {
+    info->handler_.set_handler_url(*mime_types_handler);
   }
 
   extension->SetManifestData(keys::kMimeTypesHandler, std::move(info));

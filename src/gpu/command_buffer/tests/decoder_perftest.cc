@@ -8,6 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gpu_control.h"
@@ -264,15 +265,6 @@ class RecordReplayContext : public GpuControl {
 
   const Capabilities& GetCapabilities() const override { return capabilities_; }
 
-  int32_t CreateImage(ClientBuffer buffer,
-                      size_t width,
-                      size_t height) override {
-    NOTIMPLEMENTED();
-    return -1;
-  }
-
-  void DestroyImage(int32_t id) override { NOTREACHED(); }
-
   void SignalQuery(uint32_t query, base::OnceClosure callback) override {
     NOTREACHED();
   }
@@ -324,8 +316,6 @@ class RecordReplayContext : public GpuControl {
     NOTREACHED();
     return true;
   }
-
-  void SetDisplayTransform(gfx::OverlayTransform) override { NOTREACHED(); }
 
   GpuPreferences gpu_preferences_;
 

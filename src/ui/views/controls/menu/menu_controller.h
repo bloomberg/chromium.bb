@@ -16,6 +16,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -29,7 +30,7 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "ui/views/controls/menu/menu_closure_animation_mac.h"
 #include "ui/views/controls/menu/menu_cocoa_watcher_mac.h"
 #endif
@@ -190,8 +191,6 @@ class VIEWS_EXPORT MenuController
   void OnDragEntered(SubmenuView* source, const ui::DropTargetEvent& event);
   int OnDragUpdated(SubmenuView* source, const ui::DropTargetEvent& event);
   void OnDragExited(SubmenuView* source);
-  ui::mojom::DragOperation OnPerformDrop(SubmenuView* source,
-                                         const ui::DropTargetEvent& event);
   views::View::DropCallback GetDropCallback(SubmenuView* source,
                                             const ui::DropTargetEvent& event);
 
@@ -228,10 +227,10 @@ class VIEWS_EXPORT MenuController
   // Only used for testing.
   static void TurnOffMenuSelectionHoldForTest();
 
-  void set_use_touchable_layout(bool use_touchable_layout) {
-    use_touchable_layout_ = use_touchable_layout;
+  void set_use_ash_system_ui_layout(bool value) {
+    use_ash_system_ui_layout_ = value;
   }
-  bool use_touchable_layout() const { return use_touchable_layout_; }
+  bool use_ash_system_ui_layout() const { return use_ash_system_ui_layout_; }
 
   // Notifies |this| that |menu_item| is being destroyed.
   void OnMenuItemDestroying(MenuItemView* menu_item);
@@ -789,8 +788,8 @@ class VIEWS_EXPORT MenuController
   // Set to true if the menu item was selected by touch.
   bool item_selected_by_touch_ = false;
 
-  // Whether to use the touchable layout.
-  bool use_touchable_layout_ = false;
+  // Whether to use the ash system UI specific layout.
+  bool use_ash_system_ui_layout_ = false;
 
   // During mouse event handling, this is the RootView to forward mouse events
   // to. We need this, because if we forward one event to it (e.g., mouse
@@ -801,7 +800,7 @@ class VIEWS_EXPORT MenuController
   // A mask of the EventFlags for the mouse buttons currently pressed.
   int current_mouse_pressed_state_ = 0;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   std::unique_ptr<MenuClosureAnimationMac> menu_closure_animation_;
   std::unique_ptr<MenuCocoaWatcherMac> menu_cocoa_watcher_;
 #endif

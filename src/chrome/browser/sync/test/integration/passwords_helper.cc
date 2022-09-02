@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -29,7 +30,6 @@
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "content/public/test/test_utils.h"
-#include "net/base/escape.h"
 #include "url/gurl.h"
 
 using password_manager::PasswordForm;
@@ -44,7 +44,7 @@ const char kIndexedFakeOrigin[] = "http://fake-signon-realm.google.com/%d";
 class PasswordStoreConsumerHelper
     : public password_manager::PasswordStoreConsumer {
  public:
-  PasswordStoreConsumerHelper() {}
+  PasswordStoreConsumerHelper() = default;
 
   PasswordStoreConsumerHelper(const PasswordStoreConsumerHelper&) = delete;
   PasswordStoreConsumerHelper& operator=(const PasswordStoreConsumerHelper&) =
@@ -91,11 +91,11 @@ sync_pb::EntitySpecifics EncryptPasswordSpecifics(
 }
 
 std::string GetClientTag(const sync_pb::PasswordSpecificsData& password_data) {
-  return net::EscapePath(GURL(password_data.origin()).spec()) + "|" +
-         net::EscapePath(password_data.username_element()) + "|" +
-         net::EscapePath(password_data.username_value()) + "|" +
-         net::EscapePath(password_data.password_element()) + "|" +
-         net::EscapePath(password_data.signon_realm());
+  return base::EscapePath(GURL(password_data.origin()).spec()) + "|" +
+         base::EscapePath(password_data.username_element()) + "|" +
+         base::EscapePath(password_data.username_value()) + "|" +
+         base::EscapePath(password_data.password_element()) + "|" +
+         base::EscapePath(password_data.signon_realm());
 }
 
 }  // namespace
@@ -123,8 +123,7 @@ std::vector<std::unique_ptr<PasswordForm>> GetAllLogins(
 void RemoveLogins(PasswordStoreInterface* store) {
   // Null Time values enforce unbounded deletion in both direction
   store->RemoveLoginsCreatedBetween(/*delete_begin=*/base::Time(),
-                                    /*delete_end=*/base::Time::Max(),
-                                    /*completion=*/base::NullCallback());
+                                    /*delete_end=*/base::Time::Max());
 }
 PasswordStoreInterface* GetProfilePasswordStoreInterface(int index) {
   return PasswordStoreFactory::GetForProfile(test()->GetProfile(index),
@@ -231,7 +230,7 @@ void InjectEncryptedServerPassword(
     const syncer::KeyDerivationParams& key_derivation_params,
     fake_server::FakeServer* fake_server) {
   sync_pb::PasswordSpecificsData password_data =
-      password_manager::SpecificsFromPassword(form)
+      password_manager::SpecificsFromPassword(form, /*base_password_data=*/{})
           .client_only_encrypted_data();
   InjectEncryptedServerPassword(password_data, encryption_passphrase,
                                 key_derivation_params, fake_server);
@@ -256,7 +255,7 @@ void InjectKeystoreEncryptedServerPassword(
     const password_manager::PasswordForm& form,
     fake_server::FakeServer* fake_server) {
   sync_pb::PasswordSpecificsData password_data =
-      password_manager::SpecificsFromPassword(form)
+      password_manager::SpecificsFromPassword(form, /*base_password_data=*/{})
           .client_only_encrypted_data();
   InjectKeystoreEncryptedServerPassword(password_data, fake_server);
 }
@@ -359,7 +358,7 @@ PasswordFormsChecker::PasswordFormsChecker(
       index_(index),
       in_progress_(false),
       needs_recheck_(false) {
-  for (auto& password_form : expected_forms) {
+  for (const password_manager::PasswordForm& password_form : expected_forms) {
     expected_forms_.push_back(
         std::make_unique<password_manager::PasswordForm>(password_form));
   }

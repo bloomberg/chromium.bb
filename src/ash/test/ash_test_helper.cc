@@ -24,6 +24,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
+#include "ash/style/dark_mode_controller.h"
 #include "ash/system/message_center/session_state_notification_blocker.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/screen_layout_observer.h"
@@ -36,6 +37,8 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
+#include "base/system/system_monitor.h"
+#include "chromeos/ash/components/dbus/rgbkbd/rgbkbd_client.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -45,10 +48,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/ash/mock_input_method_manager.h"
-#include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
@@ -90,7 +93,8 @@ class AshTestHelper::PowerPolicyControllerInitializer {
 };
 
 AshTestHelper::AshTestHelper(ui::ContextFactory* context_factory)
-    : AuraTestHelper(context_factory) {
+    : AuraTestHelper(context_factory),
+      system_monitor_(std::make_unique<base::SystemMonitor>()) {
   views::ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(
       &MakeTestViewsDelegate);
 
@@ -108,6 +112,7 @@ AshTestHelper::AshTestHelper(ui::ContextFactory* context_factory)
   TabletModeController::SetUseScreenshotForTest(false);
 
   display::ResetDisplayIdForTest();
+  display::SetInternalDisplayIds({});
 
   chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
@@ -149,6 +154,9 @@ void AshTestHelper::TearDown() {
   // owns, so shut the test helper down first.
   app_list_test_helper_.reset();
 
+  // Stop event dispatch like we do in ChromeBrowserMainExtraPartsAsh.
+  Shell::Get()->ShutdownEventDispatch();
+
   Shell::DeleteInstance();
   // Suspend the tear down until all resources are returned via
   // CompositorFrameSinkClient::ReclaimResources()
@@ -163,6 +171,7 @@ void AshTestHelper::TearDown() {
   // shut the controller down first.
   power_policy_controller_initializer_.reset();
   chromeos::PowerManagerClient::Shutdown();
+  RgbkbdClient::Shutdown();
 
   TabletModeController::SetUseScreenshotForTest(true);
 
@@ -236,6 +245,8 @@ void AshTestHelper::SetUp(InitParams init_params) {
     bluez_dbus_manager_initializer_ =
         std::make_unique<BluezDBusManagerInitializer>();
   }
+  if (!RgbkbdClient::Get())
+    RgbkbdClient::InitializeFake();
   if (!chromeos::PowerManagerClient::Get())
     chromeos::PowerManagerClient::InitializeFake();
   if (!chromeos::PowerPolicyController::IsInitialized()) {
@@ -269,6 +280,15 @@ void AshTestHelper::SetUp(InitParams init_params) {
       std::make_unique<TestKeyboardUIFactory>();
   Shell::CreateInstance(std::move(shell_init_params));
   Shell* shell = Shell::Get();
+
+  // The dark/light mode educational nudge is expected to be shown when session
+  // state changed to ACTIVE. This means it might be shown above the shelf in
+  // all the tests with an active user session. This setting here make it will
+  // not be shown by default in tests. As keep it shown will change the
+  // operations needed in many of the tests, e.g, when productive launcher is
+  // shown as well, we need one more click outside of the launcher to dismiss
+  // the nudge first before dismissing the launcher.
+  shell->dark_mode_controller()->SetShowNudgeForTesting(false);
 
   // Set up a test wallpaper controller client before signing in any users. At
   // the time a user logs in, Wallpaper controller relies on
@@ -331,7 +351,7 @@ void AshTestHelper::SetUp(InitParams init_params) {
   // Move the mouse cursor to far away so that native events don't interfere
   // with test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  Shell::Get()->cursor_manager()->EnableMouseEvents();
+  shell->cursor_manager()->EnableMouseEvents();
 
   // Changing GestureConfiguration shouldn't make tests fail. These values
   // prevent unexpected events from being generated during tests. Such as

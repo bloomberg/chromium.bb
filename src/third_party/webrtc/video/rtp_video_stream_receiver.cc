@@ -17,9 +17,9 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
-#include "absl/base/macros.h"
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "media/base/media_constants.h"
 #include "modules/pacing/packet_router.h"
 #include "modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
@@ -47,7 +47,6 @@
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/strings/string_builder.h"
-#include "system_wrappers/include/field_trial.h"
 #include "system_wrappers/include/metrics.h"
 #include "system_wrappers/include/ntp_time.h"
 #include "video/receive_statistics_proxy.h"
@@ -60,11 +59,11 @@ namespace {
 constexpr int kPacketBufferStartSize = 512;
 constexpr int kPacketBufferMaxSize = 2048;
 
-int PacketBufferMaxSize() {
+int PacketBufferMaxSize(const FieldTrialsView& field_trials) {
   // The group here must be a positive power of 2, in which case that is used as
   // size. All other values shall result in the default value being used.
   const std::string group_name =
-      webrtc::field_trial::FindFullName("WebRTC-PacketBufferMaxSize");
+      field_trials.Lookup("WebRTC-PacketBufferMaxSize");
   int packet_buffer_max_size = kPacketBufferMaxSize;
   if (!group_name.empty() &&
       (sscanf(group_name.c_str(), "%d", &packet_buffer_max_size) != 1 ||
@@ -204,7 +203,7 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
     Transport* transport,
     RtcpRttStats* rtt_stats,
     PacketRouter* packet_router,
-    const VideoReceiveStream::Config* config,
+    const VideoReceiveStreamInterface::Config* config,
     ReceiveStatistics* rtp_receive_statistics,
     ReceiveStatisticsProxy* receive_stats_proxy,
     ProcessThread* process_thread,
@@ -212,7 +211,8 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
     KeyFrameRequestSender* keyframe_request_sender,
     OnCompleteFrameCallback* complete_frame_callback,
     rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
-    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer)
+    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer,
+    const FieldTrialsView* field_trials)
     : RtpVideoStreamReceiver(clock,
                              transport,
                              rtt_stats,
@@ -226,14 +226,15 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
                              keyframe_request_sender,
                              complete_frame_callback,
                              frame_decryptor,
-                             frame_transformer) {}
+                             frame_transformer,
+                             field_trials) {}
 
 RtpVideoStreamReceiver::RtpVideoStreamReceiver(
     Clock* clock,
     Transport* transport,
     RtcpRttStats* rtt_stats,
     PacketRouter* packet_router,
-    const VideoReceiveStream::Config* config,
+    const VideoReceiveStreamInterface::Config* config,
     ReceiveStatistics* rtp_receive_statistics,
     RtcpPacketTypeCounterObserver* rtcp_packet_type_counter_observer,
     RtcpCnameCallback* rtcp_cname_callback,
@@ -242,8 +243,10 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
     KeyFrameRequestSender* keyframe_request_sender,
     OnCompleteFrameCallback* complete_frame_callback,
     rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
-    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer)
-    : clock_(clock),
+    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer,
+    const FieldTrialsView* field_trials)
+    : field_trials_(field_trials ? *field_trials : owned_field_trials_),
+      clock_(clock),
       config_(*config),
       packet_router_(packet_router),
       process_thread_(process_thread),
@@ -271,7 +274,8 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
       // TODO(bugs.webrtc.org/10336): Let `rtcp_feedback_buffer_` communicate
       // directly with `rtp_rtcp_`.
       rtcp_feedback_buffer_(this, nack_sender, this),
-      packet_buffer_(kPacketBufferStartSize, PacketBufferMaxSize()),
+      packet_buffer_(kPacketBufferStartSize,
+                     PacketBufferMaxSize(field_trials_)),
       reference_finder_(std::make_unique<RtpFrameReferenceFinder>()),
       has_received_frame_(false),
       frames_decryptable_(false),
@@ -306,7 +310,7 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
   }
   ParseFieldTrial(
       {&forced_playout_delay_max_ms_, &forced_playout_delay_min_ms_},
-      field_trial::FindFullName("WebRTC-ForcePlayoutDelay"));
+      field_trials_.Lookup("WebRTC-ForcePlayoutDelay"));
 
   process_thread_->RegisterModule(rtp_rtcp_.get(), RTC_FROM_HERE);
 
@@ -318,14 +322,14 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
 
   if (config_.rtp.nack.rtp_history_ms != 0) {
     nack_module_ = std::make_unique<DEPRECATED_NackModule>(
-        clock_, &rtcp_feedback_buffer_, &rtcp_feedback_buffer_);
+        clock_, &rtcp_feedback_buffer_, &rtcp_feedback_buffer_, field_trials_);
     process_thread_->RegisterModule(nack_module_.get(), RTC_FROM_HERE);
   }
 
   // Only construct the encrypted receiver if frame encryption is enabled.
   if (config_.crypto_options.sframe.require_frame_encryption) {
     buffered_frame_decryptor_ =
-        std::make_unique<BufferedFrameDecryptor>(this, this);
+        std::make_unique<BufferedFrameDecryptor>(this, this, field_trials_);
     if (frame_decryptor != nullptr) {
       buffered_frame_decryptor_->SetFrameDecryptor(std::move(frame_decryptor));
     }
@@ -362,7 +366,7 @@ void RtpVideoStreamReceiver::AddReceiveCodec(
     const std::map<std::string, std::string>& codec_params,
     bool raw_payload) {
   if (codec_params.count(cricket::kH264FmtpSpsPpsIdrInKeyframe) ||
-      field_trial::IsEnabled("WebRTC-SpsPpsIdrIsH264Keyframe")) {
+      field_trials_.IsEnabled("WebRTC-SpsPpsIdrIsH264Keyframe")) {
     MutexLock lock(&packet_buffer_lock_);
     packet_buffer_.ForceSpsPpsIdrIsH264Keyframe();
   }
@@ -620,7 +624,7 @@ void RtpVideoStreamReceiver::OnReceivedPayloadData(
       case video_coding::H264SpsPpsTracker::kRequestKeyframe:
         rtcp_feedback_buffer_.RequestKeyFrame();
         rtcp_feedback_buffer_.SendBufferedRtcpFeedback();
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       case video_coding::H264SpsPpsTracker::kDrop:
         return;
       case video_coding::H264SpsPpsTracker::kInsert:
@@ -950,7 +954,7 @@ void RtpVideoStreamReceiver::SetFrameDecryptor(
   RTC_DCHECK_RUN_ON(&network_tc_);
   if (buffered_frame_decryptor_ == nullptr) {
     buffered_frame_decryptor_ =
-        std::make_unique<BufferedFrameDecryptor>(this, this);
+        std::make_unique<BufferedFrameDecryptor>(this, this, field_trials_);
   }
   buffered_frame_decryptor_->SetFrameDecryptor(std::move(frame_decryptor));
 }
@@ -1106,24 +1110,25 @@ bool RtpVideoStreamReceiver::DeliverRtcp(const uint8_t* rtcp_packet,
   uint32_t ntp_secs = 0;
   uint32_t ntp_frac = 0;
   uint32_t rtp_timestamp = 0;
-  uint32_t recieved_ntp_secs = 0;
-  uint32_t recieved_ntp_frac = 0;
-  if (rtp_rtcp_->RemoteNTP(&ntp_secs, &ntp_frac, &recieved_ntp_secs,
-                           &recieved_ntp_frac, &rtp_timestamp) != 0) {
+  uint32_t received_ntp_secs = 0;
+  uint32_t received_ntp_frac = 0;
+  if (rtp_rtcp_->RemoteNTP(&ntp_secs, &ntp_frac, &received_ntp_secs,
+                           &received_ntp_frac, &rtp_timestamp) != 0) {
     // Waiting for RTCP.
     return true;
   }
-  NtpTime recieved_ntp(recieved_ntp_secs, recieved_ntp_frac);
-  int64_t time_since_recieved =
-      clock_->CurrentNtpInMilliseconds() - recieved_ntp.ToMs();
+  NtpTime received_ntp(received_ntp_secs, received_ntp_frac);
+  int64_t time_since_received =
+      clock_->CurrentNtpInMilliseconds() - received_ntp.ToMs();
   // Don't use old SRs to estimate time.
-  if (time_since_recieved <= 1) {
-    ntp_estimator_.UpdateRtcpTimestamp(rtt, ntp_secs, ntp_frac, rtp_timestamp);
-    absl::optional<int64_t> remote_to_local_clock_offset_ms =
-        ntp_estimator_.EstimateRemoteToLocalClockOffsetMs();
-    if (remote_to_local_clock_offset_ms.has_value()) {
+  if (time_since_received <= 1) {
+    ntp_estimator_.UpdateRtcpTimestamp(
+        TimeDelta::Millis(rtt), NtpTime(ntp_secs, ntp_frac), rtp_timestamp);
+    absl::optional<int64_t> remote_to_local_clock_offset =
+        ntp_estimator_.EstimateRemoteToLocalClockOffset();
+    if (remote_to_local_clock_offset.has_value()) {
       capture_clock_offset_updater_.SetRemoteToLocalClockOffset(
-          Int64MsToQ32x32(*remote_to_local_clock_offset_ms));
+          *remote_to_local_clock_offset);
     }
   }
 

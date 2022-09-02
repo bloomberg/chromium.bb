@@ -9,11 +9,13 @@
 #include "base/callback_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/profile_info_watcher.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -61,9 +63,10 @@ void HistoryLoginHandler::ProfileInfoChanged() {
 
 void HistoryLoginHandler::HandleStartSignInFlow(
     const base::ListValue* /*args*/) {
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-      signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS, false);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  signin_ui_util::EnableSyncFromSingleAccountPromo(
+      profile,
+      IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kSignin),
+      signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
 }

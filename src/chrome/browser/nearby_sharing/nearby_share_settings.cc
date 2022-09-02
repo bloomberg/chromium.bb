@@ -98,10 +98,10 @@ Visibility NearbyShareSettings::GetVisibility() const {
 
 const std::vector<std::string> NearbyShareSettings::GetAllowedContacts() const {
   std::vector<std::string> allowed_contacts;
-  const base::ListValue* list =
+  const base::Value* list =
       pref_service_->GetList(prefs::kNearbySharingAllowedContactsPrefName);
   if (list) {
-    base::Value::ConstListView view = list->GetList();
+    base::Value::ConstListView view = list->GetListDeprecated();
     for (const auto& value : view) {
       allowed_contacts.push_back(value.GetString());
     }
@@ -247,8 +247,7 @@ void NearbyShareSettings::OnEnabledPrefChanged() {
   }
 
   if (base::FeatureList::IsEnabled(
-          features::kNearbySharingBackgroundScanning) &&
-      chromeos::features::IsBluetoothAdvertisementMonitoringEnabled()) {
+          features::kNearbySharingBackgroundScanning)) {
     ProcessFastInitiationNotificationParentPrefChanged(enabled);
   }
 }

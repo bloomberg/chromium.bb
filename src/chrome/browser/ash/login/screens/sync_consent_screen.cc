@@ -12,7 +12,10 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/ash/account_manager/account_apps_availability.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -20,6 +23,8 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -68,8 +73,6 @@ void RecordUmaReviewFollowingSetup(bool value) {
 // is read from account capabilities. We assume user is in minor mode if
 // capability value is unknown.
 bool IsMinorMode(Profile* profile, const user_manager::User* user) {
-  if (!features::IsMinorModeRestrictionEnabled())
-    return false;
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   std::string gaia_id = user->GetAccountId().GetGaiaId();
   const AccountInfo account_info =
@@ -108,17 +111,27 @@ void SyncConsentScreen::MaybeLaunchSyncConsentSettings(Profile* profile) {
     // TODO (alemate): In a very special case when chrome is exiting at the very
     // moment we show Settings, it might crash here because profile could be
     // already destroyed. This needs to be fixed.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](Profile* profile) {
-              profile->GetPrefs()->ClearPref(
-                  ::prefs::kShowSyncSettingsOnSessionStart);
-              chrome::ShowSettingsSubPageForProfile(profile,
-                                                    chrome::kSyncSetupSubPage);
-            },
-            base::Unretained(profile)),
-        kSyncConsentSettingsShowDelay);
+    if (crosapi::browser_util::IsLacrosEnabled()) {
+      profile->GetPrefs()->ClearPref(::prefs::kShowArcSettingsOnSessionStart);
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile, chromeos::settings::mojom::kSyncSetupSubpagePath);
+    } else {
+      // SyncSetupSubPage here is shown in the browser instead of the OS
+      // Settings. We delay showing chrome sync settings by
+      // kSyncConsentSettingsShowDelay to make the settings tab shows on top of
+      // the restored tabs and windows.
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](Profile* profile) {
+                profile->GetPrefs()->ClearPref(
+                    ::prefs::kShowSyncSettingsOnSessionStart);
+                chrome::ShowSettingsSubPageForProfile(
+                    profile, chrome::kSyncSetupSubPage);
+              },
+              base::Unretained(profile)),
+          kSyncConsentSettingsShowDelay);
+    }
   }
 }
 
@@ -164,6 +177,11 @@ void SyncConsentScreen::Finish(Result result) {
 }
 
 bool SyncConsentScreen::MaybeSkip(WizardContext* context) {
+  if (context->skip_post_login_screens_for_tests) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
+  }
+
   Init(context);
 
   switch (behavior_) {
@@ -186,8 +204,6 @@ void SyncConsentScreen::ShowImpl() {
   Init(context());
 
   if (behavior_ != SyncScreenBehavior::kShow) {
-    // Wait for updates and set the loading throbber to be visible.
-    view_->SetThrobberVisible(true /*visible*/);
     syncer::SyncService* service = GetSyncService(profile_);
     if (service)
       sync_service_observation_.Observe(service);
@@ -197,11 +213,16 @@ void SyncConsentScreen::ShowImpl() {
     start_time_ = base::TimeTicks::Now();
   } else {
     PrepareScreenBasedOnCapability();
+    view_->ShowLoadedStep();
   }
+
+  bool is_arc_restricted =
+      AccountAppsAvailability::IsArcAccountRestrictionsEnabled();
+
   // Show the entire screen.
   // If SyncScreenBehavior is show, this should show the sync consent screen.
   // If SyncScreenBehavior is unknown, this should show the loading throbber.
-  view_->Show();
+  view_->Show(is_arc_restricted);
 }
 
 void SyncConsentScreen::HideImpl() {
@@ -215,13 +236,10 @@ void SyncConsentScreen::OnStateChanged(syncer::SyncService* sync) {
   UpdateScreen(*context());
 }
 
-// TODO(https://crbug.com/1229582) Break SplitSettings names into
-// SyncConsentOptional and SyncSettingsCategorization in the whole file.
-void SyncConsentScreen::OnNonSplitSettingsContinue(
-    const bool opted_in,
-    const bool review_sync,
-    const std::vector<int>& consent_description,
-    const int consent_confirmation) {
+void SyncConsentScreen::OnContinue(const bool opted_in,
+                                   const bool review_sync,
+                                   const std::vector<int>& consent_description,
+                                   const int consent_confirmation) {
   if (is_hidden())
     return;
   RecordUmaReviewFollowingSetup(review_sync);
@@ -235,64 +253,6 @@ void SyncConsentScreen::OnNonSplitSettingsContinue(
                                    review_sync);
   SetSyncEverythingEnabled(opted_in);
   Finish(Result::NEXT);
-}
-
-void SyncConsentScreen::OnContinue(
-    const std::vector<int>& consent_description,
-    int consent_confirmation,
-    SyncConsentScreenHandler::UserChoice choice) {
-  DCHECK(features::IsSyncConsentOptionalEnabled());
-  if (is_hidden())
-    return;
-  base::UmaHistogramEnumeration("OOBE.SyncConsentScreen.UserChoice", choice);
-  // Record that the user saw the consent text, regardless of which features
-  // they chose to enable.
-  RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
-  bool enable_sync = choice == SyncConsentScreenHandler::UserChoice::kAccepted;
-  UpdateSyncSettings(enable_sync);
-  Finish(Result::NEXT);
-}
-
-void SyncConsentScreen::UpdateSyncSettings(bool enable_sync) {
-  DCHECK(features::IsSyncConsentOptionalEnabled());
-  DCHECK(features::IsSyncSettingsCategorizationEnabled());
-  // For historical reasons, Chrome OS always has a "sync-consented" primary
-  // account in IdentityManager and always has browser sync "enabled". If the
-  // user disables the browser sync toggle we disable all browser data types,
-  // as if the user had opened browser sync settings and turned off all the
-  // toggles.
-  // TODO(crbug.com/1046746, crbug.com/1050677): Once all Chrome OS code is
-  // converted to the "consent aware" IdentityManager API, and the browser sync
-  // settings WebUI is converted to allow browser sync to be turned on/off, then
-  // this workaround can be removed.
-  syncer::SyncService* sync_service = GetSyncService(profile_);
-  if (sync_service) {
-    syncer::SyncUserSettings* sync_settings = sync_service->GetUserSettings();
-    sync_settings->SetOsSyncFeatureEnabled(enable_sync);
-    if (!enable_sync) {
-      syncer::UserSelectableTypeSet empty_set;
-      sync_settings->SetSelectedTypes(/*sync_everything=*/false, empty_set);
-    }
-    // TODO(crbug.com/1229582) Revisit the logic in case !enable_sync.
-    sync_settings->SetSyncRequested(true);
-    sync_settings->SetFirstSetupComplete(
-        syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
-  }
-  // Set a "sync-consented" primary account. See comment above.
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-  CoreAccountId account_id =
-      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
-  DCHECK(!account_id.empty());
-  identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
-      account_id, signin::ConsentLevel::kSync);
-
-  // Only enable URL-keyed metrics if the user turned on browser sync.
-  if (enable_sync) {
-    unified_consent::UnifiedConsentService* consent_service =
-        UnifiedConsentServiceFactory::GetForProfile(profile_);
-    if (consent_service)
-      consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
-  }
 }
 
 void SyncConsentScreen::MaybeEnableSyncForSkip() {
@@ -311,15 +271,9 @@ void SyncConsentScreen::MaybeEnableSyncForSkip() {
     case SyncScreenBehavior::kSkipAndEnableNonBrandedBuild:
     case SyncScreenBehavior::kSkipAndEnableEmphemeralUser:
     case SyncScreenBehavior::kSkipAndEnableScreenPolicy:
-      // Prior to SyncConsentOptional, sync is autostarted during SyncService
+      // Sync is autostarted during SyncService
       // creation with "sync everything" toggle off. We need to turn it on here.
-      // For SyncConsentOptional, we also need to update other sync-related
-      // flags.
-      if (features::IsSyncConsentOptionalEnabled()) {
-        UpdateSyncSettings(/*enable_sync=*/true);
-      } else {
-        SetSyncEverythingEnabled(/*enabled=*/true);
-      }
+      SetSyncEverythingEnabled(/*enabled=*/true);
       return;
   }
 }
@@ -398,7 +352,7 @@ void SyncConsentScreen::UpdateScreen(const WizardContext& context) {
 
   if (behavior_ == SyncScreenBehavior::kShow) {
     PrepareScreenBasedOnCapability();
-    view_->SetThrobberVisible(false /*visible*/);
+    view_->ShowLoadedStep();
     GetSyncService(profile_)->RemoveObserver(this);
     timeout_waiter_.AbandonAndStop();
     base::UmaHistogramCustomTimes("OOBE.SyncConsentScreen.LoadingTime",
@@ -473,6 +427,11 @@ void SyncConsentScreen::SetSyncEverythingEnabled(bool enabled) {
   if (enabled != sync_settings->IsSyncEverythingEnabled()) {
     syncer::UserSelectableTypeSet empty_set;
     sync_settings->SetSelectedTypes(enabled, empty_set);
+
+    if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
+      syncer::UserSelectableOsTypeSet os_empty_set;
+      sync_settings->SetSelectedOsTypes(enabled, os_empty_set);
+    }
   }
 }
 

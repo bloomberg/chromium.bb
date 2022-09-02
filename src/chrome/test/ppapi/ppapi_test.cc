@@ -315,7 +315,7 @@ void OutOfProcessPPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void OutOfProcessPPAPITest::RunTest(const std::string& test_case) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // See crbug.com/1231528 for context.
   if (test_case == "Printing")
     return;
@@ -332,7 +332,7 @@ void OutOfProcessPPAPITest::RunTouchEventTest(const std::string& test_case) {
   RenderViewHost* rvh = browser()
                             ->tab_strip_model()
                             ->GetActiveWebContents()
-                            ->GetMainFrame()
+                            ->GetPrimaryMainFrame()
                             ->GetRenderViewHost();
   auto watcher = content::RenderViewHostTester::CreateInputWatcher(
       rvh, blink::WebInputEvent::Type::kTouchStart);
@@ -343,7 +343,7 @@ void OutOfProcessPPAPITest::RunTouchEventTest(const std::string& test_case) {
   browser()
       ->tab_strip_model()
       ->GetActiveWebContents()
-      ->GetMainFrame()
+      ->GetPrimaryMainFrame()
       ->InsertVisualStateCallback(base::BindOnce(
           [](base::OnceClosure quit_closure, bool result) {
             EXPECT_TRUE(result);

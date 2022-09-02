@@ -46,6 +46,7 @@ class BlinkNotificationServiceImpl;
 class BrowserContext;
 struct NotificationDatabaseData;
 class PlatformNotificationServiceProxy;
+class RenderProcessHost;
 class ServiceWorkerContextWrapper;
 
 // Implementation of the Web Notification storage context. The public methods
@@ -76,8 +77,10 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // Creates a BlinkNotificationServiceImpl that is owned by this context.
   // |document_url| is empty when originating from a worker.
   void CreateService(
+      RenderProcessHost* render_process_host,
       const url::Origin& origin,
       const GURL& document_url,
+      const WeakDocumentPtr& weak_document_ptr,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver);
 
   // Removes |service| from the list of owned services, for example because the

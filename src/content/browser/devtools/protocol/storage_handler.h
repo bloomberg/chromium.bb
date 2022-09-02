@@ -11,6 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/storage.h"
+#include "content/browser/interest_group/interest_group_manager_impl.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 
 namespace storage {
 class QuotaOverrideHandle;
@@ -22,7 +25,9 @@ class StoragePartition;
 namespace protocol {
 
 class StorageHandler : public DevToolsDomainHandler,
-                       public Storage::Backend {
+                       public Storage::Backend,
+                       private content::InterestGroupManagerImpl::
+                           InterestGroupObserverInterface {
  public:
   StorageHandler();
 
@@ -38,6 +43,8 @@ class StorageHandler : public DevToolsDomainHandler,
   Response Disable() override;
 
   // content::protocol::storage::Backend
+  Response GetStorageKeyForFrame(const std::string& frame_id,
+                                 std::string* serialized_storage_key) override;
   void ClearDataForOrigin(
       const std::string& origin,
       const std::string& storage_types,
@@ -79,14 +86,29 @@ class StorageHandler : public DevToolsDomainHandler,
       const std::string& issuerOrigin,
       std::unique_ptr<ClearTrustTokensCallback> callback) override;
 
+  void GetInterestGroupDetails(
+      const std::string& owner_origin_string,
+      const std::string& name,
+      std::unique_ptr<GetInterestGroupDetailsCallback> callback) override;
+
+  Response SetInterestGroupTracking(bool enable) override;
+
  private:
   // See definition for lifetime information.
   class CacheStorageObserver;
   class IndexedDBObserver;
+  class InterestGroupObserver;
 
   // Not thread safe.
   CacheStorageObserver* GetCacheStorageObserver();
   IndexedDBObserver* GetIndexedDBObserver();
+
+  // content::InterestGroupManagerImpl::InterestGroupObserverInterface
+  void OnInterestGroupAccessed(
+      const base::Time& accessTime,
+      InterestGroupManagerImpl::InterestGroupObserverInterface::AccessType type,
+      const std::string& owner_origin,
+      const std::string& name) override;
 
   void NotifyCacheStorageListChanged(const std::string& origin);
   void NotifyCacheStorageContentChanged(const std::string& origin,
@@ -100,7 +122,8 @@ class StorageHandler : public DevToolsDomainHandler,
                                 StoragePartition** storage_partition);
 
   std::unique_ptr<Storage::Frontend> frontend_;
-  StoragePartition* storage_partition_;
+  StoragePartition* storage_partition_{nullptr};
+  RenderFrameHostImpl* frame_host_ = nullptr;
   std::unique_ptr<CacheStorageObserver> cache_storage_observer_;
   std::unique_ptr<IndexedDBObserver> indexed_db_observer_;
 

@@ -108,7 +108,7 @@ Label 	 Allowed values 	 Description </tr>
 Some other labels include:
 
 *   Needs-Reduction: this bug requires a reduced test case. See
-            <http://dev.chromium.org/for-testers/backend-testing/website-compatibility/reduced-test-cases>.
+            <http://www.chromium.org/for-testers/backend-testing/website-compatibility/reduced-test-cases>.
 *   Cr-UI-Internationalization: Internationalization issues (font
             selection and fallback, right-to-left display issues, IME, etc.)
 *   Cr-UI-Localization: Translation issues

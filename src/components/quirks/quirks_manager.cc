@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
@@ -207,7 +206,7 @@ void QuirksManager::SetLastServerCheck(int64_t product_id,
                                        const base::Time& last_check) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DictionaryPrefUpdate dict(local_state_, prefs::kQuirksClientLastServerCheck);
-  dict->SetDouble(IdToHexString(product_id), last_check.ToDoubleT());
+  dict->SetDoubleKey(IdToHexString(product_id), last_check.ToDoubleT());
 }
 
 }  // namespace quirks

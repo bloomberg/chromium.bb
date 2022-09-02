@@ -28,6 +28,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
 #include "components/policy/core/common/policy_loader_lacros.h"
 #endif
 
@@ -37,21 +38,19 @@ namespace {
 // attributes.
 bool CanAccessDeviceAttributes(const PrefService* prefs,
                                const url::Origin& origin) {
-  const base::ListValue* prefs_list =
+  const base::Value* prefs_list =
       prefs->GetList(prefs::kDeviceAttributesAllowedForOrigins);
   if (!prefs_list)
     return false;
 
-  return base::Contains(prefs_list->GetList(), origin, [](const auto& entry) {
-    return url::Origin::Create(GURL(entry.GetString()));
-  });
+  return base::Contains(prefs_list->GetListDeprecated(), origin,
+                        [](const auto& entry) {
+                          return url::Origin::Create(GURL(entry.GetString()));
+                        });
 }
 
 // Check whether the target origin is the same as the main application running
 // in the Kiosk session.
-// TODO(anqing): After Kiosk is migrated to Lacros, the launch url needs to be
-// stored in the lacros-browser when the app is launched. Then it can be used to
-// compare with |origin|.
 bool IsEqualToKioskOrigin(const url::Origin& origin) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const AccountId& account_id =
@@ -59,6 +58,10 @@ bool IsEqualToKioskOrigin(const url::Origin& origin) {
   const ash::WebKioskAppData* app_data =
       ash::WebKioskAppManager::Get()->GetAppByAccountId(account_id);
   return url::Origin::Create(app_data->install_url()) == origin;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  DCHECK(KioskSessionServiceLacros::Get());
+  return url::Origin::Create(
+             KioskSessionServiceLacros::Get()->GetInstallURL()) == origin;
 #else
   return false;
 #endif
@@ -68,15 +71,16 @@ bool IsEqualToKioskOrigin(const url::Origin& origin) {
 // policy.
 bool IsForceInstalledOrigin(const PrefService* prefs,
                             const url::Origin& origin) {
-  const base::ListValue* prefs_list =
+  const base::Value* prefs_list =
       prefs->GetList(prefs::kWebAppInstallForceList);
   if (!prefs_list)
     return false;
 
-  return base::Contains(prefs_list->GetList(), origin, [](const auto& entry) {
-    std::string entry_url = entry.FindKey(web_app::kUrlKey)->GetString();
-    return url::Origin::Create(GURL(entry_url));
-  });
+  return base::Contains(
+      prefs_list->GetListDeprecated(), origin, [](const auto& entry) {
+        std::string entry_url = entry.FindKey(web_app::kUrlKey)->GetString();
+        return url::Origin::Create(GURL(entry_url));
+      });
 }
 
 const Profile* GetProfile(content::RenderFrameHost* host) {
@@ -162,7 +166,7 @@ void DeviceServiceImpl::OnDisposingIfNeeded() {
   // DeviceServiceImpl is allocated on the heap, thus it is safe to remove it
   // like this.
   if (!IsTrustedContext(host_, origin())) {
-    delete this;
+    ResetAndDeleteThis();
   }
 }
 

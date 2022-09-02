@@ -6,13 +6,11 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/no_destructor.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cart/cart_discount_fetcher.h"
-#include "chrome/browser/cart/cart_features.h"
-#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/commerce/coupons/coupon_db_content.pb.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/search/ntp_features.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/variations/variations.mojom.h"
@@ -150,14 +148,13 @@ void FetchDiscountWorker::ReadyToFetch(
   // post another delayed fetch.
   bool has_partner_merchant = false;
   for (auto pair : proto_pairs) {
-    if (cart_features::IsPartnerMerchant(
-            GURL(pair.second.merchant_cart_url()))) {
+    if (commerce::IsPartnerMerchant(GURL(pair.second.merchant_cart_url()))) {
       has_partner_merchant = true;
       break;
     }
   }
   if (!has_partner_merchant) {
-    Start(cart_features::kDiscountFetchDelayParam.Get());
+    Start(commerce::kDiscountFetchDelayParam.Get());
     return;
   }
   backend_task_runner_->PostTask(
@@ -286,13 +283,19 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
     if (commerce::IsCouponWithCodeEnabled()) {
       for (const coupon_db::FreeListingCouponInfoProto& coupon_info :
            merchant_discounts.coupon_discounts) {
-        auto offer = std::make_unique<autofill::AutofillOfferData>();
-        offer->display_strings.value_prop_text =
-            coupon_info.coupon_description();
-        offer->promo_code = coupon_info.coupon_code();
-        offer->offer_id = coupon_info.coupon_id();
-        offer->expiry = base::Time::FromDoubleT(coupon_info.expiry_time());
-        offer->merchant_origins.emplace_back(cart_url_origin);
+        int64_t offer_id = coupon_info.coupon_id();
+        base::Time expiry = base::Time::FromDoubleT(coupon_info.expiry_time());
+        std::vector<GURL> merchant_origins;
+        merchant_origins.emplace_back(cart_url_origin);
+        GURL offer_details_url = GURL();
+        autofill::DisplayStrings display_strings;
+        display_strings.value_prop_text = coupon_info.coupon_description();
+        std::string promo_code = coupon_info.coupon_code();
+
+        auto offer = std::make_unique<autofill::AutofillOfferData>(
+            autofill::AutofillOfferData::FreeListingCouponOffer(
+                offer_id, expiry, merchant_origins, offer_details_url,
+                display_strings, promo_code));
         coupon_map[cart_url_origin].emplace_back(std::move(offer));
       }
     }
@@ -307,6 +310,6 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
           ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam,
           false)) {
     // Continue to work.
-    Start(cart_features::kDiscountFetchDelayParam.Get());
+    Start(commerce::kDiscountFetchDelayParam.Get());
   }
 }

@@ -11,9 +11,9 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/dom_action.pb.h"
 #include "components/autofill_assistant/browser/service.pb.h"
-#include "components/autofill_assistant/browser/web/element_finder.h"
 
 namespace autofill_assistant {
+class ElementFinderResult;
 
 // Action to get an element's status.
 class GetElementStatusAction : public Action {
@@ -34,7 +34,7 @@ class GetElementStatusAction : public Action {
                         const ClientStatus& element_status);
   void GetElementByClientId(const ClientIdProto& client_id);
   void OnGetElement(const ClientStatus& status,
-                    std::unique_ptr<ElementFinder::Result> element);
+                    std::unique_ptr<ElementFinderResult> element);
   void OnGetStringAttribute(const ClientStatus& status,
                             const std::string& text);
   void OnResolveTextValue(const std::string& text,
@@ -46,7 +46,7 @@ class GetElementStatusAction : public Action {
 
   void EndAction(const ClientStatus& status);
 
-  std::unique_ptr<ElementFinder::Result> element_;
+  std::unique_ptr<ElementFinderResult> element_;
 
   ProcessActionCallback callback_;
   base::WeakPtrFactory<GetElementStatusAction> weak_ptr_factory_{this};

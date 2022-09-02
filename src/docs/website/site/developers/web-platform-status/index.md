@@ -1383,18 +1383,6 @@ but later revised. Chrome 24 features an implementation of the `autocomplete`
 attribute that [matches the HTML
 spec](http://www.whatwg.org/specs/web-apps/current-work/multipage/association-of-controls-and-forms.html#autofilling-form-controls:-the-autocomplete-attribute).
 
-#### formElement.requestAutocomplete()
-
-Allows a form to be filled out on demand by the browser's autofill.
-
-Availability: in development.
-
-Notes: [WHATWG
-proposal](http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2012-October/037711.html).
-
-Tickets: [crbug](http://code.google.com/p/chromium/issues/detail?id=159537),
-[webkit meta bug](https://bugs.webkit.org/show_bug.cgi?id=100560)
-
 ## DOM APIs
 
 [Element.matchesSelector](http://www.w3.org/TR/selectors-api2/#matchtesting) -

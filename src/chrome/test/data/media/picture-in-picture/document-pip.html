@@ -1,0 +1,14 @@
+<script>
+var pipWindow;
+async function createDocumentPipWindow() {
+    pipWindow = await window.requestPictureInPictureWindow();
+    pipWindow.document.write("Hello, world.<a name='top'>top</a>");
+    return true;
+}
+
+function navigateInDocumentPipWindow(url) {
+    pipWindow.document.location.href = url;
+    return true;
+}
+
+</script>

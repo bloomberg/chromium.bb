@@ -18,7 +18,7 @@ import {translateState} from '../../common/thread_state';
 import {fromNs, toNs} from '../../common/time';
 import {
   TrackController,
-  trackControllerRegistry
+  trackControllerRegistry,
 } from '../../controller/track_controller';
 
 import {
@@ -98,9 +98,11 @@ class ThreadStateTrackController extends TrackController<Config, Data> {
       cpu: new Int8Array(numRows),
     };
 
-    const stringIndexes =
-        new Map<{shortState: string; ioWait: boolean | undefined}, number>();
-    function internState(shortState: string, ioWait: boolean|undefined) {
+    const stringIndexes = new Map<
+        {shortState: string | undefined; ioWait: boolean | undefined},
+        number>();
+    function internState(
+        shortState: string|undefined, ioWait: boolean|undefined) {
       let idx = stringIndexes.get({shortState, ioWait});
       if (idx !== undefined) return idx;
       idx = data.strings.length;
@@ -127,7 +129,7 @@ class ThreadStateTrackController extends TrackController<Config, Data> {
       endNsQ = Math.max(endNsQ, startNsQ + bucketNs);
 
       const cpu = it.cpu;
-      const state = it.state || '[null]';
+      const state = it.state || undefined;
       const ioWait = it.ioWait === null ? undefined : !!it.ioWait;
       const id = it.id;
 
@@ -145,7 +147,7 @@ class ThreadStateTrackController extends TrackController<Config, Data> {
   }
 
   async onDestroy() {
-    await this.query(`drop table if exists ${this.tableName('thread_state')}`);
+    await this.query(`drop view if exists ${this.tableName('thread_state')}`);
   }
 }
 

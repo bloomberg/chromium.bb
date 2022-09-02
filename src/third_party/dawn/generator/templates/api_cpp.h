@@ -13,11 +13,17 @@
 //* limitations under the License.
 {% set API = metadata.api.upper() %}
 {% set api = API.lower() %}
+{% if 'dawn' not in enabled_tags %}
+    #ifdef __EMSCRIPTEN__
+    #error "Do not include this header. Emscripten already provides headers needed for {{metadata.api}}."
+    #endif
+{% endif %}
 #ifndef {{API}}_CPP_H_
 #define {{API}}_CPP_H_
 
 #include "dawn/{{api}}.h"
 #include "dawn/EnumClassBitmasks.h"
+#include <cmath>
 
 namespace {{metadata.namespace}} {
 
@@ -140,13 +146,15 @@ namespace {{metadata.namespace}} {
     };
 
 {% macro render_cpp_default_value(member, is_struct=True) -%}
-    {%- if member.annotation in ["*", "const*"] and member.optional -%}
+    {%- if member.annotation in ["*", "const*"] and member.optional or member.default_value == "nullptr" -%}
         {{" "}}= nullptr
     {%- elif member.type.category == "object" and member.optional and is_struct -%}
         {{" "}}= nullptr
     {%- elif member.type.category in ["enum", "bitmask"] and member.default_value != None -%}
         {{" "}}= {{as_cppType(member.type.name)}}::{{as_cppEnum(Name(member.default_value))}}
     {%- elif member.type.category == "native" and member.default_value != None -%}
+        {{" "}}= {{member.default_value}}
+    {%- elif member.default_value != None -%}
         {{" "}}= {{member.default_value}}
     {%- else -%}
         {{assert(member.default_value == None)}}
@@ -189,11 +197,10 @@ namespace {{metadata.namespace}} {
     {% endfor %}
 
     {% for function in by_category["function"] %}
-       {{as_cppType(function.return_type.name)}} {{as_cppType(function.name)}}(
+        {{as_cppType(function.return_type.name)}} {{as_cppType(function.name)}}(
             {%- for arg in function.arguments -%}
-                {% if not loop.first %}, {% endif %}
-                {{as_annotated_cppType(arg)}}
-                {{render_cpp_default_value(arg, False)}}
+                {%- if not loop.first %}, {% endif -%}
+                {{as_annotated_cppType(arg)}}{{render_cpp_default_value(arg, False)}}
             {%- endfor -%}
         );
     {% endfor %}

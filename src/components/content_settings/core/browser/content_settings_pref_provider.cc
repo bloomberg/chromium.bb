@@ -44,11 +44,21 @@ namespace {
 // These settings are no longer used, and should be deleted on profile startup.
 const char kObsoleteDomainToOriginMigrationStatus[] =
     "profile.content_settings.domain_to_origin_migration_status";
+const char kObsoleteWebIdActiveSessionPref[] =
+    "profile.content_settings.exceptions.webid_active_session";
+const char kObsoleteWebIdRequestPref[] =
+    "profile.content_settings.exceptions.webid_request";
+const char kObsoleteWebIdSharePref[] =
+    "profile.content_settings.exceptions.webid_share";
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 const char kObsoleteFullscreenExceptionsPref[] =
     "profile.content_settings.exceptions.fullscreen";
-#if !defined(OS_ANDROID)
+// The "nfc" preference was superseded by "nfc-devices" once Web NFC gained the
+// ability to make NFC tags permanently read-only. See crbug.com/1275576
+const char kObsoleteNfcExceptionsPref[] =
+    "profile.content_settings.exceptions.nfc";
+#if !BUILDFLAG(IS_ANDROID)
 const char kObsoleteMouseLockExceptionsPref[] =
     "profile.content_settings.exceptions.mouselock";
 const char kObsoletePluginsExceptionsPref[] =
@@ -57,8 +67,10 @@ const char kObsoletePluginsDataExceptionsPref[] =
     "profile.content_settings.exceptions.flash_data";
 const char kObsoleteFileHandlingExceptionsPref[] =
     "profile.content_settings.exceptions.file_handling";
-#endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_IOS)
+const char kObsoleteFontAccessExceptionsPref[] =
+    "profile.content_settings.exceptions.font_access";
+#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_IOS)
 
 }  // namespace
 
@@ -85,19 +97,24 @@ void PrefProvider::RegisterProfilePrefs(
   // These prefs have been removed, but need to be registered so they can
   // be deleted on startup.
   registry->RegisterIntegerPref(kObsoleteDomainToOriginMigrationStatus, 0);
-#if !defined(OS_IOS)
+  registry->RegisterDictionaryPref(kObsoleteWebIdActiveSessionPref);
+  registry->RegisterDictionaryPref(kObsoleteWebIdRequestPref);
+  registry->RegisterDictionaryPref(kObsoleteWebIdSharePref);
+#if !BUILDFLAG(IS_IOS)
   registry->RegisterDictionaryPref(
       kObsoleteFullscreenExceptionsPref,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#if !defined(OS_ANDROID)
+  registry->RegisterDictionaryPref(kObsoleteNfcExceptionsPref);
+#if !BUILDFLAG(IS_ANDROID)
   registry->RegisterDictionaryPref(
       kObsoleteMouseLockExceptionsPref,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(kObsoletePluginsDataExceptionsPref);
   registry->RegisterDictionaryPref(kObsoletePluginsExceptionsPref);
   registry->RegisterDictionaryPref(kObsoleteFileHandlingExceptionsPref);
-#endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_IOS)
+  registry->RegisterDictionaryPref(kObsoleteFontAccessExceptionsPref);
+#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_IOS)
 }
 
 PrefProvider::PrefProvider(PrefService* prefs,
@@ -179,7 +196,7 @@ bool PrefProvider::SetWebsiteSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
-    std::unique_ptr<base::Value>&& in_value,
+    base::Value&& in_value,
     const ContentSettingConstraints& constraints) {
   DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
@@ -205,12 +222,13 @@ bool PrefProvider::SetWebsiteSetting(
   // existing Allow Always setting.
   if (constraints.session_model == SessionModel::OneTime) {
     DCHECK_EQ(content_type, ContentSettingsType::GEOLOCATION);
-    in_value = nullptr;
+    in_value = base::Value();
   }
 
-  return GetPref(content_type)
+  GetPref(content_type)
       ->SetWebsiteSetting(primary_pattern, secondary_pattern, modified_time,
                           std::move(in_value), constraints);
+  return true;
 }
 
 base::Time PrefProvider::GetWebsiteSettingLastModified(
@@ -270,18 +288,23 @@ void PrefProvider::DiscardOrMigrateObsoletePreferences() {
     return;
 
   prefs_->ClearPref(kObsoleteDomainToOriginMigrationStatus);
+  prefs_->ClearPref(kObsoleteWebIdActiveSessionPref);
+  prefs_->ClearPref(kObsoleteWebIdRequestPref);
+  prefs_->ClearPref(kObsoleteWebIdSharePref);
 
   // These prefs were never stored on iOS/Android so they don't need to be
   // deleted.
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   prefs_->ClearPref(kObsoleteFullscreenExceptionsPref);
-#if !defined(OS_ANDROID)
+  prefs_->ClearPref(kObsoleteNfcExceptionsPref);
+#if !BUILDFLAG(IS_ANDROID)
   prefs_->ClearPref(kObsoleteMouseLockExceptionsPref);
   prefs_->ClearPref(kObsoletePluginsExceptionsPref);
   prefs_->ClearPref(kObsoletePluginsDataExceptionsPref);
   prefs_->ClearPref(kObsoleteFileHandlingExceptionsPref);
-#endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_IOS)
+  prefs_->ClearPref(kObsoleteFontAccessExceptionsPref);
+#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_IOS)
 }
 
 void PrefProvider::SetClockForTesting(base::Clock* clock) {

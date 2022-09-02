@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
@@ -40,7 +39,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
   if (!cull_rect.Intersects(visual_rect))
     return;
 
-  const auto& client = DisplayItemClientForCorner();
+  const auto& client = GetScrollableArea().GetScrollCornerDisplayItemClient();
   if (const auto* resizer = GetScrollableArea().Resizer()) {
     CustomScrollbarTheme::PaintIntoRect(*resizer, context,
                                         PhysicalRect(visual_rect));
@@ -83,8 +82,8 @@ void ScrollableAreaPainter::RecordResizerScrollHitTestData(
   gfx::Rect touch_rect = scrollable_area_->ResizerCornerRect(kResizerForTouch);
   touch_rect.Offset(ToRoundedVector2d(paint_offset));
   context.GetPaintController().RecordScrollHitTestData(
-      DisplayItemClientForCorner(), DisplayItem::kResizerScrollHitTest, nullptr,
-      touch_rect);
+      GetScrollableArea().GetScrollCornerDisplayItemClient(),
+      DisplayItem::kResizerScrollHitTest, nullptr, touch_rect);
 }
 
 void ScrollableAreaPainter::DrawPlatformResizerImage(
@@ -119,8 +118,8 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
                   resizer_corner_rect.height() * 3 / 4);
   points[3].set_y(points[1].y());
 
-  PaintFlags paint_flags;
-  paint_flags.setStyle(PaintFlags::kStroke_Style);
+  cc::PaintFlags paint_flags;
+  paint_flags.setStyle(cc::PaintFlags::kStroke_Style);
   paint_flags.setStrokeWidth(std::ceil(paint_scale));
 
   SkPathBuilder line_path;
@@ -158,11 +157,21 @@ void ScrollableAreaPainter::PaintOverflowControls(
       box.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  // Overlay overflow controls are painted in the dedicated paint phase, and
-  // normal overflow controls are painted in the background paint phase.
+  // Overflow controls are painted in the following paint phases:
+  // - Overlay overflow controls of self-painting layers or reordered overlay
+  //   overflow controls are painted in PaintPhase::kOverlayOverflowControls,
+  //   called from PaintLayerPainter::PaintChildren().
+  // - Non-reordered overlay overflow controls of non-self-painting-layer
+  //   scrollers are painted in PaintPhase::kForeground.
+  // - Non-overlay overflow controls are painted in PaintPhase::kBackground.
   if (GetScrollableArea().ShouldOverflowControlsPaintAsOverlay()) {
-    if (paint_info.phase != PaintPhase::kOverlayOverflowControls)
+    if (box.HasSelfPaintingLayer() ||
+        box.Layer()->NeedsReorderOverlayOverflowControls()) {
+      if (paint_info.phase != PaintPhase::kOverlayOverflowControls)
+        return;
+    } else if (paint_info.phase != PaintPhase::kForeground) {
       return;
+    }
   } else if (!ShouldPaintSelfBlockBackground(paint_info.phase)) {
     return;
   }
@@ -181,8 +190,7 @@ void ScrollableAreaPainter::PaintOverflowControls(
     clip = properties->OverflowControlsClip();
 
   const TransformPaintPropertyNodeOrAlias* transform = nullptr;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      box.IsGlobalRootScroller()) {
+  if (box.IsGlobalRootScroller()) {
     LocalFrameView* frame_view = box.GetFrameView();
     DCHECK(frame_view);
     const auto* page = frame_view->GetPage();
@@ -207,31 +215,34 @@ void ScrollableAreaPainter::PaintOverflowControls(
                                           box, DisplayItem::kOverflowControls);
   }
 
-  if (GetScrollableArea().HorizontalScrollbar() &&
-      !GetScrollableArea().GraphicsLayerForHorizontalScrollbar()) {
+  if (GetScrollableArea().HorizontalScrollbar()) {
     PaintScrollbar(context, *GetScrollableArea().HorizontalScrollbar(),
                    paint_offset, paint_info.GetCullRect());
   }
-  if (GetScrollableArea().VerticalScrollbar() &&
-      !GetScrollableArea().GraphicsLayerForVerticalScrollbar()) {
+  if (GetScrollableArea().VerticalScrollbar()) {
     PaintScrollbar(context, *GetScrollableArea().VerticalScrollbar(),
                    paint_offset, paint_info.GetCullRect());
   }
 
-  if (!GetScrollableArea().GraphicsLayerForScrollCorner()) {
-    // We fill our scroll corner with white if we have a scrollbar that doesn't
-    // run all the way up to the edge of the box.
-    PaintScrollCorner(context, paint_offset, paint_info.GetCullRect());
+  // We fill our scroll corner with white if we have a scrollbar that doesn't
+  // run all the way up to the edge of the box.
+  PaintScrollCorner(context, paint_offset, paint_info.GetCullRect());
 
-    // Paint our resizer last, since it sits on top of the scroll corner.
-    PaintResizer(context, paint_offset, paint_info.GetCullRect());
-  }
+  // Paint our resizer last, since it sits on top of the scroll corner.
+  PaintResizer(context, paint_offset, paint_info.GetCullRect());
 }
 
 void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
                                            Scrollbar& scrollbar,
                                            const gfx::Vector2d& paint_offset,
                                            const CullRect& cull_rect) {
+  // Don't paint overlay scrollbars when printing otherwise all scrollbars will
+  // be visible and cover contents.
+  if (scrollbar.IsOverlayScrollbar() &&
+      GetScrollableArea().GetLayoutBox()->GetDocument().Printing()) {
+    return;
+  }
+
   // TODO(crbug.com/1020913): We should not round paint_offset but should
   // consider subpixel accumulation when painting scrollbars.
   gfx::Rect visual_rect = scrollbar.FrameRect();
@@ -253,29 +264,41 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
                              type);
   }
 
-  if (scrollbar.IsCustomScrollbar()) {
+  if (scrollbar.IsCustomScrollbar())
     scrollbar.Paint(context, paint_offset);
+  else
+    PaintNativeScrollbar(context, scrollbar, visual_rect);
 
-    // Prevent composited scroll hit test on the custom scrollbar which always
-    // need main thread scrolling.
+  // cc::ScrollbarController can only handle interactions with composited native
+  // scrollbars. For any other scrollbar, prevent the composited-scroll hit test
+  // from succeeding, and send touch events to the main thread for thumb drags.
+  if (!GetScrollableArea().ShouldDirectlyCompositeScrollbar(scrollbar)) {
     context.GetPaintController().RecordScrollHitTestData(
-        scrollbar, DisplayItem::kCustomScrollbarHitTest, nullptr, visual_rect);
-    return;
+        scrollbar, DisplayItem::kScrollbarHitTest, nullptr, visual_rect);
   }
+}
 
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    scrollbar.Paint(context, paint_offset);
-    return;
-  }
+void ScrollableAreaPainter::PaintNativeScrollbar(GraphicsContext& context,
+                                                 Scrollbar& scrollbar,
+                                                 gfx::Rect visual_rect) {
+  auto type = scrollbar.Orientation() == kHorizontalScrollbar
+                  ? DisplayItem::kScrollbarHorizontal
+                  : DisplayItem::kScrollbarVertical;
 
   if (context.GetPaintController().UseCachedItemIfPossible(scrollbar, type))
     return;
 
+  const auto* properties =
+      GetScrollableArea().GetLayoutBox()->FirstFragment().PaintProperties();
+  DCHECK(properties);
+
   const TransformPaintPropertyNode* scroll_translation = nullptr;
   if (scrollable_area_->ShouldDirectlyCompositeScrollbar(scrollbar))
     scroll_translation = properties->ScrollTranslation();
+
   auto delegate = base::MakeRefCounted<ScrollbarLayerDelegate>(
       scrollbar, context.DeviceScaleFactor());
+
   ScrollbarDisplayItem::Record(context, scrollbar, type, delegate, visual_rect,
                                scroll_translation, scrollbar.GetElementId());
 }
@@ -309,7 +332,7 @@ void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
     NOTREACHED();
   }
 
-  const auto& client = DisplayItemClientForCorner();
+  const auto& client = GetScrollableArea().GetScrollCornerDisplayItemClient();
   theme->PaintScrollCorner(context, GetScrollableArea().VerticalScrollbar(),
                            client, visual_rect,
                            GetScrollableArea().UsedColorScheme());
@@ -317,14 +340,6 @@ void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
 
 PaintLayerScrollableArea& ScrollableAreaPainter::GetScrollableArea() const {
   return *scrollable_area_;
-}
-
-const DisplayItemClient& ScrollableAreaPainter::DisplayItemClientForCorner()
-    const {
-  if (const auto* graphics_layer =
-          GetScrollableArea().GraphicsLayerForScrollCorner())
-    return *graphics_layer;
-  return GetScrollableArea().GetScrollCornerDisplayItemClient();
 }
 
 }  // namespace blink

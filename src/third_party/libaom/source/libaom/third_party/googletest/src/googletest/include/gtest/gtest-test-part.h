@@ -29,8 +29,8 @@
 //
 // GOOGLETEST_CM0001 DO NOT DELETE
 
-#ifndef GTEST_INCLUDE_GTEST_GTEST_TEST_PART_H_
-#define GTEST_INCLUDE_GTEST_GTEST_TEST_PART_H_
+#ifndef GOOGLETEST_INCLUDE_GTEST_GTEST_TEST_PART_H_
+#define GOOGLETEST_INCLUDE_GTEST_GTEST_TEST_PART_H_
 
 #include <iosfwd>
 #include <vector>
@@ -60,10 +60,12 @@ class GTEST_API_ TestPartResult {
   // C'tor.  TestPartResult does NOT have a default constructor.
   // Always use this constructor (with parameters) to create a
   // TestPartResult object.
-  TestPartResult(Type a_type, const char *a_file_name, int a_line_number,
-                 const char *a_message)
-      : type_(a_type), file_name_(a_file_name == nullptr ? "" : a_file_name),
-        line_number_(a_line_number), summary_(ExtractSummary(a_message)),
+  TestPartResult(Type a_type, const char* a_file_name, int a_line_number,
+                 const char* a_message)
+      : type_(a_type),
+        file_name_(a_file_name == nullptr ? "" : a_file_name),
+        line_number_(a_line_number),
+        summary_(ExtractSummary(a_message)),
         message_(a_message) {}
 
   // Gets the outcome of the test part.
@@ -71,7 +73,7 @@ class GTEST_API_ TestPartResult {
 
   // Gets the name of the source file where the test part took place, or
   // NULL if it's unknown.
-  const char *file_name() const {
+  const char* file_name() const {
     return file_name_.empty() ? nullptr : file_name_.c_str();
   }
 
@@ -80,10 +82,10 @@ class GTEST_API_ TestPartResult {
   int line_number() const { return line_number_; }
 
   // Gets the summary of the failure message.
-  const char *summary() const { return summary_.c_str(); }
+  const char* summary() const { return summary_.c_str(); }
 
   // Gets the message associated with the test part.
-  const char *message() const { return message_.c_str(); }
+  const char* message() const { return message_.c_str(); }
 
   // Returns true if and only if the test part was skipped.
   bool skipped() const { return type_ == kSkip; }
@@ -105,7 +107,7 @@ class GTEST_API_ TestPartResult {
 
   // Gets the summary of the failure message by omitting the stack
   // trace in it.
-  static std::string ExtractSummary(const char *message);
+  static std::string ExtractSummary(const char* message);
 
   // The name of the source file where the test part took place, or
   // "" if the source file is unknown.
@@ -118,7 +120,7 @@ class GTEST_API_ TestPartResult {
 };
 
 // Prints a TestPartResult object.
-std::ostream &operator<<(std::ostream &os, const TestPartResult &result);
+std::ostream& operator<<(std::ostream& os, const TestPartResult& result);
 
 // An array of TestPartResult objects.
 //
@@ -129,10 +131,10 @@ class GTEST_API_ TestPartResultArray {
   TestPartResultArray() {}
 
   // Appends the given TestPartResult to the array.
-  void Append(const TestPartResult &result);
+  void Append(const TestPartResult& result);
 
   // Returns the TestPartResult at the given index (0-based).
-  const TestPartResult &GetTestPartResult(int index) const;
+  const TestPartResult& GetTestPartResult(int index) const;
 
   // Returns the number of TestPartResult objects in the array.
   int size() const;
@@ -148,7 +150,7 @@ class GTEST_API_ TestPartResultReporterInterface {
  public:
   virtual ~TestPartResultReporterInterface() {}
 
-  virtual void ReportTestPartResult(const TestPartResult &result) = 0;
+  virtual void ReportTestPartResult(const TestPartResult& result) = 0;
 };
 
 namespace internal {
@@ -164,12 +166,11 @@ class GTEST_API_ HasNewFatalFailureHelper
  public:
   HasNewFatalFailureHelper();
   ~HasNewFatalFailureHelper() override;
-  void ReportTestPartResult(const TestPartResult &result) override;
+  void ReportTestPartResult(const TestPartResult& result) override;
   bool has_new_fatal_failure() const { return has_new_fatal_failure_; }
-
  private:
   bool has_new_fatal_failure_;
-  TestPartResultReporterInterface *original_reporter_;
+  TestPartResultReporterInterface* original_reporter_;
 
   GTEST_DISALLOW_COPY_AND_ASSIGN_(HasNewFatalFailureHelper);
 };
@@ -180,4 +181,4 @@ class GTEST_API_ HasNewFatalFailureHelper
 
 GTEST_DISABLE_MSC_WARNINGS_POP_()  //  4251
 
-#endif  // GTEST_INCLUDE_GTEST_GTEST_TEST_PART_H_
+#endif  // GOOGLETEST_INCLUDE_GTEST_GTEST_TEST_PART_H_

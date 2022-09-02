@@ -53,9 +53,17 @@ extra_ldflags = [  \n\
   "-Wl,/usr/local/lib"  \n\
 ] ' > /tmp/skia/skia/out/Static/args.gn
 
+# TODO(nicolettep) Delete this manual removal of a broken symlink that comes with the Perfetto
+# checkout once the issue is addressed within the Perfetto respository itself.
+RUN rm -f /tmp/skia/skia/third_party/externals/perfetto/ui/src/gen
 # Build Skia.
 RUN cd /tmp/skia/skia \
   && ./bin/gn gen out/Static \
   && git rev-parse HEAD > VERSION \
   && /tmp/depot_tools/ninja -C out/Static \
-  && chown -R skia:skia .
+  && chown -R skia:skia . \
+  # obj is readable only by the skia user. It needs additional
+  # permissions to be accessible for CI (see https://review.skia.org/487217).
+  && chmod 755 -R out/Static/obj \
+  # Cleanup .git directories because they are not needed and take up space.
+  && find . -name .git -print0 | xargs -0 rm -rf

@@ -23,12 +23,13 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorBase;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorFieldValidator;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorValueIconGenerator;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorModel;
-import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.components.autofill.prefeditor.EditorFieldModel;
+import org.chromium.components.autofill.prefeditor.EditorFieldModel.DropdownKeyValue;
+import org.chromium.components.autofill.prefeditor.EditorFieldModel.EditorFieldValidator;
+import org.chromium.components.autofill.prefeditor.EditorFieldModel.EditorValueIconGenerator;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.payments.BasicCardUtils;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentFeatureList;
@@ -651,8 +652,8 @@ public class CardEditor
                 builder.append(editMessage);
                 int endIndex = builder.length();
 
-                Object foregroundSpanner = new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                        mContext.getResources(), R.color.default_text_color_link));
+                Object foregroundSpanner = new ForegroundColorSpan(
+                        SemanticColorUtils.getDefaultTextColorLink(mContext));
                 builder.setSpan(foregroundSpanner, startIndex, endIndex, 0);
 
                 // The text size in the dropdown is 14dp.

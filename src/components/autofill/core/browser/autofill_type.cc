@@ -37,9 +37,13 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
       return FieldTypeGroup::kEmail;
 
     case PHONE_HOME_NUMBER:
+    case PHONE_HOME_NUMBER_PREFIX:
+    case PHONE_HOME_NUMBER_SUFFIX:
     case PHONE_HOME_CITY_CODE:
+    case PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX:
     case PHONE_HOME_COUNTRY_CODE:
     case PHONE_HOME_CITY_AND_NUMBER:
+    case PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX:
     case PHONE_HOME_WHOLE_NUMBER:
     case PHONE_HOME_EXTENSION:
       return FieldTypeGroup::kPhoneHome;
@@ -139,6 +143,11 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
 
     case USERNAME:
       return FieldTypeGroup::kUsernameField;
+
+    case BIRTHDATE_DAY:
+    case BIRTHDATE_MONTH:
+    case BIRTHDATE_YEAR_4_DIGITS:
+      return FieldTypeGroup::kBirthdateField;
 
     case PRICE:
     case SEARCH_TERM:

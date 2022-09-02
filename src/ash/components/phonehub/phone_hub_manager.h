@@ -5,6 +5,10 @@
 #ifndef ASH_COMPONENTS_PHONEHUB_PHONE_HUB_MANAGER_H_
 #define ASH_COMPONENTS_PHONEHUB_PHONE_HUB_MANAGER_H_
 
+#include "base/callback.h"
+#include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 namespace ash {
 namespace phonehub {
 
@@ -14,7 +18,7 @@ class ConnectionScheduler;
 class DoNotDisturbController;
 class FeatureStatusProvider;
 class FindMyDeviceController;
-class NotificationAccessManager;
+class MultideviceFeatureAccessManager;
 class NotificationInteractionHandler;
 class NotificationManager;
 class OnboardingUiTracker;
@@ -40,7 +44,8 @@ class PhoneHubManager {
   virtual DoNotDisturbController* GetDoNotDisturbController() = 0;
   virtual FeatureStatusProvider* GetFeatureStatusProvider() = 0;
   virtual FindMyDeviceController* GetFindMyDeviceController() = 0;
-  virtual NotificationAccessManager* GetNotificationAccessManager() = 0;
+  virtual MultideviceFeatureAccessManager*
+  GetMultideviceFeatureAccessManager() = 0;
   virtual NotificationInteractionHandler*
   GetNotificationInteractionHandler() = 0;
   virtual NotificationManager* GetNotificationManager() = 0;
@@ -50,6 +55,11 @@ class PhoneHubManager {
   virtual ScreenLockManager* GetScreenLockManager() = 0;
   virtual TetherController* GetTetherController() = 0;
   virtual UserActionRecorder* GetUserActionRecorder() = 0;
+
+  // Retrieves the timestamp of the last successful discovery for active host,
+  // or nullopt if it hasn't been seen in the current Chrome session.
+  virtual void GetHostLastSeenTimestamp(
+      base::OnceCallback<void(absl::optional<base::Time>)> callback) = 0;
 
  protected:
   PhoneHubManager() = default;

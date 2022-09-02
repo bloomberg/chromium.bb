@@ -111,9 +111,15 @@ bool WebClient::RestoreSessionFromCache(web::WebState* web_state) const {
 
 void WebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {}
 
-UserAgentType WebClient::GetDefaultUserAgent(id<UITraitEnvironment> web_view,
-                                             const GURL& url) {
+void WebClient::WillDisplayMediaCapturePermissionPrompt(
+    web::WebState* web_state) const {}
+
+UserAgentType WebClient::GetDefaultUserAgent(web::WebState* web_state,
+                                             const GURL& url) const {
   return UserAgentType::MOBILE;
 }
+
+void WebClient::LogDefaultUserAgent(web::WebState* web_state,
+                                    const GURL& url) const {}
 
 }  // namespace web

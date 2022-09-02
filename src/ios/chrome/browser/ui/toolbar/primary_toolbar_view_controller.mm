@@ -7,6 +7,8 @@
 #import <MaterialComponents/MaterialProgressView.h>
 
 #include "base/check.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
@@ -21,6 +23,7 @@
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -64,9 +67,11 @@
   _panGestureHandler = panGestureHandler;
   [self.view removeGestureRecognizer:self.panGestureRecognizer];
 
-  UIPanGestureRecognizer* panGestureRecognizer = [[UIPanGestureRecognizer alloc]
-      initWithTarget:panGestureHandler
-              action:@selector(handlePanGesture:)];
+  UIPanGestureRecognizer* panGestureRecognizer =
+      [[ViewRevealingPanGestureRecognizer alloc]
+          initWithTarget:panGestureHandler
+                  action:@selector(handlePanGesture:)
+                 trigger:ViewRevealTrigger::PrimaryToolbar];
   panGestureRecognizer.delegate = panGestureHandler;
   panGestureRecognizer.maximumNumberOfTouches = 1;
   [self.view addGestureRecognizer:panGestureRecognizer];
@@ -91,9 +96,6 @@
 - (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
   self.view.topCornersRounded =
       (nextViewRevealState != ViewRevealState::Hidden);
-}
-
-- (void)didAnimateViewReveal:(ViewRevealState)viewRevealState {
 }
 
 #pragma mark - AdaptiveToolbarViewController
@@ -171,6 +173,12 @@
   [self.view.collapsedToolbarButton addTarget:self
                                        action:@selector(exitFullscreen)
                              forControlEvents:UIControlEventTouchUpInside];
+  UIHoverGestureRecognizer* hoverGestureRecognizer =
+      [[UIHoverGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(exitFullscreen)];
+  [self.view.collapsedToolbarButton
+      addGestureRecognizer:hoverGestureRecognizer];
 }
 
 - (void)viewDidLoad {
@@ -240,12 +248,22 @@
       self.view.locationBarHeight.constant / 2;
   self.view.locationBarBottomConstraint.constant =
       [self verticalMarginForLocationBarForFullscreenProgress:progress];
-  self.view.locationBarContainer.backgroundColor =
-      [self.buttonFactory.toolbarConfiguration
-          locationBarBackgroundColorWithVisibility:alphaValue];
   self.previousFullscreenProgress = progress;
 
   self.view.collapsedToolbarButton.hidden = progress > 0.05;
+
+  // When this method is called when the toolbar is expanded, prevent the
+  // color from changing, if necessary.
+  BOOL isToolbarExpanded = self.view.expandedConstraints.firstObject.active;
+  if ([self isUpdatedPopupTreatment2Enabled] && isToolbarExpanded) {
+    self.view.locationBarContainer.backgroundColor =
+        self.buttonFactory.toolbarConfiguration
+            .focusedLocationBarBackgroundColor;
+  } else {
+    self.view.locationBarContainer.backgroundColor =
+        [self.buttonFactory.toolbarConfiguration
+            locationBarBackgroundColorWithVisibility:alphaValue];
+  }
 }
 
 - (void)updateForFullscreenEnabled:(BOOL)enabled {
@@ -270,6 +288,14 @@
   [self deactivateViewLocationBarConstraints];
   [NSLayoutConstraint activateConstraints:self.view.expandedConstraints];
   [self.view layoutIfNeeded];
+
+  if ([self isUpdatedPopupTreatment2Enabled]) {
+    self.view.backgroundColor =
+        self.buttonFactory.toolbarConfiguration.focusedBackgroundColor;
+    self.view.locationBarContainer.backgroundColor =
+        self.buttonFactory.toolbarConfiguration
+            .focusedLocationBarBackgroundColor;
+  }
 }
 
 - (void)contractLocationBar {
@@ -281,6 +307,14 @@
     [NSLayoutConstraint activateConstraints:self.view.contractedConstraints];
   }
   [self.view layoutIfNeeded];
+
+  if ([self isUpdatedPopupTreatment2Enabled]) {
+    self.view.backgroundColor =
+        self.buttonFactory.toolbarConfiguration.backgroundColor;
+    self.view.locationBarContainer.backgroundColor =
+        [self.buttonFactory.toolbarConfiguration
+            locationBarBackgroundColorWithVisibility:1.0];
+  }
 }
 
 - (void)showCancelButton {
@@ -368,6 +402,16 @@
 // Exits fullscreen.
 - (void)exitFullscreen {
   [self.delegate exitFullscreen];
+}
+
+// Convenience helper for checking kIOSOmniboxUpdatedPopupUI flag being set to
+// Variation2 aka "UI treatment 2"
+- (BOOL)isUpdatedPopupTreatment2Enabled {
+  return base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI) &&
+         base::GetFieldTrialParamValueByFeature(
+             kIOSOmniboxUpdatedPopupUI,
+             kIOSOmniboxUpdatedPopupUIVariationName) ==
+             kIOSOmniboxUpdatedPopupUIVariation2;
 }
 
 @end

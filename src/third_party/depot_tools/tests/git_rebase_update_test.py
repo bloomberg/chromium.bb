@@ -219,7 +219,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
 
     self.repo.git('checkout', 'origin/main')
     _, err = self.repo.capture_stdio(self.mv.main, ['special_K', 'cool branch'])
-    self.assertIn('fatal: \'cool branch\' is not a valid branch name.', err)
+    self.assertIn('fatal: \'cool branch\' is not a valid branch name', err)
 
     self.repo.run(self.mv.main, ['special_K', 'cool_branch'])
     branches = self.repo.run(set, self.gc.branches())

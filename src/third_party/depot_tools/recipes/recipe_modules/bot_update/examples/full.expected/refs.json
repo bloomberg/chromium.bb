@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
@@ -17,8 +17,7 @@
       "--revision",
       "src@HEAD",
       "--refs",
-      "+refs/change/1/2/333",
-      "--disable-syntax-validation"
+      "+refs/change/1/2/333"
     ],
     "env": {
       "DEPOT_TOOLS_COLLECT_METRICS": "0",
@@ -114,7 +113,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",

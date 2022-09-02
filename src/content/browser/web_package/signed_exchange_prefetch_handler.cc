@@ -86,7 +86,8 @@ void SignedExchangePrefetchHandler::OnReceiveEarlyHints(
 }
 
 void SignedExchangePrefetchHandler::OnReceiveResponse(
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadPtr head,
+    mojo::ScopedDataPipeConsumerHandle body) {
   NOTREACHED();
 }
 
@@ -110,11 +111,6 @@ void SignedExchangePrefetchHandler::OnReceiveCachedMetadata(
 
 void SignedExchangePrefetchHandler::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {
-  NOTREACHED();
-}
-
-void SignedExchangePrefetchHandler::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
   NOTREACHED();
 }
 

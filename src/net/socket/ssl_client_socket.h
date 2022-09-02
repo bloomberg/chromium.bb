@@ -66,8 +66,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
     stapled_ocsp_response_received_ = stapled_ocsp_response_received;
   }
 
-  // Serialize |next_protos| in the wire format for ALPN and NPN: protocols are
-  // listed in order, each prefixed by a one-byte length.
+  // Serialize |next_protos| in the wire format for ALPN: protocols are listed
+  // in order, each prefixed by a one-byte length.
   static std::vector<uint8_t> SerializeNextProtos(
       const NextProtoVector& next_protos);
 
@@ -80,9 +80,9 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
                            ConnectSignedCertTimestampsEnablesOCSP);
 
   // True if SCTs were received via a TLS extension.
-  bool signed_cert_timestamps_received_;
+  bool signed_cert_timestamps_received_ = false;
   // True if a stapled OCSP response was received.
-  bool stapled_ocsp_response_received_;
+  bool stapled_ocsp_response_received_ = false;
 };
 
 // Shared state and configuration across multiple SSLClientSockets.

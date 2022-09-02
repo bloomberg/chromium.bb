@@ -113,7 +113,7 @@ TEST_F(LayoutShiftTrackerTest, IgnoreAfterChangeEvent) {
   )HTML");
   auto* select = To<HTMLSelectElement>(GetDocument().getElementById("sel"));
   DCHECK(select);
-  select->focus();
+  select->Focus();
   select->SelectOptionByPopup(1);
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
@@ -322,8 +322,7 @@ void LayoutShiftTrackerNavigationTest::RunTest(bool is_browser_initiated) {
       ClientRedirectPolicy::kNotClientRedirect,
       false /* has_transient_user_activation */, nullptr /* initiator_origin */,
       false /* is_synchronously_committed */,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, is_browser_initiated,
-      nullptr);
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, is_browser_initiated);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();

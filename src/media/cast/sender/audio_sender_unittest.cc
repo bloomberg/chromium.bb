@@ -26,8 +26,7 @@
 #include "media/cast/test/utility/audio_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
-namespace cast {
+namespace media::cast {
 
 namespace {
 
@@ -157,12 +156,11 @@ TEST_F(AudioSenderTest, RtcpTimer) {
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
-      base::Milliseconds(1 + kRtcpReportIntervalMs * 3 / 2);
+      base::Milliseconds(1) + kRtcpReportInterval * 3 / 2;
   testing_clock_.Advance(max_rtcp_timeout);
   task_runner_->RunTasks();
   EXPECT_LE(1, transport_->number_of_rtp_packets());
   EXPECT_LE(1, transport_->number_of_rtcp_packets());
 }
 
-}  // namespace cast
-}  // namespace media
+}  // namespace media::cast

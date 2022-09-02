@@ -121,14 +121,14 @@ export interface KeyEventUnhandledEvent {
 }
 
 export interface RevealSourceLineEvent {
-  url: string;
+  url: Platform.DevToolsPath.UrlString;
   lineNumber: number;
   columnNumber: number;
 }
 
 export interface SavedURLEvent {
-  url: string;
-  fileSystemPath: string;
+  url: Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString;
+  fileSystemPath: Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString;
 }
 
 export interface SearchCompletedEvent {
@@ -142,8 +142,8 @@ export interface SearchCompletedEvent {
 // Please note that the "dispatch" side can't be type-checked as the dispatch is
 // done dynamically.
 export type EventTypes = {
-  [Events.AppendedToURL]: string,
-  [Events.CanceledSaveURL]: string,
+  [Events.AppendedToURL]: Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString,
+  [Events.CanceledSaveURL]: Platform.DevToolsPath.UrlString,
   [Events.ContextMenuCleared]: void,
   [Events.ContextMenuItemSelected]: number,
   [Events.DeviceCountUpdated]: number,
@@ -177,7 +177,7 @@ export interface InspectorFrontendHostAPI {
 
   loadCompleted(): void;
 
-  indexPath(requestId: number, fileSystemPath: string, excludedFolders: string): void;
+  indexPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, excludedFolders: string): void;
 
   /**
    * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
@@ -197,21 +197,21 @@ export interface InspectorFrontendHostAPI {
 
   inspectElementCompleted(): void;
 
-  openInNewTab(url: string): void;
+  openInNewTab(url: Platform.DevToolsPath.UrlString): void;
 
-  showItemInFolder(fileSystemPath: string): void;
+  showItemInFolder(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
 
-  removeFileSystem(fileSystemPath: string): void;
+  removeFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
 
   requestFileSystems(): void;
 
-  save(url: string, content: string, forceSaveAs: boolean): void;
+  save(url: Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean): void;
 
-  append(url: string, content: string): void;
+  append(url: Platform.DevToolsPath.UrlString, content: string): void;
 
-  close(url: string): void;
+  close(url: Platform.DevToolsPath.UrlString): void;
 
-  searchInPath(requestId: number, fileSystemPath: string, query: string): void;
+  searchInPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, query: string): void;
 
   stopIndexing(requestId: number): void;
 
@@ -221,7 +221,7 @@ export interface InspectorFrontendHostAPI {
 
   copyText(text: string|null|undefined): void;
 
-  inspectedURLChanged(url: string): void;
+  inspectedURLChanged(url: Platform.DevToolsPath.UrlString): void;
 
   isolatedFileSystem(fileSystemId: string, registeredName: string): FileSystem|null;
 
@@ -233,6 +233,8 @@ export interface InspectorFrontendHostAPI {
   getPreferences(callback: (arg0: {
                    [x: string]: string,
                  }) => void): void;
+
+  getPreference(name: string, callback: (arg0: string) => void): void;
 
   setPreference(name: string, value: string): void;
 
@@ -357,7 +359,6 @@ export enum EnumeratedHistogram {
   IssuesPanelOpenedFrom = 'DevTools.IssuesPanelOpenedFrom',
   IssuesPanelResourceOpened = 'DevTools.IssuesPanelResourceOpened',
   KeybindSetSettingChanged = 'DevTools.KeybindSetSettingChanged',
-  DualScreenDeviceEmulated = 'DevTools.DualScreenDeviceEmulated',
   ExperimentEnabledAtLaunch = 'DevTools.ExperimentEnabledAtLaunch',
   ExperimentEnabled = 'DevTools.ExperimentEnabled',
   ExperimentDisabled = 'DevTools.ExperimentDisabled',
@@ -371,6 +372,8 @@ export enum EnumeratedHistogram {
   RecordingEdited = 'DevTools.RecordingEdited',
   RecordingExported = 'DevTools.RecordingExported',
   RecordingReplayFinished = 'DevTools.RecordingReplayFinished',
+  RecordingReplaySpeed = 'DevTools.RecordingReplaySpeed',
   RecordingReplayStarted = 'DevTools.RecordingReplayStarted',
   RecordingToggled = 'DevTools.RecordingToggled',
+  StyleTextCopied = 'DevTools.StyleTextCopied',
 }

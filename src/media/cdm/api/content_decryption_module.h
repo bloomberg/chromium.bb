@@ -479,12 +479,13 @@ class CDM_CLASS_API DecryptedBlock {
   virtual ~DecryptedBlock() {}
 };
 
-enum VideoPlane : uint32_t {
-  kYPlane = 0,
-  kUPlane = 1,
-  kVPlane = 2,
-  kMaxPlanes = 3,
-};
+// This intentionally avoids using an enum, since it will be used to do math
+// with other enums, which is deprecated in C++20.
+using VideoPlane = uint32_t;
+constexpr VideoPlane kYPlane = 0;
+constexpr VideoPlane kUPlane = 1;
+constexpr VideoPlane kVPlane = 2;
+constexpr VideoPlane kMaxPlanes = 3;
 CHECK_TYPE(VideoPlane, 4, 4);
 
 class CDM_CLASS_API VideoFrame {

@@ -59,19 +59,34 @@
   },
   "file_handlers": {
     "mount-archive": {
+      // NOTE: when adding new formats to the extension list below, don't
+      // forget to also update web_applications/file_manager_web_app_info.cc.
       "extensions": [
         "7z",
+        "bz",
         "bz2",
         "crx",
         "gz",
         "iso",
+        "lz",
+        "lzma",
         "rar",
         "tar",
+        "taz",
+        "tb2",
         "tbz",
         "tbz2",
         "tgz",
+        "tlz",
+        "tlzma",
+        "txz",
+        "tz",
+        "tz2",
+        "tzst",
         "xz",
-        "zip"
+        "z",
+        "zip",
+        "zst"
       ]
     },
     "view-pdf": {
@@ -123,6 +138,24 @@
         "gslides"
       ]
     },
+    "open-web-drive-office-word": {
+      "extensions": [
+        "doc",
+        "docx"
+      ]
+    },
+    "open-web-drive-office-excel": {
+      "extensions": [
+        "xls",
+        "xlsx"
+      ]
+    },
+    "open-web-drive-office-powerpoint": {
+      "extensions": [
+        "ppt",
+        "pptx"
+      ]
+    },
     "install-linux-package": {
       "extensions": [
         "deb"
@@ -151,6 +184,7 @@
     "common/js/dialog_type.js",
     "common/js/file_operation_common.js",
     "common/js/file_type.js",
+    "common/js/file_types_data.js",
     "common/js/files_app_entry_types.js",
     "common/js/files_app_state.js",
     "common/js/filtered_volume_manager.js",

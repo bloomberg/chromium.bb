@@ -492,7 +492,7 @@
 <translation id="4221012616705981690">Nav iepriekšējā saraksta.</translation>
 <translation id="4225355998815256469">Veidlapas vadīklas</translation>
 <translation id="4230834257931120629">Gaiši zilganpelēka</translation>
-<translation id="4231102694147661229">Iespējot izstrādātājiem paredzētās opcijas</translation>
+<translation id="4231102694147661229">Iespējot izstrādātāju opcijas</translation>
 <translation id="423428485095722850">Lai ieslēgtu vai izslēgtu opciju, vienlaicīgi nospiediet meklēšanas un atstarpes taustiņu.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, <ph name="GRADE" />. pakāpe</translation>
 <translation id="4246217262268234757">Tēraudzila</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">tab. <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Tiek ignorēta nākamā taustiņa nospiešana</translation>
 <translation id="4623097797855662355">Izdošanas ziņas</translation>
+<translation id="4624970070706497034">Funkcija TalkBack vairs neatbalsta pielāgošanu Chromebook datoriem. Jūs joprojām varat to izmantot, taču ir pieejami tikai TalkBack noklusējuma īsinājumtaustiņi. Nospiediet taustiņu kombināciju Search+A un pēc tam — taustiņu K, lai skatītu pieejamos īsinājumtaustiņus. Ja joprojām vēlaties izmantot funkciju TalkBack, vēlreiz nospiediet šo taustiņu kombināciju.</translation>
 <translation id="463135993322337640">Nospiediet ChromeVox “o”, “n”, lai uzzinātu par jaunajām funkcijām.</translation>
 <translation id="4649220074413114917">Pieskaroties ekrānam ar diviem pirkstiem, tiek apturēta runas izvade. Šis žests var būt noderīgs, ja nevēlaties, lai ChromeVox atskaņotu kādu saturu. Lai turpinātu, pieskarieties ekrānam ar diviem pirkstiem.</translation>
 <translation id="4660783501463101648">Klasiskā versija ir noņemta. Tastatūras slēdzis, lai pārslēgtos atpakaļ uz ChromeVox klasisko versiju, ir noņemts.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Braila parakstu funkcija ir iespējota.</translation>
 <translation id="5183440668879371625">Iepriekšējā rindiņa Braila rakstā</translation>
 <translation id="5189244881767082992">Rindiņa</translation>
-<translation id="5234747236692380506">rakstīt vārdu “<ph name="TEXT" />”</translation>
 <translation id="5263034204789987535">Gaiša kukurūzas</translation>
 <translation id="5263344797180442561">2. līmeņa virsraksts</translation>
 <translation id="528468243742722775">Beigas</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Ātrā iepazīšanās pabeigta!</translation>
 <translation id="5534303576632885660">Galvene</translation>
 <translation id="5539820223028224601">Gaiši pelēka</translation>
+<translation id="554893713779400387">Pārslēgt diktēšanas režīmu</translation>
 <translation id="5549179427201066174">Ieslēgt vai izslēgt skaņas signālus (audio ikonas)</translation>
 <translation id="556042886152191864">Poga</translation>
 <translation id="5561345396546889625">Nākamais saraksts</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Žurnāls</translation>
 <translation id="5628125749885014029">4. līmeņa virsraksts</translation>
 <translation id="5632083598315326067">Grafiskais simbols</translation>
+<translation id="5648939288050772726">Apsveicam! Esat veiksmīgi apguvis ChromeVox lietošanas pamatus. Jebkurā brīdī varat atvērt ChromeVox komandu izvēlni, vienlaikus nospiežot meklēšanas taustiņu un punkta taustiņu. Papildu informāciju par ChromeVox un Chrome OS skatiet tālāk norādītajos rakstos.
+    Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizvēršanas pogu un noklikšķinātu uz tās.</translation>
 <translation id="5653397561111110475">Chromebook skārienekrāna pieejamības funkciju izmantošana</translation>
 <translation id="5655682562155942719">Pārejas komandas</translation>
 <translation id="56637627897541303">Teksta apgabals</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{kols}zero{# kolu}one{# kols}other{# koli}}</translation>
 <translation id="6444046323172968959">Brīdinājuma dialoglodziņš</translation>
 <translation id="6452403590345320472">Satura rādītājs</translation>
+<translation id="6457542714329819968">rakstīt</translation>
 <translation id="6468049171101508116">Nākamā poga</translation>
 <translation id="646954774886932461">Rādītājs</translation>
 <translation id="6475604559827479857">Krāsa vārdu izcelšanai:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">automātiski pabeigts saraksts</translation>
 <translation id="7713139339518499741">Dabiska balss</translation>
 <translation id="7714340021005120797">Nav nākamā kombinētā lodziņa.</translation>
-<translation id="772146615414628379">Apsveicam! Esat veiksmīgi apguvis ChromeVox lietošanas pamatus. Jebkurā brīdī varat atvērt ChromeVox komandu izvēlni, vienlaikus nospiežot meklēšanas taustiņu un punkta taustiņu. Papildu informāciju par ChromeVox un Chrome OS skatiet tālāk norādītajos rakstos.
-    Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizvēršanas pogu un noklikšķinātu uz tās.</translation>
 <translation id="7724603315864178912">Izgriezt</translation>
 <translation id="7731785449856576010">Nav nākamā multivides logrīka.</translation>
 <translation id="7735498529470878067">Pārlūkošana pieskaroties var palīdzēt ātri uzzināt, kāds saturs tiek rādīts ekrānā.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Tumši sarkana</translation>
 <translation id="923331726185079994">ChromeVox atjaunināts</translation>
 <translation id="93384979447910801">Tumši jūraszaļa</translation>
+<translation id="937605981140327129">Funkcija TalkBack pašlaik nav instalēta. Lūdzu, instalējiet Android Accessibility Suite, izmantojot Play veikalu, un mēģiniet vēlreiz.</translation>
 <translation id="948171205378458592">Samazināt runas ātrumu</translation>
 <translation id="957570623732056069">Lai šajā nodarbībā pārietu uz priekšu vai atpakaļ, ar pirkstu velciet pa kreisi vai pa labi</translation>
 <translation id="958854023026327378">Velciet ar vienu pirkstu uz leju</translation>

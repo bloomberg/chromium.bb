@@ -4,6 +4,8 @@
 
 #include "components/page_info/core/about_this_site_validation.h"
 
+#include "base/feature_list.h"
+#include "components/page_info/core/features.h"
 #include "components/page_info/core/proto/about_this_site_metadata.pb.h"
 #include "url/gurl.h"
 
@@ -55,6 +57,13 @@ AboutThisSiteStatus ValidateFirstSeen(const proto::SiteFirstSeen& first_seen) {
   return AboutThisSiteStatus::kValid;
 }
 
+AboutThisSiteStatus ValidateMoreAbout(const proto::MoreAbout& more_info) {
+  if (!more_info.has_url() || !GURL(more_info.url()).is_valid())
+    return AboutThisSiteStatus::kInvalidMoreAbout;
+
+  return AboutThisSiteStatus::kValid;
+}
+
 AboutThisSiteStatus ValidateSiteInfo(const proto::SiteInfo& site_info) {
   if (!site_info.has_description() && !site_info.has_first_seen())
     return AboutThisSiteStatus::kEmptySiteInfo;
@@ -62,13 +71,35 @@ AboutThisSiteStatus ValidateSiteInfo(const proto::SiteInfo& site_info) {
   AboutThisSiteStatus status = AboutThisSiteStatus::kValid;
   if (!site_info.has_description())
     return AboutThisSiteStatus::kMissingDescription;
+
   status = ValidateDescription(site_info.description());
   if (status != AboutThisSiteStatus::kValid)
     return status;
 
   if (site_info.has_first_seen())
     status = ValidateFirstSeen(site_info.first_seen());
+
+  if (status != AboutThisSiteStatus::kValid)
+    return status;
+
+  // The kPageInfoAboutThisSiteMoreInfo requires a 'MoreAbout' URL.
+  if (base::FeatureList::IsEnabled(kPageInfoAboutThisSiteMoreInfo) &&
+      !site_info.has_more_about()) {
+    return AboutThisSiteStatus::kMissingMoreAbout;
+  }
+
+  if (site_info.has_more_about())
+    status = ValidateMoreAbout(site_info.more_about());
+
   return status;
+}
+
+AboutThisSiteStatus ValidateBannerInfo(const proto::BannerInfo& banner_info) {
+  if (!banner_info.has_label())
+    return AboutThisSiteStatus::kMissingDescription;
+  if (!banner_info.has_url())
+    return AboutThisSiteStatus::kIncompleteSource;
+  return ValidateSource(banner_info.url());
 }
 
 AboutThisSiteStatus ValidateMetadata(

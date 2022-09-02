@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/system/sys_info.h"
@@ -49,7 +50,7 @@ class SiteIsolationBrowserTest : public WebLayerBrowserTest {
     auto* list =
         prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins);
     std::vector<std::string> sites;
-    for (const base::Value& value : list->GetList())
+    for (const base::Value& value : list->GetListDeprecated())
       sites.push_back(value.GetString());
     return sites;
   }
@@ -125,8 +126,9 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationBrowserTest,
 
   // foo.com should not be isolated to start with. Verify that a cross-site
   // iframe does not become an OOPIF.
-  EXPECT_FALSE(
-      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_FALSE(contents->GetPrimaryMainFrame()
+                   ->GetSiteInstance()
+                   ->RequiresDedicatedProcess());
   std::string kAppendIframe = R"(
       var i = document.createElement('iframe');
       i.id = 'child';
@@ -134,7 +136,8 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationBrowserTest,
   EXPECT_TRUE(content::ExecJs(contents, kAppendIframe));
   GURL bar_url(embedded_test_server()->GetURL("bar.com", "/simple_page.html"));
   EXPECT_TRUE(NavigateIframeToURL(contents, "child", bar_url));
-  content::RenderFrameHost* child = ChildFrameAt(contents->GetMainFrame(), 0);
+  content::RenderFrameHost* child =
+      ChildFrameAt(contents->GetPrimaryMainFrame(), 0);
   EXPECT_FALSE(child->IsCrossProcessSubframe());
 
   // Fill a form and submit through a <input type="submit"> button.
@@ -150,16 +153,17 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationBrowserTest,
   // swapped BrowsingInstances and put the result of the form submission into a
   // dedicated process, locked to foo.com.  Check that a cross-site iframe now
   // becomes an OOPIF.
-  EXPECT_TRUE(
-      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_TRUE(contents->GetPrimaryMainFrame()
+                  ->GetSiteInstance()
+                  ->RequiresDedicatedProcess());
   EXPECT_TRUE(ExecJs(contents, kAppendIframe));
   EXPECT_TRUE(NavigateIframeToURL(contents, "child", bar_url));
-  child = ChildFrameAt(contents->GetMainFrame(), 0);
+  child = ChildFrameAt(contents->GetPrimaryMainFrame(), 0);
   EXPECT_TRUE(child->IsCrossProcessSubframe());
 }
 
 // TODO(crbug.com/654704): Android does not support PRE_ tests.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SiteIsolationBrowserTest,
                        PRE_IsolatedSitesPersistAcrossRestarts) {
   // There shouldn't be any saved isolated origins to start with.
@@ -175,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationBrowserTest,
 
   NavigateAndWaitForCompletion(saved_url, shell());
   EXPECT_TRUE(GetWebContents()
-                  ->GetMainFrame()
+                  ->GetPrimaryMainFrame()
                   ->GetSiteInstance()
                   ->RequiresDedicatedProcess());
 
@@ -200,14 +204,17 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationBrowserTest,
       embedded_test_server()->GetURL("foo.com", "/simple_page3.html");
   NavigateAndWaitForCompletion(saved_url, shell());
   content::WebContents* contents = GetWebContents();
-  EXPECT_TRUE(
-      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_TRUE(contents->GetPrimaryMainFrame()
+                  ->GetSiteInstance()
+                  ->RequiresDedicatedProcess());
   NavigateAndWaitForCompletion(saved2_url, shell());
-  EXPECT_TRUE(
-      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_TRUE(contents->GetPrimaryMainFrame()
+                  ->GetSiteInstance()
+                  ->RequiresDedicatedProcess());
   NavigateAndWaitForCompletion(foo_url, shell());
-  EXPECT_FALSE(
-      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_FALSE(contents->GetPrimaryMainFrame()
+                   ->GetSiteInstance()
+                   ->RequiresDedicatedProcess());
 }
 #endif
 
