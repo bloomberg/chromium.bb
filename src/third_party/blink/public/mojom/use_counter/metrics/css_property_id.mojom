@@ -785,7 +785,7 @@ enum CSSSampleId {
 
 
     // patch section: simple-overflow-clip (feature 726)
-
+    kBbSimpleOverflowClip = 726,
 
 
     // 1. Add new features above this line (don't change the assigned numbers of

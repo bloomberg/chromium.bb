@@ -7,6 +7,7 @@
 
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -106,6 +107,27 @@ template <>
 struct DowncastTraits<DrawingDisplayItem> {
   static bool AllowFrom(const DisplayItem& i) {
     return !i.IsTombstone() && i.IsDrawing();
+  }
+};
+
+class PLATFORM_EXPORT SwitchToClipDisplayItem : public DisplayItem {
+ public:
+  SwitchToClipDisplayItem(DisplayItemClientId client_id,
+                          const ClipPaintPropertyNodeOrAlias& target_clip,
+                          const gfx::Rect& visual_rect,
+                          RasterEffectOutset outset,
+                          PaintInvalidationReason paint_invalidation_reason);
+
+  const ClipPaintPropertyNodeOrAlias& TargetClip() const { return *target_clip_.get(); }
+
+ private:
+  scoped_refptr<const ClipPaintPropertyNodeOrAlias> target_clip_;
+};
+
+template <>
+struct DowncastTraits<SwitchToClipDisplayItem> {
+  static bool AllowFrom(const DisplayItem& i) {
+    return !i.IsTombstone() && i.IsSwitchToClip();
   }
 };
 
