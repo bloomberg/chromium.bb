@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "base/values.h"
 #include "content/public/browser/webui_config.h"
 #include "content/public/common/url_constants.h"
 
@@ -26,6 +27,8 @@ class GpuInternalsUI : public WebUIController {
 
   GpuInternalsUI(const GpuInternalsUI&) = delete;
   GpuInternalsUI& operator=(const GpuInternalsUI&) = delete;
+  CONTENT_EXPORT static base::Value GetGpuMemoryBufferInfo();
+
 };
 
 }  // namespace content
