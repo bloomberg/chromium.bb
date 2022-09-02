@@ -178,6 +178,10 @@ void WebResourceRequestSender::SendSync(
     scoped_refptr<WebRequestPeer> peer,
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper) {
+  if (delegate_ && delegate_->CanHandleURL(request->url.spec())) {
+    return;
+  }
+
   CheckSchemeForReferrerPolicy(*request);
 
   DCHECK(loader_options & network::mojom::kURLLoadOptionSynchronous);
@@ -267,6 +271,24 @@ int WebResourceRequestSender::SendAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
 
+  if (delegate_ && delegate_->CanHandleURL(request->url.spec())) {
+    delegate_->Start(peer.get(), this, request.get(), request_id, loading_task_runner);
+    request_info_ = std::make_unique<PendingRequestInfo>(
+        std::move(peer), request->destination,
+        request->url, std::move(resource_load_info_notifier_wrapper));
+
+    request_info_->url_loader_client =
+        std::make_unique<MojoURLLoaderClient>(
+            this, loading_task_runner, true /* bypass_redirect_checks */,
+            request->url, back_forward_cache_loader_helper);
+
+    request_info_->request_id = request_id;
+
+    return request_id;
+  }
+
+  CheckSchemeForReferrerPolicy(*request);
+
   request_info_ = std::make_unique<PendingRequestInfo>(
       std::move(peer), request->destination, request->url,
       std::move(resource_load_info_notifier_wrapper));
@@ -307,6 +329,11 @@ int WebResourceRequestSender::SendAsync(
 
 void WebResourceRequestSender::Cancel(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+
+  if (request_info_ && delegate_ && delegate_->CanHandleURL(request_info_->url.spec())) {
+    delegate_->Cancel(request_info_->request_id);
+    return;
+  }
 
   // Cancel the request if it didn't complete, and clean it up so the bridge
   // will receive no more messages.
@@ -351,7 +378,7 @@ void WebResourceRequestSender::DeletePendingRequest(
   if (!request_info_)
     return;
 
-  if (request_info_->net_error == net::ERR_IO_PENDING) {
+  if (request_info_->net_error == net::ERR_IO_PENDING && !(delegate_ && delegate_->CanHandleURL(request_info_->url.spec()))) {
     request_info_->net_error = net::ERR_ABORTED;
     request_info_->resource_load_info_notifier_wrapper
         ->NotifyResourceLoadCanceled(request_info_->net_error);

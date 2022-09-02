@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Bloomberg Finance L.P.
+ * Copyright (C) 2018 Bloomberg Finance L.P.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,31 +20,32 @@
  * IN THE SOFTWARE.
  */
 
-#include <blpwtk2_resourcecontext.h>
+#include <blpwtk2_requestinterceptorimpl.h>
+#include <blpwtk2_resourcerequestjob.h>
+#include <blpwtk2_statics.h>
+#include <blpwtk2_stringref.h>
+#include <blpwtk2_resourceloader.h>
 
 namespace blpwtk2 {
 
-HTTPHeaderVisitor::HTTPHeaderVisitor() = default;
-HTTPHeaderVisitor::~HTTPHeaderVisitor()
-{
+RequestInterceptorImpl::RequestInterceptorImpl() {
 }
 
-HTTPBodyVisitor::HTTPBodyVisitor() = default;
-HTTPBodyVisitor::~HTTPBodyVisitor()
-{
+RequestInterceptorImpl::~RequestInterceptorImpl() {
 }
 
-URLRequest::~URLRequest()
-{
-}
+std::unique_ptr<net::URLRequestJob> RequestInterceptorImpl::MaybeInterceptRequest(
+      net::URLRequest* request) const {
 
-ResourceContext::ResourceContext() = default;
+  StringRef url = request->url().spec();
 
-ResourceContext::~ResourceContext()
-{
+  if (Statics::inProcessResourceLoader &&
+      Statics::inProcessResourceLoader->canHandleURL(url)) {
+    return std::make_unique<ResourceRequestJob>(request);
+  }
+
+  return nullptr;
 }
 
 }  // close namespace blpwtk2
-
-// vim: ts=4 et
 
