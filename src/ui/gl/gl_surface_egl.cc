@@ -1350,9 +1350,14 @@ GLDisplayEGL* GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display,
     if (!eglInitialize(egl_display, nullptr, nullptr)) {
       bool is_last = disp_index == init_displays.size() - 1;
 
-      LOG(ERROR) << "eglInitialize " << DisplayTypeString(display_type)
-                 << " failed with error " << GetLastEGLErrorString()
-                 << (is_last ? "" : ", trying next display type");
+      if (is_last) {
+        LOG(ERROR) << "eglInitialize " << DisplayTypeString(display_type)
+                   << " failed with error " << GetLastEGLErrorString();
+      } else {
+        LOG(INFO) << "eglInitialize " << DisplayTypeString(display_type)
+                   << " failed with error " << GetLastEGLErrorString()
+                   << ", trying next display type";
+      }
       continue;
     }
 

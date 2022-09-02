@@ -35,6 +35,7 @@
 #include <content/public/browser/web_contents_delegate.h>
 #include <content/public/browser/web_contents_observer.h>
 #include <content/public/browser/context_menu_params.h>
+#include <ui/compositor/compositor_gpu_observer.h>
 #include <ui/gfx/native_widget_types.h>
 #include <base/i18n/rtl.h>
 
@@ -90,7 +91,8 @@ class WebViewImpl final : public WebView,
                           private NativeViewWidgetDelegate,
                           public content::WebContentsDelegate,
                           private content::WebContentsObserver,
-                          private base::SupportsWeakPtr<WebViewImpl>
+                          private base::SupportsWeakPtr<WebViewImpl>,
+                          public ui::CompositorGpuObserver
 {
     // DATA
     std::unique_ptr<DevToolsFrontendHostDelegateImpl> d_devToolsFrontEndHost;
@@ -116,6 +118,7 @@ class WebViewImpl final : public WebView,
 
 
     // patch section: gpu
+    ui::Compositor* d_gpuCompositor = nullptr;
 
 
     // patch section: fullscreen mode
@@ -243,6 +246,11 @@ class WebViewImpl final : public WebView,
 
     // patch section: gpu
 
+    // Sets Error Message Callback to receive the GPU error messages
+    // from the GPU command buffer channel
+    bool StartObservingGpuCompositor();
+    bool StopObservingGpuCompositor();
+
 
 
   public:
@@ -316,6 +324,8 @@ class WebViewImpl final : public WebView,
 
 
     // patch section: gpu
+    void OnCompositorGpuErrorMessage(const std::string& message) override;
+    void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
 
     // patch section: docprinter

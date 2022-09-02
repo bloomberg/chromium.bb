@@ -62,6 +62,8 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+#include "gpu/command_buffer/client/context_support.h"
+#include "components/viz/common/gpu/context_provider.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -294,6 +296,9 @@ Compositor::~Compositor() {
   for (auto& observer : animation_observer_list_)
     observer.OnCompositingShuttingDown(this);
 
+  for (auto& observer : gpu_observer_list_)
+    observer.OnCompositingShuttingDown(this);
+
   if (root_layer_)
     root_layer_->ResetCompositor();
 
@@ -337,6 +342,9 @@ void Compositor::SetLayerTreeFrameSink(
     viz::mojom::DisplayPrivate* display_private) {
   layer_tree_frame_sink_requested_ = false;
   display_private_ = display_private;
+  // resetting the gpu error state
+  caught_fatal_gpu_error_ = false;
+
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   // Display properties are reset when the output surface is lost, so update it
   // to match the Compositor's.
@@ -683,6 +691,27 @@ void Compositor::DidUpdateLayers() {
           << host_->property_trees()->ToString() << "\n"
           << "cc::Layers:\n"
           << host_->LayersAsString();
+}
+
+void Compositor::AddGpuObserver(CompositorGpuObserver* observer) {
+  gpu_observer_list_.AddObserver(observer);
+}
+
+void Compositor::RemoveGpuObserver(CompositorGpuObserver* observer) {
+  gpu_observer_list_.RemoveObserver(observer);
+}
+
+bool Compositor::HasGpuObserver(
+    const CompositorGpuObserver* observer) const {
+  return gpu_observer_list_.HasObserver(observer);
+}
+
+// gpu command buffer callback
+void Compositor::OnGpuContextErrorMessage(const char* message,
+                                  int32_t id) {
+  caught_fatal_gpu_error_ = true;
+  for (auto& observer : gpu_observer_list_)
+    observer.OnCompositorGpuErrorMessage(message);
 }
 
 void Compositor::BeginMainFrame(const viz::BeginFrameArgs& args) {

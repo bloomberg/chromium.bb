@@ -32,6 +32,7 @@
 #include <blpwtk2_urlrequestcontextgetterimpl.h>
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_webviewdelegate.h>
+#include <blpwtk2_gpudatalogger.h>
 #include <blpwtk2_permissionmanager.h>
 
 #include <net/url_request/url_request_context_builder.h>
@@ -69,12 +70,14 @@
 #include <components/user_prefs/user_prefs.h>
 #include <net/proxy_resolution/proxy_config.h>
 #include <printing/backend/print_backend.h>
+#include <content/browser/gpu/gpu_data_manager_impl.h>
+#include <content/browser/gpu/gpu_process_host.h>
+#include <third_party/abseil-cpp/absl/types/optional.h>
 
 namespace blpwtk2 {
 namespace {
 bool g_devToolsServerLaunched;
 }
-
 
                         // ------------------------
                         // class BrowserContextImpl
@@ -590,6 +593,15 @@ std::size_t BrowserContextImpl::getDiscardableSharedMemoryBytes()
 
 
 // patch section: gpu
+void BrowserContextImpl::getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const
+{
+    content::GpuDataManagerImpl* man = content::GpuDataManagerImpl::GetInstance();
+    currentMode = GpuDataLogger::toWtk2GpuMode(man->GetGpuMode());
+    absl::optional<gpu::GpuMode> optStartupMode = content::GpuProcessHost::GetStartupGpuMode();
+    startupMode =
+        optStartupMode ? GpuDataLogger::toWtk2GpuMode(*optStartupMode) : GpuMode::kUnknown;
+    crashCount = content::GpuProcessHost::GetGpuCrashCount();
+}
 
 
 

@@ -43,7 +43,7 @@
 #include <chrome/browser/printing/print_view_manager.h>
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <content/browser/renderer_host/render_widget_host_view_base.h>
-
+#include <ui/compositor/compositor.h>
 
 // patch section: support inspector save and load
 #include <content/public/browser/file_select_listener.h>
@@ -78,6 +78,8 @@
 
 
 // patch section: gpu
+#include <ui/aura/window.h>
+#include <ui/compositor/layer.h>
 
 
 
@@ -184,6 +186,8 @@ WebViewImpl::~WebViewImpl()
     DCHECK(d_isReadyForDelete);
     DCHECK(d_isDeletingSoon);
 
+    StopObservingGpuCompositor();
+
     g_instances.erase(this);
 
     if (d_ncHitTestRegion) {
@@ -264,6 +268,7 @@ void WebViewImpl::onRenderViewHostMadeCurrent(content::RenderViewHost *renderVie
 
 
     // patch section: gpu
+    StartObservingGpuCompositor();
 
 
     // patch section: rubberband
@@ -1248,6 +1253,53 @@ void WebViewImpl::OnWebContentsLostFocus(content::RenderWidgetHost*)
 
 
 // patch section: gpu
+void WebViewImpl::OnCompositorGpuErrorMessage(const std::string& message) {
+    d_webContents->GetMainFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kError, 
+      "Gpu compositing error: " + message);
+}
+
+void WebViewImpl::OnCompositingShuttingDown(ui::Compositor* pCompositor) {
+  StopObservingGpuCompositor();
+}
+
+// Start Observing GPU compositor to receive the GPU error messages
+// from the GPU command buffer channel
+bool WebViewImpl::StartObservingGpuCompositor() {
+  if (!d_widget)
+    return false;
+
+  gfx::NativeWindow nativeWindow = d_widget->GetNativeWindow();
+  ui::Compositor *pCompositor =  nativeWindow && nativeWindow->layer() ?
+                                    nativeWindow->layer()->GetCompositor() : nullptr;
+  if (pCompositor) {
+    if (d_gpuCompositor != pCompositor) {
+      StopObservingGpuCompositor();
+      d_gpuCompositor = pCompositor;
+      if (!d_gpuCompositor->HasGpuObserver(this)) {
+        d_gpuCompositor->AddGpuObserver(this);
+        return true;
+      }
+    }
+  }
+  else {
+    LOG(WARNING) << "No Compositor to observe";
+  }
+  return false;
+}
+
+// Stop Observing GPU compositor
+bool WebViewImpl::StopObservingGpuCompositor() {
+  bool ret = false;
+  if (d_gpuCompositor) {
+    if (d_gpuCompositor->HasGpuObserver(this)) {
+        d_gpuCompositor->RemoveGpuObserver(this);
+        ret = true;
+    }
+    d_gpuCompositor = nullptr;
+  }
+  return ret;
+}
 
 
 // patch section: memory diagnostics

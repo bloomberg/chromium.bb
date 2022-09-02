@@ -203,6 +203,7 @@ class ProcessHostImpl final : public mojom::ProcessHost
 
 
     // patch section: gpu
+    void getGpuMode(getGpuModeCallback callback) override;
 
 
 
