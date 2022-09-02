@@ -292,6 +292,10 @@ void BrowserContext::ShutdownStoragePartitions() {
   impl()->ShutdownStoragePartitions();
 }
 
+bool BrowserContext::AllowDictionaryDownloads() {
+  return false;
+}
+
 bool BrowserContext::ShutdownStarted() {
   return impl()->ShutdownStarted();
 }
