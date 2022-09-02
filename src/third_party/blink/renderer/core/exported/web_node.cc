@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
@@ -56,6 +57,12 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
+
+namespace {
+void DispatchImpl(blink::Node* node_ptr, blink::Event* evt) {
+  blink::EventDispatcher::DispatchScopedEvent(*node_ptr, *evt);
+}
+}
 
 namespace blink {
 
@@ -80,6 +87,13 @@ void WebNode::Reset() {
 
 void WebNode::Assign(const WebNode& other) {
   private_ = other.private_;
+}
+
+void WebNode::DispatchEvent(WebDOMEvent event)
+{
+  Event* evt = event;
+  auto taskRunner = private_->GetExecutionContext()->GetTaskRunner(TaskType::kUserInteraction);
+  taskRunner->PostTask(FROM_HERE, WTF::Bind(&DispatchImpl, WrapWeakPersistent(private_.Get()), base::Unretained(evt)));
 }
 
 bool WebNode::Equals(const WebNode& n) const {

@@ -162,6 +162,8 @@ shared_library("blpwtk2") {
 
 
     # patch section: jswidget plugin
+    "private/blpwtk2_jswidget.cc",
+    "private/blpwtk2_jswidget.h",
 
 
 
