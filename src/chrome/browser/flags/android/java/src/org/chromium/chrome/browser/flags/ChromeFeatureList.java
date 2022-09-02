@@ -247,6 +247,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY =
             "CCTIncognitoAvailableToThirdParty";
     public static final String CCT_NEW_DOWNLOAD_TAB = "CCTNewDownloadTab";
+    public static final String CCT_PACKAGE_NAME_RECORDING = "CCTPackageNameRecording";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";
     public static final String CCT_REMOVE_REMOTE_VIEW_IDS = "CCTRemoveRemoteViewIds";
@@ -323,6 +324,8 @@ public abstract class ChromeFeatureList {
     public static final String CRITICAL_PERSISTED_TAB_DATA = "CriticalPersistedTabData";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
             "DarkenWebsitesCheckboxInThemesSetting";
+    public static final String DELAY_TOOLBAR_UPDATE_ON_LOAD_STARTED =
+            "DelayToolbarUpdateOnLoadStarted";
     public static final String DETAILED_LANGUAGE_SETTINGS = "DetailedLanguageSettings";
     public static final String DIRECT_ACTIONS = "DirectActions";
     public static final String DISABLE_COMPOSITED_PROGRESS_BAR = "DisableCompositedProgressBar";
@@ -432,6 +435,7 @@ public abstract class ChromeFeatureList {
             "OmniboxUpdatedConnectionSecurityIndicators";
     public static final String OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS =
             "OptimizationGuidePushNotifications";
+    public static final String OPTIMIZE_LAYOUTS_FOR_PULL_REFRESH = "OptimizeLayoutsForPullRefresh";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String PAGE_ANNOTATIONS_SERVICE = "PageAnnotationsService";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_EN = "PageInfoAboutThisSiteEn";
@@ -533,6 +537,7 @@ public abstract class ChromeFeatureList {
     public static final String TEST_DEFAULT_ENABLED = "TestDefaultEnabled";
     public static final String TOOLBAR_IPH_ANDROID = "ToolbarIphAndroid";
     public static final String TOOLBAR_MIC_IPH_ANDROID = "ToolbarMicIphAndroid";
+    public static final String TOOLBAR_PHONE_OPTIMIZATIONS = "ToolbarPhoneOptimizations";
     public static final String TOOLBAR_SCROLL_ABLATION_ANDROID = "ToolbarScrollAblationAndroid";
     public static final String TOOLBAR_USE_HARDWARE_BITMAP_DRAW = "ToolbarUseHardwareBitmapDraw";
     public static final String TOUCH_TO_FILL_PASSWORD_SUBMISSION = "TouchToFillPasswordSubmission";

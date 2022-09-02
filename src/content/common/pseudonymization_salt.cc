@@ -41,7 +41,8 @@ uint32_t GetPseudonymizationSalt() {
   uint32_t salt = g_salt.load();
 
   if (salt == 0) {
-#if DCHECK_IS_ON()
+    // blpwtk2: Skip !sandboxed check.
+#if 0
     // Only the Browser process needs to initialize the `salt` on demand.
     // Other processes (identified via the IsProcessSandboxed heuristic) should
     // receive the salt from their parent processes.

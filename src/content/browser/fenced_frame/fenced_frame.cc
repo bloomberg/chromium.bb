@@ -53,7 +53,8 @@ FencedFrame::FencedFrame(
                                       /*render_widget_delegate=*/web_contents_,
                                       /*manager_delegate=*/web_contents_,
                                       /*page_delegate=*/web_contents_,
-                                      FrameTree::Type::kFencedFrame)),
+                                      FrameTree::Type::kFencedFrame,
+                                      web_contents_->GetPrimaryFrameTree().RenderProcessAffinity())),
       mode_(mode) {
   scoped_refptr<SiteInstance> site_instance =
       SiteInstanceImpl::CreateForFencedFrame(

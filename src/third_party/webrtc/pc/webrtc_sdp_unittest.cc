@@ -4665,11 +4665,10 @@ TEST_F(WebRtcSdpTest, DuplicateAudioRtpmapWithConflict) {
       "s=-\r\n"
       "t=0 0\r\n"
       "m=audio 49232 RTP/AVP 108\r\n"
-      // Same name but different payload type.
       "a=rtpmap:108 ISAC/16000\r\n"
-      "a=rtpmap:108 ISAC/32000\r\n";
+      "a=rtpmap:108 G711/16000\r\n";
 
-  ExpectParseFailure(sdp, "a=rtpmap:108 ISAC/32000");
+  ExpectParseFailure(sdp, "a=rtpmap:108 G711/16000");
 }
 
 TEST_F(WebRtcSdpTest, DuplicateVideoRtpmapWithConflict) {
@@ -4694,6 +4693,21 @@ TEST_F(WebRtcSdpTest, FmtpBeforeRtpMap) {
       "m=video 49232 RTP/AVP 108\r\n"
       "a=fmtp:108 profile-level=1\r\n"
       "a=rtpmap:108 VP9/90000\r\n";
+
+  JsepSessionDescription jdesc_output(kDummyType);
+  EXPECT_TRUE(SdpDeserialize(sdp, &jdesc_output));
+}
+
+TEST_F(WebRtcSdpTest, StaticallyAssignedPayloadTypeWithDifferentCasing) {
+  std::string sdp =
+      "v=0\r\n"
+      "o=- 11 22 IN IP4 127.0.0.1\r\n"
+      "s=-\r\n"
+      "t=0 0\r\n"
+      "m=audio 49232 RTP/AVP 18\r\n"
+      // Casing differs from statically assigned type, this should
+      // still be accepted.
+      "a=rtpmap:18 g729/8000\r\n";
 
   JsepSessionDescription jdesc_output(kDummyType);
   EXPECT_TRUE(SdpDeserialize(sdp, &jdesc_output));

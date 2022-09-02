@@ -17,7 +17,7 @@ source_set("language_detection") {
   ]
 
   public_deps = [
-    "//components/services/language_detection/public/mojom",
+    "//components/services/language_detection/public/mojom:mojom",
     "//mojo/public/mojom/base",
   ]
 }

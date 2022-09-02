@@ -568,7 +568,7 @@ const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
 // diagnostics app routines, network events, and system snapshot.
 // TODO(ashleydp): Remove this after the feature is launched.
 const base::Feature kEnableLogControllerForDiagnosticsApp{
-    "EnableLogControllerForDiagnosticsApp", base::FEATURE_ENABLED_BY_DEFAULT};
+    "EnableLogControllerForDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the networking cards will be shown in the diagnostics app.
 const base::Feature kEnableNetworkingInDiagnosticsApp{
@@ -1483,7 +1483,7 @@ const base::Feature kUsbNotificationController{
 // Uses new  AuthSession-based API in cryptohome to authenticate users during
 // sign-in.
 const base::Feature kUseAuthsessionAuthentication{
-    "UseAuthsessionAuthentication", base::FEATURE_ENABLED_BY_DEFAULT};
+    "UseAuthsessionAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",

@@ -215,7 +215,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2224075387478458881">Perekaman layar tidak diizinkan saat konten yang dilindungi terlihat</translation>
 <translation id="2227179592712503583">Hapus saran</translation>
 <translation id="225680501294068881">Memindai perangkat...</translation>
-<translation id="2257486738914982088">Terjadi masalah saat mendownload <ph name="FILENAME" /></translation>
+<translation id="2257486738914982088">Terjadi error saat mendownload <ph name="FILENAME" /></translation>
 <translation id="2268130516524549846">Bluetooth dinonaktifkan</translation>
 <translation id="2268813581635650749">Keluarkan semua</translation>
 <translation id="2269016722240250274">Aplikasi sedang menggunakan mikrofon Anda</translation>
@@ -254,7 +254,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2450205753526923158">Mode screenshot</translation>
 <translation id="2456008742792828469">Kalender, <ph name="CURRENT_MONTH_YEAR" /></translation>
 <translation id="2473177541599297363">Konfirmasi Resolusi</translation>
-<translation id="2475982808118771221">Terjadi kesalahan</translation>
+<translation id="2475982808118771221">Terjadi error</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
 <translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk mengganti tata letak keyboard.</translation>
 <translation id="2501920221385095727">Tombol sticky</translation>
@@ -324,7 +324,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2942516765047364088">Posisi rak</translation>
 <translation id="2946119680249604491">Tambahkan koneksi</translation>
 <translation id="2960314608273155470">Mode Tangkapan Layar, opsi defaultnya adalah <ph name="TYPE" /> <ph name="SOURCE" />. Tekan tab untuk menavigasi dengan keyboard.</translation>
-<translation id="2961963223658824723">Terjadi kesalahan. Coba lagi dalam beberapa detik.</translation>
+<translation id="2961963223658824723">Terjadi error. Coba lagi dalam beberapa detik.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="296762781903199866">Tidak dapat mendownload file ucapan bahasa <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instal aplikasi, ekstensi, dan tema</translation>
@@ -504,6 +504,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="3901991538546252627">Menghubungkan ke <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Ubah perangkat ke versi sebelumnya dalam 1 menit}other{Ubah perangkat ke versi sebelumnya dalam # menit}}</translation>
 <translation id="3923494859158167397">Tidak ada jaringan seluler yang disiapkan</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Memuat acara.</translation>
 <translation id="3932043219784172185">Tidak ada perangkat yang terhubung</translation>
 <translation id="3934456833412894880">Pengisian daya adaptif aktif. Daya baterai Anda hanya akan diisi sampai 80% untuk memperpanjang masa pakai baterai, dan diisi penuh jika Anda memerlukannya.</translation>
 <translation id="3943857333388298514">Sisipkan</translation>
@@ -702,7 +703,8 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="5071064518267176975">Sebuah aplikasi ingin menggunakan mikrofon</translation>
 <translation id="5078796286268621944">PIN salah</translation>
 <translation id="5083553833479578423">Dapatkan lebih banyak fitur Asisten.</translation>
-<translation id="509790653408515442">Jika Anda menstreaming aplikasi ponsel, aplikasi akan muncul di sini</translation>
+<translation id="509790653408515442">Aplikasi yang di-streaming pada ponsel Anda akan ditampilkan di sini</translation>
+<translation id="5098537242461068432">Desktop dan jendela dibuka kembali</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Tampilkan bulan berikutnya</translation>
 <translation id="5136175204352732067">Keyboard yang berbeda terhubung</translation>
@@ -1055,6 +1057,10 @@ Baru diinstal</translation>
 <translation id="7258828758145722155">Diedit kemarin</translation>
 <translation id="726276584504105859">Tarik ke sini untuk menggunakan layar terpisah</translation>
 <translation id="7262906531272962081">Buat pengingat</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> sampai
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Pilih acara untuk mengetahui detail selengkapnya di Google Kalender.</translation>
 <translation id="7302889331339392448">Teks Otomatis nonaktif.</translation>
 <translation id="7303365578352795231">Menjawab di perangkat lain.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1167,6 +1173,7 @@ Baru diinstal</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Ucapan sekarang diproses secara lokal dan Dikte berfungsi secara offline</translation>
+<translation id="7932451802722951285">Buka di Google Kalender</translation>
 <translation id="7933084174919150729">Asisten Google hanya tersedia untuk profil utama.</translation>
 <translation id="79341161159229895">Akun dikelola oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Tekan <ph name="SHORTCUT_KEY_NAME" /> + V untuk menampilkan papan klip. Lima item terakhir yang disalin akan disimpan ke papan klip.</translation>

@@ -348,6 +348,7 @@
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2856503607207334158">登录失败</translation>
 <translation id="2860954141821109167">请确保已在此设备上启用了一款电话应用</translation>
+<translation id="2861923151411510142">部分 Chrome 功能将不再可用</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2871733351037274014">预加载网页</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
@@ -526,7 +527,6 @@
 <translation id="3845098929839618392">在无痕式标签页中打开</translation>
 <translation id="3856096718352044181">请检查并确保这是一个有效的提供商，或者稍后重试</translation>
 <translation id="3858860766373142691">名称</translation>
-<translation id="3859206958100234503">同步即可获取您在所有设备上保存的密码、书签和其他设置</translation>
 <translation id="3861633093716975811">热门视频</translation>
 <translation id="3892148308691398805">复制文字</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
@@ -565,6 +565,7 @@
 <translation id="4095146165863963773">要删除应用数据吗？</translation>
 <translation id="4096227151372679484">书签保存流程已半屏打开</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
+<translation id="4101475238162928417">同步即可获取您在其他设备上的密码、书签和其他设置</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4106587138345390261">Chrome 团队正在探索各种新功能，以便让网站既能减少使用您的信息，又能提供同样出色的浏览体验</translation>
 <translation id="4108314971463891922">关注</translation>
@@ -891,6 +892,7 @@
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5869789175361934029">在此设备上继续浏览另一设备上的标签页</translation>
 <translation id="587735546353481577">若要关注某个网站，请转到该网站，打开 Chrome 菜单，然后点按“关注”。</translation>
+<translation id="5879072387416556377">获得更好的建议</translation>
 <translation id="5880748256563468367">转到 Feed</translation>
 <translation id="5884076754568147479">为了帮助您执行各种操作，Google 将会收到您使用 Google 助理时所在网站的网址和内容，以及您通过 Google 助理提交的信息</translation>
 <translation id="5906513782029855931">知道网站网址后，Google 助理便可帮助您完成任务。您可在 Chrome 的“设置”中停用 Google 助理。</translation>
@@ -1194,6 +1196,7 @@ Privacy Sandbox 试用版功能尚处于积极开发阶段，目前只能在部�
 <translation id="749294055653435199">无法在此设备上使用 Google 智能镜头</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7498271377022651285">请稍候…</translation>
+<translation id="7502234197872745058">若要在所有网站上退出您的 Google 帐号，请<ph name="BEGIN_LINK1" />退出 Chrome<ph name="END_LINK1" />。</translation>
 <translation id="750228856503700085">无法获取更新</translation>
 <translation id="7507207699631365376">请参阅此提供商的<ph name="BEGIN_LINK" />隐私权政策<ph name="END_LINK" /></translation>
 <translation id="7514365320538308">下载</translation>
@@ -1233,6 +1236,7 @@ Privacy Sandbox 试用版功能尚处于积极开发阶段，目前只能在部�
 <translation id="770741401784017797">正在创建 GIF</translation>
 <translation id="7707922173985738739">使用移动数据</translation>
 <translation id="7709094866268987903">您移除的兴趣将会显示在此处</translation>
+<translation id="7709918231054955894">同步显示您的所有标签页</translation>
 <translation id="7725024127233776428">您添加了书签的网页会显示在此处</translation>
 <translation id="7757787379047923882">分享自“<ph name="DEVICE_NAME" />”的文字</translation>
 <translation id="7761849928583394409">选择日期和时间</translation>
@@ -1428,6 +1432,7 @@ Privacy Sandbox 试用版功能尚处于积极开发阶段，目前只能在部�
 <translation id="8656747343598256512">使用您的 Google 帐号登录此网站和 Chrome。您可等到需要时再开启同步功能。</translation>
 <translation id="8659579665266920523">如何使用 Chrome 进行搜索</translation>
 <translation id="8662811608048051533">会致使您从大多数网站退出。</translation>
+<translation id="8664215986015753476">按您自己的方式使用 Chrome</translation>
 <translation id="8664979001105139458">文件名已存在</translation>
 <translation id="8666759526542103597">关于基于浏览器的广告个性化</translation>
 <translation id="8667760277771450375">我们正在探索如何既能让网站阻止垃圾广告和欺诈行为，又能限制跨网站跟踪。</translation>

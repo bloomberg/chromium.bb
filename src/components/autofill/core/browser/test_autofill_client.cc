@@ -130,7 +130,7 @@ void TestAutofillClient::ShowUnmaskPrompt(
 
 void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
 
-raw_ptr<VirtualCardEnrollmentManager>
+VirtualCardEnrollmentManager*
 TestAutofillClient::GetVirtualCardEnrollmentManager() {
   return form_data_importer_->GetVirtualCardEnrollmentManager();
 }
@@ -313,8 +313,7 @@ bool TestAutofillClient::AreServerCardsSupported() const {
 
 void TestAutofillClient::ExecuteCommand(int id) {}
 
-void TestAutofillClient::OnPromoCodeSuggestionsFooterSelected(const GURL& url) {
-}
+void TestAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {}
 
 void TestAutofillClient::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {

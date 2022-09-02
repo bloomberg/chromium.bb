@@ -182,6 +182,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTIncognito,
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTNewDownloadTab,
+    &kCCTPackageNameRecording,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kCCTRemoveRemoteViewIds,
@@ -220,6 +221,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualTriggersSelectionHandles,
     &kContextualTriggersSelectionMenu,
     &kContextualTriggersSelectionSize,
+    &kDelayToolbarUpdateOnLoadStarted,
     &kDirectActions,
     &kDisableCompositedProgressBar,
     &kDownloadFileProvider,
@@ -252,6 +254,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kBackGestureRefactorAndroid,
+    &kOptimizeLayoutsForPullRefresh,
     &kPostTaskFocusTab,
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
@@ -291,6 +294,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTestDefaultEnabled,
     &kToolbarIphAndroid,
     &kToolbarMicIphAndroid,
+    &kToolbarPhoneOptimizations,
     &kToolbarScrollAblationAndroid,
     &kTrustedWebActivityLocationDelegation,
     &kTrustedWebActivityNotificationPermissionDelegation,
@@ -526,7 +530,7 @@ const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTRetainingState{"CCTRetainingState",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTToolbarCustomizations{"CCTToolbarCustomizations",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -617,6 +621,9 @@ const base::Feature kContextualTriggersSelectionMenu{
 
 const base::Feature kContextualTriggersSelectionSize{
     "ContextualTriggersSelectionSize", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDelayToolbarUpdateOnLoadStarted{
+    "DelayToolbarUpdateOnLoadStarted", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
@@ -720,6 +727,9 @@ const base::Feature kBookmarksRefresh{"BookmarksRefresh",
 const base::Feature kBackGestureRefactorAndroid{
     "BackGestureRefactorAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOptimizeLayoutsForPullRefresh{
+    "OptimizeLayoutsForPullRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPostTaskFocusTab{"PostTaskFocusTab",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -819,6 +829,9 @@ const base::Feature kToolbarIphAndroid{"ToolbarIphAndroid",
 
 const base::Feature kToolbarMicIphAndroid{"ToolbarMicIphAndroid",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kToolbarPhoneOptimizations{
+    "ToolbarPhoneOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kToolbarScrollAblationAndroid{
     "ToolbarScrollAblationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};

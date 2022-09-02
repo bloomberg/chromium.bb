@@ -220,4 +220,8 @@ void ResourceLoadInfoNotifierWrapper::NotifyResourceLoadCanceled(
           resource_load_info_->request_id));
 }
 
+std::string ResourceLoadInfoNotifierWrapper::GetHttpMethod() {
+  return resource_load_info_->method;
+}
+
 }  // namespace blink

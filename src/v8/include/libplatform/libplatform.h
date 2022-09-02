@@ -36,12 +36,12 @@ enum class MessageLoopBehavior : bool {
  * If |tracing_controller| is nullptr, the default platform will create a
  * v8::platform::TracingController instance and use it.
  */
-V8_PLATFORM_EXPORT std::unique_ptr<v8::Platform> NewDefaultPlatform(
+BLPV8_PLATFORM_EXPORT v8::Platform* NewDefaultPlatform(
     int thread_pool_size = 0,
     IdleTaskSupport idle_task_support = IdleTaskSupport::kDisabled,
     InProcessStackDumping in_process_stack_dumping =
         InProcessStackDumping::kDisabled,
-    std::unique_ptr<v8::TracingController> tracing_controller = {});
+    v8::TracingController* tracing_controller = nullptr);
 
 /**
  * The same as NewDefaultPlatform but disables the worker thread pool.
@@ -64,6 +64,10 @@ V8_PLATFORM_EXPORT std::unique_ptr<v8::JobHandle> NewDefaultJobHandle(
     v8::Platform* platform, v8::TaskPriority priority,
     std::unique_ptr<v8::JobTask> job_task, size_t num_worker_threads);
 
+BLPV8_PLATFORM_EXPORT v8::JobHandle* NewDefaultJobHandleRaw(
+    v8::Platform* platform, v8::TaskPriority priority,
+    v8::JobTask* job_task, size_t num_worker_threads);
+
 /**
  * Pumps the message loop for the given isolate.
  *
@@ -74,7 +78,7 @@ V8_PLATFORM_EXPORT std::unique_ptr<v8::JobHandle> NewDefaultJobHandle(
  * the |behavior| parameter, this call does not block if no task is pending. The
  * |platform| has to be created using |NewDefaultPlatform|.
  */
-V8_PLATFORM_EXPORT bool PumpMessageLoop(
+BLPV8_PLATFORM_EXPORT bool PumpMessageLoop(
     v8::Platform* platform, v8::Isolate* isolate,
     MessageLoopBehavior behavior = MessageLoopBehavior::kDoNotWait);
 
@@ -85,7 +89,7 @@ V8_PLATFORM_EXPORT bool PumpMessageLoop(
  * This call does not block if no task is pending. The |platform| has to be
  * created using |NewDefaultPlatform|.
  */
-V8_PLATFORM_EXPORT void RunIdleTasks(v8::Platform* platform,
+BLPV8_PLATFORM_EXPORT void RunIdleTasks(v8::Platform* platform,
                                      v8::Isolate* isolate,
                                      double idle_time_in_seconds);
 

@@ -15,18 +15,25 @@
 #include "src/base/immediate-crash.h"
 #include "src/base/template-utils.h"
 
+#if defined(DEBUG) && defined(USING_V8_SHARED) && !defined(USING_V8_BASE_SHARED) && !defined(BUILDING_V8_BASE_SHARED)
+// For v8 as dll in static build
+namespace {
+  void V8_Dcheck(const char* file, int line, const char* message) {}
+}
+#else
 V8_BASE_EXPORT V8_NOINLINE void V8_Dcheck(const char* file, int line,
                                           const char* message);
+#endif
 
 #ifdef DEBUG
 // In debug, include file, line, and full error message for all
 // FATAL() calls.
-[[noreturn]] PRINTF_FORMAT(3, 4) V8_BASE_EXPORT V8_NOINLINE
+[[noreturn]] PRINTF_FORMAT(3, 4) BLPV8_BASE_EXPORT V8_NOINLINE
     void V8_Fatal(const char* file, int line, const char* format, ...);
 #define FATAL(...) V8_Fatal(__FILE__, __LINE__, __VA_ARGS__)
 
 #else
-[[noreturn]] PRINTF_FORMAT(1, 2) V8_BASE_EXPORT V8_NOINLINE
+[[noreturn]] PRINTF_FORMAT(1, 2) BLPV8_BASE_EXPORT V8_NOINLINE
     void V8_Fatal(const char* format, ...);
 #if !defined(OFFICIAL_BUILD)
 // In non-official release, include full error message, but drop file & line
@@ -256,9 +263,9 @@ V8_NOINLINE std::string* MakeCheckOpString(Lhs lhs, Rhs rhs, char const* msg) {
 // Commonly used instantiations of MakeCheckOpString<>. Explicitly instantiated
 // in logging.cc.
 #define EXPLICIT_CHECK_OP_INSTANTIATION(type)                                \
-  extern template V8_BASE_EXPORT std::string* MakeCheckOpString<type, type>( \
+  extern template BLPV8_BASE_EXPORT std::string* MakeCheckOpString<type, type>( \
       type, type, char const*);                                              \
-  extern template V8_BASE_EXPORT std::string PrintCheckOperand<type>(type);
+  extern template BLPV8_BASE_EXPORT std::string PrintCheckOperand<type>(type);
 
 EXPLICIT_CHECK_OP_INSTANTIATION(int)
 EXPLICIT_CHECK_OP_INSTANTIATION(long)       // NOLINT(runtime/int)

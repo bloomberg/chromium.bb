@@ -29,6 +29,8 @@ class ProxyServer;
 struct SSLConfig;
 
 constexpr int kDefaultMaxSocketsPerProxyServer = 32;
+constexpr int kDefaultMaxSocketsPerGroupNormal = 6;
+constexpr int kDefaultMaxSocketsPerGroupWebSocket = 255;
 
 class NET_EXPORT_PRIVATE ClientSocketPoolManager {
  public:

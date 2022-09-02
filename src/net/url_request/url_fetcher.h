@@ -41,6 +41,10 @@ namespace remoting {
 class GstaticJsonFetcher;
 }
 
+namespace blpwtk2 {
+class DevToolsFrontendHostDelegateImpl;
+}
+
 namespace net {
 class HttpResponseHeaders;
 class URLFetcherDelegate;
@@ -337,6 +341,7 @@ class NET_EXPORT URLFetcher {
   // This class is deprecated, and no new code should be using it. Construction
   // methods are private and pre-existing consumers are friended.
   friend class remoting::GstaticJsonFetcher;
+  friend class blpwtk2::DevToolsFrontendHostDelegateImpl;
 
   // The unannotated Create() methods are not available on desktop Linux +
   // Windows. They are available on other platforms, since we only audit network

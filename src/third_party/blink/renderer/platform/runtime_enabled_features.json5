@@ -352,6 +352,7 @@
     },
     {
       name: "CapabilityDelegationFullscreenRequest",
+      status: "stable",
     },
     {
       name: "CaptureHandle",
@@ -937,6 +938,7 @@
       // Document transitions, including shared element transitions.
       // See https://github.com/WICG/shared-element-transitions
       name: "DocumentTransition",
+      origin_trial_feature_name: "DocumentTransitionV2",
     },
     {
       name: "DocumentWrite",
@@ -1096,7 +1098,7 @@
     },
     {
       name: "FixedElementsDontOverscroll",
-      status: "stable",
+      status: "test",
     },
     {
       name: "Fledge",

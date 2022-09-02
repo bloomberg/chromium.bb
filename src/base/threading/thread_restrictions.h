@@ -346,6 +346,10 @@ namespace webrtc {
 class DesktopConfigurationMonitor;
 }
 
+namespace blpwtk2 {
+class BrowserMainRunner;
+}
+
 namespace base {
 class Environment;
 }
@@ -455,6 +459,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class blink::DiskDataAllocator;
   friend class chromecast::CrashUtil;
   friend class content::BrowserProcessIOThread;
+  friend class blpwtk2::BrowserMainRunner;
   friend class content::DWriteFontProxyImpl;
   friend class content::NetworkServiceInstancePrivate;
   friend class content::PepperPrintSettingsManagerImpl;

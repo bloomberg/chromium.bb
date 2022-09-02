@@ -651,8 +651,6 @@ WaylandWindow* WaylandWindow::GetRootParentWindow() {
 }
 
 void WaylandWindow::OnEnteredOutput() {
-  delegate()->OnMovedToAnotherDisplay();
-
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.

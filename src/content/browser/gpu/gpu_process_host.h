@@ -71,6 +71,14 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   GpuProcessHost(const GpuProcessHost&) = delete;
   GpuProcessHost& operator=(const GpuProcessHost&) = delete;
 
+  // Check if any in-process gpu host has been created
+  // in case of running in --single-process mode, we should avoid creating
+  // multiple separate in-process gpu threads. In case of
+  // GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(), it should
+  // use the same GpuProcessKind (GPU_PROCESS_KIND_SANDBOXED) when it is
+  // in-process
+  static bool HasInProcess();
+
   // Returns whether there is an active GPU process or not.
   static void GetHasGpuProcess(base::OnceCallback<void(bool)> callback);
 

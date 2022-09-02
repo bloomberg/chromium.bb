@@ -348,6 +348,7 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="2842985007712546952">Nadradený priečinok</translation>
 <translation id="2856503607207334158">Nepodarilo sa prihlásiť</translation>
 <translation id="2860954141821109167">Skontrolujte, či je v tomto zariadení povolená aplikácia pre telefóny</translation>
+<translation id="2861923151411510142">Niektoré funkcie Chromu už nebudú k dispozícii</translation>
 <translation id="2870560284913253234">Web</translation>
 <translation id="2871733351037274014">Prednačítavanie stránok</translation>
 <translation id="2888126860611144412">O prehliadači Chrome</translation>
@@ -526,7 +527,6 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="3845098929839618392">Otvoriť na karte inkognito</translation>
 <translation id="3856096718352044181">Overte, že ide o platného poskytovateľa, alebo to skúste znova</translation>
 <translation id="3858860766373142691">Názov</translation>
-<translation id="3859206958100234503">Zapnite synchronizáciu a získajte tak heslá, záložky a ďalší obsah zo všetkých svojich zariadení.</translation>
 <translation id="3861633093716975811">Populárne videá</translation>
 <translation id="3892148308691398805">Kopírovať text</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
@@ -565,6 +565,7 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="4095146165863963773">Odstrániť dáta aplikácie?</translation>
 <translation id="4096227151372679484">Postup uloženia záložky je otvorený na polovičnú výšku</translation>
 <translation id="4099578267706723511">Odosielať štatistiky používania a prehľady chýb Googlu a pomáhať tak zlepšovať Chrome</translation>
+<translation id="4101475238162928417">Zapnite synchronizáciu a získajte tak heslá, záložky a ďalší obsah zo svojich ostatných zariadení</translation>
 <translation id="410351446219883937">Automatické prehrávanie</translation>
 <translation id="4106587138345390261">Chrome skúma nové funkcie, ktoré umožňujú webom zobraziť rovnaké prostredie prehliadania s využitím menšieho množstva vašich údajov</translation>
 <translation id="4108314971463891922">Sledovať</translation>
@@ -891,6 +892,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5869522115854928033">Uložené heslá</translation>
 <translation id="5869789175361934029">Pokračujte v inom zariadení</translation>
 <translation id="587735546353481577">Ak chcete sledovať určitý web, prejdite naň, otvorte Ponuku Chrome a klepnite na Sledovať.</translation>
+<translation id="5879072387416556377">Dostávajte lepšie návrhy</translation>
 <translation id="5880748256563468367">Prejsť na feed</translation>
 <translation id="5884076754568147479">Google bude dostávať webové adresy a obsah webov, kde používate Asistenta, ako aj informácie, ktoré prostredníctvom neho odošlete, aby vám mohol pomáhať s dokončovaním úloh</translation>
 <translation id="5906513782029855931">Keď bude Asistent Google poznať webové adresy, bude vám môcť pomáhať s plnením úloh. Asistenta môžete vypnúť v nastaveniach Chromu.</translation>
@@ -1194,6 +1196,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa pod
 <translation id="749294055653435199">Google Lens nie je k dispozícii v tomto zariadení</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Aktualizované <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Čakajte…</translation>
+<translation id="7502234197872745058">Ak sa chcete odhlásiť zo svojho účtu Google na všetkých weboch, <ph name="BEGIN_LINK1" />odhláste sa z Chromu<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Aktualizácie nie sú k dispozícii</translation>
 <translation id="7507207699631365376">Zobraziť <ph name="BEGIN_LINK" />pravidlá ochrany súkromia<ph name="END_LINK" /> tohto poskytovateľa</translation>
 <translation id="7514365320538308">Stiahnuť</translation>
@@ -1233,6 +1236,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa pod
 <translation id="770741401784017797">Vytvára sa gif</translation>
 <translation id="7707922173985738739">Používať mobilné dáta</translation>
 <translation id="7709094866268987903">Tu sa budú zobrazovať záujmy, ktoré odstránite</translation>
+<translation id="7709918231054955894">Majte k dispozícii všetky svoje karty</translation>
 <translation id="7725024127233776428">Tu sa zobrazia vaše stránky uložené ako záložky</translation>
 <translation id="7757787379047923882">Text zdieľaný zo zariadenia <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Vybrať dátum a čas</translation>
@@ -1428,6 +1432,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa pod
 <translation id="8656747343598256512">Prihláste sa na tomto webe a v Chrome pomocou účtu Google. Neskôr môžete zapnúť synchronizáciu.</translation>
 <translation id="8659579665266920523">Ako vyhľadávať pomocou Chromu</translation>
 <translation id="8662811608048051533">Odhlási vás z väčšiny webov.</translation>
+<translation id="8664215986015753476">Používajte Chrome podľa svojich potrieb</translation>
 <translation id="8664979001105139458">Súbor s takým názvom už existuje</translation>
 <translation id="8666759526542103597">Prispôsobenie reklám založené na prehliadači</translation>
 <translation id="8667760277771450375">Skúmame spôsoby, ako obmedziť sledovanie na rôznych weboch a zároveň webom umožniť bojovať proti reklamnému spamu a podvodom.</translation>

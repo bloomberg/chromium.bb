@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+OS="$(uname -s)"
+case "$OS" in
+    Linux*) exec python $(dirname "$0")/gyp_blpwtk2.py "$@";;
+    CYGWIN*) exec cmd.exe /c $(cygpath -w python).exe $(cygpath -w $(dirname "$0")/gyp_blpwtk2.py) "$@";;
+    MINGW*) cmd.exe //c "$(basename "python")".exe $(dirname "$0")/gyp_blpwtk2.py "$@";;
+    *)  echo "Unsupported OS ${OS}"
+        exit 1;;
+esac

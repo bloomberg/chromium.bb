@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//blpwtk2/blpwtk2.gni")
 # import the ozone_platform_x11 variable
 import("gni/angle.gni")
 if (angle_enable_vulkan) {
@@ -694,7 +695,7 @@ angle_source_set("translator_fuzzer") {
 
 config("angle_commit_id_config") {
   include_dirs = [ "$root_gen_dir/angle" ]
-  visibility = [ ":angle_commit_id" ]
+  visibility = [ ":angle_commit_id", "//blpwtk2:blpwtk2" ]
 }
 
 action("angle_commit_id") {
@@ -1254,9 +1255,19 @@ template("angle_libGLESv2") {
       ":gl_prototypes",
     ]
 
+    if (bb_generate_map_files) {
+      configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+    }
+    public_configs = [
+      "//blpwtk2:blpwtk2_public"
+    ]
+
     defines = [ "LIBGLESV2_IMPLEMENTATION" ]
 
-    deps = invoker.deps + [ ":includes" ]
+    deps = invoker.deps + [
+      "//blpwtk2:blpwtk2_generate_sources",
+      ":includes",
+    ]
 
     if (is_win) {
       sources += [
@@ -1328,6 +1339,13 @@ angle_static_library("libGLESv2_static") {
   public_configs += [ ":angle_static" ]
   deps = [ ":includes" ]
   public_deps = [ ":libANGLE" ]
+
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_deps += [
+    "//blpwtk2:blpwtk2_generate_sources",
+  ]
 }
 
 angle_shared_library("libGLESv1_CM") {
@@ -1387,6 +1405,13 @@ angle_shared_library("libEGL") {
     ":library_name_config",
   ]
 
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_configs = [
+    "//blpwtk2:blpwtk2_public"
+  ]
+
   defines = [ "LIBEGL_IMPLEMENTATION" ]
   if (is_win) {
     defines += [ "EGLAPI=" ]
@@ -1404,7 +1429,10 @@ angle_shared_library("libEGL") {
     deps += [ ":angle_version" ]
   }
 
-  public_deps = [ ":includes" ]
+  public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
+    ":includes",
+  ]
 
   data_deps = [ ":libGLESv2" ]
 }

@@ -369,6 +369,7 @@ CalendarMonthView::CalendarMonthView(
   // TODO(https://crbug.com/1236276): Extract the following 3 parts (while
   // loops) into a method.
   int column = 0;
+  int safe_index = 0;
   // Gray-out dates in the first row, which are from the previous month.
   while (current_date_exploded.month % 12 ==
          (first_day_of_month_exploded.month - 1) % 12) {
@@ -377,9 +378,16 @@ CalendarMonthView::CalendarMonthView(
                         /*is_fetched=*/is_fetched);
     MoveToNextDay(column, current_date, current_date_local,
                   current_date_exploded);
+    ++safe_index;
+    if (safe_index == calendar_utils::kDateInOneWeek) {
+      NOTREACHED()
+          << "Should not render more than 7 days as the grayed out cells.";
+      break;
+    }
   }
 
   int row_number = 0;
+  safe_index = 0;
   // Builds non-gray-out dates of the current month.
   while (current_date_exploded.month == first_day_of_month_exploded.month) {
     // Count a row when a new row starts.
@@ -407,6 +415,12 @@ CalendarMonthView::CalendarMonthView(
     }
     MoveToNextDay(column, current_date, current_date_local,
                   current_date_exploded);
+
+    ++safe_index;
+    if (safe_index == 32) {
+      NOTREACHED() << "Should not render more than 31 days in a month.";
+      break;
+    }
   }
 
   last_row_index_ = row_number - 1;
@@ -423,8 +437,7 @@ CalendarMonthView::CalendarMonthView(
   if (updated_is_fetched != is_fetched)
     UpdateIsFetchedAndRepaint(updated_is_fetched);
 
-  if (calendar_utils::GetDayOfWeek(current_date) ==
-      calendar_utils::kFirstDayOfWeekString)
+  if (calendar_utils::GetDayOfWeekInt(current_date) == 1)
     return;
 
   // Adds the first several days from the next month if the last day is not the
@@ -438,6 +451,7 @@ CalendarMonthView::CalendarMonthView(
   base::Time::Exploded end_of_row_exploded =
       calendar_utils::GetExplodedUTC(end_of_the_last_row_local);
 
+  safe_index = 0;
   // Gray-out dates in the last row, which are from the next month.
   while (current_date_exploded.day_of_month <=
          end_of_row_exploded.day_of_month) {
@@ -448,6 +462,13 @@ CalendarMonthView::CalendarMonthView(
                         /*is_fetched=*/is_fetched);
     MoveToNextDay(column, current_date, current_date_local,
                   current_date_exploded);
+
+    ++safe_index;
+    if (safe_index == calendar_utils::kDateInOneWeek) {
+      NOTREACHED()
+          << "Should not render more than 7 days as the gray out cells.";
+      break;
+    }
   }
 }
 

@@ -2188,6 +2188,9 @@ TEST_P(CopyTests_T2T, CopyFromNonZeroMipLevelWithTexelBlockSizeLessThan4Bytes) {
     // This test also fails on D3D12 on Intel Windows. See http://crbug.com/1312066 for details.
     DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWindows() && IsIntel());
 
+    // Fails on Mesa 20.0.8 Intel UHD 630, see http://crrev.com/c/3788195/4
+    DAWN_SUPPRESS_TEST_IF(IsOpenGLES() && IsLinux() && IsIntel());
+
     constexpr std::array<wgpu::TextureFormat, 11> kFormats = {
         {wgpu::TextureFormat::RG8Sint, wgpu::TextureFormat::RG8Uint, wgpu::TextureFormat::RG8Snorm,
          wgpu::TextureFormat::RG8Unorm, wgpu::TextureFormat::R16Float, wgpu::TextureFormat::R16Sint,

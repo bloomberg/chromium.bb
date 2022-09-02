@@ -85,6 +85,12 @@ class V8_PLATFORM_EXPORT DefaultPlatform : public NON_EXPORTED_BASE(Platform) {
   TimeFunction time_function_for_testing_ = nullptr;
 };
 
+V8_PLATFORM_EXPORT std::unique_ptr<v8::Platform> NewDefaultPlatformImpl(
+    int thread_pool_size,
+    IdleTaskSupport idle_task_support,
+    InProcessStackDumping in_process_stack_dumping,
+    std::unique_ptr<v8::TracingController> tracing_controller);
+
 }  // namespace platform
 }  // namespace v8
 

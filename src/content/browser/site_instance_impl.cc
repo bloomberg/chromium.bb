@@ -13,6 +13,8 @@
 #include "base/lazy_instance.h"
 #include "base/trace_event/typed_macros.h"
 #include "content/browser/bad_message.h"
+#include "base/command_line.h"
+
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolated_origin_util.h"
@@ -60,6 +62,8 @@ bool ShouldCompareEffectiveURLs(BrowserContext* browser_context,
 SiteInstanceId::Generator g_site_instance_id_generator;
 
 }  // namespace
+
+int SiteInstance::kNoProcessAffinity = RenderProcessHostImpl::kInvalidId;
 
 // static
 const GURL& SiteInstanceImpl::GetDefaultSiteURL() {
@@ -335,7 +339,14 @@ bool SiteInstanceImpl::HasProcess() {
   return false;
 }
 
-RenderProcessHost* SiteInstanceImpl::GetProcess() {
+RenderProcessHost* SiteInstanceImpl::GetProcess(int affinity) {
+  // blpwtk2: Lookup the RenderProessHost based on the host id (aka. affinity)
+  if (!HasProcess()) {
+    if (affinity != SiteInstance::kNoProcessAffinity) {
+      SetProcessInternal(RenderProcessHost::FromID(affinity));
+    }
+  }
+
   // Create a new SiteInstanceGroup and RenderProcessHost is there isn't one.
   // All SiteInstances within a SiteInstanceGroup share a process and
   // AgentSchedulingGroupHost. A group must have a process. If the process gets

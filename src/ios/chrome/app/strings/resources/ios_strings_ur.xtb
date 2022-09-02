@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">موجودہ ڈیٹا کو حذف کریں۔</translation>
 <translation id="1147031633655575115"><ph name="USER" /> کے بطور سائن ان ہیں</translation>
 <translation id="1154984953698510061">دیگر ٹیبز دیکھیں</translation>
+<translation id="1161340988127985692">پوشیدگی میں دیگر ایپس سے لنکس کھولنے کو کہیں</translation>
 <translation id="1164064664035028907">مضبوط پاس ورڈ استعمال کریں:</translation>
 <translation id="1165039591588034296">خرابی</translation>
 <translation id="1172898394251786223">اگلا فیلڈ</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">ٹیب موصول ہوا۔</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> منٹ</translation>
 <translation id="3448016392200048164">تقسیم کا منظر</translation>
+<translation id="3450502512529866925">یہ صفحہ بُک مارک کریں</translation>
 <translation id="345565170154308620">پاس ورڈز کا نظم کریں...</translation>
 <translation id="3469166899695866866">ڈاؤن لوڈ روکیں؟</translation>
 <translation id="3470502288861289375">کاپی کیے جا رہے ہیں…</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">ابھی چیک کریں</translation>
 <translation id="4505980578794259603">آخری بار <ph name="TIME" /> چیک کیا گیا۔</translation>
 <translation id="4508750114462689118">سائن ان پرومو بند کریں</translation>
+<translation id="4511669830082467224">‏Google کی مدد سے تصویر تلاش کریں</translation>
 <translation id="4526249700380860531">‏<ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> پر محفوظ کردہ پاس ورڈز دیکھیں اور ان کا نظم کریں</translation>
 <translation id="452750746583162491">اپنے مطابقت پذیر ڈیٹا کا جائزہ لیں</translation>
 <translation id="4536418791685807335">دوبارہ سائن ان کرنے کی کوشش کریں۔</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">اس پاس ورڈ کو حذف کرنے سے آپ کا اکاؤنٹ <ph name="WEBSITE" /> سے حذف نہیں ہوگا۔</translation>
 <translation id="5092117651143801290">‏آپ بعد میں یا آف لائن پڑھنے کے لیے صفحات کو محفوظ کر سکتے ہیں۔ Chrome پوچھے گا کہ آیا آپ طویل صفحات محفوظ کرنا چاہتے ہیں۔</translation>
 <translation id="5094827893301452931">ٹویٹ مکمل ہوگیا۔</translation>
+<translation id="509789154667432072">ایک بُک مارک شامل کریں</translation>
 <translation id="5118713593561876160">دلچسپیاں</translation>
 <translation id="5118764316110575523">آف</translation>
 <translation id="5127805178023152808">‏Sync آف ہے</translation>
@@ -772,6 +776,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> بغیر پڑھے ہوئے مضامین۔</translation>
 <translation id="7412027924265291969">جاری رکھیں</translation>
+<translation id="7419565702166471774">ہمیشہ محفوظ کنکشنز کا استعمال کریں</translation>
 <translation id="7425346204213733349">‏آپ کے بُک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات کی تبدیلیوں کی مزید آپ کے Google اکاؤنٹ کے ساتھ مطابقت پذیری نہیں کی جائے گی۔ البتہ آپ کا موجودہ ڈیٹا آپ کے Google اکاؤنٹ میں اسٹور رہے گا۔</translation>
 <translation id="7431991332293347422">تلاش کو ذاتی نوعیت کا بنانے کیلئے آپ کی براؤزنگ کی سرگزشت جس طریقے سے استعمال کی جاتی ہے اسے کنٹرول کریں اور مزید بہت کچھ</translation>
 <translation id="7435356471928173109">آپ کے منتظم کے ذریعے آف کر دیا گیا</translation>
@@ -811,7 +816,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7781069478569868053">نئے ٹیب کا صفحہ</translation>
 <translation id="7781829728241885113">گزشتہ کل</translation>
 <translation id="778855399387580014">‏نئے Chrome ٹیب میں تلاش شروع کریں۔</translation>
-<translation id="7790892308048519147">محفوظ کنکشنز استعمال کرنے کی کوشش کریں</translation>
 <translation id="7791543448312431591">شامل کریں</translation>
 <translation id="7807060072011926525">‏Google کے ذریعے فراہم کردہ</translation>
 <translation id="7839985698273989086">آف لائن صفحہ</translation>

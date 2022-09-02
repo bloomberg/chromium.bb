@@ -66,18 +66,19 @@ class NET_EXPORT URLRequestJobFactory {
   // Protected for (test-only) subclasses.
   THREAD_CHECKER(thread_checker_);
 
+ public:
+  // Sets a global URLRequestInterceptor for testing purposes.  The interceptor
+  // is given the chance to intercept any request before the corresponding
+  // ProtocolHandler. If an interceptor is set, the old interceptor must be
+  // cleared before setting a new one.
+  static void SetInterceptorForTesting(URLRequestInterceptor* interceptor);
+
  private:
   // For testing only.
   friend class URLRequestFilter;
 
   using ProtocolHandlerMap =
       std::map<std::string, std::unique_ptr<ProtocolHandler>>;
-
-  // Sets a global URLRequestInterceptor for testing purposes.  The interceptor
-  // is given the chance to intercept any request before the corresponding
-  // ProtocolHandler. If an interceptor is set, the old interceptor must be
-  // cleared before setting a new one.
-  static void SetInterceptorForTesting(URLRequestInterceptor* interceptor);
 
   ProtocolHandlerMap protocol_handler_map_;
 };

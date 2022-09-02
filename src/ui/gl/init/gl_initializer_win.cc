@@ -68,8 +68,11 @@ bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
       base::LoadNativeLibrary(gles_path.Append(L"libglesv2.dll"), nullptr);
   if (!gles_library) {
     DVLOG(1) << "libglesv2.dll not found";
+    LOG(ERROR) << "gles dll not found in the path: " << gles_path;
     return false;
   }
+
+  LOG(INFO) << "Loaded Graphics driver from gles_path = " << gles_path;
 
   // When using EGL, first try eglGetProcAddress and then Windows
   // GetProcAddress on both the EGL and GLES2 DLLs.

@@ -206,7 +206,7 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 
 #endif  // OS(POSIX)
 
-mojo::IncomingInvitation InitializeMojoIPCChannel() {
+mojo::IncomingInvitation InitializeMojoIPCChannel(int file_descriptor) {
   TRACE_EVENT0("startup", "InitializeMojoIPCChannel");
   mojo::PlatformChannelEndpoint endpoint;
 #if BUILDFLAG(IS_WIN)
@@ -214,6 +214,10 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
           mojo::PlatformChannel::kHandleSwitch)) {
     endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
         *base::CommandLine::ForCurrentProcess());
+  } else if (file_descriptor) {
+    endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
+        base::win::ScopedHandle(LongToHandle(file_descriptor))));
+    DCHECK(endpoint.is_valid());
   } else {
     // If this process is elevated, it will have a pipe path passed on the
     // command line.
@@ -453,6 +457,7 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
   options_.mojo_invitation = params.mojo_invitation();
+  options_.mojo_controller_handle = params.mojo_controller_handle();
   return *this;
 }
 
@@ -603,7 +608,8 @@ void ChildThreadImpl::Init(const Options& options) {
           mojo_ipc_task_runner,
           mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
     }
-    mojo::IncomingInvitation invitation = InitializeMojoIPCChannel();
+    mojo::IncomingInvitation invitation =
+        InitializeMojoIPCChannel(options.mojo_controller_handle);
     if (!invitation.is_valid()) {
       LOG(ERROR) << "Child process could not find its Mojo invitation";
       base::Process::TerminateCurrentProcessImmediately(0);

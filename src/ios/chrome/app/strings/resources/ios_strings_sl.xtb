@@ -27,6 +27,7 @@ Vaš iskalnik je <ph name="DSE_NAME" />. Oglejte si navodila iskalnika za brisan
 <translation id="1145536944570833626">Izbris obstoječih podatkov.</translation>
 <translation id="1147031633655575115">Prijavljeni ste kot <ph name="USER" /></translation>
 <translation id="1154984953698510061">Ogled drugih zavihkov</translation>
+<translation id="1161340988127985692">Poziv za odpiranje povezav iz drugih aplikacij v anonimnem načinu</translation>
 <translation id="1164064664035028907">Uproabi zapleteno geslo:</translation>
 <translation id="1165039591588034296">Napaka</translation>
 <translation id="1172898394251786223">Naslednje polje</translation>
@@ -292,6 +293,7 @@ Oglejte si navodila iskalnika za brisanje zgodovine iskanja, če je na voljo.</t
 <translation id="3443810440409579745">Prejet zavihek.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Razdeljeni pogled</translation>
+<translation id="3450502512529866925">Dodaj to stran med zaznamke</translation>
 <translation id="345565170154308620">Upravljanje gesel ...</translation>
 <translation id="3469166899695866866">Želite ustaviti prenos?</translation>
 <translation id="3470502288861289375">Kopiranje ...</translation>
@@ -406,6 +408,7 @@ Upoštevajte spodnja navodila:</translation>
 <translation id="4502566650163919158">Preveri</translation>
 <translation id="4505980578794259603">Nazadnje preverjeno: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Zapri predstavitev prijave</translation>
+<translation id="4511669830082467224">Išči po sliki z Googlom</translation>
 <translation id="4526249700380860531">Dostopajte do shranjenih gesel in jih upravljajte na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Pregled sinhroniziranih podatkov</translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
@@ -483,6 +486,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5090832849094901128">Če izbrišete to geslo, ne izbrišete računa na <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Strani lahko shranite, če želite brati pozneje ali brez povezave. Chrome vas bo vprašal, ali želite shraniti dolge strani.</translation>
 <translation id="5094827893301452931">Tvit je dokončan.</translation>
+<translation id="509789154667432072">Dodaj zaznamek</translation>
 <translation id="5118713593561876160">Zanimanja</translation>
 <translation id="5118764316110575523">Izklopljeno</translation>
 <translation id="5127805178023152808">Sinhroniziranje je izklopljeno</translation>
@@ -772,6 +776,7 @@ Ko uporabljate anonimni način, spletna mesta ne smejo uporabljati piškotkov za
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906">Št. neprebranih člankov: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="7412027924265291969">Naprej</translation>
+<translation id="7419565702166471774">Vedno dovoli varne povezave</translation>
 <translation id="7425346204213733349">Spremembe zaznamkov, zgodovine, gesel in drugih nastavitev ne bodo več sinhronizirane z Google Računom. Obstoječi podatki bodo še naprej shranjeni v Google Računu.</translation>
 <translation id="7431991332293347422">Nadziranje, kako se zgodovina brskanja uporabi za prilagajanje Iskanja Google in drugega</translation>
 <translation id="7435356471928173109">Izklopil skrbnik</translation>
@@ -811,7 +816,6 @@ Ko uporabljate anonimni način, spletna mesta ne smejo uporabljati piškotkov za
 <translation id="7781069478569868053">Nov zavihek s povezavami</translation>
 <translation id="7781829728241885113">Včeraj</translation>
 <translation id="778855399387580014">Začnite iskanje na novem Chromovem zavihku.</translation>
-<translation id="7790892308048519147">Poskusite uporabiti varne povezave</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="7807060072011926525">Zagotavlja Google</translation>
 <translation id="7839985698273989086">Stran brez povezave</translation>

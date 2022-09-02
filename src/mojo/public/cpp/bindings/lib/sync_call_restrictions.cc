@@ -15,9 +15,13 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "mojo/public/c/system/core.h"
 
+#include <atomic>
+
 namespace mojo {
 
 namespace {
+
+std::atomic<bool> g_force_sync_call_allowed{false};
 
 class GlobalSyncCallSettings {
  public:
@@ -30,7 +34,7 @@ class GlobalSyncCallSettings {
 
   bool sync_call_allowed_by_default() const {
     base::AutoLock lock(lock_);
-    return sync_call_allowed_by_default_;
+    return sync_call_allowed_by_default_ || g_force_sync_call_allowed;
   }
 
   void DisallowSyncCallByDefault() {
@@ -100,6 +104,10 @@ void SyncCallRestrictions::DecreaseScopedAllowCount() {
 
   DCHECK_GT(GetSequenceLocalScopedAllowCount(), 0u);
   --GetSequenceLocalScopedAllowCount();
+}
+
+void SyncCallRestrictions::ForceSyncCallAllowed() {
+  g_force_sync_call_allowed = true;
 }
 
 }  // namespace mojo

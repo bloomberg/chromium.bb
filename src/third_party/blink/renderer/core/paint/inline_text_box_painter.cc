@@ -38,6 +38,15 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/geometry/outsets_f.h"
 
+
+
+// patch section: highlight marker
+
+
+// patch section: color document marker
+
+
+
 namespace blink {
 
 class HTMLAnchorElement;

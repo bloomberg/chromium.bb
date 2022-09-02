@@ -64,7 +64,7 @@
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/ntp/features.h"
-#include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
+#import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #include "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/session_features.h"
@@ -926,10 +926,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSuggestionsScrollingOnIPadName,
      flag_descriptions::kEnableSuggestionsScrollingOnIPadDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableSuggestionsScrollingOnIPad)},
-    {"enable-expkit-apple-calendar",
-     flag_descriptions::kEnableExpKitAppleCalendarName,
-     flag_descriptions::kEnableExpKitAppleCalendarDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableExpKitAppleCalendar)},
     {"experience-kit-calendar", flag_descriptions::kCalendarExperienceKitName,
      flag_descriptions::kCalendarExperienceKitDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCalendarExperienceKit)},
@@ -978,6 +974,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"dm-token-deletion", flag_descriptions::kDmTokenDeletionName,
      flag_descriptions::kDmTokenDeletionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(policy::features::kDmTokenDeletion)},
+    {"enable-user-policy", flag_descriptions::kEnableUserPolicyName,
+     flag_descriptions::kEnableUserPolicyDescription, flags_ui::kOsIos,
+     SINGLE_VALUE_TYPE(policy::kEnableUserPolicy)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

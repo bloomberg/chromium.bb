@@ -191,6 +191,10 @@ namespace storage {
 class FileSystemBackend;
 }  // namespace storage
 
+namespace mojo {
+class OutgoingInvitation;
+}
+
 namespace content {
 enum class SiteIsolationMode;
 enum class SmsFetchFailureType;
@@ -1002,6 +1006,24 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool OverrideWebPreferencesAfterNavigation(
       WebContents* web_contents,
       blink::web_pref::WebPreferences* prefs);
+
+  // Returns true whether the embedder supports in-process renderers or not.
+  // When running "in process", the browser maintains a RenderProcessHost which
+  // communicates to a RenderProcess which is instantiated in the same process
+  // with the Browser. All IPC between the Browser and the Renderer is the
+  // same, it's just not crossing a process boundary. This returns false by
+  // default. If implementations return true, they must also implement
+  // StartInProcessRendererThread and StopInProcessRendererThread.
+  virtual bool SupportsInProcessRenderer();
+
+  // Start the in-process renderer thread.  This will only ever be called if
+  // SupportsInProcessRenderer() returns true.
+  virtual void StartInProcessRendererThread(
+      mojo::OutgoingInvitation* broker_client_invitation,
+      int renderer_client_id) {}
+
+  // Stop the in-process renderer thread.
+  virtual void StopInProcessRendererThread() {}
 
   // Notifies that BrowserURLHandler has been created, so that the embedder can
   // optionally add their own handlers.
@@ -2272,6 +2294,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       content::BrowserContext* browser_context,
       int32_t error_code);
+
+  // Handle a new-window/-tab request using an external implementation-defined
+  // handler, if appropriate. Returns true iff the request was handled.
+  virtual bool OpenExternally(RenderFrameHost* opener,
+                              const GURL& url,
+                              WindowOpenDisposition disposition);
 };
 
 }  // namespace content

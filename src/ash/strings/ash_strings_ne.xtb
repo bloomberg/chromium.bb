@@ -504,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> मा जडान हुँदै</translation>
 <translation id="3922427723338465344">{0,plural, =1{१ मिनेटभित्र यो डिभाइसमा अघिल्लो संस्करण रिस्टोर गर्नुहोस्}other{# मिनेटभित्र यो डिभाइसमा अघिल्लो संस्करण रिस्टोर गर्नुहोस्}}</translation>
 <translation id="3923494859158167397">कुनै पनि मोबाइल नेटवर्क सेटअप गरिएको छैन</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, कार्यक्रमहरू लोड गरिँदै छन्।</translation>
 <translation id="3932043219784172185">कुनै पनि डिभाइस कनेक्ट गरिएको छैन</translation>
 <translation id="3934456833412894880">एड्याप्टिभ चार्जिङ अन छ। तपाईंको डिभाइसको ब्याट्रीको आयु बढाउन ब्याट्री ८०% चार्ज भएर बस्ने छ र तपाईंलाई आवश्यक पर्दा ब्याट्री फुल चार्ज हुने छ।</translation>
 <translation id="3943857333388298514">टाँस्नुहोस्</translation>
@@ -703,6 +704,7 @@
 <translation id="5078796286268621944">गलत PIN</translation>
 <translation id="5083553833479578423">सहायकका थप सुविधाहरू अनलक गर्नुहोस्।</translation>
 <translation id="509790653408515442">तपाईंले आफ्नो फोनका एपहरू चलाउँदा ती एपहरू यहाँ देखिने छन्</translation>
+<translation id="5098537242461068432">डेस्क र विन्डोहरू फेरि खोलिए</translation>
 <translation id="5107522548814527560">वेब</translation>
 <translation id="5117590920725113268">अर्को महिना देखाउनुहोस्</translation>
 <translation id="5136175204352732067">भिन्न किबोर्ड जडान गरियो</translation>
@@ -1055,6 +1057,10 @@
 <translation id="7258828758145722155">हिजो सम्पादन गरिएको</translation>
 <translation id="726276584504105859">विभाजित स्क्रिनको प्रयोग गर्न यहाँ ड्र्याग गर्नुहोस्</translation>
 <translation id="7262906531272962081">रिमाइन्डर सिर्जना गर्नुहोस्</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> देखि
+        <ph name="END_TIME" /> सम्म,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />। थप विवरण हेर्न Google पात्रोमा गई चयन गर्नुहोस्।</translation>
 <translation id="7302889331339392448">लाइभ क्याप्सन अफ छ।</translation>
 <translation id="7303365578352795231">अर्को यन्त्रमा जवाफ दिँदै।</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1167,6 +1173,7 @@
 <translation id="7904094684485781019">यो खाताको प्रशासकले बहु साइन इनलाई अनुमति दिएको छैन ।</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">बोलिएका कुरा अबदेखि डिभाइसमा नै प्रोसेस गरिन्छ र स्पिच-टु-टेक्स्टले इन्टरनेटविना नै काम गर्छ</translation>
+<translation id="7932451802722951285">Google पात्रोमा खोल्नुहोस्</translation>
 <translation id="7933084174919150729">Google सहायक प्राथमिक प्रोफाइलहरूका लागि मात्र उपलब्ध छ।</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> र <ph name="SECOND_PARENT_EMAIL" /> ले व्यवस्थापन गरेको खाता</translation>
 <translation id="793716872548410480">आफ्नो क्लिपबोर्ड हेर्न <ph name="SHORTCUT_KEY_NAME" /> + V थिच्नुहोस्। तपाईंले कपी गर्नुभएका पछिल्ला ५ वस्तुहरू तपाईंको क्लिपबोर्डमा सुरक्षित गरिन्छन्।</translation>

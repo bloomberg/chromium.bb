@@ -6,12 +6,20 @@
 // file.
 #undef USING_V8_SHARED
 #include "include/v8config.h"
+#include "base/allocator/buildflags.h"
+#include "build/build_config.h"
 
 #if V8_OS_WIN
+#include <locale.h>
+#include <windows.h>
 #include "src/base/win32-headers.h"
 
 extern "C" {
 BOOL WINAPI DllMain(HANDLE hinstDLL, DWORD dwReason, LPVOID lpvReserved) {
+  if (dwReason == DLL_PROCESS_ATTACH) {
+    setlocale(LC_ALL, NULL);
+  }
+
   // Do nothing.
   return 1;
 }

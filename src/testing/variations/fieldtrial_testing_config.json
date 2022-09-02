@@ -375,6 +375,30 @@
             ]
         }
     ],
+    "AppCloseRefreshClankStudy": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Open30",
+                    "enable_features": [
+                        "FeedCloseRefresh"
+                    ]
+                },
+                {
+                    "name": "Interact30",
+                    "params": {
+                        "require_interaction": "true"
+                    },
+                    "enable_features": [
+                        "FeedCloseRefresh"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppListLaunchRecorder": [
         {
             "platforms": [
@@ -3109,7 +3133,7 @@
                     "enable_features": [
                         "NtpChromeCartModule",
                         "NtpDriveModule",
-                        "NtpModules",
+                        "NtpModulesLoadTimeoutMilliseconds",
                         "NtpPhotosModule",
                         "NtpRecipeTasksModule"
                     ],
@@ -3132,8 +3156,8 @@
                     "enable_features": [
                         "NtpChromeCartModule",
                         "NtpDriveModule",
-                        "NtpModules",
                         "NtpModulesFirstRunExperience",
+                        "NtpModulesLoadTimeoutMilliseconds",
                         "NtpRecipeTasksModule"
                     ],
                     "disable_features": [
@@ -3154,7 +3178,7 @@
                     "enable_features": [
                         "NtpChromeCartModule",
                         "NtpDriveModule",
-                        "NtpModules",
+                        "NtpModulesLoadTimeoutMilliseconds",
                         "NtpRecipeTasksModule"
                     ],
                     "disable_features": [
@@ -3176,8 +3200,8 @@
                     "enable_features": [
                         "NtpChromeCartModule",
                         "NtpDriveModule",
-                        "NtpModules",
                         "NtpModulesFirstRunExperience",
+                        "NtpModulesLoadTimeoutMilliseconds",
                         "NtpRecipeTasksModule"
                     ],
                     "disable_features": [
@@ -3198,8 +3222,8 @@
                     "enable_features": [
                         "NtpChromeCartModule",
                         "NtpDriveModule",
-                        "NtpModules",
                         "NtpModulesFirstRunExperience",
+                        "NtpModulesLoadTimeoutMilliseconds",
                         "NtpRecipeTasksModule"
                     ],
                     "disable_features": [
@@ -4124,7 +4148,28 @@
                 {
                     "name": "Enabled",
                     "params": {
+                        "delay_creation": "false",
                         "enable_launch_polish": "false"
+                    },
+                    "enable_features": [
+                        "GridTabSwitcherForTablets"
+                    ]
+                },
+                {
+                    "name": "Enabled_Polish",
+                    "params": {
+                        "delay_creation": "false",
+                        "enable_launch_polish": "true"
+                    },
+                    "enable_features": [
+                        "GridTabSwitcherForTablets"
+                    ]
+                },
+                {
+                    "name": "Enabled_Polish_Delay",
+                    "params": {
+                        "delay_creation": "true",
+                        "enable_launch_polish": "true"
                     },
                     "enable_features": [
                         "GridTabSwitcherForTablets"
@@ -4479,6 +4524,21 @@
                     "enable_features": [
                         "DefaultRequestedMode",
                         "IPH_DefaultSiteView"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSEnableFaviconForPasswords": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableFaviconForPasswords"
                     ]
                 }
             ]
@@ -6030,7 +6090,7 @@
             ]
         }
     ],
-    "OptimizeNetworkBuffers": [
+    "OptimizeNetworkBuffers2": [
         {
             "platforms": [
                 "android",
@@ -6046,7 +6106,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "OptimizeNetworkBuffers"
+                        "OptimizeNetworkBuffers2"
                     ]
                 }
             ]
@@ -7313,28 +7373,6 @@
                     "enable_features": [
                         "ServiceWorkerStorageControlOnIOThread",
                         "ServiceWorkerStorageControlResponseQueue"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SetTimeoutZeroWithoutClamping": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20211210",
-                    "enable_features": [
-                        "SetTimeoutWithoutClamp"
                     ]
                 }
             ]

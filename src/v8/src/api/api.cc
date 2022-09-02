@@ -167,6 +167,14 @@
 
 namespace v8 {
 
+// blpwtk2: Prevent the linker from stripping out these symbols from the
+// shared library export table in Release builds.
+#ifdef _WIN64
+#pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPEAV1234@_KPEAVTraceWriter@234@@Z")
+#else
+#pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPAV1234@IPAVTraceWriter@234@@Z")
+#endif
+
 // Redefine LegacyOOMErrorCallback here for internal usage. We still need to
 // support it but it is deprecated so would trigger warnings.
 // TODO(chromium:1323177): Remove this.
@@ -1989,6 +1997,23 @@ ScriptCompiler::CachedData::~CachedData() {
     delete[] data;
   }
 }
+
+//- - - - - - - - - - - - - - 'blpwtk2' Additions - - - - - - - - - - - - - - -
+
+ScriptCompiler::CachedData *
+ScriptCompiler::CachedData::create(const uint8_t *data,
+                                   int            length,
+                                   BufferPolicy   buffer_policy)
+{
+  return new ScriptCompiler::CachedData(data, length, buffer_policy);
+}
+
+void ScriptCompiler::CachedData::dispose(CachedData *data)
+{
+  delete data;
+}
+
+//- - - - - - - - - - - - - End 'blpwtk2' Additions - - - - - - - - - - - - - -
 
 ScriptCompiler::StreamedSource::StreamedSource(
     std::unique_ptr<ExternalSourceStream> stream, Encoding encoding)
@@ -6172,6 +6197,10 @@ bool v8::V8::InitializeICUDefaultLocation(const char* exec_path,
   return i::InitializeICUDefaultLocation(exec_path, icu_data_file);
 }
 
+bool v8::V8::InitializeICUWithData(const void* icu_data) {
+  return i::InitializeICUWithData(icu_data);
+}
+
 void v8::V8::InitializeExternalStartupData(const char* directory_path) {
   i::InitializeExternalStartupData(directory_path);
 }
@@ -9380,6 +9409,10 @@ CALLBACK_SETTER(WasmInstanceCallback, ExtensionCallback, wasm_instance_callback)
 CALLBACK_SETTER(WasmStreamingCallback, WasmStreamingCallback,
                 wasm_streaming_callback)
 
+CALLBACK_SETTER(WasmAsyncResolvePromiseCallback,
+                WasmAsyncResolvePromiseCallback,
+                wasm_async_resolve_promise_callback)
+
 CALLBACK_SETTER(WasmLoadSourceMapCallback, WasmLoadSourceMapCallback,
                 wasm_load_source_map_callback)
 
@@ -9823,10 +9856,15 @@ const CpuProfileNode* CpuProfileNode::GetParent() const {
   return reinterpret_cast<const CpuProfileNode*>(parent);
 }
 
+// SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+// SHEZ: because exporting std::vector doesn't work when building V8
+// SHEZ: as a separate DLL.
+#if 0
 const std::vector<CpuProfileDeoptInfo>& CpuProfileNode::GetDeoptInfos() const {
   const i::ProfileNode* node = reinterpret_cast<const i::ProfileNode*>(this);
   return node->deopt_infos();
 }
+#endif
 
 void CpuProfile::Delete() {
   i::CpuProfile* profile = reinterpret_cast<i::CpuProfile*>(this);
@@ -10130,6 +10168,17 @@ size_t HeapGraphNode::GetShallowSize() const {
 
 int HeapGraphNode::GetChildrenCount() const {
   return ToInternal(this)->children_count();
+}
+
+OutputStream::WriteResult OutputStream::WriteHeapStatsChunk(HeapStatsUpdate* data, int count) {
+    return kAbort;
+}
+
+OutputStream::OutputStream() = default;
+OutputStream::~OutputStream() = default;
+
+int OutputStream::GetChunkSize() {
+  return 1024;
 }
 
 const HeapGraphEdge* HeapGraphNode::GetChild(int index) const {
@@ -10457,6 +10506,21 @@ std::shared_ptr<WasmStreaming> WasmStreaming::Unpack(Isolate* v8_isolate,
   FATAL("WebAssembly is disabled");
 }
 #endif  // !V8_ENABLE_WEBASSEMBLY
+
+size_t ConvertableToTraceFormatShim::AppendAsTraceFormat(char* out, size_t maxSize) const {
+  const char* trace = GetToBeAppendedTraceFormat();
+  size_t len = strlen(trace);
+  if (out) {
+    if (len && maxSize > 1) {
+      len = len > maxSize-1 ? maxSize-1 : len;
+      strncpy(out, trace, len);
+      out[len] = 0;
+    } else {
+      len = -1;
+    }
+  }
+  return len+1;
+}
 
 namespace internal {
 

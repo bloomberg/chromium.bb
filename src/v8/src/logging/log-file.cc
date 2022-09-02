@@ -35,7 +35,7 @@ FILE* LogFile::CreateOutputHandle(std::string file_name) {
   } else if (LogFile::IsLoggingToTemporaryFile(file_name)) {
     return base::OS::OpenTemporaryFile();
   } else {
-    return base::OS::FOpen(file_name.c_str(), base::OS::LogFileOpenMode);
+    return base::OS::FOpen(file_name.c_str(), base::OS::GetLogFileOpenMode());
   }
 }
 

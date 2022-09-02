@@ -27,6 +27,7 @@ Bạn đang dùng công cụ tìm kiếm <ph name="DSE_NAME" />. Để xóa nh�
 <translation id="1145536944570833626">Xóa dữ liệu hiện có.</translation>
 <translation id="1147031633655575115">Đã đăng nhập bằng tên <ph name="USER" /></translation>
 <translation id="1154984953698510061">Xem các thẻ khác</translation>
+<translation id="1161340988127985692">Yêu cầu Mở đường liên kết từ các Ứng dụng khác ở Chế độ ẩn danh</translation>
 <translation id="1164064664035028907">Dùng mật khẩu mạnh:</translation>
 <translation id="1165039591588034296">Lỗi</translation>
 <translation id="1172898394251786223">Trường tiếp theo</translation>
@@ -292,6 +293,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="3443810440409579745">Đã nhận thẻ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> phút</translation>
 <translation id="3448016392200048164">Chế độ xem phân tách</translation>
+<translation id="3450502512529866925">Đánh dấu trang này</translation>
 <translation id="345565170154308620">Quản lý mật khẩu...</translation>
 <translation id="3469166899695866866">Dừng tải xuống?</translation>
 <translation id="3470502288861289375">Đang sao chép...</translation>
@@ -406,6 +408,7 @@ Hãy làm theo các bước sau:</translation>
 <translation id="4502566650163919158">Kiểm tra ngay</translation>
 <translation id="4505980578794259603">Lần kiểm tra gần đây nhất: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Đóng quảng cáo đăng nhập</translation>
+<translation id="4511669830082467224">Tìm hình ảnh bằng Google</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Xem lại các dữ liệu đã đồng bộ hóa của bạn</translation>
 <translation id="4536418791685807335">Thử đăng nhập lại.</translation>
@@ -483,6 +486,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5090832849094901128">Thao tác xóa mật khẩu này sẽ không xóa tài khoản của bạn trên <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Bạn có thể lưu các trang để đọc vào lúc khác hoặc khi không có kết nối mạng. Chrome sẽ hỏi xem bạn có muốn lưu các trang dài hay không.</translation>
 <translation id="5094827893301452931">Đã đăng lên Twitter.</translation>
+<translation id="509789154667432072">Thêm Dấu trang</translation>
 <translation id="5118713593561876160">Sở thích</translation>
 <translation id="5118764316110575523">Đang tắt</translation>
 <translation id="5127805178023152808">Tính năng đồng bộ hóa đang tắt</translation>
@@ -710,7 +714,7 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="683022620450280906">Bạn có thể dùng mật khẩu đã lưu trên mọi thiết bị. Những mật khẩu này được lưu vào Trình quản lý mật khẩu của Google cho <ph name="EMAIL" /></translation>
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="6842136130964845393">Hãy xác minh danh tính của bạn để đảm bảo bạn luôn có thể truy cập mật khẩu đã lưu</translation>
-<translation id="6851516051005285358">Yêu cầu trang web dành cho máy tính để bàn</translation>
+<translation id="6851516051005285358">Yêu cầu trang web cho máy tính</translation>
 <translation id="6858855187367714033">Đã quét</translation>
 <translation id="6859944681507688231">Để quét mã QR hoặc thẻ tín dụng, hãy bật máy ảnh trong phần cài đặt.</translation>
 <translation id="6867369562105931222">mật khẩu</translation>
@@ -772,6 +776,7 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> bài viết chưa đọc.</translation>
 <translation id="7412027924265291969">Tiếp tục</translation>
+<translation id="7419565702166471774">Luôn sử dụng kết nối an toàn</translation>
 <translation id="7425346204213733349">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và các tùy chọn cài đặt khác sẽ không đồng bộ hóa với Tài khoản Google của bạn nữa. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong tài khoản Google của bạn.</translation>
 <translation id="7431991332293347422">Kiểm soát cách Google sử dụng nhật ký duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm và các dịch vụ khác</translation>
 <translation id="7435356471928173109">Quản trị viên đã tắt</translation>
@@ -811,7 +816,6 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="7781069478569868053">Trang thẻ mới</translation>
 <translation id="7781829728241885113">Hôm qua</translation>
 <translation id="778855399387580014">Bắt đầu tìm kiếm trong thẻ Chrome mới.</translation>
-<translation id="7790892308048519147">Hãy sử dụng kết nối bảo mật</translation>
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="7807060072011926525">Do Google cung cấp</translation>
 <translation id="7839985698273989086">Trang ngoại tuyến</translation>

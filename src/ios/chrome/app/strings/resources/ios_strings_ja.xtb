@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
 <translation id="1147031633655575115"><ph name="USER" /> としてログイン</translation>
 <translation id="1154984953698510061">他のタブを表示</translation>
+<translation id="1161340988127985692">他のアプリからのリンクをシークレット モードで開くか確認する</translation>
 <translation id="1164064664035028907">安全なパスワードを使用:</translation>
 <translation id="1165039591588034296">エラー</translation>
 <translation id="1172898394251786223">次の項目</translation>
@@ -106,7 +107,7 @@
 <translation id="1753905327828125965">よくアクセスするページ</translation>
 <translation id="1803264062614276815">カード名義人</translation>
 <translation id="1809939268435598390">フォルダーを削除</translation>
-<translation id="1813414402673211292">閲覧履歴データの削除</translation>
+<translation id="1813414402673211292">閲覧履歴データを削除</translation>
 <translation id="1815941218935345331">パスコード</translation>
 <translation id="1820259098641718022">リーディング リストに追加しました</translation>
 <translation id="1832848789136765277">同期データに常にアクセスできるようにするには、本人確認を行ってください</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">タブが共有されました。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3448016392200048164">分割表示</translation>
+<translation id="3450502512529866925">このページをブックマークする</translation>
 <translation id="345565170154308620">パスワードを管理...</translation>
 <translation id="3469166899695866866">ダウンロードを中止しますか？</translation>
 <translation id="3470502288861289375">コピーしています...</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">今すぐ確認</translation>
 <translation id="4505980578794259603">最終確認日: <ph name="TIME" /></translation>
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
+<translation id="4511669830082467224">Google で画像を検索</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="452750746583162491">同期したデータを確認する</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>
@@ -475,7 +478,7 @@
 <translation id="5005498671520578047">パスワードのコピー</translation>
 <translation id="5017828934289857214">後で通知する</translation>
 <translation id="5037676449506322593">すべてを選択</translation>
-<translation id="5039804452771397117">許可</translation>
+<translation id="5039804452771397117">許可する</translation>
 <translation id="5056446788882570708"><ph name="TIME" />に問題が見つかりました。</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">ドライブをインストール</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">このパスワードを削除しても、<ph name="WEBSITE" /> のアカウントは削除されません。</translation>
 <translation id="5092117651143801290">ページを保存して、後で読んだり、オフラインで読んだりできます。長いページを保存する場合は確認のメッセージが表示されます。</translation>
 <translation id="5094827893301452931">ツイートが完了しました。</translation>
+<translation id="509789154667432072">ブックマークを追加する</translation>
 <translation id="5118713593561876160">興味 / 関心</translation>
 <translation id="5118764316110575523">オフ</translation>
 <translation id="5127805178023152808">同期は無効です</translation>
@@ -772,6 +776,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> 件の未読記事があります。</translation>
 <translation id="7412027924265291969">続行</translation>
+<translation id="7419565702166471774">常に安全な接続を使用する</translation>
 <translation id="7425346204213733349">今後、ブックマーク、履歴、パスワード、その他の設定に行った変更は Google アカウントに同期されません。ただし、既存のデータは Google アカウントに保存されたままとなります。</translation>
 <translation id="7431991332293347422">検索などのカスタマイズを目的とした閲覧履歴の使用方法を設定</translation>
 <translation id="7435356471928173109">管理者によってオフにされています</translation>
@@ -811,7 +816,6 @@
 <translation id="7781069478569868053">新しいタブページ</translation>
 <translation id="7781829728241885113">昨日</translation>
 <translation id="778855399387580014">新しい Chrome タブで検索を開始します。</translation>
-<translation id="7790892308048519147">安全な接続を試す</translation>
 <translation id="7791543448312431591">追加</translation>
 <translation id="7807060072011926525">Google から提供</translation>
 <translation id="7839985698273989086">オフライン ページ</translation>

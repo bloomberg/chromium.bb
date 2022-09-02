@@ -65,7 +65,7 @@ const base::FeatureParam<double> kMinimumEntropyForLCP{
 // Used as a binding for controlling the runtime enabled blink feature
 // "FixedElementsDontOverscroll". This is needed for experimentation.
 const base::Feature kFixedElementsDontOverscroll{
-    "FixedElementsDontOverscroll", base::FEATURE_ENABLED_BY_DEFAULT};
+    "FixedElementsDontOverscroll", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1213,7 +1213,7 @@ const base::Feature kClientHintsViewportWidth_DEPRECATED{
 // If enabled, the setTimeout(..., 0) will not clamp to 1ms.
 // Tracking bug: https://crbug.com/402694.
 const base::Feature kSetTimeoutWithoutClamp{"SetTimeoutWithoutClamp",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -1534,6 +1534,9 @@ const base::Feature kFileSystemUrlNavigation{"FileSystemUrlNavigation",
 
 const base::Feature kEarlyExitOnNoopClassOrStyleChange{
     "EarlyExitOnNoopClassOrStyleChange", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTimedHTMLParserBudget{"TimedHTMLParserBudget",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

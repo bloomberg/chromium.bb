@@ -20,6 +20,7 @@
       '. .     .';
     grid-template-columns: 20px 1fr 20px;
     grid-template-rows: auto minmax(158px, 220px) 20px 1fr 24px;
+    height: 100%;
   }
 
   #wallpaperLabel > h2 {
@@ -45,16 +46,6 @@
     justify-self: center;
     max-width: 360px;
     min-width: 252px;
-  }
-
-  #shelf {
-    background-color: var(--cros-separator-color);
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    bottom: 0;
-    height: 24px;
-    position: absolute;
-    width: 100%;
   }
 
   ::slotted(personalization-theme) {
@@ -91,17 +82,17 @@
     <template is="dom-if" if="[[!isPolicyControlled_(image_)]]">
       <div id="imageContainer" class="photo-images-container clickable"
           on-click="onClickWallpaper_" on-keypress="onClickWallpaper_">
+        <div class="photo-images-border"></div>
         <img src$="[[getImageSrc_(image_)]]"
             alt$="[[getImageAltDescription_(image_)]]">
-        <div id="shelf"></div>
       </div>
     </template>
     <template is="dom-if" if="[[isPolicyControlled_(image_)]]">
       <div id="imageContainer" class="photo-images-container">
+        <div class="photo-images-border"></div>
         <img src$="[[getImageSrc_(image_)]]"
             aria-description="$i18n{managedSetting}"
             alt$="[[getImageAltDescription_(image_)]]">
-        <div id="shelf"></div>
       </div>
     </template>
   </template>

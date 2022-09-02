@@ -174,6 +174,7 @@ FrameTreeNode::FrameTreeNode(
     FrameTree* frame_tree,
     RenderFrameHostImpl* parent,
     blink::mojom::TreeScopeType tree_scope_type,
+    int render_process_affinity,
     bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
@@ -190,7 +191,7 @@ FrameTreeNode::FrameTreeNode(
       frame_owner_properties_(frame_owner_properties),
       fenced_frame_status_(
           ComputeFencedFrameStatus(frame_tree_, parent_, frame_policy)),
-      render_manager_(this, frame_tree->manager_delegate()) {
+      render_manager_(this, frame_tree->manager_delegate(), render_process_affinity) {
   TRACE_EVENT_BEGIN("navigation", "FrameTreeNode",
                     perfetto::Track::FromPointer(this),
                     "frame_tree_node_when_created", this);

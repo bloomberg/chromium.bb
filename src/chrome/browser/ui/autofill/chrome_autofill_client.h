@@ -103,8 +103,7 @@ class ChromeAutofillClient
           confirm_unmask_challenge_option_callback,
       base::OnceClosure cancel_unmasking_closure) override;
   void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
-  raw_ptr<VirtualCardEnrollmentManager> GetVirtualCardEnrollmentManager()
-      override;
+  VirtualCardEnrollmentManager* GetVirtualCardEnrollmentManager() override;
   void ShowVirtualCardEnrollDialog(
       const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
@@ -202,7 +201,7 @@ class ChromeAutofillClient
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
-  void OnPromoCodeSuggestionsFooterSelected(const GURL& url) override;
+  void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   LogManager* GetLogManager() const override;
 
   // RiskDataLoader:

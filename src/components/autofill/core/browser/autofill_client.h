@@ -429,8 +429,7 @@ class AutofillClient : public RiskDataLoader {
   // AutofillClient. VirtualCardEnrollmentManager is used for virtual card
   // enroll and unenroll related flows. This function may return a nullptr on
   // some platforms.
-  virtual raw_ptr<VirtualCardEnrollmentManager>
-  GetVirtualCardEnrollmentManager();
+  virtual VirtualCardEnrollmentManager* GetVirtualCardEnrollmentManager();
 
   // Shows a dialog for the user to enroll in a virtual card.
   virtual void ShowVirtualCardEnrollDialog(
@@ -692,8 +691,10 @@ class AutofillClient : public RiskDataLoader {
   virtual bool IsQueryIDRelevant(int query_id) = 0;
 #endif
 
-  // Opens a new tab and navigates to the given |url|.
-  virtual void OnPromoCodeSuggestionsFooterSelected(const GURL& url) = 0;
+  // Navigates to |url| in a new tab. |url| links to the promo code offer
+  // details page for the offers in a promo code suggestions popup. Every offer
+  // in a promo code suggestions popup links to the same offer details page.
+  virtual void OpenPromoCodeOfferDetailsURL(const GURL& url) = 0;
 };
 
 }  // namespace autofill

@@ -62,6 +62,7 @@
 <translation id="1459784442280469416">Salvar no pen drive</translation>
 <translation id="1468664791493211953">Ofertas</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> gerencia este dispositivo e pode monitorar sua atividade.</translation>
+<translation id="147809995039451286">Não foi possível fazer o download da atualização</translation>
 <translation id="1478594628797167447">Scanner</translation>
 <translation id="1491076385728777984">Atualizando firmware no <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> gerencia o usuário. Esse administrador pode controlar as configurações e monitorar a atividade do usuário remotamente.</translation>
@@ -126,6 +127,7 @@
 <translation id="1999615961760456652">Portal cativo</translation>
 <translation id="2006864819935886708">Conectividade</translation>
 <translation id="2008685064673031089">Pesquisa de números primos</translation>
+<translation id="2011174342667534258">Versão do SDK:</translation>
 <translation id="2016697457005847575">Testar etapas de solução de problemas</translation>
 <translation id="2016848882344942759">--limpar marca branca--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -157,6 +159,7 @@
 <translation id="225692081236532131">Status da ativação</translation>
 <translation id="2271469253353559191">Programação do modo escuro</translation>
 <translation id="2275586345903859204">O reparo foi concluído</translation>
+<translation id="2276999893457278469">Conteúdo de ajuda principal</translation>
 <translation id="2287186687001756809">Nenhuma imagem disponível. Para adicionar fotos, acesse <ph name="LINK" /></translation>
 <translation id="2294753434210277304">Insira o dispositivo de armazenamento externo, como um drive USB ou cartão SD, com a imagem transferida por download do Utilitário de recuperação do Chromebook</translation>
 <translation id="2307344026739914387">Usar par de chaves atual</translation>
@@ -178,6 +181,7 @@
 <translation id="2418150275289244458">Abrir nas configurações</translation>
 <translation id="2421798028054665193">Imagem <ph name="CURRENT_PAGE" /> de <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Precisão de pontos flutuantes</translation>
+<translation id="2447969267935997922">A instalação foi concluída. Você já pode remover o drive USB ou cartão SD.</translation>
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2461822463642141190">Atual</translation>
 <translation id="2480034874476596812">Desativar manualmente</translation>
@@ -189,6 +193,7 @@
 <translation id="2517472476991765520">Verificar</translation>
 <translation id="2526590354069164005">Área de trabalho</translation>
 <translation id="253029298928638905">Reiniciando…</translation>
+<translation id="2533048460510040082">Conteúdo de ajuda sugerido</translation>
 <translation id="2536159006530886390">Não é possível se conectar à Internet.</translation>
 <translation id="2570743873672969996">Executando o teste <ph name="TEST_NAME" />…</translation>
 <translation id="2584559707064218956">Para definir, acesse as Configurações</translation>
@@ -288,6 +293,7 @@
 <translation id="3621202678540785336">Entrada</translation>
 <translation id="3632579075709132555">Alternar Tela de privacidade</translation>
 <translation id="3643810137582748570">Pular calibragem</translation>
+<translation id="3651050199673793219">Selecione uma unidade de temperatura</translation>
 <translation id="3678765385266369662">Selecione como você quer desativar a proteção contra gravação</translation>
 <translation id="3689839747745352263">Teste de <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Carregando...</translation>
@@ -305,6 +311,7 @@
 <translation id="3856304145690230735">Giroscópio da base</translation>
 <translation id="385832974417157471">Antes de desligar, execute o Powerwash no dispositivo. Caso seu dispositivo tenha tampa, espere até a conclusão do Powerwash para fechar. O Powerwash pode levar até um minuto para ser concluído.</translation>
 <translation id="3858860766373142691">Nome</translation>
+<translation id="3862598938296403232">A descrição é obrigatória</translation>
 <translation id="3865414814144988605">Resolução</translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="387301095347517405">O número de vezes que a bateria passou por um ciclo completo de carregamento</translation>
@@ -678,6 +685,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
 <translation id="714876143603641390">Conectividade LAN</translation>
+<translation id="7154020516215182599">Compartilhe seu feedback ou descreva o problema. Se possível, inclua etapas para reproduzir o problema.</translation>
 <translation id="7155171745945906037">Foto existente na câmera ou em arquivo</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7170236477717446850">Foto do perfil</translation>
@@ -855,6 +863,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="885701979325669005">Armazenamento</translation>
 <translation id="8863170912498892583">Ativar o tema escuro</translation>
 <translation id="8863888432376731307">Veja a <ph name="INTENT" /> de "<ph name="QUERY" />" e muito mais</translation>
+<translation id="8864415976656252616">Nenhum conteúdo sugerido. Consulte o conteúdo de ajuda principal.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Este dispositivo é um tablet.</translation>
 <translation id="8881098542468797602">Teste bem sucedido</translation>

@@ -258,9 +258,33 @@ const base::FeatureParam<std::string> kVulkanBlockListByBoard{
 const base::FeatureParam<std::string> kVulkanBlockListByAndroidBuildFP{
     &kVulkan, "BlockListByAndroidBuildFP", ""};
 
+// Blocklists meant for DrDc.
 // crbug.com/1294648
 const base::FeatureParam<std::string> kDrDcBlockListByDevice{
     &kEnableDrDc, "BlockListByDevice", "LF9810_2GB"};
+
+// crbug.com/1340059, crbug.com/1340064
+const base::FeatureParam<std::string> kDrDcBlockListByModel{
+    &kEnableDrDc, "BlockListByModel",
+    "SM-J400M|SM-J415F|ONEPLUS A3003|OCTAStream*"};
+
+const base::FeatureParam<std::string> kDrDcBlockListByHardware{
+    &kEnableDrDc, "BlockListByHardware", ""};
+
+const base::FeatureParam<std::string> kDrDcBlockListByBrand{
+    &kEnableDrDc, "BlockListByBrand", "HONOR"};
+
+const base::FeatureParam<std::string> kDrDcBlockListByAndroidBuildId{
+    &kEnableDrDc, "BlockListByAndroidBuildId", ""};
+
+const base::FeatureParam<std::string> kDrDcBlockListByManufacturer{
+    &kEnableDrDc, "BlockListByManufacturer", ""};
+
+const base::FeatureParam<std::string> kDrDcBlockListByBoard{
+    &kEnableDrDc, "BlockListByBoard", ""};
+
+const base::FeatureParam<std::string> kDrDcBlockListByAndroidBuildFP{
+    &kEnableDrDc, "BlockListByAndroidBuildFP", ""};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Enable SkiaRenderer Dawn graphics backend. On Windows this will use D3D12,
@@ -368,10 +392,26 @@ bool IsDrDcEnabled() {
   const auto* build_info = base::android::BuildInfo::GetInstance();
   if (IsDeviceBlocked(build_info->device(), kDrDcBlockListByDevice.Get()))
     return false;
+  if (IsDeviceBlocked(build_info->model(), kDrDcBlockListByModel.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->hardware(), kDrDcBlockListByHardware.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->brand(), kDrDcBlockListByBrand.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->android_build_id(),
+                      kDrDcBlockListByAndroidBuildId.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->manufacturer(),
+                      kDrDcBlockListByManufacturer.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->board(), kDrDcBlockListByBoard.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->android_build_fp(),
+                      kDrDcBlockListByAndroidBuildFP.Get()))
+    return false;
 
   if (!base::FeatureList::IsEnabled(kEnableDrDc))
     return false;
-
   return IsUsingVulkan() ? base::FeatureList::IsEnabled(kEnableDrDcVulkan)
                          : true;
 #else

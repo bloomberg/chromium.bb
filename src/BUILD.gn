@@ -730,6 +730,10 @@ group("gn_all") {
     deps += [ "//third_party/sqlite:sqlite_shell" ]
   }
 
+  if (is_win) {
+    deps += [ "//blpwtk2:blpwtk2_all" ]
+  }
+
   if ((is_linux && !is_chromecast) || is_chromeos_lacros || is_fuchsia) {
     # TODO(https://crbug.com/1329673): Figure out if this should be in gn_all and how cross-platform this is.
     deps += [ "//components/services/filesystem:filesystem_service_unittests" ]

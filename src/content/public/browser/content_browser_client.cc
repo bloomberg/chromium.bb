@@ -20,6 +20,7 @@
 #include "base/guid.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/values.h"
@@ -48,6 +49,7 @@
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_utils.h"
+#include "content/shell/common/shell_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "net/cookies/site_for_cookies.h"
@@ -77,6 +79,10 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/tts_environment_android.h"
+#endif
+
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox.h"
 #endif
 
 namespace content {
@@ -615,6 +621,10 @@ TtsControllerDelegate* ContentBrowserClient::GetTtsControllerDelegate() {
 
 TtsPlatform* ContentBrowserClient::GetTtsPlatform() {
   return nullptr;
+}
+
+bool ContentBrowserClient::SupportsInProcessRenderer() {
+  return false;
 }
 
 base::FilePath ContentBrowserClient::GetDefaultDownloadDirectory() {
@@ -1361,6 +1371,12 @@ ContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     content::BrowserContext* browser_context,
     int32_t error_code) {
   return nullptr;
+}
+
+bool ContentBrowserClient::OpenExternally(RenderFrameHost* opener,
+                                          const GURL& url,
+                                          WindowOpenDisposition disposition) {
+  return false;
 }
 
 }  // namespace content

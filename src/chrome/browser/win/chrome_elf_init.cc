@@ -171,6 +171,7 @@ void BrowserBlocklistBeaconSetup() {
 
   if (blocklist_state == blocklist::BLOCKLIST_ENABLED) {
     // The blocklist setup didn't crash, so we report if it was enabled or not.
+#if !defined(BLPWTK2_IMPLEMENTATION)
     if (IsThirdPartyInitialized()) {
       RecordBlocklistSetupEvent(BLOCKLIST_SETUP_RAN_SUCCESSFULLY);
     } else {
@@ -179,6 +180,7 @@ void BrowserBlocklistBeaconSetup() {
       // for more details.
       RecordBlocklistSetupEvent(BLOCKLIST_THUNK_SETUP_FAILED);
     }
+#endif
 
     // Regardless of if the blocklist was fully enabled or not, report how many
     // times we had to try to set it up.

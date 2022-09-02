@@ -305,6 +305,9 @@ const char kDurableClientHintsCache[] = "durable-client-hints-cache";
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 
+// Enables CSS3 Text.
+const char kEnableCSS3Text[] = "enable-css3-text";
+
 // Enable one or more Blink runtime-enabled features.
 // Use names from runtime_enabled_features.json5, separated by commas.
 // Applied before kDisableBlinkFeatures, and after other flags that change these
@@ -1039,6 +1042,9 @@ const char kGpu2StartupDialog[] = "gpu2-startup-dialog";
 
 // Use high priority for the audio process.
 const char kAudioProcessHighPriority[] = "audio-process-high-priority";
+
+// Enable DPI awareness for the process
+const char kDpiAwarenessMode[] = "dpi-awareness-mode";
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

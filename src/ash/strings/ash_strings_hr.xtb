@@ -504,6 +504,7 @@ Priključite uređaj na napajanje.</translation>
 <translation id="3901991538546252627">Povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Vratite uređaj na prethodnu verziju u roku od 1 min}one{Vratite uređaj na prethodnu verziju u roku od # min}few{Vratite uređaj na prethodnu verziju u roku od # min}other{Vratite uređaj na prethodnu verziju u roku od # min}}</translation>
 <translation id="3923494859158167397">Nije postavljena nijedna mobilna mreža</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Učitavanje događaja.</translation>
 <translation id="3932043219784172185">Nije povezan nijedan uređaj</translation>
 <translation id="3934456833412894880">Uključeno je adaptivno punjenje. Baterija će ostati na 80% kako bi se produljilo trajanje baterije i napunjena kad vam zatreba.</translation>
 <translation id="3943857333388298514">Zalijepi</translation>
@@ -703,6 +704,7 @@ Priključite uređaj na napajanje.</translation>
 <translation id="5078796286268621944">Netočan PIN</translation>
 <translation id="5083553833479578423">Otključajte više značajki Asistenta.</translation>
 <translation id="509790653408515442">Kad emitirate aplikacije svojeg telefona, one će se pojaviti ovdje</translation>
+<translation id="5098537242461068432">Radna površina i prozori ponovno su otvoreni</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Prikaži sljedeći mjesec</translation>
 <translation id="5136175204352732067">Povezana je neka druga tipkovnica</translation>
@@ -1055,6 +1057,10 @@ Novo instaliranje</translation>
 <translation id="7258828758145722155">Uređeno jučer</translation>
 <translation id="726276584504105859">Povucite ovdje da biste upotrebljavali podijeljeni zaslon</translation>
 <translation id="7262906531272962081">Izrada podsjetnika</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> prima
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Odaberite za više pojedinosti u Google kalendaru.</translation>
 <translation id="7302889331339392448">Isključeni su automatski titlovi.</translation>
 <translation id="7303365578352795231">Odgovaranje na drugom uređaju.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1167,6 +1173,7 @@ Novo instaliranje</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Govor se sada obrađuje lokalno, a diktiranje funkcionira offline.</translation>
+<translation id="7932451802722951285">Otvori u Google kalendaru</translation>
 <translation id="7933084174919150729">Google asistent dostupan je samo za primarni profil.</translation>
 <translation id="79341161159229895">Računom upravljaju <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Pritisnite <ph name="SHORTCUT_KEY_NAME" /> + V da biste vidjeli međuspremnik. Posljednjih pet kopiranih stavki spremljeno je u međuspremnik.</translation>

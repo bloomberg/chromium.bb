@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -55,11 +54,9 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
  * A {@link RootUiCoordinator} variant that controls UI for {@link BaseCustomTabActivity}.
  */
 public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
-    private final ObservableSupplier<CompositorViewHolder> mCompositorViewHolderSupplier;
     private final Supplier<CustomTabToolbarCoordinator> mToolbarCoordinator;
     private final Supplier<CustomTabActivityNavigationController> mNavigationController;
     private final Supplier<BrowserServicesIntentDataProvider> mIntentDataProvider;
-    private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
 
     private CustomTabHeightStrategy mCustomTabHeightStrategy;
 
@@ -97,7 +94,6 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
      * @param customTabToolbarCoordinator Coordinates the custom tab toolbar.
      * @param customTabNavigationController Controls the custom tab navigation.
      * @param intentDataProvider Contains intent information used to start the Activity.
-     * @param multiWindowModeStateDispatcher Required to register for multi-window mode changes.
      */
     public BaseCustomTabRootUiCoordinator(@NonNull AppCompatActivity activity,
             @NonNull ObservableSupplier<ShareDelegate> shareDelegateSupplier,
@@ -130,8 +126,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             @NonNull Supplier<CustomTabToolbarCoordinator> customTabToolbarCoordinator,
             @NonNull Supplier<CustomTabActivityNavigationController> customTabNavigationController,
             @NonNull Supplier<BrowserServicesIntentDataProvider> intentDataProvider,
-            @NonNull Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
-            @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher) {
+            @NonNull Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier) {
         // clang-format off
         super(activity, null, shareDelegateSupplier, tabProvider,
                 profileSupplier, bookmarkBridgeSupplier, tabBookmarkerSupplier,
@@ -148,11 +143,9 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 statusBarColorProvider, intentRequestTracker, new OneshotSupplierImpl<>(),
                 ephemeralTabCoordinatorSupplier, false, null);
         // clang-format on
-        mCompositorViewHolderSupplier = compositorViewHolderSupplier;
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;
         mIntentDataProvider = intentDataProvider;
-        mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
     }
 
     @Override
@@ -204,12 +197,24 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 != null : "IntentDataProvider needs to be non-null after preInflationStartup";
 
         mCustomTabHeightStrategy = CustomTabHeightStrategy.createStrategy(mActivity,
-                mCompositorViewHolderSupplier, intentDataProvider.getInitialActivityHeight(),
-                mMultiWindowModeStateDispatcher,
+                intentDataProvider.getInitialActivityHeight(),
                 intentDataProvider.getColorProvider().getNavigationBarColor(),
                 intentDataProvider.getColorProvider().getNavigationBarDividerColor(),
                 CustomTabsConnection.getInstance(), intentDataProvider.getSession(),
                 mActivityLifecycleDispatcher);
+    }
+
+    @Override
+    public void onPostInflationStartup() {
+        super.onPostInflationStartup();
+        mCustomTabHeightStrategy.onPostInflationStartup();
+    }
+
+    @Override
+    protected void setStatusBarScrimFraction(float scrimFraction) {
+        super.setStatusBarScrimFraction(scrimFraction);
+        // TODO(jinsukkim): Separate CCT scrim update action from status bar scrim stuff.
+        mCustomTabHeightStrategy.setScrimFraction(scrimFraction);
     }
 
     /**
@@ -220,5 +225,13 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         if (mCustomTabHeightStrategy == null) return false;
 
         return mCustomTabHeightStrategy.changeBackgroundColorForResizing();
+    }
+
+    /**
+     * Perform slide-down animation on closing.
+     * @param finishRunnable Runnable finishing the activity after the animation.
+     */
+    void handleCloseAnimation(Runnable finishRunnable) {
+        mCustomTabHeightStrategy.handleCloseAnimation(finishRunnable);
     }
 }

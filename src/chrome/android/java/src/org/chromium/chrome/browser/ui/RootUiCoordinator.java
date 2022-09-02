@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ui;
 
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -1152,7 +1153,7 @@ public class RootUiCoordinator
                 new ScrimCoordinator.SystemUiScrimDelegate() {
                     @Override
                     public void setStatusBarScrimFraction(float scrimFraction) {
-                        mStatusBarColorController.setStatusBarScrimFraction(scrimFraction);
+                        RootUiCoordinator.this.setStatusBarScrimFraction(scrimFraction);
                     }
 
                     @Override
@@ -1160,6 +1161,10 @@ public class RootUiCoordinator
                 };
         return new ScrimCoordinator(mActivity, delegate, coordinator,
                 coordinator.getContext().getColor(R.color.omnibox_focused_fading_background_color));
+    }
+
+    protected void setStatusBarScrimFraction(float scrimFraction) {
+        mStatusBarColorController.setStatusBarScrimFraction(scrimFraction);
     }
 
     protected void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
@@ -1224,7 +1229,14 @@ public class RootUiCoordinator
             mAppMenuCoordinator = AppMenuCoordinatorFactory.createAppMenuCoordinator(mActivity,
                     mActivityLifecycleDispatcher, mToolbarManager, mAppMenuDelegate,
                     mActivity.getWindow().getDecorView(),
-                    mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub));
+                    mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub),
+                    () -> {
+                        View coord = mActivity.findViewById(R.id.coordinator);
+                        int[] location = new int[2];
+                        coord.getLocationInWindow(location);
+                        return new Rect(location[0], location[1], location[0] + coord.getWidth(),
+                                location[1] + coord.getHeight());
+                    });
             AppMenuCoordinatorFactory.setExceptionReporter(
                     (throwable)
                             -> ChromePureJavaExceptionReporter.reportJavaException(
@@ -1320,7 +1332,8 @@ public class RootUiCoordinator
                         -> mScrimCoordinator,
                 sheetInitializedCallback, mActivity.getWindow(),
                 mWindowAndroid.getKeyboardDelegate(),
-                () -> mActivity.findViewById(R.id.sheet_container));
+                () -> mActivity.findViewById(R.id.sheet_container),
+                () -> mActivity.findViewById(R.id.coordinator).getHeight());
         BottomSheetControllerFactory.setExceptionReporter(
                 (throwable)
                         -> ChromePureJavaExceptionReporter.reportJavaException(

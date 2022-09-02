@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">Dileu'r data presennol.</translation>
 <translation id="1147031633655575115">Wedi mewngofnodi fel <ph name="USER" /></translation>
 <translation id="1154984953698510061">Gweld Tabiau Eraill</translation>
+<translation id="1161340988127985692">Gofyn i Agor Dolenni o Apiau Eraill yn y modd Anhysbys</translation>
 <translation id="1164064664035028907">Defnyddiwch Gyfrinair Cryf:</translation>
 <translation id="1165039591588034296">Gwall</translation>
 <translation id="1172898394251786223">Maes nesaf</translation>
@@ -292,6 +293,7 @@ Gweler cyfarwyddiadau eich peiriant chwilio er mwyn dileu eich hanes chwilio, os
 <translation id="3443810440409579745">Cafodd y tab ei dderbyn.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> munud</translation>
 <translation id="3448016392200048164">Gwedd Hollt</translation>
+<translation id="3450502512529866925">Creu Nod Tudalen ar gyfer y Dudalen Hon</translation>
 <translation id="345565170154308620">Rheoli cyfrineiriau...</translation>
 <translation id="3469166899695866866">Stopio Lawrlwytho?</translation>
 <translation id="3470502288861289375">Wrthi'n copïo...</translation>
@@ -406,6 +408,7 @@ Dilynwch y camau isod:</translation>
 <translation id="4502566650163919158">Gwirio Nawr</translation>
 <translation id="4505980578794259603">Gwiriwyd ddiwethaf: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Cau'r anogwr mewngofnodi</translation>
+<translation id="4511669830082467224">Chwilio llun gyda Google</translation>
 <translation id="4526249700380860531">Gallwch weld a rheoli cyfrineiriau sydd wedi'u cadw yn <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Adolygwch eich data a gysonwyd</translation>
 <translation id="4536418791685807335">Rhowch gynnig arall ar fewngofnodi.</translation>
@@ -483,6 +486,7 @@ I newid y gosodiad hwn, <ph name="BEGIN_LINK" />ailosodwch gysoni<ph name="END_L
 <translation id="5090832849094901128">Ni fydd dileu'r cyfrinair hwn yn dileu'ch cyfrif ar <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Gallwch gadw tudalennau i'w darllen yn nes ymlaen neu all-lein. Bydd Chrome yn eich gofyn a ydych chi am gadw tudalennau hir.</translation>
 <translation id="5094827893301452931">Wedi cyhoeddi Tweet.</translation>
+<translation id="509789154667432072">Ychwanegu Nod Tudalen</translation>
 <translation id="5118713593561876160">Diddordebau</translation>
 <translation id="5118764316110575523">Diffodd</translation>
 <translation id="5127805178023152808">Mae cysoni wedi'i ddiffodd</translation>
@@ -772,6 +776,7 @@ Pan fyddwch yn y modd Anhysbys, ni all gwefannau ddefnyddio cwcis i weld eich gw
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906">Mae <ph name="UNREAD_COUNT" /> erthygl sydd heb eu darllen</translation>
 <translation id="7412027924265291969">Parhau</translation>
+<translation id="7419565702166471774">Defnyddio cysylltiadau diogel bob tro</translation>
 <translation id="7425346204213733349">Ni fydd newidiadau yn eich nodau tudalen, eich hanes, eich cyfrineiriau na'ch gosodiadau eraill yn cael eu cysoni â'ch Cyfrif Google mwyach. Fodd bynnag, bydd eich data presennol yn parhau i gael eu cadw yn eich Cyfrif Google.</translation>
 <translation id="7431991332293347422">Rheoli sut mae eich hanes pori yn cael ei ddefnyddio i bersonoleiddio Search a rhagor</translation>
 <translation id="7435356471928173109">Wedi'i ddiffodd gan eich gweinyddwr</translation>
@@ -811,7 +816,6 @@ Pan fyddwch yn y modd Anhysbys, ni all gwefannau ddefnyddio cwcis i weld eich gw
 <translation id="7781069478569868053">Tudalen Tab Newydd</translation>
 <translation id="7781829728241885113">Ddoe</translation>
 <translation id="778855399387580014">Dechrau chwiliad mewn tab Chrome newydd.</translation>
-<translation id="7790892308048519147">Ceisio defnyddio cysylltiadau diogel</translation>
 <translation id="7791543448312431591">Ychwanegu</translation>
 <translation id="7807060072011926525">Darperir gan Google</translation>
 <translation id="7839985698273989086">Tudalen All-lein</translation>

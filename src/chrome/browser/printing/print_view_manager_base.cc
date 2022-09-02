@@ -684,9 +684,10 @@ void PrintViewManagerBase::PrintingFailed(int32_t cookie,
 
   PrintManager::PrintingFailed(cookie, reason);
 
-#if !BUILDFLAG(IS_ANDROID)  // Android does not implement this function.
-  ShowPrintErrorDialog();
-#endif
+// #if !BUILDFLAG(IS_ANDROID)  // Android does not implement this function.
+//  we don't want to show the error dialog in blpwtk2.
+//  ShowPrintErrorDialog();
+// #endif
 
   ReleasePrinterQuery();
 }
@@ -1017,6 +1018,7 @@ void PrintViewManagerBase::SetPrintingRFH(content::RenderFrameHost* rfh) {
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 bool PrintViewManagerBase::RegisterSystemPrintClient() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(printing::features::kEnableOopPrintDriversJobPrint.Get());
   DCHECK(!service_manager_client_id_.has_value());
   service_manager_client_id_ =
       PrintBackendServiceManager::GetInstance().RegisterQueryWithUiClient();
@@ -1030,6 +1032,7 @@ bool PrintViewManagerBase::RegisterSystemPrintClient() {
 
 void PrintViewManagerBase::UnregisterSystemPrintClient() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(printing::features::kEnableOopPrintDriversJobPrint.Get());
   if (!service_manager_client_id_.has_value())
     return;
 

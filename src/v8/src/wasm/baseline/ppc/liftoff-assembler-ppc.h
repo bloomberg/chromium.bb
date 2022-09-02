@@ -340,8 +340,7 @@ void LiftoffAssembler::StoreTaggedPointer(Register dst_addr,
   if (offset_reg != no_reg) {
     add(ip, ip, offset_reg);
   }
-  CallRecordWriteStubSaveRegisters(dst_addr, ip, RememberedSetAction::kEmit,
-                                   SaveFPRegsMode::kSave,
+  CallRecordWriteStubSaveRegisters(dst_addr, ip, SaveFPRegsMode::kSave,
                                    StubCallMode::kCallWasmRuntimeStub);
   bind(&exit);
 }
@@ -1455,6 +1454,7 @@ bool LiftoffAssembler::emit_type_conversion(WasmOpcode opcode,
       fcmpu(src.fp(), kScratchDoubleReg);
       bunordered(trap);
 
+      mtfsb0(VXCVI);  // clear FPSCR:VXCVI bit
       fctiwz(kScratchDoubleReg, src.fp());
       MovDoubleLowToInt(dst.gp(), kScratchDoubleReg);
       mcrfs(cr7, VXCVI);
@@ -1463,6 +1463,7 @@ bool LiftoffAssembler::emit_type_conversion(WasmOpcode opcode,
     }
     case kExprI32UConvertF64:
     case kExprI32UConvertF32: {
+      mtfsb0(VXCVI);  // clear FPSCR:VXCVI bit
       ConvertDoubleToUnsignedInt64(src.fp(), r0, kScratchDoubleReg,
                                    kRoundToZero);
       mcrfs(cr7, VXCVI);  // extract FPSCR field containing VXCVI into cr7
@@ -1478,6 +1479,7 @@ bool LiftoffAssembler::emit_type_conversion(WasmOpcode opcode,
       fcmpu(src.fp(), kScratchDoubleReg);
       bunordered(trap);
 
+      mtfsb0(VXCVI);  // clear FPSCR:VXCVI bit
       fctidz(kScratchDoubleReg, src.fp());
       MovDoubleToInt64(dst.gp(), kScratchDoubleReg);
       mcrfs(cr7, VXCVI);
@@ -1490,6 +1492,7 @@ bool LiftoffAssembler::emit_type_conversion(WasmOpcode opcode,
       fcmpu(src.fp(), kScratchDoubleReg);
       bunordered(trap);
 
+      mtfsb0(VXCVI);  // clear FPSCR:VXCVI bit
       fctiduz(kScratchDoubleReg, src.fp());
       MovDoubleToInt64(dst.gp(), kScratchDoubleReg);
       mcrfs(cr7, VXCVI);

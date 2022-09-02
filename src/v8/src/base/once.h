@@ -83,7 +83,7 @@ struct FunctionWithArgs {
   using type = void (*)(Args...);
 };
 
-V8_BASE_EXPORT void CallOnceImpl(OnceType* once,
+BLPV8_BASE_EXPORT  void CallOnceImpl(OnceType* once,
                                  std::function<void()> init_func);
 
 inline void CallOnce(OnceType* once, std::function<void()> init_func) {

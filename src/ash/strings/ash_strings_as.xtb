@@ -504,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" />ৰ সৈতে সংযোগ কৰি থকা হৈছে</translation>
 <translation id="3922427723338465344">{0,plural, =1{১ মিনিটৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}one{# মিনিটৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}other{# মিনিটৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}}</translation>
 <translation id="3923494859158167397">কোনো ম'বাইলৰ নেটৱৰ্ক ছেট আপ কৰা হোৱা নাই</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, অনুষ্ঠান ল’ড কৰি থকা হৈছে।</translation>
 <translation id="3932043219784172185">কোনো ডিভাইচ সংযোগ কৰি থোৱা নাই</translation>
 <translation id="3934456833412894880">অভিযোজিত চাৰ্জিং অন হৈ আছে। বেটাৰীৰ জীৱনকাল বৃদ্ধি কৰিবলৈ আপোনাৰ বেটাৰীৰ চাৰ্জ ৮০% হৈ থাকিব আৰু আপোনাৰ প্ৰয়োজন হ’লে সম্পূৰ্ণৰূপে চাৰ্জ কৰে।</translation>
 <translation id="3943857333388298514">পেষ্ট কৰক</translation>
@@ -703,6 +704,7 @@
 <translation id="5078796286268621944">ভুল পিন</translation>
 <translation id="5083553833479578423">Assistantৰ অন্যান্য সুবিধাসমূহ ব্যৱহাৰ কৰক।</translation>
 <translation id="509790653408515442">আপুনি আপোনাৰ ফ’নৰ এপ্‌ ষ্ট্ৰীম কৰিলে সেয়া ইয়াত ওলাব</translation>
+<translation id="5098537242461068432">ডেস্ক আৰু ৱিণ্ড’ পুনৰ খোলা হৈছে</translation>
 <translation id="5107522548814527560">ৱেব</translation>
 <translation id="5117590920725113268">পৰৱৰ্তী মাহ দেখুৱাওক</translation>
 <translation id="5136175204352732067">বিভিন্ন কীব’র্ড সংযোগ কৰা হৈছে</translation>
@@ -1055,6 +1057,10 @@
 <translation id="7258828758145722155">কালি সম্পাদনা কৰিছিল</translation>
 <translation id="726276584504105859">বিভাজিত স্ক্ৰীণ ব্যৱহাৰ কৰিবলৈ ইয়ালৈ টানি আনি এৰক</translation>
 <translation id="7262906531272962081">ৰিমাইণ্ডাৰ সৃষ্টি কৰক</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" />ৰ পৰা
+        <ph name="END_TIME" />লৈ,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Google Calendarত অধিক সবিশেষৰ বাবে বাছনি কৰক।</translation>
 <translation id="7302889331339392448">লাইভ কেপশ্বন অফ আছে।</translation>
 <translation id="7303365578352795231">অন্য এটা ডিভাইচত উত্তৰ দি থকা হৈছে।</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1167,6 +1173,7 @@
 <translation id="7904094684485781019">এই একাউণ্টটোৰ প্ৰশাসককে একাধিক ছাইন ইন কৰাৰ অনুমতি দিয়া নাই।</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">এতিয়া কথন স্থানীয়ভাৱে প্ৰক্ৰিয়াকৰণ কৰা হৈছে আৰু শ্ৰুতলিপিৰ সুবিধাটোৱে অফলাইনত কাম কৰে</translation>
+<translation id="7932451802722951285">Google calendarত খোলক</translation>
 <translation id="7933084174919150729">Google Assistant কেৱল প্ৰাথমিক প্ৰ’ফাইলৰ বাবে উপলব্ধ।</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> আৰু <ph name="SECOND_PARENT_EMAIL" />এ একাউণ্ট পৰিচালনা কৰে</translation>
 <translation id="793716872548410480">আপোনাৰ ক্লিপব’ৰ্ড চাবলৈ <ph name="SHORTCUT_KEY_NAME" /> + ভি টিপক। আপুনি প্ৰতিলিপি কৰা অন্তিম ৫ টা বস্তু আপোনাৰ ক্লিপব’ৰ্ডত ছেভ কৰা হৈছে।</translation>

@@ -387,7 +387,7 @@ void ChromeAutofillClient::DismissUnmaskAuthenticatorSelectionDialog(
           server_success);
 }
 
-raw_ptr<VirtualCardEnrollmentManager>
+VirtualCardEnrollmentManager*
 ChromeAutofillClient::GetVirtualCardEnrollmentManager() {
   return form_data_importer_->GetVirtualCardEnrollmentManager();
 }
@@ -957,8 +957,7 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
 #endif
 }
 
-void ChromeAutofillClient::OnPromoCodeSuggestionsFooterSelected(
-    const GURL& url) {
+void ChromeAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {
   web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL,

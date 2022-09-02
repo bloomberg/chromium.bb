@@ -102,6 +102,11 @@ class NET_EXPORT ProxyServer {
   bool is_secure_http_like() const { return is_https() || is_quic(); }
 
   const HostPortPair& host_port_pair() const;
+ 
+  // These references to the internal structure are provided to simplify IPC
+  // serialization.
+  Scheme& internalScheme() { return scheme_; }
+  HostPortPair& internalHostPortPair() { return host_port_pair_; }
 
   // Returns a ProxyServer representing DIRECT connections.
   static ProxyServer Direct() {
