@@ -160,6 +160,7 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
 
 
     // patch section: web cache
+    void clearWebCache() override;
 
 
     // patch section: memory diagnostics

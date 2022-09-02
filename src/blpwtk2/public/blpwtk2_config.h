@@ -75,6 +75,7 @@
 // feature 17
 #define BLPWTK2_FEATURE_MEASUREMEMORYWRAPPER
 // feature 18
+#define BLPWTK2_FEATURE_WEB_CACHE_FLUSH
 // feature 19
 // feature 20
 // feature 21

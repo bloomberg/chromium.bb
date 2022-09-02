@@ -47,6 +47,7 @@
 
 
 // patch section: web cache flush
+#include <third_party/blink/public/platform/web_cache.h>
 
 
 
@@ -499,6 +500,10 @@ void ProfileImpl::setIPCDelegate(ProcessClientDelegate *delegate)
 
 
 // patch section: web cache
+void ProfileImpl::clearWebCache()
+{
+    blink::WebCache::Clear();
+}
 
 
 // patch section: memory diagnostics
