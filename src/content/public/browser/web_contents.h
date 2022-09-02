@@ -159,7 +159,7 @@ class WebContents : public PageNavigator,
     bool opened_by_another_window = false;
 
     int32_t render_process_affinity;
-    
+
     // The name of the top-level frame of the new window. It is non-empty
     // when creating a named window (e.g. <a target="foo"> or
     // window.open('', 'bar')).
@@ -1252,6 +1252,15 @@ class WebContents : public PageNavigator,
 
   // Tells the WebContents whether the context menu is showing.
   virtual void SetShowingContextMenu(bool showing) = 0;
+
+
+  // Tells the WebContents that a frontend is connected to the
+  // devtools agent.
+  virtual void DevToolsAgentHostAttached() {}
+
+  // Tells the WebContents that a frontend disconnected from the
+  // devtools agent.
+  virtual void DevToolsAgentHostDetached() {}
 
 #if BUILDFLAG(IS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(

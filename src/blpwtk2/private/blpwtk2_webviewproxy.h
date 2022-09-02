@@ -139,6 +139,8 @@ class WebViewProxy final : public WebView
 
 
     // patch section: devtools integration
+    void devToolsAgentHostAttached() override;
+    void devToolsAgentHostDetached() override;
 
 };
 

@@ -291,6 +291,8 @@ class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
 
 
     // patch section: devtools integration
+    void onDebugBreak() override {}
+    void onDebugResume() override {}
 
 
 

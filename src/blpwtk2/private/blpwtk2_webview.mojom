@@ -210,6 +210,13 @@ interface WebViewClient {
 
 
     // patch section: devtools integration
+    devToolsAgentHostAttached();
+        // Notify the client that the devtools frontend is connected to the
+        // devtools agent associated with this webview.
+
+    devToolsAgentHostDetached();
+        // Notify the client that the devtools frontend is disconnected from
+        // the devtools agent associated with this webview.
 
 };
 

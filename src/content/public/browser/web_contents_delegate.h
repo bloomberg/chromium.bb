@@ -497,6 +497,9 @@ class CONTENT_EXPORT WebContentsDelegate {
                          int active_match_ordinal,
                          bool final_update) {}
 
+  virtual void DevToolsAgentHostAttached(WebContents* web_contents) {}
+  virtual void DevToolsAgentHostDetached(WebContents* web_contents) {}
+
 #if BUILDFLAG(IS_ANDROID)
   // Provides the rects of the current find-in-page matches.
   // Sent as a reply to RequestFindMatchRects.

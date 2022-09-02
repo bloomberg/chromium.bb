@@ -67,6 +67,9 @@ void WebViewDelegate::validateClientFailed(WebView* source) {}
 
 
 // patch section: devtools integration
+void WebViewDelegate::devToolsAgentHostAttached(WebView* source) {}
+
+void WebViewDelegate::devToolsAgentHostDetached(WebView* source) {}
 
 }  // close namespace blpwtk2
 

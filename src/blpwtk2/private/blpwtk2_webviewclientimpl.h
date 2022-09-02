@@ -173,6 +173,11 @@ class WebViewClientImpl final : public WebViewClient
 
 
     // patch section: devtools integration
+    void devToolsAgentHostAttached() override;
+        // Notify the client that the devtools frontend is connected.
+
+    void devToolsAgentHostDetached() override;
+        // Notify the client that the devtools frontend is disconnected.
 
     // Mojo callbacks
     void loadStatus(int status);
