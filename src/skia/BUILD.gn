@@ -47,8 +47,11 @@ config("skia_config") {
     "SK_ENCODE_WEBP",
     "SK_ENABLE_SKSL",
     "SK_UNTIL_CRBUG_1187654_IS_FIXED",
+
     "SK_USER_CONFIG_HEADER=\"../../skia/config/SkUserConfig.h\"",
-    "SK_WIN_FONTMGR_NO_SIMULATIONS",
+    # blpwtk2: Disable this for now
+    #"SK_WIN_FONTMGR_NO_SIMULATIONS",
+
   ]
 
   include_dirs = [ "//third_party/skia" ]
