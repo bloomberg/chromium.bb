@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
@@ -113,6 +114,10 @@ class MEDIA_EXPORT VideoRendererImpl
   // Called by the VideoDecoderStream when a config change occurs. Will notify
   // RenderClient of the new config.
   void OnConfigChange(const VideoDecoderConfig& config);
+
+  // Called when the decoder stream and selector have a fallback after failed
+  // decode.
+  void OnFallback(PipelineStatus status);
 
   // Callback for |video_decoder_stream_| to deliver decoded video frames and
   // report video decoding status.

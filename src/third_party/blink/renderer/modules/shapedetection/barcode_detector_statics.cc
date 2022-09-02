@@ -8,7 +8,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -88,7 +88,7 @@ void BarcodeDetectorStatics::OnEnumerateSupportedFormats(
   results.ReserveInitialCapacity(results.size());
   for (const auto& format : formats)
     results.push_back(BarcodeDetector::BarcodeFormatToString(format));
-  if (IdentifiabilityStudySettings::Get()->IsWebFeatureAllowed(
+  if (IdentifiabilityStudySettings::Get()->ShouldSampleWebFeature(
           WebFeature::kBarcodeDetector_GetSupportedFormats)) {
     IdentifiableTokenBuilder builder;
     for (const auto& format_string : results)

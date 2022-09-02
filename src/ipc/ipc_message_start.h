@@ -25,7 +25,6 @@ enum IPCMessageStart {
   NaClHostMsgStart,
   EncryptedMediaMsgStart,
   GinJavaBridgeMsgStart,
-  GuestViewMsgStart,
   ExtensionWorkerMsgStart,
   LastIPCMsgStart  // Must come last.
 };

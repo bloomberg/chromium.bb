@@ -5,6 +5,7 @@
 #ifndef ASH_PUBLIC_CPP_APP_LIST_APP_LIST_TYPES_H_
 #define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_TYPES_H_
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,10 @@ constexpr int kAppListProfileIdStartFrom = 0;
 // drag offset is smaller than the threshold.
 constexpr int kMouseDragThreshold = 2;
 
+// View group for launcher search result views that have a result set. Used
+// primarily in browser tests to find shown search result views.
+constexpr int kSearchResultViewGroup = 2;
+
 // Id of OEM folder in app list.
 ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
 
@@ -53,6 +58,14 @@ enum class AppListConfigType {
   // Config for clamshell mode. Also used for tablet mode on small screens.
   // Used when ProductivityLauncher is enabled.
   kDense,
+};
+
+// Item types supported by SearchResultTextItem.
+enum class SearchResultTextItemType {
+  kString,         // Styled text.
+  kIconCode,       // Built in vector icons.
+  kCustomImage,    // Vector icons provided by the search model.
+  kIconifiedText,  // Text to be styled like an icon e.g. "Alt", "Ctrl".
 };
 
 // A structure holding an item icon' color information.
@@ -118,8 +131,12 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
   std::string folder_id;           // Id of folder where the item resides.
   syncer::StringOrdinal position;  // Position of the item.
   bool is_folder = false;          // Whether this item is a folder.
-  bool is_persistent = false;  // Whether this folder is allowed to contain only
-                               // 1 item.
+
+  // Whether the folder was system created (e.g. the OEM folder or Linux apps
+  // folder). Historically (pre-2022) these folders were the only ones allowed
+  // to contain a single item.
+  bool is_system_folder = false;
+
   gfx::ImageSkia icon;         // The icon of this item.
   bool is_page_break = false;  // Whether this item is a "page break" item.
   SkColor badge_color = SK_ColorWHITE;  // Notification badge color.
@@ -134,7 +151,20 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
   IconColor icon_color;
 };
 
+// Where an app list item is being shown. Used for context menu.
+enum class AppListItemContext {
+  // Used in tests when the context doesn't matter.
+  kNone,
+  // The apps grid (the common case).
+  kAppsGrid,
+  // Recent apps (part of productivity launcher).
+  kRecentApps,
+  // Search results (part of peeking launcher).
+  kSearchResults,
+};
+
 // All possible orders to sort app list items.
+// Note: Do not change the order of these as they are used for metrics.
 enum class AppListSortOrder {
   // The sort order is not set.
   kCustom = 0,
@@ -150,7 +180,49 @@ enum class AppListSortOrder {
   // Items are sorted in order of color in rainbow order from red to purple.
   // Items are first sorted by the color of the icon background, then sorted
   // by the light vibrant color extracted from the icon.
-  kColor
+  kColor,
+
+  kMaxValue = kColor,
+};
+
+// All the events that affect the app list sort order (including the pref order
+// and the temporary order).
+// NOTE: Do not change the order of these as they are used for metrics.
+enum class AppListOrderUpdateEvent {
+  // Add a new item.
+  kItemAdded = 0,
+
+  // Remove an item.
+  kItemRemoved = 1,
+
+  // An item is moved due to sync.
+  kItemSyncMove = 2,
+
+  // An item is moved to a folder.
+  kItemMovedToFolder = 3,
+
+  // An item is moved to the root apps grid.
+  kItemMovedToRoot = 4,
+
+  // Sort reversion is triggered.
+  kRevert = 5,
+
+  // An item is moved but its parent apps grid does not change.
+  kItemMoved = 6,
+
+  // A folder is created.
+  kFolderCreated = 7,
+
+  // A folder is renamed.
+  kFolderRenamed = 8,
+
+  // The app list is hidden.
+  kAppListHidden = 9,
+
+  // User requests to sort.
+  kSortRequested = 10,
+
+  kMaxValue = kSortRequested,
 };
 
 // Lists the reasons that ash requests for item position update.
@@ -159,18 +231,6 @@ enum class RequestPositionUpdateReason {
   kFixItem,
 
   // Move an item.
-  kMoveItem
-};
-
-// Lists the reasons that ash requests to move an item into a folder.
-enum class RequestMoveToFolderReason {
-  // Merge two items and move the first item to the created folder.
-  kMergeFirstItem,
-
-  // Merge two items and move the second item to the created folder.
-  kMergeSecondItem,
-
-  // Move an item to an existed folder.
   kMoveItem
 };
 
@@ -186,6 +246,40 @@ enum class AppListState {
   kInvalidState,               // Don't use over IPC
   kStateLast = kInvalidState,  // Don't use over IPC
 };
+
+ASH_PUBLIC_EXPORT std::ostream& operator<<(std::ostream& os,
+                                           AppListState state);
+
+// Sub-pages of the app list bubble (with ProductivityLauncher).
+enum class AppListBubblePage {
+  // Used at startup and when the app list bubble is not visible. Allows
+  // detection of transitions like hidden -> apps or hidden -> assistant,
+  // avoiding unnecessary page hide animations.
+  kNone = 0,
+  // The apps grid, as well as continue tasks and recent apps.
+  kApps,
+  // The search page.
+  kSearch,
+  // The assistant page.
+  kAssistant
+};
+
+// The type of the toast that shows on the app list.
+enum class AppListToastType {
+  // The toast container is not showing any toast.
+  kNone,
+
+  // Shows the nudge to guide the users to use apps reordering using context
+  // menu.
+  kReorderNudge,
+
+  // Shows the notification that the apps are temporarily sorted and allows
+  // users to undo the sorting actions.
+  kReorderUndo,
+};
+
+ASH_PUBLIC_EXPORT std::ostream& operator<<(std::ostream& os,
+                                           AppListBubblePage page);
 
 // All possible states of the app list view.
 enum class AppListViewState {
@@ -205,10 +299,28 @@ enum class AppListViewState {
   kFullscreenSearch
 };
 
+ASH_PUBLIC_EXPORT std::ostream& operator<<(std::ostream& os,
+                                           AppListViewState state);
+
 // The status of the app list model.
 enum class AppListModelStatus {
   kStatusNormal,
   kStatusSyncing,  // Syncing apps or installing synced apps.
+};
+
+// Indicate the state of the apps grid reorder animation.
+enum class AppListReorderAnimationStatus {
+  // No reorder animation is active.
+  kEmpty,
+
+  // Run the animation that fades out the obsolete layout.
+  kFadeOutAnimation,
+
+  // After the fade out animation ends and before the fade in animation starts.
+  kIntermediaryState,
+
+  // Run the animation that fades in the new layout after reordering.
+  kFadeInAnimation
 };
 
 // The UI component the user launched the search result from. Must match
@@ -234,12 +346,13 @@ enum class AppListLaunchedFrom {
 // from the apps grid.
 enum class AppListLaunchType { kSearchResult, kAppSearchResult, kApp };
 
-// Type of the search result, which is set in Chrome. These values are persisted
-// to logs. Entries should not be renumbered and numeric values should never be
-// reused.
+// Type of the search result, which is set in Chrome.
 //
-// TODO(crbug.com/1258415): kFileChip and kDriveChip can be deprecated once the
-// new launcher is launched.
+// This should not be used for metrics. Please use ash::SearchResultType in
+// ash/public/cpp/app_list/app_list_metrics.h instead.
+//
+// TODO(crbug.com/1258415): kFileChip and kDriveChip can be removed once the
+// productivity launcher is launched.
 enum class AppListSearchResultType {
   kUnknown,       // Unknown type. Don't use over IPC
   kInstalledApp,  // Installed apps.
@@ -262,11 +375,21 @@ enum class AppListSearchResultType {
   kHelpApp,                // Help App (aka Explore) results.
   kFileSearch,             // Local file search results.
   kDriveSearch,            // Drive file search results.
+  kKeyboardShortcut,       // Keyboard shortcut search results.
+  kOpenTab,                // Open tab search results.
+  kGames,                  // Game sarch results.
+  kPersonalization,        // Personalization search results.
+  kZeroStateHelpApp,       // Help App (aka Explore) results for zero-state.
   // Add new values here.
-  kMaxValue = kDriveSearch,
+  kMaxValue = kZeroStateHelpApp,
 };
 
 ASH_PUBLIC_EXPORT bool IsAppListSearchResultAnApp(
+    AppListSearchResultType result_type);
+
+// Returns whether the result type is a type of result shown in launcher
+// continue section when productivity launcher is enabled.
+ASH_PUBLIC_EXPORT bool IsContinueSectionResultType(
     AppListSearchResultType result_type);
 
 // The different categories a search result can be part of. Every search result
@@ -287,13 +410,15 @@ enum class AppListSearchResultCategory {
   kHelp = 6,
   kPlayStore = 7,
   kSearchAndAssistant = 8,
-  kMaxValue = kSearchAndAssistant,
+  kGames = 9,
+  kMaxValue = kGames,
 };
 
 // Which UI container(s) the result should be displayed in.
 // Do not change the order of these as they are used for metrics.
 //
-// TODO(1258415): kChip can be deprecated once the new launcher is launched.
+// TODO(https://crbug.com/1258415): kChip can be deprecated once
+// ProductivityLauncher is launched.
 enum SearchResultDisplayType {
   kNone = 0,
   kList = 1,  // Displays in search list
@@ -302,6 +427,7 @@ enum SearchResultDisplayType {
   kAnswerCard = 4,  // Displays in answer cards
   kChip = 5,        // Displays in suggestion chips
   kContinue = 6,    // Displays in the Continue section
+  kRecentApps = 7,  // Displays in recent apps row
   // Add new values here
   kLast,  // Don't use over IPC
 };
@@ -315,16 +441,6 @@ enum SearchResultDisplayIndex {
   kFifthIndex,
   kSixthIndex,
   kUndefined,
-};
-
-// The rich entity subtype of Omnibox results.
-enum SearchResultOmniboxDisplayType {
-  kDefault,
-  kAnswer,
-  kCalculatorAnswer,
-  kRichImage,
-  kFavicon,
-  kOmniboxTypeMax,  // Do not use.
 };
 
 // Actions for search results. These map to the buttons beside some search
@@ -350,10 +466,8 @@ enum class SearchResultIconShape {
 
 struct ASH_PUBLIC_EXPORT SearchResultIconInfo {
   SearchResultIconInfo();
-  // TODO(crbug.com/1232897): Make the search backend explicitly set dimension
-  // and shape for all icons by removing the one- and two-argument versions of
-  // the constructor.
-  explicit SearchResultIconInfo(gfx::ImageSkia icon);
+  // TODO(crbug.com/1232897): Make the search backend explicitly set the shape
+  // for all icons by removing the two-argument version of the constructor.
   SearchResultIconInfo(gfx::ImageSkia icon, int dimension);
   SearchResultIconInfo(gfx::ImageSkia icon,
                        int dimension,
@@ -368,7 +482,7 @@ struct ASH_PUBLIC_EXPORT SearchResultIconInfo {
 
   // The size to display the icon at, while preserving aspect ratio. Only
   // used for the results list view.
-  absl::optional<int> dimension;
+  int dimension;
 
   // The shape to mask the icon with. Only used by the results list view.
   SearchResultIconShape shape = SearchResultIconShape::kDefault;
@@ -383,6 +497,8 @@ struct ASH_PUBLIC_EXPORT SearchResultTag {
     URL = 1 << 0,
     MATCH = 1 << 1,
     DIM = 1 << 2,
+    GREEN = 1 << 3,
+    RED = 1 << 4,
   };
 
   SearchResultTag();
@@ -400,19 +516,83 @@ using SearchResultTags = std::vector<SearchResultTag>;
 struct ASH_PUBLIC_EXPORT SearchResultAction {
   SearchResultAction();
   SearchResultAction(SearchResultActionType type,
-                     const gfx::ImageSkia& image,
                      const std::u16string& tooltip_text,
                      bool visible_on_hover);
   SearchResultAction(const SearchResultAction& other);
   ~SearchResultAction();
 
   SearchResultActionType type;
-  gfx::ImageSkia image;
   std::u16string tooltip_text;
   // Visible when button or its parent row in hover state.
   bool visible_on_hover;
 };
 using SearchResultActions = std::vector<SearchResultAction>;
+
+// A structure holding a search result's text with support for embedded icon.
+class ASH_PUBLIC_EXPORT SearchResultTextItem {
+ public:
+  enum IconCode {
+    kKeyboardShortcutBrowserBack,
+    kKeyboardShortcutBrowserForward,
+    kKeyboardShortcutBrowserRefresh,
+    kKeyboardShortcutZoom,
+    kKeyboardShortcutMediaLaunchApp1,
+    kKeyboardShortcutBrightnessDown,
+    kKeyboardShortcutBrightnessUp,
+    kKeyboardShortcutVolumeMute,
+    kKeyboardShortcutVolumeDown,
+    kKeyboardShortcutVolumeUp,
+    kKeyboardShortcutUp,
+    kKeyboardShortcutDown,
+    kKeyboardShortcutLeft,
+    kKeyboardShortcutRight,
+    kKeyboardShortcutPrivacyScreenToggle,
+    kKeyboardShortcutSnapshot,
+  };
+
+  // Only used for SearchResultTextItemType kString
+  enum OverflowBehavior {
+    kNoElide,  // Prioritize this text item for space allocation: do not elide.
+    kElide,    // Elide this text item when there is not enough space.
+    kHide,     // Completely hide this text item when there is not enough space.
+  };
+
+  explicit SearchResultTextItem(SearchResultTextItemType type);
+  SearchResultTextItem(const SearchResultTextItem&);
+  SearchResultTextItem& operator=(const SearchResultTextItem&);
+  ~SearchResultTextItem();
+
+  SearchResultTextItemType GetType() const;
+
+  const std::u16string& GetText() const;
+  SearchResultTextItem& SetText(std::u16string text);
+
+  const SearchResultTags& GetTextTags() const;
+  SearchResultTags& GetTextTags();
+  SearchResultTextItem& SetTextTags(SearchResultTags tags);
+
+  const gfx::VectorIcon* GetIconFromCode() const;
+  SearchResultTextItem& SetIconCode(IconCode icon_code);
+
+  gfx::ImageSkia GetImage() const;
+  SearchResultTextItem& SetImage(gfx::ImageSkia icon);
+
+  OverflowBehavior GetOverflowBehavior() const;
+  SearchResultTextItem& SetOverflowBehavior(OverflowBehavior overflow_behavior);
+
+ private:
+  SearchResultTextItemType item_type;
+  // used for type SearchResultTextItemType::kString.
+  absl::optional<std::u16string> raw_text;
+  absl::optional<SearchResultTags> text_tags;
+  // used for type SearchResultTextItemType::kIconCode.
+  absl::optional<IconCode> icon_code;
+  // used for type SearchResultTextItemType::kCustomIcon.
+  absl::optional<gfx::ImageSkia> raw_image;
+  // Behavior of the text item when there is not enough space to show it in the
+  // UI. only applicable to SearchResultTextItemType::kString.
+  OverflowBehavior overflow_behavior = kElide;
+};
 
 // A structure holding the common information which is sent from chrome to ash,
 // representing a search result.
@@ -425,21 +605,48 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   std::string id;
 
   // The title of the result, e.g. an app's name, an autocomplete query, etc.
+  // TODO (crbug/1216097): deprecate title text.
   std::u16string title;
 
   // A detail string of this result.
+  // TODO (crbug/1216097): deprecate details text.
   std::u16string details;
-
-  // An text to be announced by a screen reader app.
-  std::u16string accessible_name;
 
   // How the title matches the query. See the SearchResultTag section for more
   // details.
+  // TODO (crbug/1216097): deprecate title_tags.
   std::vector<SearchResultTag> title_tags;
 
   // How the details match the query. See the SearchResultTag section for more
   // details.
+  // TODO (crbug/1216097): deprecate details_tags.
   std::vector<SearchResultTag> details_tags;
+
+  // The title of the result, e.g. an app's name, an autocomplete query, etc.
+  // Supports embedded icons.
+  std::vector<SearchResultTextItem> title_vector;
+
+  // The details of the result, supports embedded icons.
+  std::vector<SearchResultTextItem> details_vector;
+
+  // Whether or not the details field can be split over multiple lines. UI
+  // implementation does not support multiline if the details vector has more
+  // than one text item, so if multiline_details is set then details_vector
+  // cannot have more than one element.
+  bool multiline_details = false;
+
+  // Big title text to be displayed prominently on an answer card.
+  std::vector<SearchResultTextItem> big_title_vector;
+
+  // Superscript text for the big title on an answer card.
+  std::vector<SearchResultTextItem> big_title_superscript_vector;
+
+  // Text for keyboard shortcuts displayed below the title. Only used for
+  // keyboard shortcut results.
+  std::vector<SearchResultTextItem> keyboard_shortcut_vector;
+
+  // Text to be announced by a screen reader app.
+  std::u16string accessible_name;
 
   // Actions that can be performed on this result. See the SearchResultAction
   // section for more details.
@@ -472,10 +679,6 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // Which index in the UI container should the result be placed in.
   SearchResultDisplayIndex display_index = SearchResultDisplayIndex::kUndefined;
-
-  // The rich entity subtype of Omnibox results.
-  SearchResultOmniboxDisplayType omnibox_type =
-      SearchResultOmniboxDisplayType::kDefault;
 
   // A score to settle conflicts between two apps with the same requested
   // |display_index|.

@@ -9,6 +9,9 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/components/login/auth/key.h"
+#include "ash/components/login/auth/user_context.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -24,14 +27,11 @@
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/login/auth/key.h"
-#include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -48,7 +48,7 @@ namespace policy {
 namespace {
 
 // Creates policy key file for the user specified in |user_policy|.
-void SetUserKeys(const policy::UserPolicyBuilder& user_policy) {
+void SetUserKeys(const UserPolicyBuilder& user_policy) {
   base::FilePath user_data_dir;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     chromeos::dbus_paths::RegisterStubPathOverrides(user_data_dir);
@@ -90,7 +90,7 @@ AffiliationTestHelper AffiliationTestHelper::CreateForCloud(
 // static
 AffiliationTestHelper AffiliationTestHelper::CreateForActiveDirectory(
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_authpolicy_client) {
+    ash::FakeAuthPolicyClient* fake_authpolicy_client) {
   return AffiliationTestHelper(ManagementType::kActiveDirectory,
                                fake_session_manager_client,
                                fake_authpolicy_client);
@@ -102,7 +102,7 @@ AffiliationTestHelper::AffiliationTestHelper(AffiliationTestHelper&& other) =
 AffiliationTestHelper::AffiliationTestHelper(
     ManagementType management_type,
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_authpolicy_client)
+    ash::FakeAuthPolicyClient* fake_authpolicy_client)
     : management_type_(management_type),
       fake_session_manager_client_(fake_session_manager_client),
       fake_authpolicy_client_(fake_authpolicy_client) {
@@ -116,11 +116,11 @@ void AffiliationTestHelper::CheckPreconditions() {
 }
 
 void AffiliationTestHelper::SetDeviceAffiliationIDs(
-    policy::DevicePolicyCrosTestHelper* test_helper,
+    DevicePolicyCrosTestHelper* test_helper,
     const std::set<std::string>& device_affiliation_ids) {
   ASSERT_NO_FATAL_FAILURE(CheckPreconditions());
 
-  policy::DevicePolicyBuilder* device_policy = test_helper->device_policy();
+  DevicePolicyBuilder* device_policy = test_helper->device_policy();
   for (const auto& device_affiliation_id : device_affiliation_ids) {
     device_policy->policy_data().add_device_affiliation_ids(
         device_affiliation_id);
@@ -140,7 +140,7 @@ void AffiliationTestHelper::SetDeviceAffiliationIDs(
 }
 
 void AffiliationTestHelper::SetUserAffiliationIDs(
-    policy::UserPolicyBuilder* user_policy,
+    UserPolicyBuilder* user_policy,
     const AccountId& user_account_id,
     const std::set<std::string>& user_affiliation_ids) {
   ASSERT_NO_FATAL_FAILURE(CheckPreconditions());
@@ -170,11 +170,11 @@ void AffiliationTestHelper::SetUserAffiliationIDs(
 void AffiliationTestHelper::PreLoginUser(const AccountId& account_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
   base::Value email_value(account_id.GetUserEmail());
-  if (!base::Contains(users_pref->GetList(), email_value))
+  if (!base::Contains(users_pref->GetListDeprecated(), email_value))
     users_pref->Append(std::move(email_value));
 
-  if (user_manager::UserManager::IsInitialized())
-    user_manager::known_user::SaveKnownUser(account_id);
+  user_manager::KnownUser(g_browser_process->local_state())
+      .SaveKnownUser(account_id);
 
   ash::StartupUtils::MarkOobeCompleted();
 }
@@ -190,8 +190,8 @@ void AffiliationTestHelper::LoginUser(const AccountId& account_id) {
   const user_manager::UserType user_type =
       is_active_directory ? user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY
                           : user_manager::UserType::USER_TYPE_REGULAR;
-  chromeos::UserContext user_context(user_type, account_id);
-  user_context.SetKey(chromeos::Key("password"));
+  ash::UserContext user_context(user_type, account_id);
+  user_context.SetKey(ash::Key("password"));
   if (account_id.GetUserEmail() == kEnterpriseUserEmail) {
     user_context.SetRefreshToken(kFakeRefreshToken);
   }
@@ -214,13 +214,12 @@ void AffiliationTestHelper::LoginUser(const AccountId& account_id) {
 // static
 void AffiliationTestHelper::AppendCommandLineSwitchesForLoginManager(
     base::CommandLine* command_line) {
-  command_line->AppendSwitch(chromeos::switches::kLoginManager);
-  command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+  command_line->AppendSwitch(ash::switches::kLoginManager);
+  command_line->AppendSwitch(ash::switches::kForceLoginManagerInTests);
   // LoginManager tests typically don't stand up a policy test server but
   // instead inject policies directly through a SessionManagerClient. So allow
   // policy fetches to fail - this is expected.
-  command_line->AppendSwitch(
-      chromeos::switches::kAllowFailedPolicyFetchForTest);
+  command_line->AppendSwitch(ash::switches::kAllowFailedPolicyFetchForTest);
 }
 
 }  // namespace policy

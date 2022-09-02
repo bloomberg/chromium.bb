@@ -9,16 +9,16 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/proximity_auth/messenger.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_client_channel.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "base/callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,9 +36,9 @@ namespace {
 class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
  public:
   TestableRemoteDeviceLifeCycleImpl(
-      chromeos::multidevice::RemoteDeviceRef remote_device,
-      absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device,
-      chromeos::secure_channel::SecureChannelClient* secure_channel_client)
+      ash::multidevice::RemoteDeviceRef remote_device,
+      absl::optional<ash::multidevice::RemoteDeviceRef> local_device,
+      ash::secure_channel::SecureChannelClient* secure_channel_client)
       : RemoteDeviceLifeCycleImpl(remote_device,
                                   local_device,
                                   secure_channel_client),
@@ -52,7 +52,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
   ~TestableRemoteDeviceLifeCycleImpl() override {}
 
  private:
-  const chromeos::multidevice::RemoteDeviceRef remote_device_;
+  const ash::multidevice::RemoteDeviceRef remote_device_;
 };
 
 }  // namespace
@@ -68,13 +68,10 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
 
  protected:
   ProximityAuthRemoteDeviceLifeCycleImplTest()
-      : test_remote_device_(
-            chromeos::multidevice::CreateRemoteDeviceRefForTest()),
-        test_local_device_(
-            chromeos::multidevice::CreateRemoteDeviceRefForTest()),
+      : test_remote_device_(ash::multidevice::CreateRemoteDeviceRefForTest()),
+        test_local_device_(ash::multidevice::CreateRemoteDeviceRefForTest()),
         fake_secure_channel_client_(
-            std::make_unique<
-                chromeos::secure_channel::FakeSecureChannelClient>()),
+            std::make_unique<ash::secure_channel::FakeSecureChannelClient>()),
         life_cycle_(test_remote_device_,
                     test_local_device_,
                     fake_secure_channel_client_.get()),
@@ -87,7 +84,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
 
   void CreateFakeConnectionAttempt() {
     auto fake_connection_attempt =
-        std::make_unique<chromeos::secure_channel::FakeConnectionAttempt>();
+        std::make_unique<ash::secure_channel::FakeConnectionAttempt>();
     fake_connection_attempt_ = fake_connection_attempt.get();
     fake_secure_channel_client_->set_next_listen_connection_attempt(
         test_remote_device_, test_local_device_,
@@ -118,7 +115,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
                            RemoteDeviceLifeCycle::State::AUTHENTICATING));
 
     auto fake_client_channel =
-        std::make_unique<chromeos::secure_channel::FakeClientChannel>();
+        std::make_unique<ash::secure_channel::FakeClientChannel>();
     auto* fake_client_channel_raw = fake_client_channel.get();
     fake_connection_attempt_->NotifyConnection(std::move(fake_client_channel));
 
@@ -136,8 +133,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
   }
 
   void SimulateFailureToAuthenticateConnection(
-      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason
-          failure_reason,
+      ash::secure_channel::mojom::ConnectionAttemptFailureReason failure_reason,
       RemoteDeviceLifeCycle::State expected_life_cycle_state) {
     EXPECT_EQ(RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
               life_cycle_.GetState());
@@ -158,13 +154,13 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
                void(RemoteDeviceLifeCycle::State old_state,
                     RemoteDeviceLifeCycle::State new_state));
 
-  chromeos::multidevice::RemoteDeviceRef test_remote_device_;
-  chromeos::multidevice::RemoteDeviceRef test_local_device_;
-  std::unique_ptr<chromeos::secure_channel::FakeSecureChannelClient>
+  ash::multidevice::RemoteDeviceRef test_remote_device_;
+  ash::multidevice::RemoteDeviceRef test_local_device_;
+  std::unique_ptr<ash::secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
   TestableRemoteDeviceLifeCycleImpl life_cycle_;
 
-  chromeos::secure_channel::FakeConnectionAttempt* fake_connection_attempt_;
+  ash::secure_channel::FakeConnectionAttempt* fake_connection_attempt_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
@@ -185,7 +181,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
   StartLifeCycle();
   SimulateFailureToAuthenticateConnection(
-      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason::
+      ash::secure_channel::mojom::ConnectionAttemptFailureReason::
           AUTHENTICATION_ERROR /* failure_reason */,
       RemoteDeviceLifeCycle::State::
           AUTHENTICATION_FAILED /* expected_life_cycle_state */);
@@ -197,7 +193,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
   StartLifeCycle();
   SimulateFailureToAuthenticateConnection(
-      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason::
+      ash::secure_channel::mojom::ConnectionAttemptFailureReason::
           ADAPTER_NOT_PRESENT /* failure_reason */,
       RemoteDeviceLifeCycle::State::STOPPED /* expected_life_cycle_state */);
 }
@@ -208,9 +204,17 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
   StartLifeCycle();
   SimulateFailureToAuthenticateConnection(
-      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason::
+      ash::secure_channel::mojom::ConnectionAttemptFailureReason::
           ADAPTER_DISABLED /* failure_reason */,
       RemoteDeviceLifeCycle::State::STOPPED /* expected_life_cycle_state */);
+}
+
+TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, StopLifeCycle) {
+  CreateFakeConnectionAttempt();
+  StartLifeCycle();
+
+  life_cycle_.Stop();
+  EXPECT_EQ(RemoteDeviceLifeCycle::State::STOPPED, life_cycle_.GetState());
 }
 
 }  // namespace proximity_auth

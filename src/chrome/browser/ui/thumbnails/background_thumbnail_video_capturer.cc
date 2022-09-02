@@ -16,6 +16,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "media/capture/mojom/video_capture_buffer.mojom.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
 BackgroundThumbnailVideoCapturer::BackgroundThumbnailVideoCapturer(
@@ -39,7 +40,10 @@ void BackgroundThumbnailVideoCapturer::Start(
     return;
 
   content::RenderWidgetHostView* const source_view =
-      contents_->GetMainFrame()->GetRenderViewHost()->GetWidget()->GetView();
+      contents_->GetPrimaryMainFrame()
+          ->GetRenderViewHost()
+          ->GetWidget()
+          ->GetView();
   if (!source_view)
     return;
 
@@ -161,7 +165,7 @@ void BackgroundThumbnailVideoCapturer::OnFrameCaptured(
                             capture_info_.copy_rect.width();
 
   const gfx::Insets original_scroll_insets = capture_info_.scrollbar_insets;
-  const gfx::Insets scroll_insets(
+  const auto scroll_insets = gfx::Insets::TLBR(
       0, 0, std::round(original_scroll_insets.width() * scale_ratio),
       std::round(original_scroll_insets.height() * scale_ratio));
   gfx::Rect effective_content_rect = content_rect;
@@ -195,6 +199,8 @@ void BackgroundThumbnailVideoCapturer::OnFrameCaptured(
 
   got_frame_callback_.Run(cropped_frame, frame_id);
 }
+
+void BackgroundThumbnailVideoCapturer::OnFrameWithEmptyRegionCapture() {}
 
 void BackgroundThumbnailVideoCapturer::OnStopped() {}
 

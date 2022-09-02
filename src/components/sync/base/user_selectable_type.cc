@@ -73,7 +73,8 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kHistory:
       return {kTypedUrlsTypeName,
               TYPED_URLS,
-              {TYPED_URLS, HISTORY_DELETE_DIRECTIVES, SESSIONS, USER_EVENTS}};
+              {TYPED_URLS, HISTORY, HISTORY_DELETE_DIRECTIVES, SESSIONS,
+               USER_EVENTS}};
     case UserSelectableType::kExtensions:
       return {
           kExtensionsTypeName, EXTENSIONS, {EXTENSIONS, EXTENSION_SETTINGS}};
@@ -93,9 +94,9 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     }
     case UserSelectableType::kReadingList:
       return {kReadingListTypeName, READING_LIST, {READING_LIST}};
-    case UserSelectableType::kTabs:
-      return {
-          kTabsTypeName, PROXY_TABS, {PROXY_TABS, SESSIONS, SEND_TAB_TO_SELF}};
+    case UserSelectableType::kTabs: {
+      return {kTabsTypeName, PROXY_TABS, {PROXY_TABS, SESSIONS}};
+    }
     case UserSelectableType::kWifiConfigurations: {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       // SyncSettingsCategorization moves Wi-Fi configurations to Chrome OS
@@ -109,7 +110,7 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     }
   }
   NOTREACHED();
-  return {nullptr, UNSPECIFIED};
+  return {nullptr, UNSPECIFIED, {}};
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

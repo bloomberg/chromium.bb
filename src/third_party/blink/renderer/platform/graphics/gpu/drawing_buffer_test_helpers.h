@@ -204,10 +204,8 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override {
     ++current_mailbox_byte_;
     memset(mailbox, current_mailbox_byte_, GL_MAILBOX_SIZE_CHROMIUM);
-    if (!create_image_chromium_fail_) {
-      ASSERT_TRUE(texture_sizes_.Contains(texture));
-      most_recently_produced_size_ = texture_sizes_.at(texture);
-    }
+    ASSERT_TRUE(texture_sizes_.Contains(texture));
+    most_recently_produced_size_ = texture_sizes_.at(texture);
   }
 
   void TexImage2D(GLenum target,
@@ -222,44 +220,6 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     if (target == GL_TEXTURE_2D && !level) {
       texture_sizes_.Set(bound_textures_.find(target)->value,
                          gfx::Size(width, height));
-    }
-  }
-
-  GLuint CreateImageCHROMIUM(ClientBuffer buffer,
-                             GLsizei width,
-                             GLsizei height,
-                             GLenum internalformat) override {
-    if (create_image_chromium_fail_)
-      return 0;
-    image_sizes_.Set(current_image_id_, gfx::Size(width, height));
-    return current_image_id_++;
-  }
-
-  MOCK_METHOD1(DestroyImageMock, void(GLuint imageId));
-  void DestroyImageCHROMIUM(GLuint image_id) override {
-    image_sizes_.erase(image_id);
-    // No textures should be bound to this.
-    CHECK(image_to_texture_map_.find(image_id) == image_to_texture_map_.end());
-    image_sizes_.erase(image_id);
-    DestroyImageMock(image_id);
-  }
-
-  MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
-  void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) override {
-    if (target == kImageCHROMIUMTarget) {
-      GLuint value = bound_textures_.find(target)->value;
-      texture_sizes_.Set(value, image_sizes_.find(image_id)->value);
-      image_to_texture_map_.Set(image_id, value);
-      BindTexImage2DMock(image_id);
-    }
-  }
-
-  MOCK_METHOD1(ReleaseTexImage2DMock, void(GLint imageId));
-  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint image_id) override {
-    if (target == kImageCHROMIUMTarget) {
-      image_sizes_.Set(current_image_id_, gfx::Size());
-      image_to_texture_map_.erase(image_id);
-      ReleaseTexImage2DMock(image_id);
     }
   }
 
@@ -357,10 +317,6 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     return most_recently_produced_size_;
   }
 
-  void SetCreateImageChromiumFail(bool fail) {
-    create_image_chromium_fail_ = fail;
-  }
-
   // Saves current GL state for later verification.
   void SaveState() { saved_state_ = state_; }
   void VerifyStateHasNotChangedSinceSave() const {
@@ -394,7 +350,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
  private:
   // The target to use when binding a texture to a Chromium image.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   static constexpr GLuint kImageCHROMIUMTarget = GC3D_TEXTURE_RECTANGLE_ARB;
 #else
   static constexpr GLuint kImageCHROMIUMTarget = GL_TEXTURE_2D;
@@ -432,7 +388,6 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   gpu::SyncToken most_recently_waited_sync_token_;
   GLbyte current_mailbox_byte_ = 0;
   gfx::Size most_recently_produced_size_;
-  bool create_image_chromium_fail_ = false;
   GLuint current_image_id_ = 1;
   HashMap<GLuint, gfx::Size> texture_sizes_;
   HashMap<GLuint, gfx::Size> image_sizes_;
@@ -484,7 +439,8 @@ class DrawingBufferForTests : public DrawingBuffer {
             false /* wantStencil */,
             DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */,
             cc::PaintFlags::FilterQuality::kLow,
-            CanvasColorParams(),
+            PredefinedColorSpace::kSRGB,
+            CanvasPixelFormat::kUint8,
             gl::GpuPreference::kHighPerformance),
         live_(nullptr) {}
 

@@ -9,11 +9,11 @@
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,13 +40,13 @@ class CrostiniPortForwarderTest : public testing::Test {
   CrostiniPortForwarderTest& operator=(const CrostiniPortForwarderTest&) =
       delete;
 
-  ~CrostiniPortForwarderTest() override {}
+  ~CrostiniPortForwarderTest() override = default;
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
     chromeos::PermissionBrokerClient::InitializeFake();
     profile_ = std::make_unique<TestingProfile>();
     CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
@@ -67,9 +67,9 @@ class CrostiniPortForwarderTest : public testing::Test {
     crostini_port_forwarder_.reset();
     test_helper_.reset();
     profile_.reset();
-    chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -127,10 +127,7 @@ class CrostiniPortForwarderTest : public testing::Test {
               pref.value().FindIntKey(crostini::kPortNumberKey).value());
     EXPECT_EQ(static_cast<int>(key.protocol_type),
               pref.value().FindIntKey(crostini::kPortProtocolKey).value());
-    EXPECT_EQ(key.container_id.vm_name,
-              *pref.value().FindStringKey(crostini::kPortVmNameKey));
-    EXPECT_EQ(key.container_id.container_name,
-              *pref.value().FindStringKey(crostini::kPortContainerNameKey));
+    EXPECT_EQ(key.container_id, ContainerId(pref.value()));
     EXPECT_EQ(label, *pref.value().FindStringKey(crostini::kPortLabelKey));
   }
 
@@ -518,14 +515,15 @@ TEST_F(CrostiniPortForwarderTest, GetActivePorts) {
 
   // Get active ports.
   base::ListValue forwarded_ports = crostini_port_forwarder_->GetActivePorts();
-  EXPECT_EQ(forwarded_ports.GetList().size(), ports_to_add.size());
+  EXPECT_EQ(forwarded_ports.GetListDeprecated().size(), ports_to_add.size());
   for (unsigned int i = 0; i < ports_to_add.size(); i++) {
     unsigned int reverse_index = ports_to_add.size() - i - 1;
-    EXPECT_EQ(*(forwarded_ports.GetList()[i].FindPath("port_number")),
+    EXPECT_EQ(*(forwarded_ports.GetListDeprecated()[i].FindPath("port_number")),
               base::Value(ports_to_add.at(reverse_index).port_number));
-    EXPECT_EQ(*(forwarded_ports.GetList()[i].FindPath("protocol_type")),
-              base::Value(static_cast<int>(
-                  ports_to_add.at(reverse_index).protocol_type)));
+    EXPECT_EQ(
+        *(forwarded_ports.GetListDeprecated()[i].FindPath("protocol_type")),
+        base::Value(
+            static_cast<int>(ports_to_add.at(reverse_index).protocol_type)));
   }
 }
 

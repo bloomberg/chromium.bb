@@ -5,10 +5,11 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 
-export function frameworkEventListeners(object: SDK.RemoteObject.RemoteObject): Promise<FrameworkEventListenersObject> {
+export async function frameworkEventListeners(object: SDK.RemoteObject.RemoteObject):
+    Promise<FrameworkEventListenersObject> {
   const domDebuggerModel = object.runtimeModel().target().model(SDK.DOMDebuggerModel.DOMDebuggerModel);
   if (!domDebuggerModel) {
-    return Promise.resolve({eventListeners: [], internalHandlers: null} as FrameworkEventListenersObject);
+    return {eventListeners: [], internalHandlers: null} as FrameworkEventListenersObject;
   }
 
   const listenersResult = {internalHandlers: null, eventListeners: []} as FrameworkEventListenersObject;
@@ -347,8 +348,9 @@ export function frameworkEventListeners(object: SDK.RemoteObject.RemoteObject): 
       }
     }
 
+    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function checkInternalHandler(handler: any): (() => any)|null {
+    function checkInternalHandler(handler: any): (() => void)|null {
       if (handler && (typeof handler === 'function')) {
         return handler;
       }

@@ -18,6 +18,8 @@ source_set("common") {
   sources = [
     "args_tracker.cc",
     "args_tracker.h",
+    "args_translation_table.cc",
+    "args_translation_table.h",
     "chunked_trace_reader.h",
     "clock_tracker.cc",
     "clock_tracker.h",
@@ -31,6 +33,8 @@ source_set("common") {
     "process_tracker.h",
     "slice_tracker.cc",
     "slice_tracker.h",
+    "slice_translation_table.cc",
+    "slice_translation_table.h",
     "system_info_tracker.cc",
     "system_info_tracker.h",
     "trace_parser.h",
@@ -39,6 +43,7 @@ source_set("common") {
   ]
   public_deps = [
     "../:gen_cc_config_descriptor",
+    "../../util:proto_to_args_parser",
     "../../util:protozero_to_text",
   ]
   deps = [
@@ -56,11 +61,13 @@ source_set("common") {
 
 source_set("unittests") {
   sources = [
+    "args_translation_table_unittest.cc",
     "clock_tracker_unittest.cc",
     "event_tracker_unittest.cc",
     "flow_tracker_unittest.cc",
     "process_tracker_unittest.cc",
     "slice_tracker_unittest.cc",
+    "slice_translation_table_unittest.cc",
   ]
   testonly = true
   deps = [

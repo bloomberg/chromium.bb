@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -933,6 +934,34 @@ IN_PROC_BROWSER_TEST_F(HistoryPrerenderBrowserTest,
               testing::ElementsAre(prerendering_fragment_url, initial_url));
 }
 
+IN_PROC_BROWSER_TEST_F(HistoryPrerenderBrowserTest,
+                       RedirectedPrerenderPageIsRecordedIfActivated) {
+  const GURL initial_url = embedded_test_server()->GetURL("/empty.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+
+  // Start prerendering a URL that causes same-origin redirection.
+  const GURL redirected_url =
+      embedded_test_server()->GetURL("/empty.html?prerender");
+  const GURL prerendering_url = embedded_test_server()->GetURL(
+      "/server-redirect?" + redirected_url.spec());
+  prerender_helper().AddPrerender(prerendering_url);
+  EXPECT_EQ(prerender_helper().GetRequestCount(prerendering_url), 1);
+  EXPECT_EQ(prerender_helper().GetRequestCount(redirected_url), 1);
+
+  // The prerendering page should not be recorded.
+  EXPECT_THAT(GetHistoryContents(), testing::ElementsAre(initial_url));
+
+  // Activate.
+  prerender_helper().NavigatePrimaryPage(prerendering_url);
+
+  // The redirected URL of the prerendering page, instead of the original
+  // prerendering URL, should be recorded.
+  EXPECT_THAT(GetHistoryContents(),
+              testing::ElementsAre(redirected_url, initial_url));
+}
+
 // For tests which use fenced frame.
 class HistoryFencedFrameBrowserTest : public HistoryMPArchBrowserTest {
  public:
@@ -975,7 +1004,7 @@ IN_PROC_BROWSER_TEST_F(HistoryFencedFrameBrowserTest,
       embedded_test_server()->GetURL("/fenced_frames/title1.html");
   content::RenderFrameHost* fenced_frame_host =
       fenced_frame_test_helper().CreateFencedFrame(
-          web_contents()->GetMainFrame(), fenced_frame_url);
+          web_contents()->GetPrimaryMainFrame(), fenced_frame_url);
 
   // Navigate the fenced frame.
   last_load_completion_before_navigation =

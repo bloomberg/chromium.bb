@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/frame/window_frame_util.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -15,13 +16,14 @@
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_scroll_container.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/user_education/tip_marquee_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -31,7 +33,9 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 
 namespace {
 
@@ -108,7 +112,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
 
   // This is the margin necessary to ensure correct spacing between right-
   // aligned control and the end of the TabStripRegionView.
-  const gfx::Insets control_padding = gfx::Insets(
+  const auto control_padding = gfx::Insets::TLBR(
       0, 0, 0, GetLayoutConstant(TABSTRIP_REGION_VIEW_CONTROL_PADDING));
 
   tip_marquee_view_ = AddChildView(
@@ -123,12 +127,14 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
                                  views::LayoutAlignment::kCenter);
   tip_marquee_view_->SetProperty(views::kMarginsKey, control_padding);
 
-#if defined(OS_CHROMEOS)
+  SetProperty(views::kElementIdentifierKey, kTabStripRegionElementId);
+
+#if BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(features::kChromeOSTabSearchCaptionButton))
     return;
 #endif
 
-  const Browser* browser = tab_strip_->controller()->GetBrowser();
+  const Browser* browser = tab_strip_->GetBrowser();
   if (!browser ||
       WindowFrameUtil::IsWin10TabSearchCaptionButtonEnabled(browser)) {
     return;
@@ -158,13 +164,26 @@ bool TabStripRegionView::IsRectInWindowCaption(const gfx::Rect& rect) {
 
   // Perform a hit test against the |tab_strip_container_| to ensure that the
   // rect is within the visible portion of the |tab_strip_| before calling the
-  // tab strip's |IsRectInWindowCaption()|.
+  // tab strip's |IsRectInWindowCaption()| for scrolling disabled. Defer to
+  // scroll container if scrolling is enabled.
   // TODO(tluk): Address edge case where |rect| might partially intersect with
   // the |tab_strip_container_| and the |tab_strip_| but not over the same
   // pixels. This could lead to this returning false when it should be returning
   // true.
-  if (tab_strip_container_->HitTestRect(get_target_rect(tab_strip_container_)))
-    return tab_strip_->IsRectInWindowCaption(get_target_rect(tab_strip_));
+
+  if (tab_strip_container_->HitTestRect(
+          get_target_rect(tab_strip_container_))) {
+    if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
+      TabStripScrollContainer* scroll_container =
+          views::AsViewClass<TabStripScrollContainer>(tab_strip_container_);
+
+      return scroll_container->IsRectInWindowCaption(
+          get_target_rect(scroll_container));
+
+    } else {
+      return tab_strip_->IsRectInWindowCaption(get_target_rect(tab_strip_));
+    }
+  }
 
   // The child could have a non-rectangular shape, so if the rect is not in the
   // visual portions of the child view we treat it as a click to the caption.
@@ -188,6 +207,40 @@ void TabStripRegionView::FrameColorsChanged() {
     tab_search_button_->FrameColorsChanged();
   tab_strip_->FrameColorsChanged();
   SchedulePaint();
+}
+
+bool TabStripRegionView::CanDrop(const OSExchangeData& data) {
+  return tab_strip_->CanDrop(data);
+}
+
+bool TabStripRegionView::GetDropFormats(
+    int* formats,
+    std::set<ui::ClipboardFormatType>* format_types) {
+  if (!tab_strip_->WantsToReceiveAllDragEvents())
+    return false;
+
+  return tab_strip_->GetDropFormats(formats, format_types);
+}
+
+void TabStripRegionView::OnDragEntered(const ui::DropTargetEvent& event) {
+  DCHECK(tab_strip_->WantsToReceiveAllDragEvents());
+  tab_strip_->OnDragEntered(event);
+}
+
+int TabStripRegionView::OnDragUpdated(const ui::DropTargetEvent& event) {
+  DCHECK(tab_strip_->WantsToReceiveAllDragEvents());
+  return tab_strip_->OnDragUpdated(event);
+}
+
+void TabStripRegionView::OnDragExited() {
+  DCHECK(tab_strip_->WantsToReceiveAllDragEvents());
+  tab_strip_->OnDragExited();
+}
+
+views::View::DropCallback TabStripRegionView::GetDropCallback(
+    const ui::DropTargetEvent& event) {
+  DCHECK(tab_strip_->WantsToReceiveAllDragEvents());
+  return tab_strip_->GetDropCallback(event);
 }
 
 void TabStripRegionView::ChildPreferredSizeChanged(views::View* child) {
@@ -238,7 +291,7 @@ void TabStripRegionView::UpdateNewTabButtonBorder() {
   // should be improved, likely by taking the scroll state of the tabstrip into
   // account.
   new_tab_button_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(extra_vertical_space / 2, 0, 0, kHorizontalInset)));
+      gfx::Insets::TLBR(extra_vertical_space / 2, 0, 0, kHorizontalInset)));
 }
 
 BEGIN_METADATA(TabStripRegionView, views::AccessiblePaneView)

@@ -90,11 +90,12 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                                   const gpu::Mailbox& source_mailbox) override;
 
   // OOP-Raster
-  void BeginRasterCHROMIUM(GLuint sk_color,
+  void BeginRasterCHROMIUM(SkColor4f sk_color_4f,
                            GLboolean needs_clear,
                            GLuint msaa_sample_count,
                            MsaaMode msaa_mode,
                            GLboolean can_use_lcd_text,
+                           GLboolean visible,
                            const gfx::ColorSpace& color_space,
                            const GLbyte* mailbox) override;
   void RasterCHROMIUM(const cc::DisplayItemList* list,

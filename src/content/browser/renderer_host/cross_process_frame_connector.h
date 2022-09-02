@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "cc/input/touch_action.h"
@@ -180,8 +179,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   // not attempt to bubble the rest of the scroll sequence in this case.
   // Otherwise, returns true.
   // Made virtual for test override.
-  virtual bool BubbleScrollEvent(const blink::WebGestureEvent& event)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] virtual bool BubbleScrollEvent(
+      const blink::WebGestureEvent& event);
 
   // Determines whether the root RenderWidgetHostView (and thus the current
   // page) has focus.
@@ -333,11 +332,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
     child_frame_crash_shown_closure_for_testing_ = std::move(closure);
   }
 
-  void set_use_zoom_for_device_scale_factor_for_testing(
-      bool use_zoom_for_device_scale_factor) {
-    use_zoom_for_device_scale_factor_ = use_zoom_for_device_scale_factor;
-  }
-
  protected:
   friend class MockCrossProcessFrameConnector;
   friend class SitePerProcessBrowserTestBase;
@@ -378,9 +372,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   viz::LocalSurfaceId local_surface_id_;
 
   bool has_size_ = false;
-
-  // This allows a test override for UseZoomForDSF().
-  bool use_zoom_for_device_scale_factor_;
 
   uint32_t capture_sequence_number_ = 0u;
 

@@ -61,12 +61,22 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::EnterTestMode(url);
   }
 
+  void ExpectSelfUpdateSequence(ScopedServer* test_server) const override {
+    updater::test::ExpectSelfUpdateSequence(updater_scope_, test_server);
+  }
+
+  void SetGroupPolicies(const base::Value::Dict& values) const override {
+    updater::test::SetGroupPolicies(values);
+  }
+
   void ExpectUpdateSequence(ScopedServer* test_server,
                             const std::string& app_id,
+                            const std::string& install_data_index,
                             const base::Version& from_version,
                             const base::Version& to_version) const override {
     updater::test::ExpectUpdateSequence(updater_scope_, test_server, app_id,
-                                        from_version, to_version);
+                                        install_data_index, from_version,
+                                        to_version);
   }
 
   void ExpectVersionActive(const std::string& version) const override {
@@ -89,6 +99,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::SetupFakeUpdaterLowerVersion(updater_scope_);
   }
 
+  void SetupRealUpdaterLowerVersion() const override {
+    updater::test::SetupRealUpdaterLowerVersion(updater_scope_);
+  }
+
   void SetExistenceCheckerPath(const std::string& app_id,
                                const base::FilePath& path) const override {
     updater::test::SetExistenceCheckerPath(updater_scope_, app_id, path);
@@ -98,10 +112,12 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::SetServerStarts(updater_scope_, value);
   }
 
-  void ExpectAppUnregisteredExistenceCheckerPath(
-      const std::string& app_id) const override {
-    updater::test::ExpectAppUnregisteredExistenceCheckerPath(updater_scope_,
-                                                             app_id);
+  void ExpectRegistered(const std::string& app_id) const override {
+    updater::test::ExpectRegistered(updater_scope_, app_id);
+  }
+
+  void ExpectNotRegistered(const std::string& app_id) const override {
+    updater::test::ExpectNotRegistered(updater_scope_, app_id);
   }
 
   void ExpectAppVersion(const std::string& app_id,
@@ -125,21 +141,26 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::RunWake(updater_scope_, exit_code);
   }
 
-  void Update(const std::string& app_id) const override {
-    updater::test::Update(updater_scope_, app_id);
+  void RunWakeActive(int exit_code) const override {
+    updater::test::RunWakeActive(updater_scope_, exit_code);
+  }
+
+  void Update(const std::string& app_id,
+              const std::string& install_data_index) const override {
+    updater::test::Update(updater_scope_, app_id, install_data_index);
   }
 
   void UpdateAll() const override { updater::test::UpdateAll(updater_scope_); }
 
-  void RegisterApp(const std::string& app_id) const override {
-    updater::test::RegisterApp(updater_scope_, app_id);
+  void InstallApp(const std::string& app_id) const override {
+    updater::test::InstallApp(updater_scope_, app_id);
   }
 
-  void WaitForServerExit() const override {
-    updater::test::WaitForServerExit(updater_scope_);
+  void WaitForUpdaterExit() const override {
+    updater::test::WaitForUpdaterExit(updater_scope_);
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void ExpectInterfacesRegistered() const override {
     updater::test::ExpectInterfacesRegistered(updater_scope_);
   }
@@ -155,6 +176,15 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::ExpectLegacyProcessLauncherSucceeds(updater_scope_);
   }
 
+  void ExpectLegacyAppCommandWebSucceeds(
+      const std::string& app_id,
+      const std::string& command_id,
+      const base::Value::List& parameters,
+      int expected_exit_code) const override {
+    updater::test::ExpectLegacyAppCommandWebSucceeds(
+        updater_scope_, app_id, command_id, parameters, expected_exit_code);
+  }
+
   void RunUninstallCmdLine() const override {
     updater::test::RunUninstallCmdLine(updater_scope_);
   }
@@ -162,10 +192,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   void SetUpTestService() const override {}
 
   void TearDownTestService() const override {}
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
   base::FilePath GetDifferentUserPath() const override {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // /Library is owned by root.
     return base::FilePath(FILE_PATH_LITERAL("/Library"));
 #else
@@ -179,12 +209,42 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   }
 
   void CallServiceUpdate(const std::string& app_id,
+                         const std::string& install_data_index,
                          UpdateService::PolicySameVersionUpdate
                              policy_same_version_update) const override {
     updater::test::CallServiceUpdate(
-        updater_scope_, app_id,
+        updater_scope_, app_id, install_data_index,
         policy_same_version_update ==
             UpdateService::PolicySameVersionUpdate::kAllowed);
+  }
+
+  void SetupFakeLegacyUpdaterData() const override {
+    updater::test::SetupFakeLegacyUpdaterData(updater_scope_);
+  }
+
+  void ExpectLegacyUpdaterDataMigrated() const override {
+    updater::test::ExpectLegacyUpdaterDataMigrated(updater_scope_);
+  }
+
+  void RunRecoveryComponent(const std::string& app_id,
+                            const base::Version& version) const override {
+    updater::test::RunRecoveryComponent(updater_scope_, app_id, version);
+  }
+
+  void ExpectLastChecked() const override {
+    updater::test::ExpectLastChecked(updater_scope_);
+  }
+
+  void ExpectLastStarted() const override {
+    updater::test::ExpectLastStarted(updater_scope_);
+  }
+
+  void UninstallApp(const std::string& app_id) const override {
+    updater::test::UninstallApp(updater_scope_, app_id);
+  }
+
+  void RunOfflineInstall() override {
+    updater::test::RunOfflineInstall(updater_scope_);
   }
 
  private:

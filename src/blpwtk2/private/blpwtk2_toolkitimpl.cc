@@ -49,7 +49,6 @@
 #include <base/path_service.h>
 #include <base/process/memory.h>
 #include <base/synchronization/waitable_event.h>
-#include <base/task/post_task.h>
 #include <base/task/task_traits.h>
 #include <base/threading/thread_restrictions.h>
 #include <base/strings/utf_string_conversions.h>
@@ -302,8 +301,7 @@ static void startRenderer(
   // host's IO thread.  This way, the renderer needn't create a ChildIO
   // thread.
   if (isHost) {
-    ioTaskRunner = base::CreateSingleThreadTaskRunner(
-        {content::BrowserThread::IO});
+    ioTaskRunner = content::GetIOThreadTaskRunner({});
   }
 
   LOG(INFO) << "Initializing InProcessRenderer";
@@ -314,7 +312,7 @@ static void startRenderer(
 static size_t GetSwitchPrefixLength(const std::u16string& string)
 {
     const char16_t* const kSwitchPrefixes[] = {u"--", u"-", u"/"};
-    size_t switch_prefix_count = base::size(kSwitchPrefixes);
+    size_t switch_prefix_count = std::size(kSwitchPrefixes);
 
     for (size_t i = 0; i < switch_prefix_count; ++i) {
         std::u16string prefix(kSwitchPrefixes[i]);
@@ -447,6 +445,7 @@ static void appendCommonCommandLineSwitches(std::vector<std::string> *switches)
     switches->push_back("enable-blink-features=CompositingOptimizations");
     switches->push_back("disable-in-process-stack-traces");
     switches->push_back("no-sandbox");
+    switches->push_back("disable-features=CalculateNativeWinOcclusion");
 
 
 

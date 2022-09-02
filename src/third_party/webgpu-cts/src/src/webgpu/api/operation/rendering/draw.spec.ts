@@ -3,13 +3,6 @@ Tests for the general aspects of draw/drawIndexed/drawIndirect/drawIndexedIndire
 
 Primitive topology tested in api/operation/render_pipeline/primitive_topology.spec.ts.
 Index format tested in api/operation/command_buffer/render/state_tracking.spec.ts.
-
-* arguments - Test that draw arguments are passed correctly.
-
-TODO:
-* default_arguments - Test defaults to draw / drawIndexed.
-  - arg= {instance_count, first, first_instance, base_vertex}
-  - mode= {draw, drawIndexed}
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
@@ -57,12 +50,12 @@ Params:
       .expand('index_buffer_offset', p => (p.indexed ? ([0, 16] as const) : [undefined]))
       .expand('base_vertex', p => (p.indexed ? ([0, 9] as const) : [undefined]))
   )
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     if (t.params.first_instance > 0 && t.params.indirect) {
-      // TODO: 'as' cast because types don't have this feature name yet
-      await t.selectDeviceOrSkipTestCase('indirect-first-instance' as GPUFeatureName);
+      t.selectDeviceOrSkipTestCase('indirect-first-instance');
     }
-
+  })
+  .fn(async t => {
     const renderTargetSize = [72, 36];
 
     // The test will split up the render target into a grid where triangles of
@@ -93,13 +86,13 @@ Params:
     const vertexModule = t.device.createShaderModule({
       code: `
 struct Inputs {
-  [[builtin(vertex_index)]] vertex_index : u32;
-  [[builtin(instance_index)]] instance_id : u32;
-  [[location(0)]] vertexPosition : vec2<f32>;
+  @builtin(vertex_index) vertex_index : u32,
+  @builtin(instance_index) instance_id : u32,
+  @location(0) vertexPosition : vec2<f32>,
 };
 
-[[stage(vertex)]] fn vert_main(input : Inputs
-  ) -> [[builtin(position)]] vec4<f32> {
+@vertex fn vert_main(input : Inputs
+  ) -> @builtin(position) vec4<f32> {
   // 3u is the number of points in a triangle to convert from index
   // to id.
   var vertex_id : u32 = input.vertex_index / 3u;
@@ -117,13 +110,13 @@ struct Inputs {
 
     const fragmentModule = t.device.createShaderModule({
       code: `
-[[block]] struct Output {
-  value : u32;
+struct Output {
+  value : u32
 };
 
-[[group(0), binding(0)]] var<storage, read_write> output : Output;
+@group(0) @binding(0) var<storage, read_write> output : Output;
 
-[[stage(fragment)]] fn frag_main() -> [[location(0)]] vec4<f32> {
+@fragment fn frag_main() -> @location(0) vec4<f32> {
   output.value = 1u;
   return vec4<f32>(0.0, 1.0, 0.0, 1.0);
 }
@@ -131,6 +124,7 @@ struct Inputs {
     });
 
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: vertexModule,
         entryPoint: 'vert_main',
@@ -180,7 +174,8 @@ struct Inputs {
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: [0, 0, 0, 0],
+          clearValue: [0, 0, 0, 0],
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -284,7 +279,7 @@ struct Inputs {
       }
     }
 
-    renderPass.endPass();
+    renderPass.end();
     t.queue.submit([commandEncoder.finish()]);
 
     const green = new Uint8Array([0, 255, 0, 255]);
@@ -326,6 +321,15 @@ struct Inputs {
       }
     }
   });
+
+g.test('default_arguments')
+  .desc(
+    `TODO: Test defaults to draw / drawIndexed. Maybe merge with the 'arguments' test.
+- arg= {instance_count, first, first_instance, base_vertex}
+- mode= {draw, drawIndexed}
+  `
+  )
+  .unimplemented();
 
 g.test('vertex_attributes,basic')
   .desc(
@@ -496,14 +500,14 @@ g.test('vertex_attributes,basic')
     // The remaining 3 vertex attributes
     if (t.params.vertex_attribute_count === 16) {
       accumulateVariableDeclarationsInVertexShader = `
-        [[location(13)]] outAttrib13 : vec4<${wgslFormat}>;
+        @location(13) @interpolate(flat) outAttrib13 : vec4<${wgslFormat}>,
       `;
       accumulateVariableAssignmentsInVertexShader = `
       output.outAttrib13 =
           vec4<${wgslFormat}>(input.attrib12, input.attrib13, input.attrib14, input.attrib15);
       `;
       accumulateVariableDeclarationsInFragmentShader = `
-      [[location(13)]] attrib13 : vec4<${wgslFormat}>;
+      @location(13) @interpolate(flat) attrib13 : vec4<${wgslFormat}>,
       `;
       accumulateVariableAssignmentsInFragmentShader = `
       outBuffer.primitives[input.primitiveId].attrib12 = input.attrib13.x;
@@ -514,27 +518,26 @@ g.test('vertex_attributes,basic')
     }
 
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `
 struct Inputs {
-  [[builtin(vertex_index)]] vertexIndex : u32;
-  [[builtin(instance_index)]] instanceIndex : u32;
-${vertexInputShaderLocations
-  .map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`)
-  .join('\n')}
+  @builtin(vertex_index) vertexIndex : u32,
+  @builtin(instance_index) instanceIndex : u32,
+${vertexInputShaderLocations.map(i => `  @location(${i}) attrib${i} : ${wgslFormat},`).join('\n')}
 };
 
 struct Outputs {
-  [[builtin(position)]] Position : vec4<f32>;
+  @builtin(position) Position : vec4<f32>,
 ${interStageScalarShaderLocations
-  .map(i => `  [[location(${i})]] outAttrib${i} : ${wgslFormat};`)
+  .map(i => `  @location(${i}) @interpolate(flat) outAttrib${i} : ${wgslFormat},`)
   .join('\n')}
-  [[location(${interStageScalarShaderLocations.length})]] primitiveId : u32;
+  @location(${interStageScalarShaderLocations.length}) @interpolate(flat) primitiveId : u32,
 ${accumulateVariableDeclarationsInVertexShader}
 };
 
-[[stage(vertex)]] fn main(input : Inputs) -> Outputs {
+@vertex fn main(input : Inputs) -> Outputs {
   var output : Outputs;
 ${interStageScalarShaderLocations.map(i => `  output.outAttrib${i} = input.attrib${i};`).join('\n')}
 ${accumulateVariableAssignmentsInVertexShader}
@@ -553,21 +556,21 @@ ${accumulateVariableAssignmentsInVertexShader}
           code: `
 struct Inputs {
 ${interStageScalarShaderLocations
-  .map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`)
+  .map(i => `  @location(${i}) @interpolate(flat) attrib${i} : ${wgslFormat},`)
   .join('\n')}
-  [[location(${interStageScalarShaderLocations.length})]] primitiveId : u32;
+  @location(${interStageScalarShaderLocations.length}) @interpolate(flat) primitiveId : u32,
 ${accumulateVariableDeclarationsInFragmentShader}
 };
 
 struct OutPrimitive {
-${vertexInputShaderLocations.map(i => `  attrib${i} : ${wgslFormat};`).join('\n')}
+${vertexInputShaderLocations.map(i => `  attrib${i} : ${wgslFormat},`).join('\n')}
 };
-[[block]] struct OutBuffer {
-  primitives : [[stride(${vertexInputShaderLocations.length * 4})]] array<OutPrimitive>;
+struct OutBuffer {
+  primitives : array<OutPrimitive>
 };
-[[group(0), binding(0)]] var<storage, read_write> outBuffer : OutBuffer;
+@group(0) @binding(0) var<storage, read_write> outBuffer : OutBuffer;
 
-[[stage(fragment)]] fn main(input : Inputs) {
+@fragment fn main(input : Inputs) {
 ${interStageScalarShaderLocations
   .map(i => `  outBuffer.primitives[input.primitiveId].attrib${i} = input.attrib${i};`)
   .join('\n')}
@@ -618,7 +621,8 @@ ${accumulateVariableAssignmentsInFragmentShader}
               format: 'rgba8unorm',
             })
             .createView(),
-          loadValue: [0, 0, 0, 0],
+          clearValue: [0, 0, 0, 0],
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -630,7 +634,7 @@ ${accumulateVariableAssignmentsInFragmentShader}
       renderPass.setVertexBuffer(i, vertexBuffers[i]);
     }
     renderPass.draw(vertexCount, instanceCount);
-    renderPass.endPass();
+    renderPass.end();
     t.device.queue.submit([commandEncoder.finish()]);
 
     t.expectGPUBufferValuesEqual(resultBuffer, expectedData);

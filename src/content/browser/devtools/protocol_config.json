@@ -53,7 +53,8 @@
             },
             {
                 "domain": "NativeProfiling",
-                "include": ["dumpProfilingDataOfAllProcesses"]
+                "include": ["dumpProfilingDataOfAllProcesses"],
+                "async": ["dumpProfilingDataOfAllProcesses"]
             },
             {
                 "domain": "Network",
@@ -70,7 +71,7 @@
                 "include": ["enable", "disable", "reload", "navigate", "stopLoading", "getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot",
                     "startScreencast", "stopScreencast", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
                     "bringToFront", "setDownloadBehavior", "getAppManifest", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors", "getManifestIcons", "setBypassCSP", "getAppId", "addCompilationCache"],
-                "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "downloadWillBegin", "downloadProgress", "screencastVisibilityChanged", "screencastFrame", "backForwardCacheNotUsed"],
+                "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "downloadWillBegin", "downloadProgress", "screencastVisibilityChanged", "screencastFrame", "backForwardCacheNotUsed", "prerenderAttemptCompleted"],
                 "async": ["captureScreenshot", "navigate", "getAppManifest", "reload", "captureSnapshot", "getInstallabilityErrors", "getManifestIcons", "getAppId"]
             },
             {
@@ -90,7 +91,7 @@
             },
             {
                 "domain": "Storage",
-                "async": ["getUsageAndQuota", "clearDataForOrigin", "getCookies", "setCookies", "clearCookies", "overrideQuotaForOrigin", "getTrustTokens", "clearTrustTokens"]
+                "async": ["getUsageAndQuota", "clearDataForOrigin", "getCookies", "setCookies", "clearCookies", "overrideQuotaForOrigin", "getTrustTokens", "clearTrustTokens", "getInterestGroupDetails"]
             },
             {
                 "domain": "SystemInfo",
@@ -128,7 +129,7 @@
     "lib": {
         "package": "content/browser/devtools/protocol",
         "output": "protocol",
-        "string_header": "content/browser/devtools/protocol/base_string_adapter.h",
+        "protocol_traits": "third_party/inspector_protocol/crdtp/chromium/protocol_traits.h",
         "export_macro": "CONTENT_EXPORT",
         "export_header": "content/common/content_export.h"
     },

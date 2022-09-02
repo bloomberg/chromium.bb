@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_SCRIPT_CREATION_PARAMS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_SCRIPT_CREATION_PARAMS_H_
 
+#include "base/check_op.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
@@ -59,10 +60,10 @@ class ModuleScriptCreationParams {
   ~ModuleScriptCreationParams() = default;
 
   ModuleScriptCreationParams IsolatedCopy() const {
-    String isolated_source_text =
-        isolated_source_text_ ? isolated_source_text_.IsolatedCopy()
-                              : GetSourceText().ToString().IsolatedCopy();
-    return ModuleScriptCreationParams(SourceURL().Copy(), BaseURL().Copy(),
+    String isolated_source_text = isolated_source_text_
+                                      ? isolated_source_text_
+                                      : GetSourceText().ToString();
+    return ModuleScriptCreationParams(SourceURL(), BaseURL(),
                                       source_location_type_, GetModuleType(),
                                       isolated_source_text);
   }
@@ -95,10 +96,7 @@ class ModuleScriptCreationParams {
 
   SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
 
-  bool IsSafeToSendToAnotherThread() const {
-    return source_url_.IsSafeToSendToAnotherThread() &&
-           base_url_.IsSafeToSendToAnotherThread() && is_isolated_;
-  }
+  bool IsSafeToSendToAnotherThread() const { return is_isolated_; }
 
   ScriptStreamer* GetScriptStreamer() const { return script_streamer_; }
   ScriptStreamer::NotStreamingReason NotStreamingReason() const {
@@ -152,8 +150,8 @@ class ModuleScriptCreationParams {
 
 namespace WTF {
 
-// Creates a deep copy because |source_url_|, |source_text_| and
-// |script_streamer_| are not cross-thread-transfer-safe.
+// Creates a deep copy because |script_streamer_| is not
+// cross-thread-transfer-safe.
 template <>
 struct CrossThreadCopier<blink::ModuleScriptCreationParams> {
   static blink::ModuleScriptCreationParams Copy(

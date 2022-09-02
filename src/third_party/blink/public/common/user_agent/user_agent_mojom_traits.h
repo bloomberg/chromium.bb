@@ -72,6 +72,10 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentMetadataDataView,
     return data.bitness;
   }
 
+  static bool wow64(const ::blink::UserAgentMetadata& data) {
+    return data.wow64;
+  }
+
   static bool Read(blink::mojom::UserAgentMetadataDataView data,
                    ::blink::UserAgentMetadata* out);
 };
@@ -84,7 +88,7 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentOverrideDataView,
     return data.ua_string_override;
   }
 
-  static const absl::optional<::blink::UserAgentMetadata> ua_metadata_override(
+  static const absl::optional<::blink::UserAgentMetadata>& ua_metadata_override(
       const ::blink::UserAgentOverride& data) {
     return data.ua_metadata_override;
   }

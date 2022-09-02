@@ -28,8 +28,7 @@ namespace rlwe {
   }
   int ceiled_byte_length = (bit_length - 1) / 8 + 1;
   std::string res(in.begin(), in.begin() + ceiled_byte_length);
-  int remainder_bit_count = bit_length % 8;
-  if (remainder_bit_count > 0) {
+  if (int remainder_bit_count = bit_length % 8; remainder_bit_count > 0) {
     int mask = (1 << remainder_bit_count) - 1;
     res[res.size() - 1] &= (mask << (8 - remainder_bit_count));
   }
@@ -58,7 +57,7 @@ bool IsValid(absl::string_view in, int bit_length) {
   if (!status_or_truncated_bytes.ok()) {
     return false;
   }
-  return (status_or_truncated_bytes.ValueOrDie() == in);
+  return (status_or_truncated_bytes.value() == in);
 }
 
 }  // namespace rlwe

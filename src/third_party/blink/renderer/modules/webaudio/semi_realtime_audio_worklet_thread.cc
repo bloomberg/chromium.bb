@@ -6,14 +6,27 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 
-template class WorkletThreadHolder<SemiRealtimeAudioWorkletThread>;
+namespace {
 
-int SemiRealtimeAudioWorkletThread::s_ref_count_ = 0;
+// Use for ref-counting of all SemiRealtimeAudioWorkletThread instances in a
+// process. Incremented by the constructor and decremented by destructor.
+int ref_count = 0;
+
+void EnsureSharedBackingThread(const ThreadCreationParams& params) {
+  DCHECK(IsMainThread());
+  DCHECK_EQ(ref_count, 1);
+  WorkletThreadHolder<SemiRealtimeAudioWorkletThread>::EnsureInstance(params);
+}
+
+}  // namespace
+
+template class WorkletThreadHolder<SemiRealtimeAudioWorkletThread>;
 
 SemiRealtimeAudioWorkletThread::SemiRealtimeAudioWorkletThread(
     WorkerReportingProxy& worker_reporting_proxy)
@@ -36,14 +49,17 @@ SemiRealtimeAudioWorkletThread::SemiRealtimeAudioWorkletThread(
     params.thread_priority = base::ThreadPriority::NORMAL;
   }
 
-  if (++s_ref_count_ == 1)
+  if (++ref_count == 1) {
     EnsureSharedBackingThread(params);
+  }
 }
 
 SemiRealtimeAudioWorkletThread::~SemiRealtimeAudioWorkletThread() {
   DCHECK(IsMainThread());
-  if (--s_ref_count_ == 0)
+  DCHECK_GT(ref_count, 0);
+  if (--ref_count == 0) {
     ClearSharedBackingThread();
+  }
 }
 
 WorkerBackingThread& SemiRealtimeAudioWorkletThread::GetWorkerBackingThread() {
@@ -51,15 +67,9 @@ WorkerBackingThread& SemiRealtimeAudioWorkletThread::GetWorkerBackingThread() {
       ->GetThread();
 }
 
-void SemiRealtimeAudioWorkletThread::EnsureSharedBackingThread(
-    const ThreadCreationParams& params) {
-  DCHECK(IsMainThread());
-  WorkletThreadHolder<SemiRealtimeAudioWorkletThread>::EnsureInstance(params);
-}
-
 void SemiRealtimeAudioWorkletThread::ClearSharedBackingThread() {
   DCHECK(IsMainThread());
-  CHECK_EQ(s_ref_count_, 0);
+  CHECK_EQ(ref_count, 0);
   WorkletThreadHolder<SemiRealtimeAudioWorkletThread>::ClearInstance();
 }
 

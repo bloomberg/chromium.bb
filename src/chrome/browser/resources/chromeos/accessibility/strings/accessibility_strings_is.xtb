@@ -536,6 +536,7 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="4601367666219428522">ta. <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Hunsar næsta lyklaborðsinnslátt</translation>
 <translation id="4623097797855662355">Baktitill</translation>
+<translation id="4624970070706497034">TalkBack býður ekki lengur upp á sérsnið fyrir Chromebook. Þú getur áfram notað það en þarft að nota sjálfgefna flýtilykla TalkBack. Ýttu á Search+A og svo K til að sjá tiltæka flýtilykla. Ýttu aftur á skipunina ef þú vilt enn nota TalkBack.</translation>
 <translation id="463135993322337640">Ýttu á ChromeVox o, n til að fá upplýsingar um nýjungar</translation>
 <translation id="4649220074413114917">Hægt er að ýta á skjáinn með tveimur fingrum til að stöðva núverandi lestur. Þetta er gagnlegt ef þú vilt ekki að ChromeVox lesi eitthvað. Ýttu á skjáinn með tveimur fingrum til að halda áfram.</translation>
 <translation id="4660783501463101648">Sígilt fjarlægt. Lyklaborðsskipunin til að skipta yfir í sígilt ChromeVox hefur verið fjarlægð.</translation>
@@ -618,7 +619,6 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="5170206230005240598">Kveikt á blindraletursskýringum</translation>
 <translation id="5183440668879371625">Fyrri blindraleturslína</translation>
 <translation id="5189244881767082992">Lína</translation>
-<translation id="5234747236692380506">sláðu inn <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Korngulur</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Ljúka</translation>
@@ -666,6 +666,7 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="5522423213731659107">Flýtileiðsögn lokið!</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Ljósgrár</translation>
+<translation id="554893713779400387">Kveikja og slökkva á upplestri</translation>
 <translation id="5549179427201066174">Kveikja eða slökkva á hljóðsvörun (hljóðmerkjum)</translation>
 <translation id="556042886152191864">Hnappur</translation>
 <translation id="5561345396546889625">Næsti listi</translation>
@@ -684,6 +685,8 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="5623842676595125836">Notkunarskrá</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Myndtákn</translation>
+<translation id="5648939288050772726">Til hamingju! Þú hefur náð tökum á undirstöðuatriðunum í ChromeVox. Mundu að þú getur opnað skipanavalmynd ChromeVox hvenær sem er með því að ýta á leitarlykilinn og punkt. Til að fá frekari upplýsingar um ChromeVox og ChromeOS skaltu skoða eftirfarandi greinar.
+    Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til að velja og smella á hnappinn „Loka“.</translation>
 <translation id="5653397561111110475">Nota aðgengiseiginleika Chromebook snertiskjásins</translation>
 <translation id="5655682562155942719">Stökkskipanir</translation>
 <translation id="56637627897541303">Textasvæði</translation>
@@ -793,6 +796,7 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{tvípunktur}one{# tvípunktur}other{# tvípunktar}}</translation>
 <translation id="6444046323172968959">Viðvörunargluggi</translation>
 <translation id="6452403590345320472">Efnisyfirlit</translation>
+<translation id="6457542714329819968">type</translation>
 <translation id="6468049171101508116">Hnappurinn Áfram</translation>
 <translation id="646954774886932461">Atriðisorðaskrá</translation>
 <translation id="6475604559827479857">Litur fyrir auðkennd orð:</translation>
@@ -965,8 +969,6 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Eðlileg rödd</translation>
 <translation id="7714340021005120797">Engin næsta fellivalmynd</translation>
-<translation id="772146615414628379">Til hamingju! Þú hefur náð tökum á undirstöðuatriðunum í ChromeVox. Mundu að þú getur opnað skipanavalmynd ChromeVox hvenær sem er með því að ýta á leitarlykilinn og punkt. Til að fá frekari upplýsingar um ChromeVox og Chrome OS skaltu skoða eftirfarandi greinar.
-    Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til að velja og smella á hnappinn Loka.</translation>
 <translation id="7724603315864178912">Klippa</translation>
 <translation id="7731785449856576010">Engin næsta margmiðlunargræja</translation>
 <translation id="7735498529470878067">Snertikönnun getur hjálpað þér að fá fljótt hugmynd um hvað er á skjánum.</translation>
@@ -1168,6 +1170,7 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="9223032053830369045">Dökkrauður</translation>
 <translation id="923331726185079994">ChromeVox uppfært</translation>
 <translation id="93384979447910801">Dökksægrænn</translation>
+<translation id="937605981140327129">Ekki er búið að setja upp TalkBack. Settu upp Android AccessibilitySuite í Play Store og reyndu aftur.</translation>
 <translation id="948171205378458592">Minnka talhraða</translation>
 <translation id="957570623732056069">Strjúktu til vinstri eða hægri með einum fingri til að fletta í gegnum þessa kennslusíðu</translation>
 <translation id="958854023026327378">Strjúktu einum fingri niður</translation>

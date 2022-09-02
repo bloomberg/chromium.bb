@@ -22,7 +22,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -447,8 +446,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         // All colors use a single path if using the status bar color as the background.
         if (mUseStatusBarColorAsBackground) {
             if (isDefaultTheme) color = Color.BLACK;
-            setForegroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_grey_400));
+            setForegroundColor(getContext().getColor(R.color.modern_grey_400));
             setBackgroundColor(ColorUtils.getDarkenedColorForStatusBar(color));
             return;
         }
@@ -456,7 +454,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         // The default toolbar has specific colors to use.
         if ((isDefaultTheme || ColorUtils.isThemeColorTooBright(color)) && !isIncognito) {
             setForegroundColor(SemanticColorUtils.getProgressBarForeground(getContext()));
-            setBackgroundColor(getContext().getColor(R.color.progress_bar_bg_color));
+            setBackgroundColor(getContext().getColor(R.color.progress_bar_bg_color_list));
             return;
         }
 

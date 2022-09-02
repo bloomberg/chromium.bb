@@ -16,10 +16,13 @@
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/app_list_bubble_view.h"
+#include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/app_list/views/search_result_page_view.h"
@@ -31,6 +34,20 @@
 
 namespace ash {
 
+namespace {
+
+// An app list should be either a bubble app list or a fullscreen app list.
+// Returns true if a bubble app list should be used under the current mode.
+bool ShouldUseBubbleAppList() {
+  // A bubble app list should be used only when:
+  // (1) It is in clamshell mode; and
+  // (2) The productivity launcher flag is enabled.
+  return !Shell::Get()->IsInTabletMode() &&
+         features::IsProductivityLauncherEnabled();
+}
+
+}  // namespace
+
 AppListTestHelper::AppListTestHelper() {
   // The app list controller is ready after Shell is created.
   app_list_controller_ = Shell::Get()->app_list_controller();
@@ -41,6 +58,9 @@ AppListTestHelper::AppListTestHelper() {
   app_list_controller_->SetClient(app_list_client_.get());
   app_list_controller_->SetActiveModel(/*profile_id=*/1, &model_,
                                        &search_model_);
+  // Disable app list nudge as default.
+  DisableAppListNudge(true);
+  AppListNudgeController::SetPrivacyNoticeAcceptedForTest(true);
 }
 
 AppListTestHelper::~AppListTestHelper() {
@@ -50,6 +70,22 @@ AppListTestHelper::~AppListTestHelper() {
 
 void AppListTestHelper::WaitUntilIdle() {
   base::RunLoop().RunUntilIdle();
+}
+
+void AppListTestHelper::WaitForFolderAnimation() {
+  AppListFolderView* folder_view = nullptr;
+  if (!Shell::Get()->IsInTabletMode() &&
+      features::IsProductivityLauncherEnabled()) {
+    folder_view = GetBubbleFolderView();
+  } else {
+    folder_view = GetFullscreenFolderView();
+  }
+  if (!folder_view || !folder_view->IsAnimationRunning())
+    return;
+
+  base::RunLoop run_loop;
+  folder_view->SetAnimationDoneTestCallback(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 void AppListTestHelper::ShowAppList() {
@@ -90,6 +126,13 @@ void AppListTestHelper::ToggleAndRunLoop(uint64_t display_id,
   WaitUntilIdle();
 }
 
+void AppListTestHelper::StartSlideAnimationOnBubbleAppsPage(
+    views::View* view,
+    int vertical_offset,
+    base::TimeDelta duration) {
+  GetBubbleAppsPage()->SlideViewIntoPosition(view, vertical_offset, duration);
+}
+
 void AppListTestHelper::CheckVisibility(bool visible) {
   EXPECT_EQ(visible, app_list_controller_->IsVisible());
   EXPECT_EQ(visible, app_list_controller_->GetTargetVisibility(absl::nullopt));
@@ -118,7 +161,7 @@ void AppListTestHelper::AddContinueSuggestionResults(int num_results) {
   for (int i = 0; i < num_results; i++) {
     auto result = std::make_unique<TestSearchResult>();
     result->set_result_id(base::NumberToString(i));
-    result->set_result_type(AppListSearchResultType::kFileChip);
+    result->set_result_type(AppListSearchResultType::kZeroStateFile);
     result->set_display_type(SearchResultDisplayType::kContinue);
     GetSearchResults()->Add(std::move(result));
   }
@@ -131,18 +174,15 @@ void AppListTestHelper::AddRecentApps(int num_apps) {
     // result IDs must match app item IDs in the app list data model.
     result->set_result_id(test::AppListTestModel::GetItemName(i));
     result->set_result_type(AppListSearchResultType::kInstalledApp);
-    // TODO(crbug.com/1216662): Replace with a real display type after the ML
-    // team gives us a way to query directly for recent apps.
-    result->set_display_type(SearchResultDisplayType::kList);
+    result->set_display_type(SearchResultDisplayType::kRecentApps);
     GetSearchResults()->Add(std::move(result));
   }
 }
 
 bool AppListTestHelper::IsInFolderView() {
-  if (!Shell::Get()->IsInTabletMode() &&
-      features::IsProductivityLauncherEnabled()) {
+  if (ShouldUseBubbleAppList())
     return GetBubbleView()->showing_folder_for_test();
-  }
+
   return GetAppListView()
       ->app_list_main_view()
       ->contents_view()
@@ -150,11 +190,18 @@ bool AppListTestHelper::IsInFolderView() {
       ->IsInFolderView();
 }
 
+void AppListTestHelper::DisableAppListNudge(bool disable) {
+  AppListNudgeController::SetReorderNudgeDisabledForTest(disable);
+}
+
 AppListView* AppListTestHelper::GetAppListView() {
-  return app_list_controller_->presenter()->GetView();
+  return app_list_controller_->fullscreen_presenter()->GetView();
 }
 
 SearchBoxView* AppListTestHelper::GetSearchBoxView() {
+  if (ShouldUseBubbleAppList())
+    return GetBubbleView()->search_box_view_for_test();
+
   return GetAppListView()->search_box_view();
 }
 
@@ -182,7 +229,7 @@ PagedAppsGridView* AppListTestHelper::GetRootPagedAppsGridView() {
 }
 
 views::View* AppListTestHelper::GetFullscreenLauncherAppsSeparatorView() {
-  return GetAppsContainerView()->GetSeparatorView();
+  return GetAppsContainerView()->separator();
 }
 
 SearchResultPageView* AppListTestHelper::GetFullscreenSearchResultPageView() {
@@ -192,9 +239,18 @@ SearchResultPageView* AppListTestHelper::GetFullscreenSearchResultPageView() {
       ->search_result_page_view();
 }
 
+bool AppListTestHelper::IsShowingFullscreenSearchResults() {
+  return GetAppListView()
+      ->app_list_main_view()
+      ->contents_view()
+      ->IsShowingSearchResults();
+}
+
 SearchResultPageAnchoredDialog*
 AppListTestHelper::GetFullscreenSearchPageDialog() {
-  return GetFullscreenSearchResultPageView()->dialog_for_test();
+  if (IsShowingFullscreenSearchResults())
+    return GetFullscreenSearchResultPageView()->dialog_for_test();
+  return GetAppsContainerView()->dialog_for_test();
 }
 
 AppListBubbleView* AppListTestHelper::GetBubbleView() {

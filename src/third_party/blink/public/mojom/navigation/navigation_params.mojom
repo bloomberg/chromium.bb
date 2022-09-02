@@ -18,9 +18,11 @@ import "services/network/public/mojom/url_response_head.mojom";
 import "services/network/public/mojom/web_client_hints_types.mojom";
 import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
+import "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom";
 import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/loader/mixed_content.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
+import "third_party/blink/public/mojom/navigation/navigation_api_history_entry_arrays.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_policy.mojom";
 import "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom";
 import "third_party/blink/public/mojom/navigation/was_activated_option.mojom";
@@ -112,7 +114,7 @@ struct BeginNavigationParams {
   // initiator information in DevTools protocol format. See
   // https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Initiator
   // for details.
-  mojo_base.mojom.DictionaryValue? devtools_initiator;
+  mojo_base.mojom.DeprecatedDictionaryValue? devtools_initiator;
 
   // Specifies whether, and how, the navigation should execute a Trust Tokens
   // operation (https://github.com/wicg/trust-token-api) and attach headers
@@ -169,11 +171,6 @@ struct CommonNavigationParams {
   // Base URL for use in Blink's SubstituteData.
   // Is only used with data: URLs.
   url.mojom.Url base_url_for_data_url;
-
-  // Bitmask that has whether or not to request a Preview version of the
-  // document for various preview types or let the browser decide.
-  // Defined in third_party/blink/public/common/loader/previews_state.h.
-  int32 previews_state = 0;  // 0 == PREVIEWS_UNSPECIFIED
 
   // The navigationStart time exposed through the Navigation Timing API to JS.
   mojo_base.mojom.TimeTicks navigation_start;
@@ -265,19 +262,6 @@ struct OldPageInfo {
   // pagehide and visibilitychange events won't get dispatched again when we
   // unload/freeze the page later on.
   blink.mojom.PageLifecycleState new_lifecycle_state_for_old_page;
-};
-
-// AppHistoryEntry contains a subset of a session history item that is used by
-// the appHistory API to represent a non-current history entry. The browser
-// ensures that an AppHistoryEntry is only sent to the renderer if its |url| is
-// same-origin to the navigation being committed.
-struct AppHistoryEntry {
-  mojo_base.mojom.String16 key;
-  mojo_base.mojom.String16 id;
-  mojo_base.mojom.String16 url;
-  int64 item_sequence_number;
-  int64 document_sequence_number;
-  mojo_base.mojom.String16 state;
 };
 
 // Used by commit IPC messages. Holds the parameters needed by the renderer to
@@ -454,6 +438,11 @@ struct CommitNavigationParams {
   // https://html.spec.whatwg.org/C/#origin-keyed-agent-clusters
   bool origin_agent_cluster = false;
 
+  // Whether the decision to use origin-keyed or site-keyed agent clustering
+  // (which itself is recorded in origin_agent_cluster, above) has been
+  // made based on absent Origin-Agent-Cluster http header.
+  bool origin_agent_cluster_left_as_default = true;
+
   // Client-hints enabled; this is based on the top-level frame and should be
   // further narrowed down by permissions policy.
   array<network.mojom.WebClientHintsType> enabled_client_hints;
@@ -470,10 +459,9 @@ struct CommitNavigationParams {
   // received response headers.
   int32 http_response_code = -1;
 
-  // A same-origin subset of the back/forward list exposed by the appHistory
-  // API.
-  array<AppHistoryEntry> app_history_back_entries;
-  array<AppHistoryEntry> app_history_forward_entries;
+  // A same-origin subset of the back/forward list exposed by the
+  // window.navigation API.
+  NavigationApiHistoryEntryArrays navigation_api_history_entry_arrays;
 
   array<url.mojom.Url> early_hints_preloaded_resources;
 
@@ -487,6 +475,25 @@ struct CommitNavigationParams {
   // the length here directly.
   array<url.mojom.Url, 20>? ad_auction_components;
 
+  // If this is an "opaque-ads" mode fenced frame, there might be an associated
+  // reporting metadata. This is a map from destination type to reporting
+  // metadata which in turn is a map from the event type to the reporting url.
+  // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
+  FencedFrameReporting? fenced_frame_reporting_metadata;
+
   // The time the commit was sent from the browser.
   mojo_base.mojom.TimeTicks commit_sent;
+
+  // Whether or not this navigation will commit in an anonymous frame.
+  bool anonymous = false;
+
+  // When URL is about:srcdoc, this carries the srcdoc attribute's value.
+  string srcdoc_value;
+
+  // Whether the navigation should be treated as a "loadDataWithBaseURL"
+  // navigation, where the "document URL" is set to the supplied base URL
+  // instead of the data URL set in CommonNavigationParams' `url`. If this
+  // returns false, the data: URL will still be loaded, but we won't try to use
+  // the supplied base URL and history URL.
+  bool is_load_data_with_base_url = false;
 };

@@ -140,6 +140,14 @@ id<GREYMatcher> Omnibox() {
   return [ChromeMatchersAppInterface omnibox];
 }
 
+id<GREYMatcher> OmniboxPopupRow() {
+  return [ChromeMatchersAppInterface omniboxPopupRow];
+}
+
+id<GREYMatcher> OmniboxPopupList() {
+  return [ChromeMatchersAppInterface omniboxPopupList];
+}
+
 id<GREYMatcher> DefocusedLocationView() {
   return [ChromeMatchersAppInterface defocusedLocationView];
 }
@@ -198,18 +206,20 @@ id<GREYMatcher> CloseTabMenuButton() {
   return [ChromeMatchersAppInterface closeTabMenuButton];
 }
 
-id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
-                                   BOOL is_toggled_on) {
-  return [ChromeMatchersAppInterface settingsSwitchCell:accessibility_identifier
-                                            isToggledOn:is_toggled_on];
+id<GREYMatcher> TableViewSwitchCell(NSString* accessibility_identifier,
+                                    BOOL is_toggled_on) {
+  return
+      [ChromeMatchersAppInterface tableViewSwitchCell:accessibility_identifier
+                                          isToggledOn:is_toggled_on];
 }
 
-id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
-                                   BOOL is_toggled_on,
-                                   BOOL is_enabled) {
-  return [ChromeMatchersAppInterface settingsSwitchCell:accessibility_identifier
-                                            isToggledOn:is_toggled_on
-                                              isEnabled:is_enabled];
+id<GREYMatcher> TableViewSwitchCell(NSString* accessibility_identifier,
+                                    BOOL is_toggled_on,
+                                    BOOL is_enabled) {
+  return
+      [ChromeMatchersAppInterface tableViewSwitchCell:accessibility_identifier
+                                          isToggledOn:is_toggled_on
+                                            isEnabled:is_enabled];
 }
 
 id<GREYMatcher> SyncSwitchCell(NSString* accessibility_label,
@@ -346,6 +356,10 @@ id<GREYMatcher> SettingsImportDataContinueButton() {
   return [ChromeMatchersAppInterface settingsImportDataContinueButton];
 }
 
+id<GREYMatcher> SettingsSafetyCheckTableView() {
+  return [ChromeMatchersAppInterface settingsSafetyCheckTableView];
+}
+
 id<GREYMatcher> SettingsPrivacyTableView() {
   return [ChromeMatchersAppInterface settingsPrivacyTableView];
 }
@@ -405,6 +419,10 @@ id<GREYMatcher> SettingsCollectionView() {
 
 id<GREYMatcher> ClearBrowsingHistoryButton() {
   return [ChromeMatchersAppInterface clearBrowsingHistoryButton];
+}
+
+id<GREYMatcher> HistoryTableView() {
+  return [ChromeMatchersAppInterface historyTableView];
 }
 
 id<GREYMatcher> ClearCookiesButton() {
@@ -600,6 +618,10 @@ id<GREYMatcher> TabGridOtherDevicesPanelButton() {
   return [ChromeMatchersAppInterface tabGridOtherDevicesPanelButton];
 }
 
+id<GREYMatcher> TabGridNormalModePageControl() {
+  return [ChromeMatchersAppInterface tabGridNormalModePageControl];
+}
+
 id<GREYMatcher> TabGridBackground() {
   return [ChromeMatchersAppInterface tabGridBackground];
 }
@@ -652,6 +674,10 @@ id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title) {
   return [ChromeMatchersAppInterface
       historyEntryForURL:base::SysUTF8ToNSString(url)
                    title:base::SysUTF8ToNSString(title)];
+}
+
+id<GREYMatcher> SettingsToolbarAddButton() {
+  return [ChromeMatchersAppInterface settingsToolbarAddButton];
 }
 
 #pragma mark - Manual Fallback
@@ -779,6 +805,24 @@ id<GREYMatcher> TabGridEditSelectAllButton() {
 
 id<GREYMatcher> TabGridEditShareButton() {
   return [ChromeMatchersAppInterface tabGridEditShareButton];
+}
+
+#pragma mark - Tab Grid Search Mode
+
+id<GREYMatcher> TabGridSearchTabsButton() {
+  return [ChromeMatchersAppInterface tabGridSearchTabsButton];
+}
+
+id<GREYMatcher> TabGridSearchBar() {
+  return [ChromeMatchersAppInterface tabGridSearchBar];
+}
+
+id<GREYMatcher> TabGridSearchCancelButton() {
+  return [ChromeMatchersAppInterface tabGridSearchCancelButton];
+}
+
+id<GREYMatcher> TabGridSearchModeToolbar() {
+  return [ChromeMatchersAppInterface tabGridSearchModeToolbar];
 }
 
 }  // namespace chrome_test_util

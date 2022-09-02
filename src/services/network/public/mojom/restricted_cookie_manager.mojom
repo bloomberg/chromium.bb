@@ -70,13 +70,20 @@ interface RestrictedCookieManager {
   GetAllForUrl(
       url.mojom.Url url, SiteForCookies site_for_cookies,
       url.mojom.Origin top_frame_origin,
-      CookieManagerGetOptions options) => (
+      CookieManagerGetOptions options,
+      // TODO(https://crbug.com/1296161): Delete this arg when partitioned cookies
+      // Origin Trial is over.
+      bool partitioned_cookies_runtime_feature_enabled) => (
       array<CookieWithAccessResult> cookies);
 
+  // Sets a canonical cookie. |status| must be an inclusion status as defined
+  // by the C++ net::CookieInclusionStatus::IsInclude() method. It is expected
+  // that exclusion reasons have been taken care of on the renderer side.
   SetCanonicalCookie(CanonicalCookie cookie,
                      url.mojom.Url url,
                      SiteForCookies site_for_cookies,
-                     url.mojom.Origin top_frame_origin) => (bool success);
+                     url.mojom.Origin top_frame_origin,
+                     CookieInclusionStatus status) => (bool success);
 
   // Subscribes to changes in the cookies transmitted in a request to an URL.
   //
@@ -96,7 +103,10 @@ interface RestrictedCookieManager {
   [Sync]
   SetCookieFromString(url.mojom.Url url, SiteForCookies site_for_cookies,
                       url.mojom.Origin top_frame_origin,
-                      string cookie) => ();
+                      string cookie,
+                      // TODO(https://crbug.com/1296161): Delete this arg when
+                      // partitioned cookies Origin Trial is over.
+                      bool partitioned_cookies_runtime_feature_enabled) => ();
 
   // Used to get cookies for the given URL. Cookies that are blocked by user
   // preferences will be skipped, down to potentially returning an empty string.
@@ -108,7 +118,11 @@ interface RestrictedCookieManager {
   [Sync]
   GetCookiesString(url.mojom.Url url,
                    SiteForCookies site_for_cookies,
-                   url.mojom.Origin top_frame_origin) => (string cookies);
+                   url.mojom.Origin top_frame_origin,
+                   // TODO(https://crbug.com/1296161): Delete this arg when
+                   // partitioned cookies Origin Trial is over.
+                   bool partitioned_cookies_runtime_feature_enabled) => (
+                   string cookies);
 
   // Used to check if cookies are enabled for the given URL in context of a
   // given site.
@@ -120,4 +134,8 @@ interface RestrictedCookieManager {
       url.mojom.Url url,
       SiteForCookies site_for_cookies,
       url.mojom.Origin top_frame_origin) => (bool cookies_enabled);
+
+  // TODO(https://crbug.com/1296161): Delete this method when the partitioned cookies
+  // Origin Trial is over.
+  ConvertPartitionedCookiesToUnpartitioned(url.mojom.Url url);
 };

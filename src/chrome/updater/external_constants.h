@@ -9,8 +9,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/values.h"
 
 class GURL;
+
+namespace crx_file {
+enum class VerifierFormat;
+}
 
 namespace updater {
 
@@ -34,6 +39,12 @@ class ExternalConstants : public base::RefCountedThreadSafe<ExternalConstants> {
 
   // Minimum number of of seconds the server needs to stay alive.
   virtual int ServerKeepAliveSeconds() const = 0;
+
+  // CRX format verification requirements.
+  virtual crx_file::VerifierFormat CrxVerifierFormat() const = 0;
+
+  // Overrides for the `GroupPolicyManager`.
+  virtual base::Value::Dict GroupPolicies() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<ExternalConstants>;

@@ -88,9 +88,19 @@ class CONTENT_EXPORT CommitDeferringConditionRunner {
   // registered conditions. This is typically used for adding a condition before
   // NavigationRequest is created.
   using ConditionGenerator =
-      base::RepeatingCallback<std::unique_ptr<CommitDeferringCondition>()>;
+      base::RepeatingCallback<std::unique_ptr<CommitDeferringCondition>(
+          NavigationHandle&,
+          CommitDeferringCondition::NavigationType)>;
+
+  // Specifies whether a ConditionGenerator installs its condition to run
+  // before existing conditions or after. Note: generators are run in the order
+  // in which they are added.
+  enum class InsertOrder { kBefore, kAfter };
+
   // Returns a generator id that is used for uninstalling the generator.
-  static int InstallConditionGeneratorForTesting(ConditionGenerator generator);
+  static int InstallConditionGeneratorForTesting(ConditionGenerator generator,
+                                                 InsertOrder order);
+
   // `generator_id` should be an identifier returned by
   // InstallConditionGeneratorForTesting().
   static void UninstallConditionGeneratorForTesting(int generator_id);
@@ -99,9 +109,9 @@ class CONTENT_EXPORT CommitDeferringConditionRunner {
   void AddConditionForTesting(
       std::unique_ptr<CommitDeferringCondition> condition);
 
-  // Used in tests to check if CommitDeferringConditionRunner is currently
-  // deferred for the navigation or not.
-  bool is_deferred_for_testing() const;
+  // Returns the condition that's currently causing the navigation commit to be
+  // deferred. If no condition is currently deferred, returns nullptr.
+  CommitDeferringCondition* GetDeferringConditionForTesting() const;
 
  private:
   friend class CommitDeferringConditionRunnerTest;
@@ -117,7 +127,8 @@ class CONTENT_EXPORT CommitDeferringConditionRunner {
   void ResumeProcessing();
 
   void ProcessConditions();
-  void AddCondition(std::unique_ptr<CommitDeferringCondition> condition);
+  void AddCondition(std::unique_ptr<CommitDeferringCondition> condition,
+                    InsertOrder order = InsertOrder::kAfter);
 
   std::vector<std::unique_ptr<CommitDeferringCondition>> conditions_;
 

@@ -18,6 +18,7 @@ import { debug } from './Debug.js';
 const debugProtocolSend = debug('puppeteer:protocol:SEND ►');
 const debugProtocolReceive = debug('puppeteer:protocol:RECV ◀');
 import { EventEmitter } from './EventEmitter.js';
+import { ProtocolError } from './Errors.js';
 /**
  * Internal events that the Connection class emits.
  *
@@ -27,7 +28,7 @@ export const ConnectionEmittedEvents = {
     Disconnected: Symbol('Connection.Disconnected'),
 };
 /**
- * @internal
+ * @public
  */
 export class Connection extends EventEmitter {
     constructor(url, transport, delay = 0) {
@@ -65,7 +66,12 @@ export class Connection extends EventEmitter {
         const params = paramArgs.length ? paramArgs[0] : undefined;
         const id = this._rawSend({ method, params });
         return new Promise((resolve, reject) => {
-            this._callbacks.set(id, { resolve, reject, error: new Error(), method });
+            this._callbacks.set(id, {
+                resolve,
+                reject,
+                error: new ProtocolError(),
+                method,
+            });
         });
     }
     _rawSend(message) {
@@ -126,8 +132,8 @@ export class Connection extends EventEmitter {
         if (this._closed)
             return;
         this._closed = true;
-        this._transport.onmessage = null;
-        this._transport.onclose = null;
+        this._transport.onmessage = undefined;
+        this._transport.onclose = undefined;
         for (const callback of this._callbacks.values())
             callback.reject(rewriteError(callback.error, `Protocol error (${callback.method}): Target closed.`));
         this._callbacks.clear();
@@ -149,7 +155,11 @@ export class Connection extends EventEmitter {
             targetId: targetInfo.targetId,
             flatten: true,
         });
-        return this._sessions.get(sessionId);
+        const session = this._sessions.get(sessionId);
+        if (!session) {
+            throw new Error('CDPSession creation failed.');
+        }
+        return session;
     }
 }
 /**
@@ -169,7 +179,7 @@ export const CDPSessionEmittedEvents = {
  * events can be subscribed to with `CDPSession.on` method.
  *
  * Useful links: {@link https://chromedevtools.github.io/devtools-protocol/ | DevTools Protocol Viewer}
- * and {@link https://github.com/aslushnikov/getting-started-with-cdp/blob/master/README.md | Getting Started with DevTools Protocol}.
+ * and {@link https://github.com/aslushnikov/getting-started-with-cdp/blob/HEAD/README.md | Getting Started with DevTools Protocol}.
  *
  * @example
  * ```js
@@ -210,15 +220,20 @@ export class CDPSession extends EventEmitter {
             params,
         });
         return new Promise((resolve, reject) => {
-            this._callbacks.set(id, { resolve, reject, error: new Error(), method });
+            this._callbacks.set(id, {
+                resolve,
+                reject,
+                error: new ProtocolError(),
+                method,
+            });
         });
     }
     /**
      * @internal
      */
     _onMessage(object) {
-        if (object.id && this._callbacks.has(object.id)) {
-            const callback = this._callbacks.get(object.id);
+        const callback = object.id ? this._callbacks.get(object.id) : undefined;
+        if (object.id && callback) {
             this._callbacks.delete(object.id);
             if (object.error)
                 callback.reject(createProtocolError(callback.error, callback.method, object));
@@ -248,8 +263,14 @@ export class CDPSession extends EventEmitter {
         for (const callback of this._callbacks.values())
             callback.reject(rewriteError(callback.error, `Protocol error (${callback.method}): Target closed.`));
         this._callbacks.clear();
-        this._connection = null;
+        this._connection = undefined;
         this.emit(CDPSessionEmittedEvents.Disconnected);
+    }
+    /**
+     * @internal
+     */
+    id() {
+        return this._sessionId;
     }
 }
 /**
@@ -262,15 +283,16 @@ function createProtocolError(error, method, object) {
     let message = `Protocol error (${method}): ${object.error.message}`;
     if ('data' in object.error)
         message += ` ${object.error.data}`;
-    return rewriteError(error, message);
+    return rewriteError(error, message, object.error.message);
 }
 /**
  * @param {!Error} error
  * @param {string} message
  * @returns {!Error}
  */
-function rewriteError(error, message) {
+function rewriteError(error, message, originalMessage) {
     error.message = message;
+    error.originalMessage = originalMessage !== null && originalMessage !== void 0 ? originalMessage : error.originalMessage;
     return error;
 }
 //# sourceMappingURL=Connection.js.map

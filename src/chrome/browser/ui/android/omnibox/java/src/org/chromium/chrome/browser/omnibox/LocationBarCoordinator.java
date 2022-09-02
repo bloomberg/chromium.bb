@@ -21,6 +21,7 @@ import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.lens.LensController;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.omnibox.status.StatusCoordinator.PageInfoActi
 import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxPedalDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.BookmarkState;
 import org.chromium.chrome.browser.omnibox.suggestions.mostvisited.ExploreIconProvider;
@@ -44,7 +46,6 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
-import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -132,11 +133,10 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
      * @param isToolbarMicEnabledSupplier Whether toolbar mic is enabled or not.
      * @param jankTracker Tracks UI jank.
      * @param exploreIconProvider The provider to get explore sites icon.
-     * @param userEducationHelper Helper to show in product help UI. Can be null if an in product
-     *         help shouldn't be shown, such as when called from a search activity.
      * @param merchantTrustSignalsCoordinatorSupplier Supplier of {@link
      *         MerchantTrustSignalsCoordinator}. Can be null if a store icon shouldn't be shown,
      *         such as when called from a search activity.
+     * @param reportExceptionCallback A {@link Callback} to report exceptions.
      */
     public LocationBarCoordinator(View locationBarLayout, View autocompleteAnchorView,
             ObservableSupplier<Profile> profileObservableSupplier,
@@ -157,9 +157,11 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
             @NonNull BookmarkState bookmarkState,
             @NonNull BooleanSupplier isToolbarMicEnabledSupplier, JankTracker jankTracker,
             @NonNull ExploreIconProvider exploreIconProvider,
-            @Nullable UserEducationHelper userEducationHelper,
             @Nullable Supplier<MerchantTrustSignalsCoordinator>
-                    merchantTrustSignalsCoordinatorSupplier) {
+                    merchantTrustSignalsCoordinatorSupplier,
+            @NonNull OmniboxPedalDelegate omniboxPedalDelegate,
+            BrowserStateBrowserControlsVisibilityDelegate browserControlsVisibilityDelegate,
+            Callback<Throwable> reportExceptionCallback) {
         mLocationBarLayout = (LocationBarLayout) locationBarLayout;
         mWindowDelegate = windowDelegate;
         mWindowAndroid = windowAndroid;
@@ -182,18 +184,18 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
         mUrlCoordinator =
                 new UrlBarCoordinator((UrlBar) mUrlBar, windowDelegate, actionModeCallback,
                         mCallbackController.makeCancelable(mLocationBarMediator::onUrlFocusChange),
-                        mLocationBarMediator, windowAndroid.getKeyboardDelegate(), isIncognito);
-        mAutocompleteCoordinator =
-                new AutocompleteCoordinator(mLocationBarLayout, this, this, mUrlCoordinator,
-                        modalDialogManagerSupplier, activityTabSupplier, shareDelegateSupplier,
-                        locationBarDataProvider, profileObservableSupplier, bringTabToFrontCallback,
-                        tabWindowManagerSupplier, bookmarkState, jankTracker, exploreIconProvider);
+                        mLocationBarMediator, windowAndroid.getKeyboardDelegate(), isIncognito,
+                        reportExceptionCallback);
+        mAutocompleteCoordinator = new AutocompleteCoordinator(mLocationBarLayout, this, this,
+                mUrlCoordinator, modalDialogManagerSupplier, activityTabSupplier,
+                shareDelegateSupplier, locationBarDataProvider, profileObservableSupplier,
+                bringTabToFrontCallback, tabWindowManagerSupplier, bookmarkState, jankTracker,
+                exploreIconProvider, omniboxPedalDelegate);
         StatusView statusView = mLocationBarLayout.findViewById(R.id.location_bar_status);
         mStatusCoordinator = new StatusCoordinator(isTablet(), statusView, mUrlCoordinator,
-                incognitoStateProvider, modalDialogManagerSupplier, locationBarDataProvider,
-                mTemplateUrlServiceSupplier, searchEngineLogoUtils, profileObservableSupplier,
-                windowAndroid, pageInfoAction, userEducationHelper,
-                merchantTrustSignalsCoordinatorSupplier);
+                modalDialogManagerSupplier, locationBarDataProvider, mTemplateUrlServiceSupplier,
+                searchEngineLogoUtils, profileObservableSupplier, windowAndroid, pageInfoAction,
+                merchantTrustSignalsCoordinatorSupplier, browserControlsVisibilityDelegate);
         mLocationBarMediator.setCoordinators(
                 mUrlCoordinator, mAutocompleteCoordinator, mStatusCoordinator);
 
@@ -283,6 +285,7 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
 
         mTemplateUrlServiceSupplier.set(TemplateUrlServiceFactory.get());
         mLocationBarMediator.onFinishNativeInitialization();
+        mUrlCoordinator.onFinishNativeInitialization();
         mAutocompleteCoordinator.onNativeInitialized();
         mStatusCoordinator.onNativeInitialized();
         mNativeInitialized = true;
@@ -309,6 +312,11 @@ public final class LocationBarCoordinator implements LocationBar, NativeInitObse
     @Override
     public void setShowTitle(boolean showTitle) {
         mLocationBarMediator.setShowTitle(showTitle);
+    }
+
+    @Override
+    public void requestUrlBarAccessibilityFocus() {
+        mUrlCoordinator.requestAccessibilityFocus();
     }
 
     @Override

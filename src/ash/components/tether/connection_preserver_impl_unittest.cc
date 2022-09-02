@@ -6,23 +6,22 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/tether/fake_active_host.h"
 #include "ash/components/tether/mock_tether_host_response_recorder.h"
 #include "ash/components/tether/timer_factory.h"
+#include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_client_channel.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
-#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -31,7 +30,7 @@ using testing::_;
 using testing::NiceMock;
 using testing::Return;
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -306,4 +305,4 @@ TEST_F(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

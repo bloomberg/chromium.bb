@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -66,17 +65,6 @@ ArcPrintSpoolerBridge::ArcPrintSpoolerBridge(content::BrowserContext* context,
 ArcPrintSpoolerBridge::~ArcPrintSpoolerBridge() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_bridge_service_->print_spooler()->SetHost(nullptr);
-}
-
-void ArcPrintSpoolerBridge::StartPrintInCustomTabDeprecated(
-    mojo::ScopedHandle scoped_handle,
-    int32_t task_id,
-    int32_t surface_id,
-    int32_t top_margin,
-    mojo::PendingRemote<mojom::PrintSessionInstance> instance,
-    StartPrintInCustomTabCallback callback) {
-  StartPrintInCustomTab(std::move(scoped_handle), task_id, std::move(instance),
-                        std::move(callback));
 }
 
 void ArcPrintSpoolerBridge::StartPrintInCustomTab(

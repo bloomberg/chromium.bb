@@ -8,6 +8,12 @@
 #  NOTE: don't run this script directly. Run scripts/run_code_generation.py.
 #
 
+# Information on Simulator formats:
+# According to https://developer.apple.com/documentation/metal/developing_metal_apps_that_run_in_simulator?language=objc,
+# Metal sim does not support several formats. The format table explicitly avoids enabling format support
+# for MTLPixelFormatR8Unorm_sRGB, MTLPixelFormatR8G8Unorm_sRGB,
+# and packed 16 bit formats when building for a Simulator target.
+
 import json
 import math
 import pprint
@@ -36,6 +42,7 @@ template_autogen_inl = """// GENERATED FILE - DO NOT EDIT.
 #include "libANGLE/renderer/Format.h"
 #include "libANGLE/renderer/metal/DisplayMtl.h"
 #include "libANGLE/renderer/metal/mtl_format_utils.h"
+#include "libANGLE/renderer/metal/mtl_utils.h"
 
 using namespace angle;
 
@@ -56,8 +63,9 @@ angle::FormatID Format::MetalToAngleFormatID(MTLPixelFormat formatMtl)
 void Format::init(const DisplayMtl *display, angle::FormatID intendedFormatId_)
 {{
     this->intendedFormatId = intendedFormatId_;
-
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
     id<MTLDevice> metalDevice = display->getMetalDevice();
+#endif
 
     // Actual conversion
     switch (this->intendedFormatId)
@@ -98,28 +106,37 @@ void FormatTable::initNativeFormatCapsAutogen(const DisplayMtl *display)
 
 image_format_assign_template1 = """
             this->metalFormat = {mtl_format};
-            this->actualFormatId = angle::FormatID::{actual_angle_format};
-            this->initFunction = {init_function};
-"""
+            this->actualFormatId = angle::FormatID::{actual_angle_format};{init_function}"""
 
 image_format_assign_template2 = """
             if ({fallback_condition})
             {{
                 this->metalFormat = {mtl_format};
-                this->actualFormatId = angle::FormatID::{actual_angle_format};
-                this->initFunction = {init_function};
+                this->actualFormatId = angle::FormatID::{actual_angle_format};{init_function}
             }}
             else
             {{
                 this->metalFormat = {mtl_format_fallback};
-                this->actualFormatId = angle::FormatID::{actual_angle_format_fallback};
-                this->initFunction = {init_function_fallback};
+                this->actualFormatId = angle::FormatID::{actual_angle_format_fallback};{init_function_fallback}
+            }}"""
+
+#D16 is fully supported on  Apple3+. However, on
+#previous  versions of Apple hardware, some operations can cause
+#undefined behavior.
+image_format_assign_template3 = """
+            if (mtl::SupportsIOSGPUFamily(metalDevice, 3))
+            {{
+                this->metalFormat = {mtl_format};
+                this->actualFormatId = angle::FormatID::{actual_angle_format};{init_function}
             }}
-"""
+            else
+            {{
+                this->metalFormat = {mtl_format_fallback};
+                this->actualFormatId = angle::FormatID::{actual_angle_format_fallback};{init_function_fallback}
+            }}"""
 
 case_image_format_template1 = """        case angle::FormatID::{angle_format}:
             {image_format_assign}
-            this->swizzled = false;
             break;
 
 """
@@ -136,7 +153,6 @@ case_image_format_template2 = """        case angle::FormatID::{angle_format}:
 #endif  // #if defined(__IPHONE_13_0) || defined(__MAC_10_15)
             {{
                 {image_format_assign_default}
-                this->swizzled = false;
             }}
             break;
 
@@ -150,8 +166,7 @@ case_vertex_format_template1 = """        case angle::FormatID::{angle_format}:
             this->metalFormat = {mtl_format};
             this->actualFormatId = angle::FormatID::{actual_angle_format};
             this->vertexLoadFunction = {vertex_copy_function};
-            this->defaultAlpha = {default_alpha};
-            this->actualSameGLType = {same_gl_type};
+            this->defaultAlpha = {default_alpha};{same_gl_type}
             break;
 
 """
@@ -162,20 +177,26 @@ case_vertex_format_template2 = """        case angle::FormatID::{angle_format}:
                 this->metalFormat = {mtl_format_packed};
                 this->actualFormatId = angle::FormatID::{actual_angle_format_packed};
                 this->vertexLoadFunction = {vertex_copy_function_packed};
-                this->defaultAlpha = {default_alpha_packed};
-                this->actualSameGLType = {same_gl_type_packed};
+                this->defaultAlpha = {default_alpha_packed};{same_gl_type_packed}
             }}
             else
             {{
                 this->metalFormat = {mtl_format};
                 this->actualFormatId = angle::FormatID::{actual_angle_format};
                 this->vertexLoadFunction = {vertex_copy_function};
-                this->defaultAlpha = {default_alpha};
-                this->actualSameGLType = {same_gl_type};
+                this->defaultAlpha = {default_alpha};{same_gl_type}
             }}
             break;
 
 """
+
+
+def wrap_init_function(str):
+    return '' if str == 'nullptr' else f'this->initFunction = {str};'
+
+
+def wrap_actual_same_gl_type(str):
+    return '' if str == 'true' else f'this->actualSameGLType = {str};'
 
 
 # NOTE(hqle): This is a modified version of the get_vertex_copy_function() function in
@@ -225,6 +246,8 @@ def get_vertex_copy_function_and_default_alpha(src_format, dst_format):
 
 
 # Generate format conversion switch case (generic case)
+
+
 def gen_image_map_switch_case(angle_format, actual_angle_format_info, angle_to_mtl_map,
                               assign_gen_func):
     if isinstance(actual_angle_format_info, dict):
@@ -267,6 +290,8 @@ def gen_image_map_switch_case(angle_format, actual_angle_format_info, angle_to_m
 
 
 # Generate format conversion switch case (simple case)
+
+
 def gen_image_map_switch_simple_case(angle_format, actual_angle_format_info, angle_to_gl,
                                      angle_to_mtl_map):
 
@@ -274,14 +299,17 @@ def gen_image_map_switch_simple_case(angle_format, actual_angle_format_info, ang
         return image_format_assign_template1.format(
             actual_angle_format=actual_angle_format,
             mtl_format=angle_to_mtl_map[actual_angle_format],
-            init_function=angle_format_utils.get_internal_format_initializer(
-                angle_to_gl[angle_format], actual_angle_format))
+            init_function=wrap_init_function(
+                angle_format_utils.get_internal_format_initializer(angle_to_gl[angle_format],
+                                                                   actual_angle_format)))
 
     return gen_image_map_switch_case(angle_format, actual_angle_format_info, angle_to_mtl_map,
                                      gen_format_assign_code)
 
 
 # Generate format conversion switch case (Mac case)
+
+
 def gen_image_map_switch_mac_case(angle_format, actual_angle_format_info, angle_to_gl,
                                   angle_to_mtl_map, mac_fallbacks):
     gl_format = angle_to_gl[angle_format]
@@ -297,20 +325,23 @@ def gen_image_map_switch_mac_case(angle_format, actual_angle_format_info, angle_
             return image_format_assign_template2.format(
                 actual_angle_format=actual_angle_format,
                 mtl_format=angle_to_mtl_map[actual_angle_format],
-                init_function=angle_format_utils.get_internal_format_initializer(
-                    gl_format, actual_angle_format),
+                init_function=wrap_init_function(
+                    angle_format_utils.get_internal_format_initializer(
+                        gl_format, actual_angle_format)),
                 actual_angle_format_fallback=actual_angle_format_fallback,
                 mtl_format_fallback=angle_to_mtl_map[actual_angle_format_fallback],
-                init_function_fallback=angle_format_utils.get_internal_format_initializer(
-                    gl_format, actual_angle_format_fallback),
+                init_function_fallback=wrap_init_function(
+                    angle_format_utils.get_internal_format_initializer(
+                        gl_format, actual_angle_format_fallback)),
                 fallback_condition=fallback_condition)
         else:
             # return ordinary block:
             return image_format_assign_template1.format(
                 actual_angle_format=actual_angle_format,
                 mtl_format=angle_to_mtl_map[actual_angle_format],
-                init_function=angle_format_utils.get_internal_format_initializer(
-                    gl_format, actual_angle_format))
+                init_function=wrap_init_function(
+                    angle_format_utils.get_internal_format_initializer(
+                        gl_format, actual_angle_format)))
 
     return gen_image_map_switch_case(angle_format, actual_angle_format_info, angle_to_mtl_map,
                                      gen_format_assign_code)
@@ -326,12 +357,14 @@ def gen_image_map_switch_es3_case(angle_format, actual_angle_format_info, angle_
         return image_format_assign_template2.format(
             actual_angle_format=actual_angle_format,
             mtl_format=angle_to_mtl_map[actual_angle_format],
-            init_function=angle_format_utils.get_internal_format_initializer(
-                gl_format, actual_angle_format),
+            init_function=wrap_init_function(
+                angle_format_utils.get_internal_format_initializer(gl_format,
+                                                                   actual_angle_format)),
             actual_angle_format_fallback=actual_angle_format_fallback,
             mtl_format_fallback=angle_to_mtl_map[actual_angle_format_fallback],
-            init_function_fallback=angle_format_utils.get_internal_format_initializer(
-                gl_format, actual_angle_format_fallback),
+            init_function_fallback=wrap_init_function(
+                angle_format_utils.get_internal_format_initializer(gl_format,
+                                                                   actual_angle_format_fallback)),
             fallback_condition="display->supportsAppleGPUFamily(1)")
 
     return gen_image_map_switch_case(angle_format, actual_angle_format_info, angle_to_mtl_map,
@@ -339,20 +372,37 @@ def gen_image_map_switch_es3_case(angle_format, actual_angle_format_info, angle_
 
 
 # Generate format conversion switch case (ASTC LDR/HDR case)
-def gen_image_map_switch_astc_case(angle_format, angle_to_gl, angle_to_mtl_map):
+def gen_image_map_switch_astc_case_iosmac(angle_format, angle_to_gl, angle_to_mtl_map):
     gl_format = angle_to_gl[angle_format]
 
     def gen_format_assign_code(actual_angle_format, angle_to_mtl_map):
         return image_format_assign_template2.format(
             actual_angle_format=actual_angle_format,
             mtl_format=angle_to_mtl_map[actual_angle_format] + "HDR",
-            init_function=angle_format_utils.get_internal_format_initializer(
-                gl_format, actual_angle_format),
+            init_function=wrap_init_function(
+                angle_format_utils.get_internal_format_initializer(gl_format,
+                                                                   actual_angle_format)),
             actual_angle_format_fallback=actual_angle_format,
             mtl_format_fallback=angle_to_mtl_map[actual_angle_format] + "LDR",
-            init_function_fallback=angle_format_utils.get_internal_format_initializer(
-                gl_format, actual_angle_format),
+            init_function_fallback=wrap_init_function(
+                angle_format_utils.get_internal_format_initializer(gl_format,
+                                                                   actual_angle_format)),
             fallback_condition="display->supportsAppleGPUFamily(6)")
+
+    return gen_image_map_switch_case(angle_format, angle_format, angle_to_mtl_map,
+                                     gen_format_assign_code)
+
+
+def gen_image_map_switch_astc_case_tv_watchos(angle_format, angle_to_gl, angle_to_mtl_map):
+    gl_format = angle_to_gl[angle_format]
+
+    def gen_format_assign_code(actual_angle_format, angle_to_mtl_map):
+        return image_format_assign_template1.format(
+            actual_angle_format=actual_angle_format,
+            mtl_format=angle_to_mtl_map[actual_angle_format] + "LDR",
+            init_function=wrap_init_function(
+                angle_format_utils.get_internal_format_initializer(gl_format,
+                                                                   actual_angle_format)))
 
     return gen_image_map_switch_case(angle_format, angle_format, angle_to_mtl_map,
                                      gen_format_assign_code)
@@ -369,6 +419,8 @@ def gen_image_map_switch_string(image_table, angle_to_gl):
     mac_specific_map = image_table["map_mac"]
     ios_specific_map = image_table["map_ios"]
     astc_tpl_map = image_table["map_astc_tpl"]
+    sim_specific_map = image_table["map_sim"]
+    sim_override = image_table["override_sim"]
 
     # mac_specific_map + angle_to_mtl:
     mac_angle_to_mtl = mac_specific_map.copy()
@@ -376,7 +428,9 @@ def gen_image_map_switch_string(image_table, angle_to_gl):
     # ios_specific_map + angle_to_mtl
     ios_angle_to_mtl = ios_specific_map.copy()
     ios_angle_to_mtl.update(angle_to_mtl)
-
+    # sim_specific_map + angle_to_mtl
+    sim_angle_to_mtl = sim_specific_map.copy()
+    sim_angle_to_mtl.update(angle_to_mtl)
     switch_data = ''
 
     def gen_image_map_switch_common_case(angle_format, actual_angle_format):
@@ -404,7 +458,7 @@ def gen_image_map_switch_string(image_table, angle_to_gl):
     switch_data += "#endif\n"
 
     # Override missing ES 3.0 formats for older macOS SDK or Catalyst
-    switch_data += "#if (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED < 101600)) || \\\n"
+    switch_data += "#if (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED < 110000)) || \\\n"
     switch_data += "TARGET_OS_MACCATALYST\n"
     for angle_format in sorted(mac_override_es3.keys()):
         switch_data += gen_image_map_switch_simple_case(angle_format,
@@ -412,20 +466,46 @@ def gen_image_map_switch_string(image_table, angle_to_gl):
                                                         angle_to_gl, mac_angle_to_mtl)
     switch_data += "#endif\n"
 
+    switch_data += "#if TARGET_OS_SIMULATOR\n"
+    for angle_format in sorted(sim_specific_map.keys()):
+        switch_data += gen_image_map_switch_simple_case(angle_format, angle_format, angle_to_gl,
+                                                        sim_specific_map)
+    for angle_format in sorted(sim_override.keys()):
+        switch_data += gen_image_map_switch_simple_case(angle_format, sim_override[angle_format],
+                                                        angle_to_gl, sim_angle_to_mtl)
+    switch_data += "#if TARGET_OS_IOS\n"
+    for angle_format in sorted(astc_tpl_map.keys()):
+        switch_data += gen_image_map_switch_astc_case_iosmac(angle_format, angle_to_gl,
+                                                             astc_tpl_map)
+    switch_data += "#elif TARGET_OS_TV ||TARGET_OS_WATCH\n"
+
+    for angle_format in sorted(astc_tpl_map.keys()):
+        switch_data += gen_image_map_switch_astc_case_tv_watchos(angle_format, angle_to_gl,
+                                                                 astc_tpl_map)
+    switch_data += "#endif // TARGET_OS_IOS\n "
     # iOS specific
-    switch_data += "#if TARGET_OS_IOS || TARGET_OS_TV\n"
+    switch_data += "#elif TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST\n"
     for angle_format in sorted(ios_specific_map.keys()):
         switch_data += gen_image_map_switch_simple_case(angle_format, angle_format, angle_to_gl,
                                                         ios_specific_map)
     for angle_format in sorted(ios_override.keys()):
         switch_data += gen_image_map_switch_simple_case(angle_format, ios_override[angle_format],
                                                         angle_to_gl, ios_angle_to_mtl)
+    switch_data += "#if TARGET_OS_IOS\n"
     for angle_format in sorted(astc_tpl_map.keys()):
-        switch_data += gen_image_map_switch_astc_case(angle_format, angle_to_gl, astc_tpl_map)
-    switch_data += "#endif\n"
+        switch_data += gen_image_map_switch_astc_case_iosmac(angle_format, angle_to_gl,
+                                                             astc_tpl_map)
+
+    switch_data += "#elif TARGET_OS_TV ||TARGET_OS_WATCH\n"
+
+    for angle_format in sorted(astc_tpl_map.keys()):
+        switch_data += gen_image_map_switch_astc_case_tv_watchos(angle_format, angle_to_gl,
+                                                                 astc_tpl_map)
+    switch_data += "#endif // TARGET_OS_IOS || TARGET_OS_TV\n"
+    switch_data += "#endif // TARGET_OS_IPHONE\n"
 
     # Try to support all iOS formats on newer macOS with Apple GPU.
-    switch_data += "#if (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101600))\n"
+    switch_data += "#if (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000))\n"
     for angle_format in sorted(ios_specific_map.keys()):
         if (angle_format in mac_override_es3.keys()):
             # ETC/EAC or packed 16-bit
@@ -437,8 +517,9 @@ def gen_image_map_switch_string(image_table, angle_to_gl):
                                                             angle_to_gl, ios_specific_map)
     # ASTC LDR or HDR
     for angle_format in sorted(astc_tpl_map.keys()):
-        switch_data += gen_image_map_switch_astc_case(angle_format, angle_to_gl, astc_tpl_map)
-    switch_data += "#endif\n"
+        switch_data += gen_image_map_switch_astc_case_iosmac(angle_format, angle_to_gl,
+                                                             astc_tpl_map)
+    switch_data += "#endif // TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000)) \n"
 
     switch_data += "        default:\n"
     switch_data += "            this->metalFormat = MTLPixelFormatInvalid;\n"
@@ -467,7 +548,7 @@ def gen_image_mtl_to_angle_switch_string(image_table):
     switch_data += "#endif  // TARGET_OS_OSX || TARGET_OS_MACCATALYST\n"
 
     # iOS + macOS 11.0+ specific
-    switch_data += "#if TARGET_OS_IOS || TARGET_OS_TV || (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101600))\n"
+    switch_data += "#if TARGET_OS_IPHONE || (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000))\n"
     for angle_format in sorted(ios_specific_map.keys()):
         # ETC1_R8G8B8_UNORM_BLOCK is a duplicated of ETC2_R8G8B8_UNORM_BLOCK
         if angle_format == 'ETC1_R8G8B8_UNORM_BLOCK':
@@ -477,9 +558,12 @@ def gen_image_mtl_to_angle_switch_string(image_table):
     for angle_format in sorted(astc_tpl_map.keys()):
         switch_data += case_image_mtl_to_angle_template.format(
             mtl_format=astc_tpl_map[angle_format] + "LDR", angle_format=angle_format)
+    switch_data += "#if TARGET_OS_IOS || TARGET_OS_OSX \n"
+    for angle_format in sorted(astc_tpl_map.keys()):
         switch_data += case_image_mtl_to_angle_template.format(
             mtl_format=astc_tpl_map[angle_format] + "HDR", angle_format=angle_format)
-    switch_data += "#endif  // TARGET_OS_IOS || TARGET_OS_TV || mac 11.0+\n"
+    switch_data += "#endif // TARGET_OS_IOS || TARGET_OS_OSX\n"
+    switch_data += "#endif  // TARGET_OS_IPHONE || mac 11.0+\n"
 
     switch_data += "        default:\n"
     switch_data += "            return angle::FormatID::NONE;\n"
@@ -505,12 +589,12 @@ def gen_vertex_map_switch_case(angle_fmt, actual_angle_fmt, angle_to_mtl_map, ov
             actual_angle_format_packed=angle_fmt_packed,
             vertex_copy_function_packed=copy_function_packed,
             default_alpha_packed=default_alpha_packed,
-            same_gl_type_packed=same_gl_type_packed,
+            same_gl_type_packed=wrap_actual_same_gl_type(same_gl_type_packed),
             mtl_format=mtl_format,
             actual_angle_format=actual_angle_fmt,
             vertex_copy_function=copy_function,
             default_alpha=default_alpha,
-            same_gl_type=same_gl_type)
+            same_gl_type=wrap_actual_same_gl_type(same_gl_type))
     else:
         # This format has no packed buffer's override, return ordinary block.
         return case_vertex_format_template1.format(
@@ -519,7 +603,7 @@ def gen_vertex_map_switch_case(angle_fmt, actual_angle_fmt, angle_to_mtl_map, ov
             actual_angle_format=actual_angle_fmt,
             vertex_copy_function=copy_function,
             default_alpha=default_alpha,
-            same_gl_type=same_gl_type)
+            same_gl_type=wrap_actual_same_gl_type(same_gl_type))
 
 
 def gen_vertex_map_switch_string(vertex_table):
@@ -548,7 +632,8 @@ def gen_vertex_map_switch_string(vertex_table):
 def gen_mtl_format_caps_init_string(map_image):
     caps = map_image['caps']
     mac_caps = map_image['caps_mac']
-    ios_caps = map_image['caps_ios']
+    ios_platform_caps = map_image['caps_ios_platform']
+    ios_specific_caps = map_image['caps_ios_specific']
     caps_init_str = ''
 
     def cap_to_param(caps, key):
@@ -578,12 +663,15 @@ def gen_mtl_format_caps_init_string(map_image):
     caps_init_str += caps_to_cpp(mac_caps)
     caps_init_str += "#endif  // TARGET_OS_OSX || TARGET_OS_MACCATALYST\n"
 
-    caps_init_str += "#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) || TARGET_OS_TV || \\\n"
-    caps_init_str += "    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101600))\n"
+    caps_init_str += "#if (TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST) || \\\n"
+    caps_init_str += "    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000))\n"
 
-    caps_init_str += caps_to_cpp(ios_caps)
+    caps_init_str += caps_to_cpp(ios_platform_caps)
 
-    caps_init_str += "#endif\n"
+    caps_init_str += "#if TARGET_OS_IOS || TARGET_OS_OSX\n"
+    caps_init_str += caps_to_cpp(ios_specific_caps)
+    caps_init_str += "#endif // TARGET_OS_IOS || mac 11.0+ \n"
+    caps_init_str += "#endif // TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST || mac 11.0+ \n"
 
     return caps_init_str
 

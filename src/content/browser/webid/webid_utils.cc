@@ -10,20 +10,13 @@ namespace content {
 
 bool IsSameOriginWithAncestors(RenderFrameHost* host,
                                const url::Origin& origin) {
-  RenderFrameHost* parent = host->GetParent();
+  RenderFrameHost* parent = host->GetParentOrOuterDocument();
   while (parent) {
     if (!parent->GetLastCommittedOrigin().IsSameOriginWith(origin)) {
       return false;
     }
     parent = parent->GetParent();
   }
-  return true;
-}
-
-bool IdpUrlIsValid(const GURL& url) {
-  if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme))
-    return false;
-
   return true;
 }
 

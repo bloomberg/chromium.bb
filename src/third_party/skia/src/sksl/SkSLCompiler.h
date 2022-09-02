@@ -8,20 +8,26 @@
 #ifndef SKSL_COMPILER
 #define SKSL_COMPILER
 
-#include <set>
-#include <unordered_set>
-#include <vector>
 #include "include/core/SkSize.h"
-#include "src/sksl/SkSLAnalysis.h"
-#include "src/sksl/SkSLContext.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLProgramKind.h"
+#include "include/sksl/SkSLErrorReporter.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/SkSLInliner.h"
+#include "src/sksl/SkSLMangler.h"
+#include "src/sksl/SkSLModifiersPool.h"
 #include "src/sksl/SkSLParsedModule.h"
 #include "src/sksl/ir/SkSLProgram.h"
-#include "src/sksl/ir/SkSLSymbolTable.h"
 
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-#include "src/gpu/GrShaderVar.h"
-#endif
+#include <array>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <unordered_set>
+#include <vector>
 
 #define SK_FRAGCOLOR_BUILTIN           10001
 #define SK_LASTFRAGCOLOR_BUILTIN       10008
@@ -34,20 +40,23 @@
 #define SK_VERTEXID_BUILTIN               42
 #define SK_INSTANCEID_BUILTIN             43
 #define SK_POSITION_BUILTIN                0
+#define SK_POINTSIZE_BUILTIN               1
 
-class SkBitSet;
 class SkSLCompileBench;
 
 namespace SkSL {
 
 namespace dsl {
     class DSLCore;
-    class DSLWriter;
 }
 
-class ExternalFunction;
-class FunctionDeclaration;
-class ProgramUsage;
+class Context;
+class Expression;
+class IRNode;
+class OutputStream;
+class SymbolTable;
+class Variable;
+
 struct ShaderCaps;
 
 struct LoadedModule {
@@ -139,30 +148,35 @@ public:
      */
     std::unique_ptr<Program> convertProgram(
             ProgramKind kind,
-            String text,
+            std::string text,
             Program::Settings settings);
 
-    std::unique_ptr<Expression> convertIdentifier(int line, skstd::string_view name);
+    std::unique_ptr<Expression> convertIdentifier(Position pos, std::string_view name);
+
+    /** Updates the Program's Inputs when a builtin variable is referenced. */
+    void updateInputsForBuiltinVariable(const Variable& var);
 
     bool toSPIRV(Program& program, OutputStream& out);
 
-    bool toSPIRV(Program& program, String* out);
+    bool toSPIRV(Program& program, std::string* out);
 
     bool toGLSL(Program& program, OutputStream& out);
 
-    bool toGLSL(Program& program, String* out);
+    bool toGLSL(Program& program, std::string* out);
 
     bool toHLSL(Program& program, OutputStream& out);
 
-    bool toHLSL(Program& program, String* out);
+    bool toHLSL(Program& program, std::string* out);
 
     bool toMetal(Program& program, OutputStream& out);
 
-    bool toMetal(Program& program, String* out);
+    bool toMetal(Program& program, std::string* out);
 
-    void handleError(skstd::string_view msg, PositionInfo pos);
+    bool toWGSL(Program& program, OutputStream& out);
 
-    String errorText(bool showCount = true);
+    void handleError(std::string_view msg, Position pos);
+
+    std::string errorText(bool showCount = true);
 
     ErrorReporter& errorReporter() { return *fContext->fErrors; }
 
@@ -175,8 +189,12 @@ public:
         this->errorReporter().resetErrorCount();
     }
 
-    Context& context() {
+    Context& context() const {
         return *fContext;
+    }
+
+    std::shared_ptr<SymbolTable> symbolTable() const {
+        return fSymbolTable;
     }
 
     // When  SKSL_STANDALONE, fPath is used. (fData, fSize) will be (nullptr, 0)
@@ -207,7 +225,7 @@ private:
         CompilerErrorReporter(Compiler* compiler)
             : fCompiler(*compiler) {}
 
-        void handleError(skstd::string_view msg, PositionInfo pos) override {
+        void handleError(std::string_view msg, Position pos) override {
             fCompiler.handleError(msg, pos);
         }
 
@@ -218,10 +236,13 @@ private:
     const ParsedModule& loadGPUModule();
     const ParsedModule& loadFragmentModule();
     const ParsedModule& loadVertexModule();
+    const ParsedModule& loadGraphiteFragmentModule();
+    const ParsedModule& loadGraphiteVertexModule();
     const ParsedModule& loadPublicModule();
-    const ParsedModule& loadRuntimeShaderModule();
+    const ParsedModule& loadPrivateRTShaderModule();
 
-    std::shared_ptr<SymbolTable> makeRootSymbolTable();
+    std::shared_ptr<SymbolTable> makeRootSymbolTable() const;
+    std::shared_ptr<SymbolTable> makeGLSLRootSymbolTable() const;
     std::shared_ptr<SymbolTable> makePrivateSymbolTable(std::shared_ptr<SymbolTable> parent);
 
     /** Optimize every function in the program. */
@@ -230,8 +251,11 @@ private:
     /** Performs final checks to confirm that a fully-assembled/optimized is valid. */
     bool finalize(Program& program);
 
-    /** Optimize the module. */
-    bool optimize(LoadedModule& module);
+    /** Optimize a module in preparation for dehydration. */
+    bool optimizeModuleForDehydration(LoadedModule& module, const ParsedModule& base);
+
+    /** Optimize a module after rehydrating it. */
+    bool optimizeRehydratedModule(LoadedModule& module, const ParsedModule& base);
 
     /** Flattens out function calls when it is safe to do so. */
     bool runInliner(const std::vector<std::unique_ptr<ProgramElement>>& elements,
@@ -247,6 +271,8 @@ private:
     ParsedModule fGPUModule;                 // [Private] + GPU intrinsics, helper functions
     ParsedModule fVertexModule;              // [GPU] + Vertex stage decls
     ParsedModule fFragmentModule;            // [GPU] + Fragment stage decls
+    ParsedModule fGraphiteVertexModule;      // [Vert] + Graphite vertex helpers
+    ParsedModule fGraphiteFragmentModule;    // [Frag] + Graphite fragment helpers
 
     ParsedModule fPublicModule;              // [Root] + Public features
     ParsedModule fRuntimeShaderModule;       // [Public] + Runtime shader decls
@@ -260,7 +286,7 @@ private:
     // compilation
     std::shared_ptr<SymbolTable> fSymbolTable;
 
-    String fErrorText;
+    std::string fErrorText;
 
     static OverrideFlag sOptimizer;
     static OverrideFlag sInliner;
@@ -268,6 +294,7 @@ private:
     friend class AutoSource;
     friend class ::SkSLCompileBench;
     friend class DSLParser;
+    friend class Rehydrator;
     friend class ThreadContext;
     friend class dsl::DSLCore;
 };

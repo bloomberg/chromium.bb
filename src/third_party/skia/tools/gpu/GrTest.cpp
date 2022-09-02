@@ -11,23 +11,23 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "include/private/SkTo.h"
 #include "src/core/SkMathPriv.h"
-#include "src/gpu/GrClip.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrDrawOpAtlas.h"
-#include "src/gpu/GrDrawingManager.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrGpuResourceCacheAccess.h"
-#include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetProxy.h"
-#include "src/gpu/GrResourceCache.h"
-#include "src/gpu/GrSemaphore.h"
-#include "src/gpu/GrTexture.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/text/GrStrikeCache.h"
-#include "src/gpu/text/GrTextBlobCache.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/ganesh/GrClip.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrDrawOpAtlas.h"
+#include "src/gpu/ganesh/GrDrawingManager.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrGpuResourceCacheAccess.h"
+#include "src/gpu/ganesh/GrMemoryPool.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrRenderTargetProxy.h"
+#include "src/gpu/ganesh/GrResourceCache.h"
+#include "src/gpu/ganesh/GrSemaphore.h"
+#include "src/gpu/ganesh/GrTexture.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 #include "src/image/SkImage_Gpu.h"
+#include "src/text/gpu/StrikeCache.h"
+#include "src/text/gpu/TextBlobRedrawCoordinator.h"
 
 #include <algorithm>
 
@@ -51,7 +51,6 @@ DRAW_OP_TEST_EXTERN(CircleOp);
 DRAW_OP_TEST_EXTERN(DashOpImpl);
 DRAW_OP_TEST_EXTERN(DefaultPathOp);
 DRAW_OP_TEST_EXTERN(DrawAtlasOp);
-DRAW_OP_TEST_EXTERN(DrawVerticesOp);
 DRAW_OP_TEST_EXTERN(DIEllipseOp);
 DRAW_OP_TEST_EXTERN(EllipseOp);
 DRAW_OP_TEST_EXTERN(FillRectOp);
@@ -82,7 +81,6 @@ void GrDrawRandomOp(SkRandom* random, skgpu::v1::SurfaceDrawContext* sdc, GrPain
             DRAW_OP_TEST_ENTRY(DashOpImpl),
             DRAW_OP_TEST_ENTRY(DefaultPathOp),
             DRAW_OP_TEST_ENTRY(DrawAtlasOp),
-            DRAW_OP_TEST_ENTRY(DrawVerticesOp),
             DRAW_OP_TEST_ENTRY(DIEllipseOp),
             DRAW_OP_TEST_ENTRY(EllipseOp),
             DRAW_OP_TEST_ENTRY(FillRectOp),

@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -41,8 +42,7 @@ class ShelfDragCallback {
   ShelfDragCallback(const gfx::Rect& auto_hidden_shelf_bounds,
                     const gfx::Rect& visible_shelf_bounds)
       : auto_hidden_shelf_bounds_(auto_hidden_shelf_bounds),
-        visible_shelf_bounds_(visible_shelf_bounds),
-        was_visible_on_drag_start_(false) {
+        visible_shelf_bounds_(visible_shelf_bounds) {
     EXPECT_EQ(auto_hidden_shelf_bounds_.size(), visible_shelf_bounds_.size());
   }
 
@@ -165,7 +165,7 @@ class ShelfDragCallback {
   const gfx::Rect auto_hidden_shelf_bounds_;
   const gfx::Rect visible_shelf_bounds_;
   gfx::Vector2dF scroll_;
-  bool was_visible_on_drag_start_;
+  bool was_visible_on_drag_start_ = false;
 };
 }  // namespace
 
@@ -692,7 +692,13 @@ void ShelfLayoutManagerTestBase::RunGestureDragTests(
   EXPECT_EQ(shelf_shown.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
-  widget->Restore();
+  // Change the window state back to its Normal state. We do that by sending
+  // a WM_EVENT_NORMAL to the window, instead of calling Widget::Restore()
+  // function, because restoring from a kMinimized window state will take
+  // the window back to its pre-minimized window state.
+  WMEvent restore_event(WM_EVENT_NORMAL);
+  WindowState::Get(widget->GetNativeWindow())->OnWMEvent(&restore_event);
+
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(layout_manager->HasVisibleWindow());
 

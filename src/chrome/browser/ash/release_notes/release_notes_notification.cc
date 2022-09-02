@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,7 +65,10 @@ void ReleaseNotesNotification::ShowReleaseNotesNotification() {
       message_center::NOTIFICATION_TYPE_SIMPLE, kShowNotificationID,
       std::move(title), std::move(message),
       l10n_util::GetStringUTF16(IDS_HELP_APP_EXPLORE), GURL(),
-      message_center::NotifierId(), message_center::RichNotificationData(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kShowNotificationID,
+                                 NotificationCatalogName::kReleaseNotes),
+      message_center::RichNotificationData(),
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(
               &ReleaseNotesNotification::HandleClickShowNotification,

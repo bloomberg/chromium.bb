@@ -48,17 +48,54 @@ bool NewSpace::Contains(HeapObject o) const {
   return BasicMemoryChunk::FromHeapObject(o)->InNewSpace();
 }
 
-bool NewSpace::ContainsSlow(Address a) const {
-  return from_space_.ContainsSlow(a) || to_space_.ContainsSlow(a);
+V8_WARN_UNUSED_RESULT inline AllocationResult NewSpace::AllocateRawSynchronized(
+    int size_in_bytes, AllocationAlignment alignment, AllocationOrigin origin) {
+  base::MutexGuard guard(&mutex_);
+  return AllocateRaw(size_in_bytes, alignment, origin);
 }
 
-bool NewSpace::ToSpaceContainsSlow(Address a) const {
-  return to_space_.ContainsSlow(a);
-}
+// -----------------------------------------------------------------------------
+// SemiSpaceNewSpace
 
-bool NewSpace::ToSpaceContains(Object o) const { return to_space_.Contains(o); }
-bool NewSpace::FromSpaceContains(Object o) const {
-  return from_space_.Contains(o);
+V8_INLINE bool SemiSpaceNewSpace::EnsureAllocation(
+    int size_in_bytes, AllocationAlignment alignment, AllocationOrigin origin,
+    int* out_max_aligned_size) {
+  DCHECK_SEMISPACE_ALLOCATION_INFO(allocation_info_, to_space_);
+#if DEBUG
+  VerifyTop();
+#endif  // DEBUG
+
+  AdvanceAllocationObservers();
+
+  Address old_top = allocation_info_->top();
+  Address high = to_space_.page_high();
+  int filler_size = Heap::GetFillToAlign(old_top, alignment);
+  int aligned_size_in_bytes = size_in_bytes + filler_size;
+
+  if (old_top + aligned_size_in_bytes > high) {
+    // Not enough room in the page, try to allocate a new one.
+    if (!AddFreshPage()) {
+      // When we cannot grow NewSpace anymore we query for parked allocations.
+      if (!FLAG_allocation_buffer_parking ||
+          !AddParkedAllocationBuffer(size_in_bytes, alignment))
+        return false;
+    }
+
+    old_top = allocation_info_->top();
+    high = to_space_.page_high();
+    filler_size = Heap::GetFillToAlign(old_top, alignment);
+    aligned_size_in_bytes = size_in_bytes + filler_size;
+  }
+
+  if (out_max_aligned_size) {
+    *out_max_aligned_size = aligned_size_in_bytes;
+  }
+
+  DCHECK(old_top + aligned_size_in_bytes <= high);
+  UpdateInlineAllocationLimit(aligned_size_in_bytes);
+  DCHECK_EQ(allocation_info_->start(), allocation_info_->top());
+  DCHECK_SEMISPACE_ALLOCATION_INFO(allocation_info_, to_space_);
+  return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -80,86 +117,6 @@ HeapObject SemiSpaceObjectIterator::Next() {
     }
   }
   return HeapObject();
-}
-
-// -----------------------------------------------------------------------------
-// NewSpace
-
-AllocationResult NewSpace::AllocateRaw(int size_in_bytes,
-                                       AllocationAlignment alignment,
-                                       AllocationOrigin origin) {
-  DCHECK(!FLAG_single_generation);
-  DCHECK(!FLAG_enable_third_party_heap);
-#if DEBUG
-  VerifyTop();
-#endif
-
-  AllocationResult result;
-
-  if (USE_ALLOCATION_ALIGNMENT_BOOL && alignment != kTaggedAligned) {
-    result = AllocateFastAligned(size_in_bytes, nullptr, alignment, origin);
-  } else {
-    result = AllocateFastUnaligned(size_in_bytes, origin);
-  }
-
-  if (!result.IsRetry()) {
-    return result;
-  } else {
-    return AllocateRawSlow(size_in_bytes, alignment, origin);
-  }
-}
-
-AllocationResult NewSpace::AllocateFastUnaligned(int size_in_bytes,
-                                                 AllocationOrigin origin) {
-  if (!allocation_info_->CanIncrementTop(size_in_bytes)) {
-    return AllocationResult::Retry(NEW_SPACE);
-  }
-  HeapObject obj =
-      HeapObject::FromAddress(allocation_info_->IncrementTop(size_in_bytes));
-  DCHECK_SEMISPACE_ALLOCATION_INFO(allocation_info_, to_space_);
-
-  MSAN_ALLOCATED_UNINITIALIZED_MEMORY(obj.address(), size_in_bytes);
-
-  if (FLAG_trace_allocations_origins) {
-    UpdateAllocationOrigins(origin);
-  }
-
-  return obj;
-}
-
-AllocationResult NewSpace::AllocateFastAligned(
-    int size_in_bytes, int* result_aligned_size_in_bytes,
-    AllocationAlignment alignment, AllocationOrigin origin) {
-  Address top = allocation_info_->top();
-  int filler_size = Heap::GetFillToAlign(top, alignment);
-  int aligned_size_in_bytes = size_in_bytes + filler_size;
-
-  if (!allocation_info_->CanIncrementTop(aligned_size_in_bytes)) {
-    return AllocationResult::Retry(NEW_SPACE);
-  }
-  HeapObject obj = HeapObject::FromAddress(
-      allocation_info_->IncrementTop(aligned_size_in_bytes));
-  if (result_aligned_size_in_bytes)
-    *result_aligned_size_in_bytes = aligned_size_in_bytes;
-  DCHECK_SEMISPACE_ALLOCATION_INFO(allocation_info_, to_space_);
-
-  if (filler_size > 0) {
-    obj = heap()->PrecedeWithFiller(obj, filler_size);
-  }
-
-  MSAN_ALLOCATED_UNINITIALIZED_MEMORY(obj.address(), size_in_bytes);
-
-  if (FLAG_trace_allocations_origins) {
-    UpdateAllocationOrigins(origin);
-  }
-
-  return obj;
-}
-
-V8_WARN_UNUSED_RESULT inline AllocationResult NewSpace::AllocateRawSynchronized(
-    int size_in_bytes, AllocationAlignment alignment, AllocationOrigin origin) {
-  base::MutexGuard guard(&mutex_);
-  return AllocateRaw(size_in_bytes, alignment, origin);
 }
 
 }  // namespace internal

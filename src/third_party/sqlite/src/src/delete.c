@@ -44,6 +44,16 @@ Table *sqlite3SrcListLookup(Parse *pParse, SrcList *pSrc){
   return pTab;
 }
 
+/* Generate byte-code that will report the number of rows modified 
+** by a DELETE, INSERT, or UPDATE statement.
+*/
+void sqlite3CodeChangeCount(Vdbe *v, int regCounter, const char *zColName){
+  sqlite3VdbeAddOp0(v, OP_FkCheck);
+  sqlite3VdbeAddOp2(v, OP_ResultRow, regCounter, 1);
+  sqlite3VdbeSetNumCols(v, 1);
+  sqlite3VdbeSetColName(v, 0, COLNAME_NAME, zColName, SQLITE_STATIC);
+}
+
 /* Return true if table pTab is read-only.
 **
 ** A table is read-only if any of the following are true:
@@ -84,7 +94,7 @@ int sqlite3IsReadOnly(Parse *pParse, Table *pTab, int viewOk){
     return 1;
   }
 #ifndef SQLITE_OMIT_VIEW
-  if( !viewOk && pTab->pSelect ){
+  if( !viewOk && IsView(pTab) ){
     sqlite3ErrorMsg(pParse,"cannot modify %s because it is a view",pTab->zName);
     return 1;
   }
@@ -188,13 +198,13 @@ Expr *sqlite3LimitWhere(
   }else{
     Index *pPk = sqlite3PrimaryKeyIndex(pTab);
     if( pPk->nKeyCol==1 ){
-      const char *zName = pTab->aCol[pPk->aiColumn[0]].zName;
+      const char *zName = pTab->aCol[pPk->aiColumn[0]].zCnName;
       pLhs = sqlite3Expr(db, TK_ID, zName);
       pEList = sqlite3ExprListAppend(pParse, 0, sqlite3Expr(db, TK_ID, zName));
     }else{
       int i;
       for(i=0; i<pPk->nKeyCol; i++){
-        Expr *p = sqlite3Expr(db, TK_ID, pTab->aCol[pPk->aiColumn[i]].zName);
+        Expr *p = sqlite3Expr(db, TK_ID, pTab->aCol[pPk->aiColumn[i]].zCnName);
         pEList = sqlite3ExprListAppend(pParse, pEList, p);
       }
       pLhs = sqlite3PExpr(pParse, TK_VECTOR, 0, 0);
@@ -210,6 +220,7 @@ Expr *sqlite3LimitWhere(
   pSelectSrc = sqlite3SrcListDup(db, pSrc, 0);
   pSrc->a[0].pTab = pTab;
   if( pSrc->a[0].fg.isIndexedBy ){
+    assert( pSrc->a[0].fg.isCte==0 );
     pSrc->a[0].u2.pIBIndex = 0;
     pSrc->a[0].fg.isIndexedBy = 0;
     sqlite3DbFree(db, pSrc->a[0].u1.zIndexedBy);
@@ -282,9 +293,11 @@ void sqlite3DeleteFrom(
 
   memset(&sContext, 0, sizeof(sContext));
   db = pParse->db;
-  if( pParse->nErr || db->mallocFailed ){
+  assert( db->pParse==pParse );
+  if( pParse->nErr ){
     goto delete_from_cleanup;
   }
+  assert( db->mallocFailed==0 );
   assert( pTabList->nSrc==1 );
 
 
@@ -301,7 +314,7 @@ void sqlite3DeleteFrom(
   */
 #ifndef SQLITE_OMIT_TRIGGER
   pTrigger = sqlite3TriggersExist(pParse, pTab, TK_DELETE, 0, 0);
-  isView = pTab->pSelect!=0;
+  isView = IsView(pTab);
 #else
 # define pTrigger 0
 # define isView 0
@@ -465,7 +478,7 @@ void sqlite3DeleteFrom(
     **  ONEPASS_SINGLE: One-pass approach - at most one row deleted.
     **  ONEPASS_MULTI:  One-pass approach - any number of rows may be deleted.
     */
-    pWInfo = sqlite3WhereBegin(pParse, pTabList, pWhere, 0, 0, wcf, iTabCur+1);
+    pWInfo = sqlite3WhereBegin(pParse, pTabList, pWhere, 0, 0,0,wcf,iTabCur+1);
     if( pWInfo==0 ) goto delete_from_cleanup;
     eOnePass = sqlite3WhereOkOnePass(pWInfo, aiCurOnePass);
     assert( IsVirtual(pTab)==0 || eOnePass!=ONEPASS_MULTI );
@@ -551,7 +564,7 @@ void sqlite3DeleteFrom(
     if( eOnePass!=ONEPASS_OFF ){
       assert( nKey==nPk );  /* OP_Found will use an unpacked key */
       if( !IsVirtual(pTab) && aToOpen[iDataCur-iTabCur] ){
-        assert( pPk!=0 || pTab->pSelect!=0 );
+        assert( pPk!=0 || IsView(pTab) );
         sqlite3VdbeAddOp4Int(v, OP_NotFound, iDataCur, addrBypass, iKey, nKey);
         VdbeCoverage(v);
       }
@@ -618,9 +631,7 @@ void sqlite3DeleteFrom(
   ** invoke the callback function.
   */
   if( memCnt ){
-    sqlite3VdbeAddOp2(v, OP_ChngCntRow, memCnt, 1);
-    sqlite3VdbeSetNumCols(v, 1);
-    sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "rows deleted", SQLITE_STATIC);
+    sqlite3CodeChangeCount(v, memCnt, "rows deleted");
   }
 
 delete_from_cleanup:
@@ -785,7 +796,7 @@ void sqlite3GenerateRowDelete(
   ** the update-hook is not invoked for rows removed by REPLACE, but the 
   ** pre-update-hook is.
   */ 
-  if( pTab->pSelect==0 ){
+  if( !IsView(pTab) ){
     u8 p5 = 0;
     sqlite3GenerateRowIndexDelete(pParse, pTab, iDataCur, iIdxCur,0,iIdxNoSeek);
     sqlite3VdbeAddOp2(v, OP_Delete, iDataCur, (count?OPFLAG_NCHANGE:0));

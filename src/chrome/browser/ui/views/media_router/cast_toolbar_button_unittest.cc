@@ -11,6 +11,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
@@ -48,17 +49,12 @@ std::unique_ptr<KeyedService> BuildUIService(content::BrowserContext* context) {
 
 MediaRoute CreateLocalDisplayRoute() {
   return MediaRoute("routeId1", MediaSource("source1"), "sinkId1",
-                    "description", true, true);
+                    "description", true);
 }
 
 MediaRoute CreateNonLocalDisplayRoute() {
   return MediaRoute("routeId2", MediaSource("source2"), "sinkId2",
-                    "description", false, true);
-}
-
-MediaRoute CreateLocalNonDisplayRoute() {
-  return MediaRoute("routeId3", MediaSource("source3"), "sinkId3",
-                    "description", true, false);
+                    "description", false);
 }
 
 class MockContextMenuObserver : public MediaRouterContextualMenu::Observer {
@@ -101,24 +97,24 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
     auto context_menu = std::make_unique<MediaRouterContextualMenu>(
         browser_.get(), false, &context_menu_observer_);
 
-    // Button needs to be in a widget to be able to access ThemeProvider.
+    // Button needs to be in a widget to be able to access ColorProvider.
     widget_ = CreateTestWidget();
     button_ = widget_->SetContentsView(std::make_unique<CastToolbarButton>(
         browser_.get(), media_router, std::move(context_menu)));
 
     const ui::ColorProvider* color_provider = button_->GetColorProvider();
-    idle_icon_ = gfx::Image(
-        gfx::CreateVectorIcon(vector_icons::kMediaRouterIdleIcon,
-                              button_->GetThemeProvider()->GetColor(
-                                  ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)));
+    idle_icon_ = gfx::Image(gfx::CreateVectorIcon(
+        vector_icons::kMediaRouterIdleIcon,
+        color_provider->GetColor(kColorToolbarButtonIcon)));
     warning_icon_ = gfx::Image(gfx::CreateVectorIcon(
         vector_icons::kMediaRouterWarningIcon,
-        color_provider->GetColor(ui::kColorAlertMediumSeverity)));
+        color_provider->GetColor(kColorMediaRouterIconWarning)));
     error_icon_ = gfx::Image(gfx::CreateVectorIcon(
         vector_icons::kMediaRouterErrorIcon,
-        color_provider->GetColor(ui::kColorAlertHighSeverity)));
+        color_provider->GetColor(kColorMediaRouterIconError)));
     active_icon_ = gfx::Image(gfx::CreateVectorIcon(
-        vector_icons::kMediaRouterActiveIcon, gfx::kGoogleBlue500));
+        vector_icons::kMediaRouterActiveIcon,
+        color_provider->GetColor(kColorMediaRouterIconActive)));
   }
 
   void TearDown() override {
@@ -150,7 +146,7 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
   const std::vector<MediaRoute> local_display_route_list_ = {
       CreateLocalDisplayRoute()};
   const std::vector<MediaRoute> non_local_display_route_list_ = {
-      CreateNonLocalDisplayRoute(), CreateLocalNonDisplayRoute()};
+      CreateNonLocalDisplayRoute()};
 };
 
 TEST_F(CastToolbarButtonTest, ShowAndHideButton) {
@@ -187,15 +183,15 @@ TEST_F(CastToolbarButtonTest, UpdateRoutes) {
   button_->UpdateIcon();
   EXPECT_TRUE(gfx::test::AreImagesEqual(idle_icon_, GetIcon()));
 
-  button_->OnRoutesUpdated(local_display_route_list_, {});
+  button_->OnRoutesUpdated(local_display_route_list_);
   EXPECT_TRUE(gfx::test::AreImagesEqual(active_icon_, GetIcon()));
 
   // The idle icon should be shown when we only have non-local and/or
   // non-display routes.
-  button_->OnRoutesUpdated(non_local_display_route_list_, {});
+  button_->OnRoutesUpdated(non_local_display_route_list_);
   EXPECT_TRUE(gfx::test::AreImagesEqual(idle_icon_, GetIcon()));
 
-  button_->OnRoutesUpdated({}, {});
+  button_->OnRoutesUpdated({});
   EXPECT_TRUE(gfx::test::AreImagesEqual(idle_icon_, GetIcon()));
 }
 

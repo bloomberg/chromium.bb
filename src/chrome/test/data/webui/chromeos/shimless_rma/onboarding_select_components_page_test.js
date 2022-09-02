@@ -75,7 +75,7 @@ export function onboardingSelectComponentsPageTest() {
         component.shadowRoot.querySelector('#componentCamera');
     assertTrue(!!cameraComponent);
     assertFalse(cameraComponent.disabled);
-    cameraComponent.click();
+    cameraComponent.shadowRoot.querySelector('#componentButton').click();
     return flushTasks();
   }
 
@@ -112,12 +112,15 @@ export function onboardingSelectComponentsPageTest() {
         component.shadowRoot.querySelector('#componentTouchpad');
     assertFalse(reworkFlowLink.hidden);
     assertEquals('Camera', cameraComponent.componentName);
+    assertEquals('Camera_XYZ_1', cameraComponent.componentIdentifier);
     assertFalse(cameraComponent.disabled);
     assertFalse(cameraComponent.checked);
     assertEquals('Battery', batteryComponent.componentName);
+    assertEquals('Battery_XYZ_Lithium', batteryComponent.componentIdentifier);
     assertTrue(batteryComponent.disabled);
     assertFalse(batteryComponent.checked);
     assertEquals('Touchpad', touchpadComponent.componentName);
+    assertEquals('Touchpad_XYZ_2', touchpadComponent.componentIdentifier);
     assertFalse(touchpadComponent.disabled);
     assertTrue(touchpadComponent.checked);
   });
@@ -126,7 +129,7 @@ export function onboardingSelectComponentsPageTest() {
     await initializeComponentSelectPage(fakeComponentsForRepairStateTest);
     await clickComponentCameraToggle();
 
-    let components = getComponentRepairStateList();
+    const components = getComponentRepairStateList();
     assertNotEquals(fakeComponentsForRepairStateTest, components);
     fakeComponentsForRepairStateTest[0].state = ComponentRepairStatus.kReplaced;
     assertDeepEquals(fakeComponentsForRepairStateTest, components);
@@ -156,7 +159,7 @@ export function onboardingSelectComponentsPageTest() {
       return resolver.promise;
     };
 
-    let expectedResult = {foo: 'bar'};
+    const expectedResult = {foo: 'bar'};
     let savedResult;
     component.onNextButtonClick().then((result) => savedResult = result);
     // Resolve to a distinct result to confirm it was not modified.
@@ -165,5 +168,34 @@ export function onboardingSelectComponentsPageTest() {
 
     assertEquals(1, callCounter);
     assertDeepEquals(expectedResult, savedResult);
+  });
+
+  test('SelectComponentsPageDisablesComponents', async () => {
+    await initializeComponentSelectPage(fakeComponentsForRepairStateTest);
+
+    const cameraComponent =
+        component.shadowRoot.querySelector('#componentCamera');
+    const touchpadComponent =
+        component.shadowRoot.querySelector('#componentTouchpad');
+    assertFalse(cameraComponent.disabled);
+    assertFalse(touchpadComponent.disabled);
+    component.allButtonsDisabled = true;
+    assertTrue(cameraComponent.disabled);
+    assertTrue(touchpadComponent.disabled);
+  });
+
+  test('SelectComponentsPageReworkLinkDisabled', async () => {
+    const resolver = new PromiseResolver();
+    await initializeComponentSelectPage(fakeComponentsForRepairStateTest);
+    let callCounter = 0;
+    service.reworkMainboard = () => {
+      callCounter++;
+      return resolver.promise;
+    };
+
+    component.allButtonsDisabled = true;
+    await clickReworkButton();
+
+    assertEquals(0, callCounter);
   });
 }

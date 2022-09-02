@@ -11,12 +11,13 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_glx_api_implementation.h"
 #include "ui/gl/gl_surface_glx_x11.h"
+#include "ui/gl/gl_utils.h"
 
 namespace ui {
 
 namespace {
 
-#if defined(OS_OPENBSD)
+#if BUILDFLAG(IS_OPENBSD)
 const char kGLLibraryName[] = "libGL.so";
 #else
 const char kGLLibraryName[] = "libGL.so.1";
@@ -24,12 +25,15 @@ const char kGLLibraryName[] = "libGL.so.1";
 
 }  // namespace
 
-bool GLOzoneGLX::InitializeGLOneOffPlatform() {
+gl::GLDisplay* GLOzoneGLX::InitializeGLOneOffPlatform(
+    uint64_t system_device_id) {
+  // TODO(https://crbug.com/1251724): GLSurfaceGLX::InitializeOneOff()
+  // should take |system_device_id| and return a GLDisplayX11.
   if (!gl::GLSurfaceGLX::InitializeOneOff()) {
     LOG(ERROR) << "GLSurfaceGLX::InitializeOneOff failed.";
-    return false;
+    return nullptr;
   }
-  return true;
+  return gl::GetDisplayX11(system_device_id);
 }
 
 bool GLOzoneGLX::InitializeStaticGLBindings(
@@ -73,11 +77,12 @@ void GLOzoneGLX::SetDisabledExtensionsPlatform(
   gl::SetDisabledExtensionsGLX(disabled_extensions);
 }
 
-bool GLOzoneGLX::InitializeExtensionSettingsOneOffPlatform() {
+bool GLOzoneGLX::InitializeExtensionSettingsOneOffPlatform(
+    gl::GLDisplay* display) {
   return gl::InitializeExtensionSettingsOneOffGLX();
 }
 
-void GLOzoneGLX::ShutdownGL() {
+void GLOzoneGLX::ShutdownGL(gl::GLDisplay* display) {
   gl::ClearBindingsGL();
   gl::ClearBindingsGLX();
 }

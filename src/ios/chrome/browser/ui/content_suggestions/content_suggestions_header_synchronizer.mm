@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -138,8 +138,6 @@ initWithCollectionController:
   CGFloat pinnedOffsetY = [self.headerController pinnedOffsetY];
   self.collectionShiftingOffset =
       MAX(-self.additionalOffset, pinnedOffsetY - [self adjustedOffset].y);
-
-  self.collectionController.scrolledToMinimumHeight = YES;
   self.shouldAnimateHeader = YES;
 
   __weak __typeof(self) weakSelf = self;
@@ -148,8 +146,9 @@ initWithCollectionController:
       initWithDuration:kShiftTilesUpAnimationDuration
                  curve:UIViewAnimationCurveEaseInOut
             animations:^{
-              if (!weakSelf)
+              if (!weakSelf) {
                 return;
+              }
 
               __typeof(weakSelf) strongSelf = weakSelf;
               if (strongSelf.collectionView.contentOffset.y <
@@ -168,14 +167,19 @@ initWithCollectionController:
             }];
 
   [self.animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    if (!weakSelf)
+    ContentSuggestionsHeaderSynchronizer* strongSelf = weakSelf;
+    if (!strongSelf) {
       return;
+    }
 
-    if (finalPosition == UIViewAnimatingPositionEnd)
-      weakSelf.shouldAnimateHeader = NO;
+    if (finalPosition == UIViewAnimatingPositionEnd) {
+      strongSelf.shouldAnimateHeader = NO;
+    }
 
-    if (completion)
+    strongSelf.collectionController.scrolledToMinimumHeight = YES;
+    if (completion) {
       completion(finalPosition);
+    }
   }];
 
   self.animator.interruptible = YES;

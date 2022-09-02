@@ -13,7 +13,8 @@ namespace cc {
 base::TimeDelta INTERVAL = base::Milliseconds(16);
 
 FakeCompositorFrameReportingController::FakeCompositorFrameReportingController()
-    : CompositorFrameReportingController(/*should_report_metrics=*/true,
+    : CompositorFrameReportingController(/*should_report_histograms=*/false,
+                                         /*should_report_ukm=*/false,
                                          /*layer_tree_host_id=*/1) {}
 
 void FakeCompositorFrameReportingController::WillBeginMainFrame(
@@ -73,12 +74,13 @@ void FakeCompositorFrameReportingController::DidActivate() {
 
 void FakeCompositorFrameReportingController::DidSubmitCompositorFrame(
     uint32_t frame_token,
+    base::TimeTicks submit_time,
     const viz::BeginFrameId& current_frame_id,
     const viz::BeginFrameId& last_activated_frame_id,
     EventMetricsSet events_metrics,
     bool has_missing_content) {
   CompositorFrameReportingController::DidSubmitCompositorFrame(
-      frame_token, current_frame_id, last_activated_frame_id,
+      frame_token, submit_time, current_frame_id, last_activated_frame_id,
       std::move(events_metrics), has_missing_content);
 
   viz::FrameTimingDetails details;

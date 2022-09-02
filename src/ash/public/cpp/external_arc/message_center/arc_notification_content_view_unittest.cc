@@ -234,7 +234,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
     Notification notification(
         message_center::NOTIFICATION_TYPE_CUSTOM,
         notification_item->GetNotificationId(), u"title", u"message",
-        gfx::Image(), u"arc", GURL(),
+        ui::ImageModel(), u"arc", GURL(),
         message_center::NotifierId(
             message_center::NotifierType::ARC_APPLICATION, "ARC_NOTIFICATION"),
         optional_fields,
@@ -332,7 +332,7 @@ TEST_F(ArcNotificationContentViewTest, CloseButton) {
   auto mc_notification = std::make_unique<Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       notification_item->GetNotificationId(), u"title", u"message",
-      gfx::Image(), u"arc", GURL(),
+      ui::ImageModel(), u"arc", GURL(),
       message_center::NotifierId(message_center::NotifierType::ARC_APPLICATION,
                                  "ARC_NOTIFICATION"),
       message_center::RichNotificationData(), nullptr);
@@ -366,7 +366,8 @@ TEST_F(ArcNotificationContentViewTest, CloseButtonInMessageCenterView) {
             auto* arc_delegate =
                 static_cast<ArcNotificationDelegate*>(notification.delegate());
             std::unique_ptr<message_center::MessageView> created_view =
-                arc_delegate->CreateCustomMessageView(notification);
+                arc_delegate->CreateCustomMessageView(notification,
+                                                      /*shown_in_popup=*/false);
             notification_view =
                 static_cast<ArcNotificationView*>(created_view.get());
             return created_view;

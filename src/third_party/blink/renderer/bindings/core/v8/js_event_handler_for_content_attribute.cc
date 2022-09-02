@@ -184,7 +184,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
     parameter_list[parameter_list_size++] =
         V8String(isolate, element && element->IsSVGElement() ? "evt" : "event");
   }
-  DCHECK_LE(parameter_list_size, base::size(parameter_list));
+  DCHECK_LE(parameter_list_size, std::size(parameter_list));
 
   v8::Local<v8::Object> scopes[3];
   size_t scopes_size = 0;
@@ -200,7 +200,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
     scopes[scopes_size++] =
         ToV8(element, script_state_of_event_target).As<v8::Object>();
   }
-  DCHECK_LE(scopes_size, base::size(scopes));
+  DCHECK_LE(scopes_size, std::size(scopes));
 
   v8::ScriptOrigin origin(
       isolate, V8String(isolate, source_url_), position_.line_.ZeroBasedInt(),
@@ -245,7 +245,7 @@ JSEventHandlerForContentAttribute::GetSourceLocation(EventTarget& target) {
     return source_location;
   // Fallback to uncompiled source info.
   return std::make_unique<SourceLocation>(
-      source_url_, position_.line_.ZeroBasedInt(),
+      source_url_, String(), position_.line_.ZeroBasedInt(),
       position_.column_.ZeroBasedInt(), nullptr);
 }
 

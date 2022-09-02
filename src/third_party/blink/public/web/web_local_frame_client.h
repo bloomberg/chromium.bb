@@ -35,8 +35,11 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
+#include "base/notreached.h"
 #include "base/unguessable_token.h"
+#include "media/base/audio_processing.h"
 #include "media/base/speech_recognition_client.h"
+#include "media/mojo/mojom/audio_processing.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -74,7 +77,6 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document_loader.h"
-#include "third_party/blink/public/web/web_dom_message_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -270,7 +272,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual WebRemoteFrame* CreateFencedFrame(
       const WebElement& fenced_frame_element,
       CrossVariantMojoAssociatedReceiver<
-          mojom::FencedFrameOwnerHostInterfaceBase> receiver) {
+          mojom::FencedFrameOwnerHostInterfaceBase> receiver,
+      blink::mojom::FencedFrameMode mode) {
     return nullptr;
   }
 
@@ -424,6 +427,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The frame's document and all of its subresources succeeded to load.
   virtual void DidFinishLoad() {}
 
+  // The frame's document and all of its subresources succeeded to load for
+  // printing.
+  virtual void DidFinishLoadForPrinting() {}
+
   // The navigation resulted in no change to the documents within the page.
   // For example, the navigation may have just resulted in scrolling to a named
   // anchor or a PopState event may have been dispatched.
@@ -444,6 +451,10 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Called when a frame's page lifecycle state gets updated.
   virtual void DidSetPageLifecycleState() {}
+
+  // Immediately notifies the browser of a change in the current HistoryItem.
+  // Prefer DidUpdateCurrentHistoryItem().
+  virtual void NotifyCurrentHistoryItemChanged() {}
 
   // Called upon update to scroll position, document state, and other
   // non-navigational events related to the data held by WebHistoryItem.
@@ -499,9 +510,23 @@ class BLINK_EXPORT WebLocalFrameClient {
   // focused element, |to_element| is the newly focused one. Either can be null.
   virtual void FocusedElementChanged(const WebElement& element) {}
 
-  // Called when a frame's intersection with the main frame has changed.
+  // For the main frame, called when the main frame's dimensions have changed,
+  // e.g. resizing a tab causes the document width to change; loading additional
+  // content causes the document height to increase; explicitly changing the
+  // height of the body element.
+  //
+  // For a subframe, called when the intersection rect between the main frame
+  // and the subframe has changed, e.g. the subframe is initially added; the
+  // subframe's position is updated explicitly or inherently (e.g. sticky
+  // position while the page is being scrolled).
   virtual void OnMainFrameIntersectionChanged(
-      const gfx::Rect& intersection_rect) {}
+      const gfx::Rect& main_frame_intersection_rect) {}
+
+  // Called when the main frame's viewport rectangle (the viewport dimensions
+  // and the scroll position) changed, e.g. the user scrolled the main frame or
+  // the viewport dimensions themselves changed. Only invoked on the main frame.
+  virtual void OnMainFrameViewportRectangleChanged(
+      const gfx::Rect& main_frame_viewport_rect) {}
 
   // Called when an overlay interstitial pop up ad is detected.
   virtual void OnOverlayPopupAdDetected() {}
@@ -532,7 +557,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // A user interaction is observed.
   virtual void DidObserveUserInteraction(base::TimeDelta max_event_duration,
-                                         base::TimeDelta total_event_duration,
                                          UserInteractionType interaction_type) {
   }
 
@@ -568,25 +592,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidObserveLayoutNg(uint32_t all_block_count,
                                   uint32_t ng_block_count,
                                   uint32_t all_call_count,
-                                  uint32_t ng_call_count,
-                                  uint32_t flexbox_ng_block_count,
-                                  uint32_t grid_ng_block_count) {}
-
-  enum class LazyLoadBehavior {
-    kDeferredImage,    // An image is being deferred by the lazy load feature.
-    kDeferredFrame,    // A frame is being deferred by the lazy load feature.
-    kLazyLoadedImage,  // An image that was previously deferred by the lazy load
-                       // feature is being fully loaded.
-    kLazyLoadedFrame   // A frame that was previously deferred by the lazy load
-                       // feature is being fully loaded.
-  };
-
-  // Reports lazy loaded behavior when the frame or image is fully deferred or
-  // if the frame or image is loaded after being deferred. Called every time the
-  // behavior occurs. This does not apply to images that were loaded as
-  // placeholders.
-  virtual void DidObserveLazyLoadBehavior(
-      WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {}
+                                  uint32_t ng_call_count) {}
 
   // Script notifications ------------------------------------------------
 
@@ -651,10 +657,13 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Notifies the embedder that a WebAXObject is dirty and its state needs
   // to be serialized again. If |subtree| is true, the entire subtree is
   // dirty.
-  virtual void MarkWebAXObjectDirty(
-      const WebAXObject&,
-      bool subtree,
-      ax::mojom::Action event_from_action = ax::mojom::Action::kNone) {}
+  // |event_from| and |event_from_action| annotate this node change with info
+  // about the event which caused the change. For example, an event from a user
+  // or an event from a focus action.
+  virtual void MarkWebAXObjectDirty(const WebAXObject&,
+                                    bool subtree,
+                                    ax::mojom::EventFrom event_from,
+                                    ax::mojom::Action event_from_action) {}
 
   // Audio Output Devices API --------------------------------------------
 
@@ -740,7 +749,10 @@ class BLINK_EXPORT WebLocalFrameClient {
       const base::UnguessableToken& session_id,
       const media::AudioParameters& params,
       bool automatic_gain_control,
-      uint32_t shared_memory_count) {}
+      uint32_t shared_memory_count,
+      CrossVariantMojoReceiver<
+          media::mojom::AudioProcessorControlsInterfaceBase> controls_receiver,
+      const media::AudioProcessingSettings* settings) {}
   virtual void AssociateInputAndOutputForAec(
       const base::UnguessableToken& input_stream_id,
       const std::string& output_device_id) {}

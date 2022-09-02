@@ -31,18 +31,13 @@ class SkPathEffect;
 class SkScalerContext;
 class SkScalerContext_DW;
 
-enum SkScalerContextFlags : uint32_t {
+enum class SkScalerContextFlags : uint32_t {
     kNone                      = 0,
     kFakeGamma                 = 1 << 0,
     kBoostContrast             = 1 << 1,
     kFakeGammaAndBoostContrast = kFakeGamma | kBoostContrast,
 };
-
-enum SkAxisAlignment : uint32_t {
-    kNone_SkAxisAlignment,
-    kX_SkAxisAlignment,
-    kY_SkAxisAlignment
-};
+SK_MAKE_BITFIELD_OPS(SkScalerContextFlags)
 
 /*
  *  To allow this to be forward-declared, it must be its own typename, rather
@@ -53,10 +48,10 @@ enum SkAxisAlignment : uint32_t {
  */
 SK_BEGIN_REQUIRE_DENSE
 struct SkScalerContextRec {
-    uint32_t    fFontID;
-    SkScalar    fTextSize, fPreScaleX, fPreSkewX;
-    SkScalar    fPost2x2[2][2];
-    SkScalar    fFrameWidth, fMiterLimit;
+    SkTypefaceID fTypefaceID;
+    SkScalar     fTextSize, fPreScaleX, fPreSkewX;
+    SkScalar     fPost2x2[2][2];
+    SkScalar     fFrameWidth, fMiterLimit;
 
     // This will be set if to the paint's foreground color if
     // kNeedsForegroundColor is set, which will usually be the case for COLRv0 and
@@ -150,10 +145,10 @@ public:
     void    getSingleMatrix(SkMatrix*) const;
 
     /** The kind of scale which will be applied by the underlying port (pre-matrix). */
-    enum PreMatrixScale {
-        kFull_PreMatrixScale,  // The underlying port can apply both x and y scale.
-        kVertical_PreMatrixScale,  // The underlying port can only apply a y scale.
-        kVerticalInteger_PreMatrixScale  // The underlying port can only apply an integer y scale.
+    enum class PreMatrixScale {
+        kFull,  // The underlying port can apply both x and y scale.
+        kVertical,  // The underlying port can only apply a y scale.
+        kVerticalInteger  // The underlying port can only apply an integer y scale.
     };
     /**
      *  Compute useful matrices for use with sizing in underlying libraries.
@@ -295,6 +290,7 @@ public:
     SkGlyph     makeGlyph(SkPackedGlyphID, SkArenaAlloc*);
     void        getImage(const SkGlyph&);
     void        getPath(SkGlyph&, SkArenaAlloc*);
+    sk_sp<SkDrawable> getDrawable(SkGlyph&);
     void        getFontMetrics(SkFontMetrics*);
 
     /** Return the size in bytes of the associated gamma lookup table
@@ -355,7 +351,7 @@ public:
 
     /**
     *  Return the axis (if any) that the baseline for horizontal text should land on.
-    *  As an example, the identity matrix will return kX_SkAxisAlignment
+    *  As an example, the identity matrix will return SkAxisAlignment::kX.
     */
     SkAxisAlignment computeAxisAlignmentForHText() const;
 
@@ -395,6 +391,16 @@ protected:
      *  @return false if this glyph does not have any path.
      */
     virtual bool SK_WARN_UNUSED_RESULT generatePath(const SkGlyph&, SkPath*) = 0;
+
+    /** Returns the drawable for the glyph (if any).
+     *
+     *  The generated drawable will be lifetime scoped to the lifetime of this scaler context.
+     *  This means the drawable may refer to the scaler context and associated font data.
+     *
+     *  The drawable does not need to be flattenable (e.g. implement getFactory and getTypeName).
+     *  Any necessary serialization will be done with newPictureSnapshot.
+     */
+    virtual sk_sp<SkDrawable> generateDrawable(const SkGlyph&); // TODO: = 0
 
     /** Retrieves font metrics. */
     virtual void generateFontMetrics(SkFontMetrics*) = 0;

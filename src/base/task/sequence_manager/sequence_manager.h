@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+#include "base/base_export.h"
+#include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
@@ -127,12 +129,6 @@ class BASE_EXPORT SequenceManager {
     // Like the above but for same thread posting.
     std::array<TimeDelta, TaskQueue::kQueuePriorityCount>
         per_priority_same_thread_task_delay;
-
-    // If not zero this seeds a PRNG used by the task selection logic to choose
-    // a random TaskQueue for a given priority rather than the TaskQueue with
-    // the oldest EnqueueOrder.
-    int random_task_selection_seed = 0;
-
 #endif  // DCHECK_IS_ON()
   };
 
@@ -178,9 +174,9 @@ class BASE_EXPORT SequenceManager {
   virtual TimeTicks NowTicks() const = 0;
 
   // Returns a wake-up for the next delayed task which is not ripe for
-  // execution. If there are no such tasks (immediate tasks don't count), it
+  // execution. If there are no such tasks (immediate tasks don't count),
   // returns nullopt.
-  virtual absl::optional<WakeUp> GetNextWakeUp() const = 0;
+  virtual absl::optional<WakeUp> GetNextDelayedWakeUp() const = 0;
 
   // Sets the SingleThreadTaskRunner that will be returned by
   // ThreadTaskRunnerHandle::Get on the main thread.
@@ -310,12 +306,6 @@ class BASE_EXPORT SequenceManager::Settings::Builder {
   Builder& SetPerPrioritySameThreadTaskDelay(
       std::array<TimeDelta, TaskQueue::kQueuePriorityCount>
           per_priority_same_thread_task_delay);
-
-  // If not zero this seeds a PRNG used by the task selection logic to choose a
-  // random TaskQueue for a given priority rather than the TaskQueue with the
-  // oldest EnqueueOrder.
-  Builder& SetRandomTaskSelectionSeed(int random_task_selection_seed);
-
 #endif  // DCHECK_IS_ON()
 
   Settings Build();

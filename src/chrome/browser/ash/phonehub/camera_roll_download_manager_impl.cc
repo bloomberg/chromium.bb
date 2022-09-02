@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/phonehub/camera_roll_download_manager.h"
 #include "ash/components/phonehub/proto/phonehub_api.pb.h"
 #include "ash/public/cpp/holding_space/holding_space_progress.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
@@ -19,19 +21,23 @@
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/numerics/clamped_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 namespace phonehub {
 
 namespace {
+
+const size_t kBytesPerKilobyte = 1024;
 
 scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
   return base::ThreadPool::CreateSequencedTaskRunner(
@@ -45,15 +51,21 @@ bool HasEnoughDiskSpace(const base::FilePath& root_path,
          item_metadata.file_size_bytes();
 }
 
-chromeos::secure_channel::mojom::PayloadFilesPtr DoCreatePayloadFiles(
+absl::optional<secure_channel::mojom::PayloadFilesPtr> DoCreatePayloadFiles(
     const base::FilePath& file_path) {
+  if (base::PathExists(file_path)) {
+    // Perhaps a file was created at the same path for a different payload after
+    // we checkedfor its existence.
+    return absl::nullopt;
+  }
+
   base::File output_file =
       base::File(file_path, base::File::Flags::FLAG_CREATE_ALWAYS |
                                 base::File::Flags::FLAG_WRITE);
   base::File input_file = base::File(
       file_path, base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
-  return chromeos::secure_channel::mojom::PayloadFiles::New(
-      std::move(input_file), std::move(output_file));
+  return secure_channel::mojom::PayloadFiles::New(std::move(input_file),
+                                                  std::move(output_file));
 }
 
 }  // namespace
@@ -61,17 +73,12 @@ chromeos::secure_channel::mojom::PayloadFilesPtr DoCreatePayloadFiles(
 CameraRollDownloadManagerImpl::DownloadItem::DownloadItem(
     int64_t payload_id,
     const base::FilePath& file_path,
+    int64_t file_size_bytes,
     const std::string& holding_space_item_id)
     : payload_id(payload_id),
       file_path(file_path),
+      file_size_bytes(file_size_bytes),
       holding_space_item_id(holding_space_item_id) {}
-
-CameraRollDownloadManagerImpl::DownloadItem::DownloadItem(
-    const CameraRollDownloadManagerImpl::DownloadItem&) = default;
-
-CameraRollDownloadManagerImpl::DownloadItem&
-CameraRollDownloadManagerImpl::DownloadItem::operator=(
-    const CameraRollDownloadManagerImpl::DownloadItem&) = default;
 
 CameraRollDownloadManagerImpl::DownloadItem::~DownloadItem() = default;
 
@@ -151,21 +158,39 @@ void CameraRollDownloadManagerImpl::OnPayloadFilesCreated(
     const base::FilePath& file_path,
     int64_t file_size_bytes,
     CreatePayloadFilesCallback payload_files_callback,
-    chromeos::secure_channel::mojom::PayloadFilesPtr payload_files) {
+    absl::optional<secure_channel::mojom::PayloadFilesPtr> payload_files) {
+  if (!payload_files) {
+    PA_LOG(WARNING) << "Failed to create files for payload " << payload_id
+                    << ": the requested file path already exists.";
+    return std::move(payload_files_callback)
+        .Run(CreatePayloadFilesResult::kNotUniqueFilePath, absl::nullopt);
+  }
+
   const std::string& holding_space_item_id =
       holding_space_keyed_service_->AddPhoneHubCameraRollItem(
           file_path,
           ash::HoldingSpaceProgress(/*current_bytes=*/0,
                                     /*total_bytes=*/file_size_bytes));
+  if (holding_space_item_id.empty()) {
+    // This can happen if a file was created at the same path for a previous
+    // payload but then got deleted before that payload is fully downloaded.
+    PA_LOG(WARNING) << "Failed to add payload " << payload_id
+                    << " to holding space. It's likely that an item with the "
+                       "same file path already exists.";
+    return std::move(payload_files_callback)
+        .Run(CreatePayloadFilesResult::kNotUniqueFilePath, absl::nullopt);
+  }
+
   pending_downloads_.emplace(
-      payload_id, DownloadItem(payload_id, file_path, holding_space_item_id));
+      payload_id, DownloadItem(payload_id, file_path, file_size_bytes,
+                               holding_space_item_id));
 
   std::move(payload_files_callback)
       .Run(CreatePayloadFilesResult::kSuccess, std::move(payload_files));
 }
 
 void CameraRollDownloadManagerImpl::UpdateDownloadProgress(
-    chromeos::secure_channel::mojom::FileTransferUpdatePtr update) {
+    secure_channel::mojom::FileTransferUpdatePtr update) {
   auto it = pending_downloads_.find(update->payload_id);
   if (it == pending_downloads_.end()) {
     PA_LOG(ERROR) << "Received unexpected FileTransferUpdate for payload "
@@ -173,40 +198,63 @@ void CameraRollDownloadManagerImpl::UpdateDownloadProgress(
     return;
   }
 
-  holding_space_keyed_service_->UpdateItem(it->second.holding_space_item_id)
-      ->SetProgress(ash::HoldingSpaceProgress(update->bytes_transferred,
-                                              update->total_bytes))
-      .SetInvalidateImage(
-          update->status ==
-          chromeos::secure_channel::mojom::FileTransferStatus::kSuccess);
+  const DownloadItem& download_item = it->second;
+  const std::string holding_space_item_id = download_item.holding_space_item_id;
 
   switch (update->status) {
-    case chromeos::secure_channel::mojom::FileTransferStatus::kInProgress:
+    case secure_channel::mojom::FileTransferStatus::kInProgress:
+      holding_space_keyed_service_->UpdateItem(holding_space_item_id)
+          ->SetProgress(ash::HoldingSpaceProgress(update->bytes_transferred,
+                                                  update->total_bytes,
+                                                  /*complete=*/false));
       return;
-    case chromeos::secure_channel::mojom::FileTransferStatus::kFailure:
-    case chromeos::secure_channel::mojom::FileTransferStatus::kCanceled:
+    case secure_channel::mojom::FileTransferStatus::kFailure:
+    case secure_channel::mojom::FileTransferStatus::kCanceled:
       // Delete files created for failed and canceled items, in addition to
       // removing the DownloadItem objects.
+      holding_space_keyed_service_->RemoveItem(holding_space_item_id);
       DeleteFile(update->payload_id);
-      ABSL_FALLTHROUGH_INTENDED;
-    case chromeos::secure_channel::mojom::FileTransferStatus::kSuccess:
+      return;
+    case secure_channel::mojom::FileTransferStatus::kSuccess:
+      holding_space_keyed_service_
+          ->UpdateItem(download_item.holding_space_item_id)
+          ->SetProgress(ash::HoldingSpaceProgress(update->bytes_transferred,
+                                                  update->total_bytes,
+                                                  /*complete=*/true))
+          .SetInvalidateImage(true);
+      base::UmaHistogramCounts100000(
+          "PhoneHub.CameraRoll.DownloadItem.TransferRate",
+          CalculateItemTransferRate(download_item));
       pending_downloads_.erase(it);
   }
 }
 
+int CameraRollDownloadManagerImpl::CalculateItemTransferRate(
+    const DownloadItem& download_item) const {
+  base::TimeDelta total_download_time =
+      base::TimeTicks::Now() - download_item.start_timestamp;
+  base::ClampedNumeric bytes_per_second = base::ClampDiv(
+      download_item.file_size_bytes, total_download_time.InSecondsF());
+  return base::saturated_cast<int>(
+      base::ClampDiv(bytes_per_second, kBytesPerKilobyte));
+}
+
 void CameraRollDownloadManagerImpl::DeleteFile(int64_t payload_id) {
-  if (pending_downloads_.contains(payload_id)) {
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](const DownloadItem& download_item) {
-                         if (!base::DeleteFile(download_item.file_path)) {
-                           PA_LOG(WARNING)
-                               << "Failed to delete file for payload "
-                               << download_item.payload_id;
-                         }
-                       },
-                       pending_downloads_.at(payload_id)));
+  auto it = pending_downloads_.find(payload_id);
+  if (it == pending_downloads_.end()) {
+    return;
   }
+
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](const base::FilePath& file_path, int64_t payload_id) {
+                       if (!base::DeleteFile(file_path)) {
+                         PA_LOG(WARNING) << "Failed to delete file for payload "
+                                         << payload_id;
+                       }
+                     },
+                     it->second.file_path, payload_id));
+  pending_downloads_.erase(it);
 }
 
 }  // namespace phonehub

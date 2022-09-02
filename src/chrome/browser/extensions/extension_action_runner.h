@@ -16,17 +16,19 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/mojom/frame.mojom.h"
 #include "extensions/common/mojom/injection_type.mojom-shared.h"
 #include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -41,12 +43,6 @@ class Extension;
 class ExtensionActionRunner : public content::WebContentsObserver,
                               public ExtensionRegistryObserver {
  public:
-  enum class PageAccess {
-    RUN_ON_CLICK,
-    RUN_ON_SITE,
-    RUN_ON_ALL_SITES,
-  };
-
   class TestObserver {
    public:
     virtual void OnBlockedActionAdded() = 0;
@@ -74,9 +70,10 @@ class ExtensionActionRunner : public content::WebContentsObserver,
 
   // Notifies the ExtensionActionRunner that the page access for |extension| has
   // changed.
-  void HandlePageAccessModified(const Extension* extension,
-                                PageAccess current_access,
-                                PageAccess new_access);
+  void HandlePageAccessModified(
+      const Extension* extension,
+      SitePermissionsHelper::SiteAccess current_access,
+      SitePermissionsHelper::SiteAccess new_access);
 
   // Notifies the ExtensionActionRunner that an extension has been granted
   // active tab permissions. This will run any pending injections for that
@@ -88,7 +85,7 @@ class ExtensionActionRunner : public content::WebContentsObserver,
 
   // Returns a bitmask of BlockedActionType for the actions that have been
   // blocked for the given extension.
-  int GetBlockedActions(const Extension* extension);
+  int GetBlockedActions(const ExtensionId& extension_id);
 
   // Returns true if the given |extension| has any blocked actions.
   bool WantsToRun(const Extension* extension);
@@ -99,10 +96,14 @@ class ExtensionActionRunner : public content::WebContentsObserver,
 
   int num_page_requests() const { return num_page_requests_; }
 
-  void set_default_bubble_close_action_for_testing(
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate::CloseAction> action) {
-    default_bubble_close_action_for_testing_ = std::move(action);
+  void accept_bubble_for_testing(bool accept_bubble) {
+    accept_bubble_for_testing_ = accept_bubble;
   }
+
+  void bubble_is_checked_for_testing(bool is_checked) {
+    bubble_is_checked_for_testing_ = is_checked;
+  }
+
   void set_observer_for_testing(TestObserver* observer) {
     test_observer_ = observer;
   }
@@ -134,7 +135,13 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   }
 #endif  // defined(UNIT_TEST)
 
+  // The blocked actions that require a page refresh to run.
+  static const int kRefreshRequiredActionsMask;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ExtensionActionRunnerFencedFrameBrowserTest,
+                           DoNotResetExtensionActionRunner);
+
   struct PendingScript {
     PendingScript(mojom::RunLocation run_location,
                   ScriptInjectionCallback permit_script);
@@ -178,31 +185,24 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // Shows the bubble to prompt the user to refresh the page to run the blocked
   // actions for the given |extension|. |callback| is invoked when the bubble is
   // closed.
-  void ShowBlockedActionBubble(
-      const Extension* extension,
-      base::OnceCallback<void(ToolbarActionsBarBubbleDelegate::CloseAction)>
-          callback);
+  void ShowBlockedActionBubble(const Extension* extension,
+                               bool show_checkbox,
+                               base::OnceCallback<void(bool)> callback);
 
-  // Called when the blocked actions bubble invoked to run the extension action
-  // is closed.
-  void OnBlockedActionBubbleForRunActionClosed(
-      const std::string& extension_id,
-      ToolbarActionsBarBubbleDelegate::CloseAction action);
-
-  // Called when the blocked actions bubble invoked for the page access grant is
-  // closed.
-  void OnBlockedActionBubbleForPageAccessGrantClosed(
+  // Called when the blocked actions bubble is closed.
+  void OnBlockedActionBubbleClosed(
       const std::string& extension_id,
       const GURL& page_url,
-      PageAccess current_access,
-      PageAccess new_access,
-      ToolbarActionsBarBubbleDelegate::CloseAction action);
+      SitePermissionsHelper::SiteAccess current_access,
+      SitePermissionsHelper::SiteAccess new_access,
+      bool is_checked);
 
   // Handles permission changes necessary for page access modification of the
   // |extension|.
-  void UpdatePageAccessSettings(const Extension* extension,
-                                PageAccess current_access,
-                                PageAccess new_access);
+  void UpdatePageAccessSettings(
+      const Extension* extension,
+      SitePermissionsHelper::SiteAccess current_access,
+      SitePermissionsHelper::SiteAccess new_access);
 
   // Runs any actions that were blocked for the given |extension|. As a
   // requirement, this will grant activeTab permission to the extension.
@@ -252,9 +252,13 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // actions.
   bool ignore_active_tab_granted_;
 
-  // If non-null, the bubble action to simulate for testing.
-  std::unique_ptr<ToolbarActionsBarBubbleDelegate::CloseAction>
-      default_bubble_close_action_for_testing_;
+  // If true, immediately accept the blocked action dialog by running the
+  // callback.
+  absl::optional<bool> accept_bubble_for_testing_;
+
+  // If `accept_bubble_for_testing_` is true, signals whether the checkbox is
+  // checked or not.
+  bool bubble_is_checked_for_testing_{false};
 
   raw_ptr<TestObserver> test_observer_;
 

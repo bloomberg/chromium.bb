@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.price_tracking.proto.Notifications.ExpandedVi
 import org.chromium.chrome.browser.price_tracking.proto.Notifications.PriceDropNotificationPayload;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.commerce.PriceTracking.ProductPrice;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
 
 import java.util.ArrayList;
@@ -111,7 +112,10 @@ public class PriceTrackingNotificationBridge {
 
         // Use UnsignedLongs to convert OfferId to avoid overflow.
         String offerId = UnsignedLongs.toString(priceDropPayload.getOfferId());
-        String clusterId = UnsignedLongs.toString(priceDropPayload.getProductClusterId());
+        String clusterId = null;
+        if (priceDropPayload.hasProductClusterId() && priceDropPayload.getProductClusterId() != 0) {
+            clusterId = UnsignedLongs.toString(priceDropPayload.getProductClusterId());
+        }
         ChromeMessage chromeMessage = chromeNotification.getChromeMessage();
         PriceDropNotifier.NotificationData notificationData =
                 new PriceDropNotifier.NotificationData(title, text,
@@ -174,14 +178,15 @@ public class PriceTrackingNotificationBridge {
             return null;
         }
 
-        // Must have destination URL to ensure clicking to function.
+        // Must have valid destination URL to ensure clicking to function.
         if (!priceDropPayload.hasDestinationUrl()
-                || TextUtils.isEmpty(priceDropPayload.getDestinationUrl())) {
+                || TextUtils.isEmpty(priceDropPayload.getDestinationUrl())
+                || !UrlUtilities.isHttpOrHttps(priceDropPayload.getDestinationUrl())) {
             return null;
         }
 
         // Must have the offer id to ensure the subscription to function.
-        if (!priceDropPayload.hasOfferId()) return null;
+        if (!priceDropPayload.hasOfferId() || priceDropPayload.getOfferId() == 0) return null;
 
         // Must have the product name to show in the title.
         if (!priceDropPayload.hasProductName()
@@ -203,7 +208,7 @@ public class PriceTrackingNotificationBridge {
             if (!action.hasActionId() || !action.hasText()) continue;
             String actionText = getActionText(action.getActionId());
             if (TextUtils.isEmpty(actionText)) continue;
-            actions.add(new ActionData(action.getActionId(), action.getText()));
+            actions.add(new ActionData(action.getActionId(), actionText));
         }
         return actions;
     }

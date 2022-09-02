@@ -4,6 +4,7 @@
 
 static_library("common") {
   sources = [
+    "aliases.h",
     "autofill_clock.cc",
     "autofill_clock.h",
     "autofill_constants.cc",
@@ -107,6 +108,7 @@ source_set("unit_tests") {
     "gaia_id_hash_unittest.cc",
     "logging/log_buffer_unittest.cc",
     "save_password_progress_logger_unittest.cc",
+    "signatures_unittest.cc",
   ]
 
   deps = [

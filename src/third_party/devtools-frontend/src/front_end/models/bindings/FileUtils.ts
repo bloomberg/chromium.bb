@@ -29,11 +29,9 @@
  */
 
 import type * as Common from '../../core/common/common.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as Workspace from '../workspace/workspace.js';
 
-/**
- * @interface
- */
 export interface ChunkedReader {
   fileSize(): number;
 
@@ -94,7 +92,7 @@ export class ChunkedFileReader implements ChunkedReader {
     }
 
     this.#output = output;
-    this.loadChunk();
+    void this.loadChunk();
 
     return new Promise(resolve => {
       this.#transferFinished = resolve;
@@ -148,7 +146,7 @@ export class ChunkedFileReader implements ChunkedReader {
     const buffer = (this.#reader.result as ArrayBuffer);
     this.#loadedSizeInternal += buffer.byteLength;
     const endOfFile = this.#loadedSizeInternal === this.#fileSizeInternal;
-    this.decodeChunkBuffer(buffer, endOfFile);
+    void this.decodeChunkBuffer(buffer, endOfFile);
   }
 
   private async decodeChunkBuffer(buffer: ArrayBuffer, endOfFile: boolean): Promise<void> {
@@ -168,7 +166,7 @@ export class ChunkedFileReader implements ChunkedReader {
       this.finishRead();
       return;
     }
-    this.loadChunk();
+    void this.loadChunk();
   }
 
   private finishRead(): void {
@@ -177,7 +175,7 @@ export class ChunkedFileReader implements ChunkedReader {
     }
     this.#file = null;
     this.#reader = null;
-    this.#output.close();
+    void this.#output.close();
     this.#transferFinished(!this.#errorInternal);
   }
 
@@ -190,7 +188,7 @@ export class ChunkedFileReader implements ChunkedReader {
       if (done || !value) {
         return this.finishRead();
       }
-      this.decodeChunkBuffer(value.buffer, false);
+      void this.decodeChunkBuffer(value.buffer, false);
     }
     if (this.#reader) {
       const chunkStart = this.#loadedSizeInternal;
@@ -209,15 +207,14 @@ export class ChunkedFileReader implements ChunkedReader {
 
 export class FileOutputStream implements Common.StringOutputStream.OutputStream {
   #writeCallbacks: (() => void)[];
-  #fileName!: string;
+  #fileName!: Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString;
   #closed?: boolean;
   constructor() {
     this.#writeCallbacks = [];
   }
 
-  async open(fileName: string): Promise<boolean> {
+  async open(fileName: Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString): Promise<boolean> {
     this.#closed = false;
-    /** @type {!Array<function():void>} */
     this.#writeCallbacks = [];
     this.#fileName = fileName;
     const saveResponse = await Workspace.FileManager.FileManager.instance().save(this.#fileName, '', true);

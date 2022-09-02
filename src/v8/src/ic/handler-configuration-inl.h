@@ -20,15 +20,6 @@
 namespace v8 {
 namespace internal {
 
-inline Handle<Object> MakeCodeHandler(Isolate* isolate, Builtin builtin) {
-  if (V8_EXTERNAL_CODE_SPACE_BOOL) {
-    Code code = isolate->builtins()->code(builtin);
-    return handle(code.code_data_container(kAcquireLoad), isolate);
-  } else {
-    return isolate->builtins()->code_handle(builtin);
-  }
-}
-
 OBJECT_CONSTRUCTORS_IMPL(LoadHandler, DataHandler)
 
 CAST_ACCESSOR(LoadHandler)
@@ -164,47 +155,56 @@ Handle<Smi> StoreHandler::StoreInterceptor(Isolate* isolate) {
   return handle(Smi::FromInt(config), isolate);
 }
 
-Builtin StoreHandler::StoreSloppyArgumentsBuiltin(KeyedAccessStoreMode mode) {
+Handle<CodeT> StoreHandler::StoreSloppyArgumentsBuiltin(
+    Isolate* isolate, KeyedAccessStoreMode mode) {
   switch (mode) {
     case STANDARD_STORE:
-      return Builtin::kKeyedStoreIC_SloppyArguments_Standard;
+      return BUILTIN_CODE(isolate, KeyedStoreIC_SloppyArguments_Standard);
     case STORE_AND_GROW_HANDLE_COW:
-      return Builtin::kKeyedStoreIC_SloppyArguments_GrowNoTransitionHandleCOW;
+      return BUILTIN_CODE(
+          isolate, KeyedStoreIC_SloppyArguments_GrowNoTransitionHandleCOW);
     case STORE_IGNORE_OUT_OF_BOUNDS:
-      return Builtin::kKeyedStoreIC_SloppyArguments_NoTransitionIgnoreOOB;
+      return BUILTIN_CODE(isolate,
+                          KeyedStoreIC_SloppyArguments_NoTransitionIgnoreOOB);
     case STORE_HANDLE_COW:
-      return Builtin::kKeyedStoreIC_SloppyArguments_NoTransitionHandleCOW;
+      return BUILTIN_CODE(isolate,
+                          KeyedStoreIC_SloppyArguments_NoTransitionHandleCOW);
     default:
       UNREACHABLE();
   }
 }
 
-Builtin StoreHandler::StoreFastElementBuiltin(KeyedAccessStoreMode mode) {
+Handle<CodeT> StoreHandler::StoreFastElementBuiltin(Isolate* isolate,
+                                                    KeyedAccessStoreMode mode) {
   switch (mode) {
     case STANDARD_STORE:
-      return Builtin::kStoreFastElementIC_Standard;
+      return BUILTIN_CODE(isolate, StoreFastElementIC_Standard);
     case STORE_AND_GROW_HANDLE_COW:
-      return Builtin::kStoreFastElementIC_GrowNoTransitionHandleCOW;
+      return BUILTIN_CODE(isolate,
+                          StoreFastElementIC_GrowNoTransitionHandleCOW);
     case STORE_IGNORE_OUT_OF_BOUNDS:
-      return Builtin::kStoreFastElementIC_NoTransitionIgnoreOOB;
+      return BUILTIN_CODE(isolate, StoreFastElementIC_NoTransitionIgnoreOOB);
     case STORE_HANDLE_COW:
-      return Builtin::kStoreFastElementIC_NoTransitionHandleCOW;
+      return BUILTIN_CODE(isolate, StoreFastElementIC_NoTransitionHandleCOW);
     default:
       UNREACHABLE();
   }
 }
 
-Builtin StoreHandler::ElementsTransitionAndStoreBuiltin(
-    KeyedAccessStoreMode mode) {
+Handle<CodeT> StoreHandler::ElementsTransitionAndStoreBuiltin(
+    Isolate* isolate, KeyedAccessStoreMode mode) {
   switch (mode) {
     case STANDARD_STORE:
-      return Builtin::kElementsTransitionAndStore_Standard;
+      return BUILTIN_CODE(isolate, ElementsTransitionAndStore_Standard);
     case STORE_AND_GROW_HANDLE_COW:
-      return Builtin::kElementsTransitionAndStore_GrowNoTransitionHandleCOW;
+      return BUILTIN_CODE(isolate,
+                          ElementsTransitionAndStore_GrowNoTransitionHandleCOW);
     case STORE_IGNORE_OUT_OF_BOUNDS:
-      return Builtin::kElementsTransitionAndStore_NoTransitionIgnoreOOB;
+      return BUILTIN_CODE(isolate,
+                          ElementsTransitionAndStore_NoTransitionIgnoreOOB);
     case STORE_HANDLE_COW:
-      return Builtin::kElementsTransitionAndStore_NoTransitionHandleCOW;
+      return BUILTIN_CODE(isolate,
+                          ElementsTransitionAndStore_NoTransitionHandleCOW);
     default:
       UNREACHABLE();
   }
@@ -230,7 +230,8 @@ Handle<Smi> StoreHandler::StoreField(Isolate* isolate, Kind kind,
                                      int descriptor, FieldIndex field_index,
                                      Representation representation) {
   DCHECK(!representation.IsNone());
-  DCHECK(kind == Kind::kField || kind == Kind::kConstField);
+  DCHECK(kind == Kind::kField || kind == Kind::kConstField ||
+         kind == Kind::kSharedStructField);
 
   int config = KindBits::encode(kind) |
                IsInobjectBits::encode(field_index.is_inobject()) |
@@ -247,6 +248,14 @@ Handle<Smi> StoreHandler::StoreField(Isolate* isolate, int descriptor,
   Kind kind = constness == PropertyConstness::kMutable ? Kind::kField
                                                        : Kind::kConstField;
   return StoreField(isolate, kind, descriptor, field_index, representation);
+}
+
+Handle<Smi> StoreHandler::StoreSharedStructField(
+    Isolate* isolate, int descriptor, FieldIndex field_index,
+    Representation representation) {
+  DCHECK(representation.Equals(Representation::Tagged()));
+  return StoreField(isolate, Kind::kSharedStructField, descriptor, field_index,
+                    representation);
 }
 
 Handle<Smi> StoreHandler::StoreNativeDataProperty(Isolate* isolate,

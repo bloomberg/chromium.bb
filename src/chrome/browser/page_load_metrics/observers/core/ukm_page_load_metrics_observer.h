@@ -54,12 +54,14 @@ class UkmPageLoadMetricsObserver
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
+  ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url) override;
 
   ObservePolicy OnRedirect(
       content::NavigationHandle* navigation_handle) override;
 
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
-                         ukm::SourceId source_id) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
 
   ObservePolicy ShouldObserveMimeType(
       const std::string& mime_type) const override;
@@ -146,8 +148,10 @@ class UkmPageLoadMetricsObserver
 
   void RecordInputTimingMetrics();
   void RecordSmoothnessMetrics();
+  void RecordResponsivenessMetrics();
 
   void RecordMobileFriendlinessMetrics();
+  void RecordPageLoadTimestampMetrics(ukm::builders::PageLoad& builder);
 
   // Captures the site engagement score for the committed URL and
   // returns the score rounded to the nearest 10.
@@ -293,6 +297,9 @@ class UkmPageLoadMetricsObserver
   base::TimeTicks last_time_shown_;
   base::TimeDelta total_foreground_duration_;
 
+  // The navigation start timestamp.
+  base::Time navigation_start_time_;
+
   // The connection info for the committed URL.
   absl::optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
 
@@ -301,6 +308,10 @@ class UkmPageLoadMetricsObserver
   // Only true if the page became hidden after the first time it was shown in
   // the foreground, no matter how it started.
   bool was_hidden_after_first_show_in_foreground = false;
+
+  // True if the TemplateURLService has a search engine template for the
+  // navigation and a scoped search would have been possible.
+  bool was_scoped_search_like_navigation_ = false;
 
   base::WeakPtrFactory<UkmPageLoadMetricsObserver> weak_factory_{this};
 };

@@ -7,9 +7,15 @@
 
 #include "src/shaders/gradients/SkLinearGradient.h"
 
+
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkWriteBuffer.h"
 #include "src/shaders/gradients/Sk4fLinearGradient.h"
+
+#ifdef SK_ENABLE_SKSL
+#include "src/core/SkKeyHelpers.h"
+#include "src/core/SkPaintParamsKey.h"
+#endif
 
 static SkMatrix pts_to_unit_matrix(const SkPoint pts[2]) {
     SkVector    vec = pts[1] - pts[0];
@@ -94,11 +100,30 @@ SkShader::GradientType SkLinearGradient::asAGradient(GradientInfo* info) const {
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/gradients/GrGradientShader.h"
+#include "src/gpu/ganesh/gradients/GrGradientShader.h"
 
 std::unique_ptr<GrFragmentProcessor> SkLinearGradient::asFragmentProcessor(
         const GrFPArgs& args) const {
     return GrGradientShader::MakeLinear(*this, args);
 }
 
+#endif
+
+#ifdef SK_ENABLE_SKSL
+void SkLinearGradient::addToKey(const SkKeyContext& keyContext,
+                                SkPaintParamsKeyBuilder* builder,
+                                SkPipelineDataGatherer* gatherer) const {
+    GradientShaderBlocks::GradientData data(kLinear_GradientType,
+                                            SkM44(this->getLocalMatrix()),
+                                            fStart, fEnd,
+                                            0.0f, 0.0f,
+                                            0.0f, 0.0f,
+                                            fTileMode,
+                                            fColorCount,
+                                            fOrigColors4f,
+                                            fOrigPos);
+
+    GradientShaderBlocks::BeginBlock(keyContext, builder, gatherer, data);
+    builder->endBlock();
+}
 #endif

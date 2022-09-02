@@ -17,9 +17,13 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.app.bluetooth.BluetoothNotificationService;
+import org.chromium.chrome.browser.app.usb.UsbNotificationService;
+import org.chromium.chrome.browser.bluetooth.BluetoothNotificationManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationServiceImpl;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditorJni;
+import org.chromium.chrome.browser.usb.UsbNotificationManager;
 import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindNotificationDetails;
 import org.chromium.content_public.browser.InvalidateTypes;
@@ -155,13 +159,14 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
     }
 
     @Override
-    public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
-        mDelegate.enterFullscreenModeForTab(prefersNavigationBar);
+    public void enterFullscreenModeForTab(boolean prefersNavigationBar, boolean prefersStatusBar) {
+        mDelegate.enterFullscreenModeForTab(prefersNavigationBar, prefersStatusBar);
     }
 
     @Override
-    public void fullscreenStateChangedForTab(boolean prefersNavigationBar) {
-        mDelegate.enterFullscreenModeForTab(prefersNavigationBar);
+    public void fullscreenStateChangedForTab(
+            boolean prefersNavigationBar, boolean prefersStatusBar) {
+        mDelegate.fullscreenStateChangedForTab(prefersNavigationBar, prefersStatusBar);
     }
 
     @Override
@@ -180,6 +185,12 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
             MediaCaptureNotificationServiceImpl.updateMediaNotificationForTab(
                     ContextUtils.getApplicationContext(), mTab.getId(), mTab.getWebContents(),
                     mTab.getUrl());
+            BluetoothNotificationManager.updateBluetoothNotificationForTab(
+                    ContextUtils.getApplicationContext(), BluetoothNotificationService.class,
+                    mTab.getId(), mTab.getWebContents(), mTab.getUrl(), mTab.isIncognito());
+            UsbNotificationManager.updateUsbNotificationForTab(ContextUtils.getApplicationContext(),
+                    UsbNotificationService.class, mTab.getId(), mTab.getWebContents(),
+                    mTab.getUrl(), mTab.isIncognito());
         }
         if ((flags & InvalidateTypes.TITLE) != 0) {
             // Update cached title then notify observers.

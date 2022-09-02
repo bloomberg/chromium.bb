@@ -8,9 +8,11 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_estimate.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_usage_details.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -42,14 +44,13 @@ void QueryStorageUsageAndQuotaCallback(
     int64_t usage_in_bytes,
     int64_t quota_in_bytes,
     UsageBreakdownPtr usage_breakdown) {
-  // Avoid crash on shutdown. crbug.com/971594
-  if (!resolver)
-    return;
   if (status_code != mojom::blink::QuotaStatusCode::kOk) {
     // TODO(sashab): Replace this with a switch statement, and remove the enum
     // values from QuotaStatusCode.
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        static_cast<DOMExceptionCode>(status_code)));
+    // TODO(crbug.com/1293949): Add an error message.
+    resolver->Reject(V8ThrowDOMException::CreateOrDie(
+        resolver->GetScriptState()->GetIsolate(),
+        static_cast<DOMExceptionCode>(status_code), ""));
     return;
   }
 
@@ -90,16 +91,17 @@ StorageManager::StorageManager(ExecutionContext* execution_context)
 
 StorageManager::~StorageManager() = default;
 
-ScriptPromise StorageManager::persist(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+ScriptPromise StorageManager::persist(ScriptState* script_state,
+                                      ExceptionState& exception_state) {
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   DCHECK(window->IsSecureContext());  // [SecureContext] in IDL
   if (window->GetSecurityOrigin()->IsOpaque()) {
-    resolver->Reject(V8ThrowException::CreateTypeError(
-        script_state->GetIsolate(), kUniqueOriginErrorMessage));
-    return promise;
+    exception_state.ThrowTypeError(kUniqueOriginErrorMessage);
+    return ScriptPromise();
   }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   GetPermissionService(window)->RequestPermission(
       CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
@@ -110,18 +112,19 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
   return promise;
 }
 
-ScriptPromise StorageManager::persisted(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+ScriptPromise StorageManager::persisted(ScriptState* script_state,
+                                        ExceptionState& exception_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
   const SecurityOrigin* security_origin =
       execution_context->GetSecurityOrigin();
   if (security_origin->IsOpaque()) {
-    resolver->Reject(V8ThrowException::CreateTypeError(
-        script_state->GetIsolate(), kUniqueOriginErrorMessage));
-    return promise;
+    exception_state.ThrowTypeError(kUniqueOriginErrorMessage);
+    return ScriptPromise();
   }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   GetPermissionService(ExecutionContext::From(script_state))
       ->HasPermission(
@@ -131,9 +134,8 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state) {
   return promise;
 }
 
-ScriptPromise StorageManager::estimate(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+ScriptPromise StorageManager::estimate(ScriptState* script_state,
+                                       ExceptionState& exception_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
 
@@ -144,13 +146,15 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   const SecurityOrigin* security_origin =
       execution_context->GetSecurityOrigin();
   if (security_origin->IsOpaque()) {
-    resolver->Reject(V8ThrowException::CreateTypeError(
-        script_state->GetIsolate(), kUniqueOriginErrorMessage));
-    return promise;
+    exception_state.ThrowTypeError(kUniqueOriginErrorMessage);
+    return ScriptPromise();
   }
 
-  auto callback =
-      WTF::Bind(&QueryStorageUsageAndQuotaCallback, WrapPersistent(resolver));
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  auto callback = resolver->WrapCallbackInScriptScope(
+      WTF::Bind(&QueryStorageUsageAndQuotaCallback));
   GetQuotaHost(execution_context)
       ->QueryStorageUsageAndQuota(
           mojom::blink::StorageType::kTemporary,

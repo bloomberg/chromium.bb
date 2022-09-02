@@ -148,7 +148,7 @@ ScrollableArea* AXLayoutObject::GetScrollableAreaIfScrollable() const {
   // used to; however, accessibility must consider any kind of non-visible
   // overflow as programmatically scrollable. Unfortunately
   // LayoutBox::CanBeScrolledAndHasScrollableArea() method calls
-  // LayoutBox::CanBeProgramaticallyScrolled() which does not consider
+  // LayoutBox::CanBeProgrammaticallyScrolled() which does not consider
   // visibility:hidden content to be programmatically scrollable, although it
   // certainly is, and can even be scrolled by selecting and using shift+arrow
   // keys. It should be noticed that the new code used here reduces the overall
@@ -189,7 +189,7 @@ static bool ShouldIgnoreListItem(Node* node) {
       IsA<HTMLOListElement>(*parent)) {
     AtomicString role = AccessibleNode::GetPropertyOrARIAAttribute(
         parent, AOMStringProperty::kRole);
-    if (!role.IsEmpty() && role != "list")
+    if (!role.IsEmpty() && role != "list" && role != "directory")
       return true;
   }
   return false;
@@ -264,7 +264,8 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObjectOrNode() const {
     }
     if (layout_object_->IsSVGShape())
       return ax::mojom::blink::Role::kGraphicsSymbol;
-    if (layout_object_->IsSVGForeignObject() || IsA<SVGGElement>(node))
+    if (layout_object_->IsSVGForeignObjectIncludingNG() ||
+        IsA<SVGGElement>(node))
       return ax::mojom::blink::Role::kGroup;
     if (IsA<SVGUseElement>(node))
       return ax::mojom::blink::Role::kGraphicsObject;
@@ -377,7 +378,7 @@ bool AXLayoutObject::IsNotUserSelectable() const {
   if (!style)
     return false;
 
-  return (style->UserSelect() == EUserSelect::kNone);
+  return (style->UsedUserSelect() == EUserSelect::kNone);
 }
 
 //
@@ -514,7 +515,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   }
 
   // The SVG-AAM says the foreignObject element is normally presentational.
-  if (layout_object_->IsSVGForeignObject()) {
+  if (layout_object_->IsSVGForeignObjectIncludingNG()) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXPresentational));
     return true;
@@ -732,9 +733,8 @@ ax::mojom::blink::ListStyle AXLayoutObject::GetListStyle() const {
 }
 
 static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
-  return (layout_object.IsInline() || layout_object.IsLayoutInline() ||
-          layout_object.IsText()) &&
-         layout_object.ContainingNGBlockFlow();
+  return layout_object.IsInline() &&
+         layout_object.IsInLayoutNGInlineFormattingContext();
 }
 
 // Get the deepest descendant that is included in the tree.
@@ -867,6 +867,10 @@ AXObject* AXLayoutObject::NextOnLine() const {
   }
 
   DCHECK(GetLayoutObject());
+
+  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*GetLayoutObject())) {
+    return nullptr;
+  }
 
   if (GetLayoutObject()->IsBoxListMarkerIncludingNG()) {
     // A list marker should be followed by a list item on the same line.
@@ -1020,6 +1024,10 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
 
   DCHECK(GetLayoutObject());
 
+  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*GetLayoutObject())) {
+    return nullptr;
+  }
+
   AXObject* previous_sibling = AccessibilityIsIncludedInTree()
                                    ? PreviousSiblingIncludingIgnored()
                                    : nullptr;
@@ -1147,6 +1155,10 @@ String AXLayoutObject::TextAlternative(
         name_sources->back().type = name_from;
         name_sources->back().text = text_alternative.value();
       }
+      // Ensure that text nodes count toward
+      // kMaxDescendantsForTextAlternativeComputation when calculating the name
+      // for their direct parent (see AXNodeObject::TextFromDescendants).
+      visited.insert(this);
       return text_alternative.value();
     }
   }
@@ -1161,8 +1173,8 @@ String AXLayoutObject::TextAlternative(
 //
 
 AXObject* AXLayoutObject::AccessibilityHitTest(const gfx::Point& point) const {
-  // Must be called for the document.
-  if (!IsRoot() || !layout_object_)
+  // Must be called for the document's root or a popup's root.
+  if (RoleValue() != ax::mojom::blink::Role::kRootWebArea || !layout_object_)
     return nullptr;
 
   // Must be called with lifecycle >= pre-paint clean
@@ -1287,7 +1299,7 @@ bool AXLayoutObject::IsDataTable() const {
   // If there are at least 20 rows, we'll call it a data table.
   HTMLTableRowsCollection* rows = table_element->rows();
   int num_rows = rows->length();
-  if (num_rows >= 20)
+  if (num_rows >= AXObjectCacheImpl::kDataTableHeuristicMinRows)
     return true;
   if (num_rows <= 0)
     return false;
@@ -1459,7 +1471,7 @@ unsigned AXLayoutObject::ColumnCount() const {
   LayoutNGTableInterface* table =
       ToInterface<LayoutNGTableInterface>(layout_object);
   table->RecalcSectionsIfNeeded();
-  LayoutNGTableSectionInterface* table_section = table->TopSectionInterface();
+  LayoutNGTableSectionInterface* table_section = table->FirstSectionInterface();
   if (!table_section)
     return AXNodeObject::ColumnCount();
 
@@ -1480,14 +1492,14 @@ unsigned AXLayoutObject::RowCount() const {
 
   unsigned row_count = 0;
   const LayoutNGTableSectionInterface* table_section =
-      table->TopSectionInterface();
+      table->FirstSectionInterface();
   if (!table_section)
     return AXNodeObject::RowCount();
 
   while (table_section) {
     row_count += table_section->NumRows();
     table_section =
-        table->SectionBelowInterface(table_section, kSkipEmptySections);
+        table->NextSectionInterface(table_section, kSkipEmptySections);
   }
   return row_count;
 }
@@ -1537,10 +1549,10 @@ unsigned AXLayoutObject::RowIndex() const {
   // Since our table might have multiple sections, we have to offset our row
   // appropriately.
   table->RecalcSectionsIfNeeded();
-  const LayoutNGTableSectionInterface* section = table->TopSectionInterface();
+  const LayoutNGTableSectionInterface* section = table->FirstSectionInterface();
   while (section && section != row_section) {
     row_index += section->NumRows();
-    section = table->SectionBelowInterface(section, kSkipEmptySections);
+    section = table->NextSectionInterface(section, kSkipEmptySections);
   }
 
   return row_index;
@@ -1608,7 +1620,7 @@ AXObject* AXLayoutObject::CellForColumnAndRow(unsigned target_column_index,
       ToInterface<LayoutNGTableInterface>(layout_object);
   table->RecalcSectionsIfNeeded();
 
-  LayoutNGTableSectionInterface* table_section = table->TopSectionInterface();
+  LayoutNGTableSectionInterface* table_section = table->FirstSectionInterface();
   if (!table_section) {
     return AXNodeObject::CellForColumnAndRow(target_column_index,
                                              target_row_index);
@@ -1643,7 +1655,7 @@ AXObject* AXLayoutObject::CellForColumnAndRow(unsigned target_column_index,
 
     row_offset += table_section->NumRows();
     table_section =
-        table->SectionBelowInterface(table_section, kSkipEmptySections);
+        table->NextSectionInterface(table_section, kSkipEmptySections);
   }
 
   return nullptr;
@@ -1659,7 +1671,7 @@ bool AXLayoutObject::FindAllTableCellsWithRole(ax::mojom::blink::Role role,
       ToInterface<LayoutNGTableInterface>(layout_object);
   table->RecalcSectionsIfNeeded();
 
-  LayoutNGTableSectionInterface* table_section = table->TopSectionInterface();
+  LayoutNGTableSectionInterface* table_section = table->FirstSectionInterface();
   if (!table_section)
     return true;
 
@@ -1676,7 +1688,7 @@ bool AXLayoutObject::FindAllTableCellsWithRole(ax::mojom::blink::Role role,
     }
 
     table_section =
-        table->SectionBelowInterface(table_section, kSkipEmptySections);
+        table->NextSectionInterface(table_section, kSkipEmptySections);
   }
 
   return true;

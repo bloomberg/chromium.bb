@@ -10,12 +10,14 @@ package org.skia.skqp;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.RuntimeShader;
 import android.util.Log;
 import androidx.test.InstrumentationRegistry;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Pattern;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runner.Runner;
@@ -27,13 +29,19 @@ import org.junit.runner.notification.RunNotifier;
 
 @RunWith(SkQPRunner.class)
 public class SkQPRunner extends Runner implements Filterable {
-    private int mShouldRunTestCount;
-    private Description[] mTests;
-    private Description mDescription;
-    private boolean[] mShouldSkipTest;
+    private Description[] mUnitTestDesc;
+    private Description[] mSkSLErrorTestDesc;
+    private Description mSuiteDesc;
     private String mOutputDirectory;
     private SkQP mImpl;
     private static final String TAG = SkQP.LOG_PREFIX;
+
+    private interface TestExecutor {
+        public int numTests();
+        public String name(int index);
+        public Description desc(int index);
+        public boolean run(RunNotifier notifier, int index);
+    }
 
     private static void Fail(Description desc, RunNotifier notifier, String failure) {
         notifier.fireTestFailure(new Failure(desc, new SkQPFailure(failure)));
@@ -53,110 +61,158 @@ public class SkQPRunner extends Runner implements Filterable {
         AssetManager assetManager = context.getResources().getAssets();
         mImpl.nInit(assetManager, mOutputDirectory);
 
-        int totalCount = mImpl.mUnitTests.length + mImpl.mGMs.length * mImpl.mBackends.length;
-        mTests = new Description[totalCount];
-        mShouldSkipTest = new boolean[totalCount]; // = {false, false, ....};
-        int index = 0;
-        for (int backend = 0; backend < mImpl.mBackends.length; backend++) {
-            for (int gm = 0; gm < mImpl.mGMs.length; gm++) {
-                mTests[index++] = Description.createTestDescription(SkQPRunner.class,
-                    mImpl.mBackends[backend] + "_" + mImpl.mGMs[gm]);
-            }
+        mUnitTestDesc = new Description[mImpl.mUnitTests.length];
+        for (int index = 0; index < mUnitTestDesc.length; ++index) {
+            mUnitTestDesc[index] = Description.createTestDescription(
+                    SkQPRunner.class, "UnitTest_" + mImpl.mUnitTests[index]);
         }
-        for (int unitTest = 0; unitTest < mImpl.mUnitTests.length; unitTest++) {
-            mTests[index++] = Description.createTestDescription(SkQPRunner.class,
-                    "unitTest_" + mImpl.mUnitTests[unitTest]);
+
+        mSkSLErrorTestDesc = new Description[mImpl.mSkSLErrorTestName.length];
+        for (int index = 0; index < mSkSLErrorTestDesc.length; ++index) {
+            mSkSLErrorTestDesc[index] = Description.createTestDescription(
+                    SkQPRunner.class, "SkSLErrorTest_" + mImpl.mSkSLErrorTestName[index]);
         }
-        assert(index == totalCount);
-        this.updateDescription(null);
+
+        this.applyFilter(null);
     }
 
-    private void updateDescription(Filter filter) {
-        mShouldRunTestCount = 0;
-        mDescription = Description.createSuiteDescription(SkQP.class);
-        assert(mTests.length == mShouldSkipTest.length);
-        for (int i = 0; i < mTests.length; ++i) {
-            boolean doRunTest = filter != null ? filter.shouldRun(mTests[i]) : true;
-            mShouldSkipTest[i] = !doRunTest;
-            if (doRunTest) {
-                mDescription.addChild(mTests[i]);
-                ++mShouldRunTestCount;
+    private void applyFilter(Filter filter) {
+        mSuiteDesc = Description.createSuiteDescription(SkQP.class);
+        addFilteredTestsToSuite(mUnitTestDesc, filter);
+        addFilteredTestsToSuite(mSkSLErrorTestDesc, filter);
+    }
+
+    private void addFilteredTestsToSuite(Description[] tests, Filter filter) {
+        for (int i = 0; i < tests.length; ++i) {
+            if (filter == null || filter.shouldRun(tests[i])) {
+                mSuiteDesc.addChild(tests[i]);
+            } else {
+                tests[i] = Description.EMPTY;
             }
         }
     }
 
     @Override
     public void filter(Filter filter) throws NoTestsRemainException {
-        this.updateDescription(filter);
-        if (0 == mShouldRunTestCount) {
+        this.applyFilter(filter);
+        if (mSuiteDesc.isEmpty()) {
             throw new NoTestsRemainException();
         }
     }
 
     @Override
     public Description getDescription() {
-        return mDescription;
+        return mSuiteDesc;
     }
 
     @Override
     public void run(RunNotifier notifier) {
-        int testNumber = 0;  // out of number of actually run tests.
-        int testIndex = 0;  // out of potential tests.
-        for (int backend = 0; backend < mImpl.mBackends.length; backend++) {
-            for (int gm = 0; gm < mImpl.mGMs.length; gm++, testIndex++) {
-                Description desc = mTests[testIndex];
-                String name = desc.getMethodName();
-                if (mShouldSkipTest[testIndex]) {
-                    continue;
-                }
-                ++testNumber;
-                notifier.fireTestStarted(desc);
-                long value = java.lang.Long.MAX_VALUE;
-                String error = null;
-                try {
-                    value = mImpl.nExecuteGM(gm, backend);
-                } catch (SkQPException exept) {
-                    error = exept.getMessage();
-                }
-                String result = "pass";
-                if (error != null) {
-                    SkQPRunner.Fail(desc, notifier, String.format("Exception: %s", error));
-                    Log.w(TAG, String.format("[ERROR] '%s': %s", name, error));
-                    result = "ERROR";
-                } else if (value != 0) {
-                    SkQPRunner.Fail(desc, notifier, String.format(
-                                "Image mismatch: max channel diff = %d", value));
-                    Log.w(TAG, String.format("[FAIL] '%s': %d > 0", name, value));
-                    result = "FAIL";
-                }
-                notifier.fireTestFinished(desc);
-                Log.i(TAG, String.format("Rendering Test '%s' complete (%d/%d). [%s]",
-                                         name, testNumber, mShouldRunTestCount, result));
-            }
-        }
-        for (int unitTest = 0; unitTest < mImpl.mUnitTests.length; unitTest++, testIndex++) {
-            Description desc = mTests[testIndex];
-            String name = desc.getMethodName();
-            if (mShouldSkipTest[testIndex]) {
-                continue;
-            }
-            ++testNumber;
-            notifier.fireTestStarted(desc);
-            String[] errors = mImpl.nExecuteUnitTest(unitTest);
-            String result = "pass";
-            if (errors != null && errors.length > 0) {
-                Log.w(TAG, String.format("[FAIL] Test '%s' had %d failures.", name, errors.length));
-                for (String error : errors) {
-                    SkQPRunner.Fail(desc, notifier, error);
-                    Log.w(TAG, String.format("[FAIL] '%s': %s", name, error));
-                }
-                result = "FAIL";
-            }
-            notifier.fireTestFinished(desc);
-            Log.i(TAG, String.format("Test '%s' complete (%d/%d). [%s]",
-                                     name, testNumber, mShouldRunTestCount, result));
-        }
+        int testNumber = 0;
+        testNumber = runTests(notifier, new SkSLErrorTestExecutor(), testNumber);
+        testNumber = runTests(notifier, new UnitTestExecutor(), testNumber);
+
         mImpl.nMakeReport();
         Log.i(TAG, String.format("output written to \"%s\"", mOutputDirectory));
+    }
+
+    private int runTests(RunNotifier notifier, TestExecutor executor, int testNumber) {
+        for (int index = 0; index < executor.numTests(); index++) {
+            Description desc = executor.desc(index);
+            if (desc.isEmpty()) {
+                // This test was filtered out and can be skipped.
+                continue;
+            }
+
+            ++testNumber;
+            notifier.fireTestStarted(desc);
+
+            String result = executor.run(notifier, index) ? "pass" : "FAIL";
+
+            notifier.fireTestFinished(desc);
+            Log.i(TAG, String.format("Test '%s' complete (%d/%d). [%s]", executor.name(index),
+                                     testNumber, mSuiteDesc.testCount(), result));
+        }
+        return testNumber;
+    }
+
+    class UnitTestExecutor implements TestExecutor {
+        public int numTests() {
+            return mUnitTestDesc.length;
+        }
+        public String name(int index) {
+            return desc(index).getMethodName();
+        }
+        public Description desc(int index) {
+            return mUnitTestDesc[index];
+        }
+        public boolean run(RunNotifier notifier, int index) {
+            String[] errors = mImpl.nExecuteUnitTest(index);
+            if (errors != null && errors.length > 0) {
+                Log.w(TAG, String.format("[FAIL] Test '%s' had %d failures.",
+                                         name(index), errors.length));
+                for (String error : errors) {
+                    SkQPRunner.Fail(desc(index), notifier, error);
+                    Log.w(TAG, String.format("[FAIL] '%s': %s", name(index), error));
+                }
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    class SkSLErrorTestExecutor implements TestExecutor {
+        public int numTests() {
+            return mSkSLErrorTestDesc.length;
+        }
+        public String name(int index) {
+            return mImpl.mSkSLErrorTestName[index];
+        }
+        public Description desc(int index) {
+            return mSkSLErrorTestDesc[index];
+        }
+        public boolean run(RunNotifier notifier, int index) {
+            String shaderText = mImpl.mSkSLErrorTestShader[index];
+            try {
+                new RuntimeShader(shaderText);
+                // Because this is an error test, we expected an exception to be thrown.
+                // If we reach this point, no exception occurred; report this as an error.
+                SkQPRunner.Fail(desc(index), notifier, "Shader did not generate any errors.");
+                Log.w(TAG, String.format("[FAIL] '%s': Shader did not generate any errors",
+                                         name(index)));
+                return false;
+            }
+            catch (Exception ex) {
+                // Verify that RuntimeShader actually emitted the expected error messages.
+                // The list of expectations isn't necessarily exhaustive, though.
+                String errorText = ex.getMessage();
+                String[] block = shaderText.split(Pattern.quote("*%%*"));
+                if (block.length >= 3) {
+                    // We only intend to support a single /%**%/ section.
+                    // Because we are splitting on *%%*, expectations should always be in block[1].
+                    String[] expectations = block[1].split("\n");
+                    for (String expectation : expectations) {
+                        if (expectation.length() == 0) {
+                            continue;
+                        }
+                        int errIndex = errorText.indexOf(expectation);
+                        // If this error wasn't reported, trigger an error.
+                        if (errIndex < 0) {
+                            String failMessage = String.format("Expected error '%s', got '%s'",
+                                                               expectation, ex.getMessage());
+                            SkQPRunner.Fail(desc(index), notifier, failMessage);
+                            Log.w(TAG, String.format("[FAIL] '%s': %s", name(index), failMessage));
+                            return false;
+                        }
+                        // We found the error that we expected to have. Remove that error from our
+                        // text, and everything preceding it as well. This ensures that we don't
+                        // match the same error twice, and that errors are reported in the order
+                        // we expect.
+                        errorText = errorText.substring(errIndex + expectation.length());
+                    }
+                }
+            }
+            return true;
+        }
     }
 }

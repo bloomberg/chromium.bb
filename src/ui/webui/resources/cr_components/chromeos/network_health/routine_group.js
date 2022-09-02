@@ -6,7 +6,18 @@
  * @fileoverview Polymer element for a group of diagnostic routines.
  */
 
+import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import './network_health_container.js';
+
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {RoutineResult, RoutineVerdict} from 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-webui.js';
+
+import {I18nBehavior} from '../../../js/i18n_behavior.m.js';
+
+import {Icons, Routine} from './network_diagnostics_types.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'routine-group',
 
   behaviors: [
@@ -79,12 +90,12 @@ Polymer({
       }
 
       switch (routine.result.verdict) {
-        case chromeos.networkDiagnostics.mojom.RoutineVerdict.kNoProblem:
+        case RoutineVerdict.kNoProblem:
           continue;
-        case chromeos.networkDiagnostics.mojom.RoutineVerdict.kProblem:
+        case RoutineVerdict.kProblem:
           failed = true;
           break;
-        case chromeos.networkDiagnostics.mojom.RoutineVerdict.kNotRun:
+        case RoutineVerdict.kNotRun:
           complete = false;
           break;
       }
@@ -111,7 +122,7 @@ Polymer({
 
   /**
    * Helper function to get the icon for a routine based on the result.
-   * @param {!chromeos.networkDiagnostics.mojom.RoutineResult} result
+   * @param {!RoutineResult} result
    * @return {string}
    * @private
    */
@@ -121,11 +132,11 @@ Polymer({
     }
 
     switch (result.verdict) {
-      case chromeos.networkDiagnostics.mojom.RoutineVerdict.kNoProblem:
+      case RoutineVerdict.kNoProblem:
         return Icons.TEST_PASSED;
-      case chromeos.networkDiagnostics.mojom.RoutineVerdict.kProblem:
+      case RoutineVerdict.kProblem:
         return Icons.TEST_FAILED;
-      case chromeos.networkDiagnostics.mojom.RoutineVerdict.kNotRun:
+      case RoutineVerdict.kNotRun:
         return Icons.TEST_NOT_RUN;
     }
 

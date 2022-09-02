@@ -39,6 +39,25 @@ void SavedDeviceRegistry::SaveAccountKey(
   std::string encoded = base::Base64Encode(account_key);
   DictionaryPrefUpdate update(pref_service, kFastPairSavedDevicesPref);
   update->SetStringKey(mac_address, encoded);
+  QP_LOG(INFO) << __func__ << ": Saved account key.";
+}
+
+bool SavedDeviceRegistry::DeleteAccountKey(const std::string& mac_address) {
+  PrefService* pref_service =
+      QuickPairBrowserDelegate::Get()->GetActivePrefService();
+  if (!pref_service) {
+    QP_LOG(WARNING) << __func__ << ": No user pref service available.";
+    return false;
+  }
+
+  DictionaryPrefUpdate update(pref_service, kFastPairSavedDevicesPref);
+  if (!update->RemoveKey(mac_address)) {
+    QP_LOG(WARNING)
+        << __func__
+        << ": Failed to delete mac address -> account key record from prefs";
+    return false;
+  }
+  return true;
 }
 
 absl::optional<const std::vector<uint8_t>> SavedDeviceRegistry::GetAccountKey(
@@ -56,16 +75,42 @@ absl::optional<const std::vector<uint8_t>> SavedDeviceRegistry::GetAccountKey(
     return absl::nullopt;
   }
 
-  std::string encoded;
   std::string decoded;
-  result->GetAsString(&encoded);
-  if (!base::Base64Decode(encoded, &decoded)) {
+  if (!base::Base64Decode(result->GetString(), &decoded)) {
     QP_LOG(WARNING) << __func__
                     << ": Failed to decode the account key from Base64.";
     return absl::nullopt;
   }
 
   return std::vector<uint8_t>(decoded.begin(), decoded.end());
+}
+
+bool SavedDeviceRegistry::IsAccountKeySavedToRegistry(
+    const std::vector<uint8_t>& account_key) {
+  PrefService* pref_service =
+      QuickPairBrowserDelegate::Get()->GetActivePrefService();
+  if (!pref_service) {
+    QP_LOG(WARNING) << __func__ << ": No user pref service available.";
+    return false;
+  }
+
+  const base::Value* saved_devices =
+      pref_service->GetDictionary(kFastPairSavedDevicesPref);
+  if (!saved_devices) {
+    QP_LOG(WARNING) << __func__
+                    << ": No Fast Pair Saved Devices pref available.";
+    return false;
+  }
+
+  std::string encoded_key = base::Base64Encode(account_key);
+  for (const auto it : saved_devices->DictItems()) {
+    const std::string* value = it.second.GetIfString();
+    if (value && *value == encoded_key) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace quick_pair

@@ -15,6 +15,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/ios/web_favicon_driver.h"
@@ -28,6 +29,8 @@
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
@@ -36,17 +39,21 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
+#import "ios/chrome/browser/tabs_search/tabs_search_service.h"
+#import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
 #import "ios/chrome/browser/ui/commands/bookmark_add_command.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/ui/util/url_with_title.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
@@ -62,11 +69,10 @@
 #endif
 
 namespace {
-// Constructs a TabSwitcherItem from a |web_state|.
+// Constructs a TabSwitcherItem from a `web_state`.
 TabSwitcherItem* CreateItem(web::WebState* web_state) {
-  TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
-  TabSwitcherItem* item =
-      [[TabSwitcherItem alloc] initWithIdentifier:tab_helper->tab_id()];
+  TabSwitcherItem* item = [[TabSwitcherItem alloc]
+      initWithIdentifier:web_state->GetStableIdentifier()];
   // chrome://newtab (NTP) tabs have no title.
   if (IsURLNtp(web_state->GetVisibleURL())) {
     item.hidesTitle = YES;
@@ -76,7 +82,7 @@ TabSwitcherItem* CreateItem(web::WebState* web_state) {
   return item;
 }
 
-// Constructs an array of TabSwitcherItems from a |web_state_list|.
+// Constructs an array of TabSwitcherItems from a `web_state_list`.
 NSArray* CreateItems(WebStateList* web_state_list) {
   NSMutableArray* items = [[NSMutableArray alloc] init];
   for (int i = 0; i < web_state_list->count(); i++) {
@@ -86,7 +92,7 @@ NSArray* CreateItems(WebStateList* web_state_list) {
   return [items copy];
 }
 
-// Returns the ID of the active tab in |web_state_list|.
+// Returns the ID of the active tab in `web_state_list`.
 NSString* GetActiveTabId(WebStateList* web_state_list) {
   if (!web_state_list)
     return nil;
@@ -94,8 +100,7 @@ NSString* GetActiveTabId(WebStateList* web_state_list) {
   web::WebState* web_state = web_state_list->GetActiveWebState();
   if (!web_state)
     return nil;
-  TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
-  return tab_helper->tab_id();
+  return web_state->GetStableIdentifier();
 }
 
 void LogPriceDropMetrics(web::WebState* web_state) {
@@ -113,27 +118,49 @@ void LogPriceDropMetrics(web::WebState* web_state) {
           .c_str()));
 }
 
-// Returns the index of the tab with |identifier| in |web_state_list|. Returns
+// Returns the index of the tab with `identifier` in `web_state_list`. Returns
 // WebStateList::kInvalidIndex if not found.
 int GetIndexOfTabWithId(WebStateList* web_state_list, NSString* identifier) {
   for (int i = 0; i < web_state_list->count(); i++) {
     web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
-    if ([identifier isEqualToString:tab_helper->tab_id()])
+    if ([identifier isEqualToString:web_state->GetStableIdentifier()])
       return i;
   }
   return WebStateList::kInvalidIndex;
 }
 
-// Returns the WebState with |identifier| in |web_state_list|. Returns |nullptr|
+// Returns the WebState with `identifier` in `browser_state`. Returns `nullptr`
 // if not found.
-web::WebState* GetWebStateWithId(WebStateList* web_state_list,
+web::WebState* GetWebStateWithId(ChromeBrowserState* browser_state,
                                  NSString* identifier) {
-  for (int i = 0; i < web_state_list->count(); i++) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
-    if ([identifier isEqualToString:tab_helper->tab_id()])
-      return web_state;
+  BrowserList* browser_list =
+      BrowserListFactory::GetForBrowserState(browser_state);
+  std::set<Browser*> browsers = browser_state->IsOffTheRecord()
+                                    ? browser_list->AllIncognitoBrowsers()
+                                    : browser_list->AllRegularBrowsers();
+  for (Browser* browser : browsers) {
+    WebStateList* web_state_list = browser->GetWebStateList();
+    int index = GetIndexOfTabWithId(web_state_list, identifier);
+    if (index != WebStateList::kInvalidIndex) {
+      return web_state_list->GetWebStateAt(index);
+    }
+  }
+  return nullptr;
+}
+
+// Returns the Browser with `identifier` in its WebStateList. Returns `nullptr`
+// if not found.
+Browser* GetBrowserForTabWithId(BrowserList* browser_list,
+                                NSString* identifier,
+                                bool is_otr_tab) {
+  std::set<Browser*> browsers = is_otr_tab
+                                    ? browser_list->AllIncognitoBrowsers()
+                                    : browser_list->AllRegularBrowsers();
+  for (Browser* browser : browsers) {
+    WebStateList* webStateList = browser->GetWebStateList();
+    int index = GetIndexOfTabWithId(webStateList, identifier);
+    if (index != WebStateList::kInvalidIndex)
+      return browser;
   }
   return nullptr;
 }
@@ -153,7 +180,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 @property(nonatomic, weak) id<BrowserCommands> readingListHandler;
 // The saved session window just before close all tabs is called.
 @property(nonatomic, strong) SessionWindowIOS* closedSessionWindow;
-// The number of tabs in |closedSessionWindow| that are synced by
+// The number of tabs in `closedSessionWindow` that are synced by
 // TabRestoreService.
 @property(nonatomic, assign) int syncedClosedTabsCount;
 // Short-term cache for grid thumbnails.
@@ -219,7 +246,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
       web::WebState* webState = self.webStateList->GetWebStateAt(i);
       _scopedWebStateObservation->AddObservation(webState);
     }
-    [self populateConsumerItems];
+    if (self.webStateList->count() > 0)
+      [self populateConsumerItems];
   }
 }
 
@@ -245,8 +273,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   DCHECK_EQ(_webStateList, webStateList);
   if (webStateList->IsBatchInProgress())
     return;
-  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-  [self.consumer moveItemWithID:tabHelper->tab_id() toIndex:toIndex];
+  [self.consumer moveItemWithID:webState->GetStableIdentifier()
+                        toIndex:toIndex];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -256,8 +284,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   DCHECK_EQ(_webStateList, webStateList);
   if (webStateList->IsBatchInProgress())
     return;
-  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(oldWebState);
-  [self.consumer replaceItemID:tabHelper->tab_id()
+  [self.consumer replaceItemID:oldWebState->GetStableIdentifier()
                       withItem:CreateItem(newWebState)];
   _scopedWebStateObservation->RemoveObservation(oldWebState);
   _scopedWebStateObservation->AddObservation(newWebState);
@@ -271,9 +298,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     return;
   if (!webStateList)
     return;
-  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-  NSString* itemID = tabHelper->tab_id();
-  [self.consumer removeItemWithID:itemID
+  [self.consumer removeItemWithID:webState->GetStableIdentifier()
                    selectedItemID:GetActiveTabId(webStateList)];
   _scopedWebStateObservation->RemoveObservation(webState);
 }
@@ -293,8 +318,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     return;
   }
 
-  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(newWebState);
-  [self.consumer selectItemWithID:tabHelper->tab_id()];
+  [self.consumer selectItemWithID:newWebState->GetStableIdentifier()];
 }
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
@@ -327,10 +351,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 }
 
 - (void)updateConsumerItemForWebState:(web::WebState*)webState {
-  // Assumption: the ID of the webState didn't change as a result of this load.
-  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-  NSString* itemID = tabHelper->tab_id();
-  [self.consumer replaceItemID:itemID withItem:CreateItem(webState)];
+  [self.consumer replaceItemID:webState->GetStableIdentifier()
+                      withItem:CreateItem(webState)];
 }
 
 #pragma mark - SnapshotCacheObserver
@@ -338,7 +360,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 - (void)snapshotCache:(SnapshotCache*)snapshotCache
     didUpdateSnapshotForIdentifier:(NSString*)identifier {
   [self.appearanceCache removeObjectForKey:identifier];
-  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
+  web::WebState* webState = GetWebStateWithId(self.browserState, identifier);
   if (webState) {
     // It is possible to observe an updated snapshot for a WebState before
     // observing that the WebState has been added to the WebStateList. It is the
@@ -365,28 +387,67 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)selectItemWithID:(NSString*)itemID {
   int index = GetIndexOfTabWithId(self.webStateList, itemID);
+  WebStateList* itemWebStateList = self.webStateList;
+  if (index == WebStateList::kInvalidIndex) {
+    if (IsTabsSearchEnabled()) {
+      // If this is a search result, it may contain items from other windows -
+      // check other windows first before giving up.
+      BrowserList* browserList =
+          BrowserListFactory::GetForBrowserState(self.browserState);
+      Browser* browser = GetBrowserForTabWithId(
+          browserList, itemID, self.browserState->IsOffTheRecord());
 
-  // Don't activate non-existent indexes.
-  if (index == WebStateList::kInvalidIndex)
-    return;
+      if (!browser)
+        return;
+
+      itemWebStateList = browser->GetWebStateList();
+      index = GetIndexOfTabWithId(itemWebStateList, itemID);
+      SceneState* targetSceneState =
+          SceneStateBrowserAgent::FromBrowser(browser)->GetSceneState();
+      SceneState* currentSceneState =
+          SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+
+      UISceneActivationRequestOptions* options =
+          [[UISceneActivationRequestOptions alloc] init];
+      options.requestingScene = currentSceneState.scene;
+
+      [[UIApplication sharedApplication]
+          requestSceneSessionActivation:targetSceneState.scene.session
+                           userActivity:nil
+                                options:options
+                           errorHandler:^(NSError* error) {
+                             LOG(ERROR) << base::SysNSStringToUTF8(
+                                 error.localizedDescription);
+                             NOTREACHED();
+                           }];
+    } else {
+      // Don't activate non-existent indexes.
+      return;
+    }
+  }
 
   if (IsPriceAlertsEnabled())
-    LogPriceDropMetrics(self.webStateList->GetWebStateAt(index));
+    LogPriceDropMetrics(itemWebStateList->GetWebStateAt(index));
 
   // Don't attempt a no-op activation. Normally this is not an issue, but it's
   // possible that this method (-selectItemWithID:) is being called as part of
   // a WebStateListObserver callback, in which case even a no-op activation
   // will cause a CHECK().
-  if (index == self.webStateList->active_index())
+  if (index == itemWebStateList->active_index()) {
+    // In search mode the consumer doesn't have any information about the
+    // selected item. So even if the active webstate is the same as the one that
+    // is being selected, make sure that the consumer update its selected item.
+    [self.consumer selectItemWithID:itemID];
     return;
+  }
 
   // Avoid a reentrant activation. This is a fix for crbug.com/1134663, although
   // ignoring the slection at this point may do weird things.
-  if (self.webStateList->IsMutating())
+  if (itemWebStateList->IsMutating())
     return;
 
   // It should be safe to activate here.
-  self.webStateList->ActivateWebStateAt(index);
+  itemWebStateList->ActivateWebStateAt(index);
 }
 
 - (BOOL)isItemWithIDSelected:(NSString*)itemID {
@@ -397,9 +458,29 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 }
 
 - (void)closeItemWithID:(NSString*)itemID {
-  int index = GetIndexOfTabWithId(self.webStateList, itemID);
-  if (index != WebStateList::kInvalidIndex)
-    self.webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
+  WebStateList* itemWebStateList = self.webStateList;
+  int index = GetIndexOfTabWithId(itemWebStateList, itemID);
+  if (index == WebStateList::kInvalidIndex) {
+    if (!IsTabsSearchEnabled())
+      return;
+    // If this is a search result, it may contain items from other windows -
+    // check other windows first before giving up.
+    BrowserList* browserList =
+        BrowserListFactory::GetForBrowserState(self.browserState);
+    Browser* browser = GetBrowserForTabWithId(
+        browserList, itemID, self.browserState->IsOffTheRecord());
+    if (!browser)
+      return;
+    itemWebStateList = browser->GetWebStateList();
+    index = GetIndexOfTabWithId(itemWebStateList, itemID);
+    // This item is not from the current browser therefore no UI updates will be
+    // sent to the current grid. So notify the current grid consumer about the
+    // change.
+    [self.consumer removeItemWithID:itemID selectedItemID:nil];
+    base::RecordAction(base::UserMetricsAction(
+        "MobileTabGridSearchCloseTabFromAnotherWindow"));
+  }
+  itemWebStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
 }
 
 - (void)closeItemsWithIDs:(NSArray<NSString*>*)itemIDs {
@@ -437,7 +518,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridCloseAllIncognitoTabs"));
   }
-  // This is a no-op if |webStateList| is already empty.
+  // This is a no-op if `webStateList` is already empty.
   self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
   SnapshotBrowserAgent::FromBrowser(self.browser)->RemoveAllSnapshots();
 }
@@ -447,7 +528,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
       base::UserMetricsAction("MobileTabGridCloseAllRegularTabs"));
   if (self.webStateList->empty())
     return;
-  self.closedSessionWindow = SerializeWebStateList(self.webStateList);
+  self.closedSessionWindow = SerializeWebStateList(self.webStateList, nil);
   int old_size =
       self.tabRestoreService ? self.tabRestoreService->entries().size() : 0;
   self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
@@ -536,6 +617,56 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   ];
 }
 
+- (void)searchItemsWithText:(NSString*)searchText {
+  TabsSearchService* searchService =
+      TabsSearchServiceFactory::GetForBrowserState(self.browserState);
+  const std::u16string& searchTerm = base::SysNSStringToUTF16(searchText);
+  searchService->Search(
+      searchTerm,
+      base::BindOnce(^(
+          std::vector<TabsSearchService::TabsSearchBrowserResults> results) {
+        NSMutableArray* currentBrowserItems = [[NSMutableArray alloc] init];
+        NSMutableArray* remainingItems = [[NSMutableArray alloc] init];
+        for (const TabsSearchService::TabsSearchBrowserResults& browserResults :
+             results) {
+          for (web::WebState* webState : browserResults.web_states) {
+            TabSwitcherItem* item = CreateItem(webState);
+            if (browserResults.browser == self.browser) {
+              [currentBrowserItems addObject:item];
+            } else {
+              [remainingItems addObject:item];
+            }
+          }
+        }
+
+        NSArray* allItems = nil;
+        // If there are results from Browsers other than the current one,
+        // append those results to the end.
+        if (remainingItems.count) {
+          allItems = [currentBrowserItems
+              arrayByAddingObjectsFromArray:remainingItems];
+        } else {
+          allItems = currentBrowserItems;
+        }
+        [self.consumer populateItems:allItems selectedItemID:nil];
+      }));
+}
+
+- (void)resetToAllItems {
+  [self populateConsumerItems];
+}
+
+- (void)fetchSearchHistoryResultsCountForText:(NSString*)searchText
+                                   completion:(void (^)(size_t))completion {
+  TabsSearchService* search_service =
+      TabsSearchServiceFactory::GetForBrowserState(self.browserState);
+  const std::u16string& searchTerm = base::SysNSStringToUTF16(searchText);
+  search_service->SearchHistory(searchTerm,
+                                base::BindOnce(^(size_t resultCount) {
+                                  completion(resultCount);
+                                }));
+}
+
 #pragma mark GridCommands helpers
 
 - (void)insertNewItemAtIndex:(NSUInteger)index withURL:(const GURL&)newTabURL {
@@ -563,7 +694,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 #pragma mark - GridDragDropHandler
 
 - (UIDragItem*)dragItemForItemWithID:(NSString*)itemID {
-  web::WebState* webState = GetWebStateWithId(self.webStateList, itemID);
+  web::WebState* webState = GetWebStateWithId(self.browserState, itemID);
   return CreateTabDragItem(webState);
 }
 
@@ -658,7 +789,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     completion(self.appearanceCache[identifier]);
     return;
   }
-  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
+  web::WebState* webState = GetWebStateWithId(self.browserState, identifier);
   if (webState) {
     SnapshotTabHelper::FromWebState(webState)->RetrieveColorSnapshot(
         ^(UIImage* image) {
@@ -669,7 +800,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)faviconForIdentifier:(NSString*)identifier
                   completion:(void (^)(UIImage*))completion {
-  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
+  web::WebState* webState = GetWebStateWithId(self.browserState, identifier);
   if (!webState) {
     return;
   }
@@ -698,7 +829,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
                           self.webStateList->count() - 1);
   for (int i = startIndex; i <= endIndex; i++) {
     web::WebState* web_state = self.webStateList->GetWebStateAt(i);
-    NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
+    NSString* identifier = web_state->GetStableIdentifier();
     auto cacheImage = ^(UIImage* image) {
       self.appearanceCache[identifier] = image;
     };
@@ -713,7 +844,12 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 #pragma mark - GridMenuActionsDataSource
 
 - (GridItem*)gridItemForCellIdentifier:(NSString*)identifier {
-  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
+  web::WebState* webState = GetWebStateWithId(self.browserState, identifier);
+
+  if (!webState) {
+    return nil;
+  }
+
   GridItem* item =
       [[GridItem alloc] initWithTitle:tab_util::GetTabTitle(webState)
                                   url:webState->GetVisibleURL()];
@@ -730,22 +866,20 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 #pragma mark - GridShareableItemsProvider
 
 - (BOOL)isItemWithIdentifierSharable:(NSString*)identifier {
-  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
+  web::WebState* webState = GetWebStateWithId(self.browserState, identifier);
   const GURL& URL = webState->GetVisibleURL();
   return URL.is_valid() && URL.SchemeIsHTTPOrHTTPS();
 }
 
 #pragma mark - Private
 
-// Calls |-populateItems:selectedItemID:| on the consumer.
+// Calls `-populateItems:selectedItemID:` on the consumer.
 - (void)populateConsumerItems {
-  if (self.webStateList->count() > 0) {
-    [self.consumer populateItems:CreateItems(self.webStateList)
-                  selectedItemID:GetActiveTabId(self.webStateList)];
-  }
+  [self.consumer populateItems:CreateItems(self.webStateList)
+                selectedItemID:GetActiveTabId(self.webStateList)];
 }
 
-// Removes |self.syncedClosedTabsCount| most recent entries from the
+// Removes `self.syncedClosedTabsCount` most recent entries from the
 // TabRestoreService.
 - (void)removeEntriesFromTabRestoreService {
   if (!self.tabRestoreService) {

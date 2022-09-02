@@ -23,15 +23,13 @@ is a slideshow containing numerous GIFs showing what this is like to use.
 element (in solid green border). Guide lines are displayed along the pinned
 element (could be either window,widget, or view):**
 
-[<img alt="image"
-src="/developers/how-tos/inspecting-ash/distances.png">](/developers/how-tos/inspecting-ash/distances.png)
+![](/developers/how-tos/inspecting-ash/distances.png)
 
 **Picture 1: Distances between a pinned element and a hovered element.**
 
 **UI Element hierarchy tree:**
 
-[<img alt="UI Element hierarchy tree"
-src="/developers/how-tos/inspecting-ash/dom_tree.png">](/developers/how-tos/inspecting-ash/dom_tree.png)
+![](/developers/how-tos/inspecting-ash/dom_tree.png)
 
 **Picture 2:** **UI Element hierachy tree.**
 
@@ -48,14 +46,10 @@ src="/developers/how-tos/inspecting-ash/dom_tree.png">](/developers/how-tos/insp
 *   Hovering over elements in the inspector highlights them in
             Aura/Views UI, displays guide lines around the elements and and
             expands them in the inspector.
-*   Entering inspect mode by clicking on the arrow-in-box [<img
-            alt="https://sites.google.com/a/chromium.org/dev/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png?attredirects=0"
-            src="/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014%3A28%3A36.png">](/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png)
+*   Entering inspect mode by clicking on the arrow-in-box ![](/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png)
             and hovering on any window/widget/view will show the corresponding
             node in DOM tree and element guide lines.
-*   Entering inspect mode by clicking on the arrow-in-box [<img
-            alt="https://sites.google.com/a/chromium.org/dev/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png?attredirects=0"
-            src="/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014%3A28%3A36.png">](/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png)
+*   Entering inspect mode by clicking on the arrow-in-box ![](/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png)
             and hovering on any DOM node will show the corresponding UI Element
             in Chrome UI and element guide lines.
 *   Entering inspect mode and clicking on any element will pin the
@@ -64,9 +58,7 @@ src="/developers/how-tos/inspecting-ash/dom_tree.png">](/developers/how-tos/insp
             hovered element (as in picture 1). There are 7 position arrangements
             between 2 elements as described in [this design
             document.](https://docs.google.com/document/d/1ySba9uad3ClqlA9CExlII6r0kgyhRnE0QWo11x2Wmbg)
-*   Pressing ESC or clicking on the arrow-in-box [<img
-            alt="https://sites.google.com/a/chromium.org/dev/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png?attredirects=0"
-            src="/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014%3A28%3A36.png">](/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png)
+*   Pressing ESC or clicking on the arrow-in-box ![](/developers/how-tos/inspecting-ash/Screenshot%20from%202017-08-28%2014_28_36.png)
             to exit inspect mode.
 *   Display hit test target window under mouse cursor in inspect mode.
             Steps are shown in this [presentation
@@ -97,8 +89,7 @@ src="/developers/how-tos/inspecting-ash/dom_tree.png">](/developers/how-tos/insp
     *   Type direct link:
                 **devtools://devtools/bundled/devtools_app.html?uiDevTools=true&ws=localhost:9223/0**
 
-**[<img alt="image"
-src="/developers/how-tos/inspecting-ash/chrome_inspect_other.png">](/developers/how-tos/inspecting-ash/chrome_inspect_other.png)**
+![](/developers/how-tos/inspecting-ash/chrome_inspect_other.png)
 
 Picture 3: Open Chrome UI Inspection window
 

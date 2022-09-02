@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/files/file_path.h"
 
 namespace chromeos {
 
@@ -16,7 +17,9 @@ struct COMPONENT_EXPORT(CHROMEOS_DBUS_FWUPD) FwupdUpdate {
   FwupdUpdate();
   FwupdUpdate(const std::string& version,
               const std::string& description,
-              int priority);
+              int priority,
+              const base::FilePath& filename,
+              const std::string& checksum);
   FwupdUpdate(FwupdUpdate&& other);
   FwupdUpdate& operator=(FwupdUpdate&& other);
   ~FwupdUpdate();
@@ -24,6 +27,8 @@ struct COMPONENT_EXPORT(CHROMEOS_DBUS_FWUPD) FwupdUpdate {
   std::string version;
   std::string description;
   int priority;
+  base::FilePath filepath;
+  std::string checksum;
 };
 
 using FwupdUpdateList = std::vector<FwupdUpdate>;

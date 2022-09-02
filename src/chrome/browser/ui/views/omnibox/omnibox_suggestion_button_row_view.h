@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_SUGGESTION_BUTTON_ROW_VIEW_H_
 
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -32,8 +33,8 @@ class OmniboxSuggestionButtonRowView : public views::View {
       const OmniboxSuggestionButtonRowView&) = delete;
   ~OmniboxSuggestionButtonRowView() override;
 
-  // Called when results background color is refreshed.
-  void OnOmniboxBackgroundChange(SkColor omnibox_bg_color);
+  // Called when the theme state may have changed.
+  void SetThemeState(OmniboxPartState theme_state);
 
   // Updates the suggestion row buttons based on the model.
   void UpdateFromModel();
@@ -55,6 +56,8 @@ class OmniboxSuggestionButtonRowView : public views::View {
   size_t const model_index_;
 
   raw_ptr<OmniboxSuggestionRowButton> keyword_button_ = nullptr;
+  // TODO(manukh): Rename `pedal_button_` to `action_button_` as it is shared by
+  //  other actions ('journeys' currently).
   raw_ptr<OmniboxSuggestionRowButton> pedal_button_ = nullptr;
   raw_ptr<OmniboxSuggestionRowButton> tab_switch_button_ = nullptr;
 };

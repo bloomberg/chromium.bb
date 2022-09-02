@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import
 import logging
+import shlex
 
 from telemetry import decorators
 from telemetry.core import cros_interface
@@ -13,6 +14,7 @@ from telemetry.internal.forwarders import cros_forwarder
 from telemetry.internal.platform import cros_device
 from telemetry.internal.platform import linux_based_platform_backend
 
+CROS_INFO_PATH = '/etc/lsb-release'
 
 class CrosPlatformBackend(
     linux_based_platform_backend.LinuxBasedPlatformBackend):
@@ -98,11 +100,30 @@ class CrosPlatformBackend(
   def GetOSName(self):
     return 'chromeos'
 
+  def _ReadReleaseFile(self, file_path):
+    if not self.PathExists(file_path):
+      return None
+
+    release_data = {}
+    for line in self.GetFileContents(file_path).splitlines():
+      if '=' in line:
+        key, _, value = line.partition('=')
+        release_data[key] = ' '.join(shlex.split(value.strip()))
+    return release_data
+
   def GetOSVersionName(self):
-    return ''  # TODO: Implement this.
+    lsb_release = self._ReadReleaseFile(CROS_INFO_PATH)
+    if lsb_release and 'CHROMEOS_RELEASE_NAME' in lsb_release:
+      return lsb_release.get('CHROMEOS_RELEASE_NAME')
+
+    raise NotImplementedError('Missing CrOS name in lsb-release')
 
   def GetOSVersionDetailString(self):
-    return ''  # TODO(kbr): Implement this.
+    lsb_release = self._ReadReleaseFile(CROS_INFO_PATH)
+    if lsb_release and 'CHROMEOS_RELEASE_VERSION' in lsb_release:
+      return lsb_release.get('CHROMEOS_RELEASE_VERSION')
+
+    raise NotImplementedError('Missing CrOS version in lsb-release')
 
   def CanFlushIndividualFilesFromSystemCache(self):
     return True

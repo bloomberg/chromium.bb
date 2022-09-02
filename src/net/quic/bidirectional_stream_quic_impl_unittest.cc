@@ -30,7 +30,6 @@
 #include "net/log/test_net_log_util.h"
 #include "net/quic/address_utils.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
-#include "net/quic/platform/impl/quic_test_impl.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
@@ -46,21 +45,21 @@
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
-#include "net/third_party/quiche/src/common/quiche_text_utils.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quiche/common/quiche_text_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/null_decrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_decrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/spdy_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_connection.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/qpack/qpack_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_connection_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_session_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,21 +123,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
                    std::unique_ptr<base::OneShotTimer> timer)
       : read_buf_(read_buf),
         read_buf_len_(read_buf_len),
-        timer_(std::move(timer)),
-        loop_(nullptr),
-        next_proto_(kProtoUnknown),
-        received_bytes_(0),
-        sent_bytes_(0),
-        has_load_timing_info_(false),
-        error_(OK),
-        on_data_read_count_(0),
-        on_data_sent_count_(0),
-        not_expect_callback_(false),
-        on_failed_called_(false),
-        send_request_headers_automatically_(true),
-        is_ready_(false),
-        trailers_expected_(false),
-        trailers_received_(false) {
+        timer_(std::move(timer)) {
     loop_ = std::make_unique<base::RunLoop>();
   }
 
@@ -339,23 +324,23 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   std::unique_ptr<base::RunLoop> loop_;
   spdy::Http2HeaderBlock response_headers_;
   spdy::Http2HeaderBlock trailers_;
-  NextProto next_proto_;
-  int64_t received_bytes_;
-  int64_t sent_bytes_;
-  bool has_load_timing_info_;
+  NextProto next_proto_ = kProtoUnknown;
+  int64_t received_bytes_ = 0;
+  int64_t sent_bytes_ = 0;
+  bool has_load_timing_info_ = false;
   LoadTimingInfo load_timing_info_;
-  int error_;
-  int on_data_read_count_;
-  int on_data_sent_count_;
+  int error_ = OK;
+  int on_data_read_count_ = 0;
+  int on_data_sent_count_ = 0;
   // This is to ensure that delegate callback is not invoked synchronously when
   // calling into |stream_|.
-  bool not_expect_callback_;
-  bool on_failed_called_;
+  bool not_expect_callback_ = false;
+  bool on_failed_called_ = false;
   CompletionOnceCallback callback_;
-  bool send_request_headers_automatically_;
-  bool is_ready_;
-  bool trailers_expected_;
-  bool trailers_received_;
+  bool send_request_headers_automatically_ = true;
+  bool is_ready_ = false;
+  bool trailers_expected_ = false;
+  bool trailers_received_ = false;
 };
 
 // A delegate that deletes the stream in a particular callback.
@@ -461,14 +446,12 @@ class BidirectionalStreamQuicImplTest
                       kDefaultServerHostName,
                       quic::Perspective::IS_CLIENT,
                       client_headers_include_h2_stream_dependency_),
-        packet_number_(0),
         server_maker_(version_,
                       connection_id_,
                       &clock_,
                       kDefaultServerHostName,
                       quic::Perspective::IS_SERVER,
                       false),
-        random_generator_(0),
         printer_(version_),
         destination_(url::kHttpsScheme,
                      kDefaultServerHostName,
@@ -562,7 +545,8 @@ class BidirectionalStreamQuicImplTest
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicSessionKey(kDefaultServerHostName, kDefaultServerPort,
                        PRIVACY_MODE_DISABLED, SocketTag(),
-                       NetworkIsolationKey(), SecureDnsPolicy::kAllow),
+                       NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+                       /*require_dns_https_alpn=*/false),
         /*require_confirmation=*/false,
         /*migrate_session_early_v2=*/false,
         /*migrate_session_on_network_change_v2=*/false,
@@ -576,7 +560,6 @@ class BidirectionalStreamQuicImplTest
         kQuicYieldAfterPacketsRead,
         quic::QuicTime::Delta::FromMilliseconds(
             kQuicYieldAfterDurationMilliseconds),
-        /*go_away_on_path_degrading*/ false,
         client_headers_include_h2_stream_dependency_, /*cert_verify_flags=*/0,
         quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
@@ -825,13 +808,13 @@ class BidirectionalStreamQuicImplTest
     if (!version_.UsesHttp3()) {
       return "";
     }
-    quic::QuicBuffer buffer = quic::HttpEncoder::SerializeDataFrameHeader(
-        body_len, quic::SimpleBufferAllocator::Get());
+    quiche::QuicheBuffer buffer = quic::HttpEncoder::SerializeDataFrameHeader(
+        body_len, quiche::SimpleBufferAllocator::Get());
     return std::string(buffer.data(), buffer.size());
   }
 
  protected:
-  QuicFlagSaver saver_;
+  quic::test::QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   RecordingNetLogObserver net_log_observer_;
@@ -853,11 +836,11 @@ class BidirectionalStreamQuicImplTest
   const quic::QuicConnectionId connection_id_;
   const quic::QuicStreamId stream_id_;
   QuicTestPacketMaker client_maker_;
-  uint64_t packet_number_;
+  uint64_t packet_number_ = 0;
   QuicTestPacketMaker server_maker_;
   IPEndPoint self_addr_;
   IPEndPoint peer_addr_;
-  quic::test::MockRandom random_generator_;
+  quic::test::MockRandom random_generator_{0};
   QuicPacketPrinter printer_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   std::unique_ptr<StaticSocketDataProvider> socket_data_;

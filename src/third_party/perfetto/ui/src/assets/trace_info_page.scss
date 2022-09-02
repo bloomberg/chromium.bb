@@ -16,7 +16,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0 20px;
-  user-select: text;
 
   section {
     margin: 20px auto;
@@ -75,6 +74,10 @@
       tbody {
         tr:nth-child(2n + 1) td {
           background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        td.name {
+          min-width: 150px;
         }
 
         td {

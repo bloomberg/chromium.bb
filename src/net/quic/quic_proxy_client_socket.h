@@ -23,7 +23,7 @@ namespace net {
 class HttpAuthController;
 class ProxyDelegate;
 
-// QuicProxyClientSocket provides a socket interface to an underlying
+// QuicProxyClientSocket tunnels a stream socket over an underlying
 // QuicChromiumClientStream. Bytes written to/read from a QuicProxyClientSocket
 // are sent/received via STREAM frames in the underlying QUIC stream.
 class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
@@ -51,8 +51,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   const HttpResponseInfo* GetConnectResponseInfo() const override;
   const scoped_refptr<HttpAuthController>& GetAuthController() const override;
   int RestartWithAuth(CompletionOnceCallback callback) override;
-  bool IsUsingSpdy() const override;
-  NextProto GetProxyNegotiatedProtocol() const override;
   void SetStreamPriority(RequestPriority priority) override;
 
   // StreamSocket implementation.
@@ -65,9 +63,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
-  void GetConnectionAttempts(ConnectionAttempts* out) const override;
-  void ClearConnectionAttempts() override {}
-  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
   int64_t GetTotalReceivedBytes() const override;
   void ApplySocketTag(const SocketTag& tag) override;
 
@@ -112,7 +107,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   int DoReadReply();
   int DoReadReplyComplete(int result);
 
-  State next_state_;
+  State next_state_ = STATE_DISCONNECTED;
 
   // Handle to the QUIC Stream that this sits on top of.
   std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
@@ -125,11 +120,11 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   // Stores the callback for Read().
   CompletionOnceCallback read_callback_;
   // Stores the read buffer pointer for Read().
-  raw_ptr<IOBuffer> read_buf_;
+  raw_ptr<IOBuffer> read_buf_ = nullptr;
   // Stores the callback for Write().
   CompletionOnceCallback write_callback_;
   // Stores the write buffer length for Write().
-  int write_buf_len_;
+  int write_buf_len_ = 0;
 
   // CONNECT request and response.
   HttpRequestInfo request_;

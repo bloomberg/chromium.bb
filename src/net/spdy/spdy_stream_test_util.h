@@ -100,9 +100,9 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 
  private:
   base::WeakPtr<SpdyStream> stream_;
-  spdy::SpdyStreamId stream_id_;
+  spdy::SpdyStreamId stream_id_ = 0;
   TestCompletionCallback callback_;
-  bool send_headers_completed_;
+  bool send_headers_completed_ = false;
   std::vector<spdy::Http2HeaderBlock> early_hints_;
   spdy::Http2HeaderBlock response_headers_;
   SpdyReadQueue received_data_queue_;
@@ -115,6 +115,15 @@ class StreamDelegateDoNothing : public StreamDelegateBase {
  public:
   explicit StreamDelegateDoNothing(const base::WeakPtr<SpdyStream>& stream);
   ~StreamDelegateDoNothing() override;
+};
+
+// Test delegate that consumes data as it arrives.
+class StreamDelegateConsumeData : public StreamDelegateBase {
+ public:
+  explicit StreamDelegateConsumeData(const base::WeakPtr<SpdyStream>& stream);
+  ~StreamDelegateConsumeData() override;
+
+  void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
 };
 
 // Test delegate that sends data immediately in OnHeadersReceived().

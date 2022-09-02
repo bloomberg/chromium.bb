@@ -17,6 +17,7 @@
 #ifndef SRC_TRACED_PROBES_PS_PROCESS_STATS_DATA_SOURCE_H_
 #define SRC_TRACED_PROBES_PS_PROCESS_STATS_DATA_SOURCE_H_
 
+#include <array>
 #include <limits>
 #include <memory>
 #include <set>
@@ -46,7 +47,6 @@ class ProcessStats_Process;
 }  // namespace pbzero
 }  // namespace protos
 
-
 class ProcessStatsDataSource : public ProbesDataSource {
  public:
   static const ProbesDataSource::Descriptor descriptor;
@@ -73,7 +73,6 @@ class ProcessStatsDataSource : public ProbesDataSource {
   // Virtual for testing.
   virtual base::ScopedDir OpenProcDir();
   virtual std::string ReadProcPidFile(int32_t pid, const std::string& file);
-  virtual base::ScopedDir OpenProcTaskDir(int32_t pid);
 
  private:
   struct CachedProcessStats {
@@ -103,9 +102,20 @@ class ProcessStatsDataSource : public ProbesDataSource {
 
   // Functions for snapshotting process/thread long-term info and relationships.
   void WriteProcess(int32_t pid, const std::string& proc_status);
-  void WriteThread(int32_t tid, int32_t tgid, const char* optional_name);
+  void WriteThread(int32_t tid,
+                   int32_t tgid,
+                   const char* optional_name,
+                   const std::string& proc_status);
   void WriteProcessOrThread(int32_t pid);
   std::string ReadProcStatusEntry(const std::string& buf, const char* key);
+
+  constexpr static size_t kMaxNamespacedTidSize = 8;
+  using TidArray = std::array<int32_t, kMaxNamespacedTidSize>;
+  // Reads the thread IDs in each non-root level of PID namespace from
+  // /proc/tid/status.
+  void ReadNamespacedTids(int32_t tid,
+                          const std::string& proc_status,
+                          TidArray& out);
 
   // Functions for periodically sampling process stats/counters.
   static void Tick(base::WeakPtr<ProcessStatsDataSource>);
@@ -142,7 +152,6 @@ class ProcessStatsDataSource : public ProbesDataSource {
   bool record_thread_names_ = false;
   bool enable_on_demand_dumps_ = true;
   bool dump_all_procs_on_start_ = false;
-  bool record_thread_time_in_state_ = false;
 
   // This set contains PIDs as per the Linux kernel notion of a PID (which is
   // really a TID). In practice this set will contain all TIDs for all processes
@@ -164,11 +173,6 @@ class ProcessStatsDataSource : public ProbesDataSource {
   using TimeInStateCacheEntry = std::tuple</* tid */ int32_t,
                                            /* cpu_freq_index */ uint32_t,
                                            /* ticks */ uint64_t>;
-
-  // Cache for time in state. Size specificed in the config. Values are stored
-  // at index: hash(tid, cpu_freq_index) % thread_time_in_state_cache_size_.
-  std::vector<TimeInStateCacheEntry> thread_time_in_state_cache_;
-  uint32_t thread_time_in_state_cache_size_;
 
   std::unique_ptr<CpuFreqInfo> cpu_freq_info_;
 

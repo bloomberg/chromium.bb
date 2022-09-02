@@ -12,6 +12,10 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "ui/gfx/image/image.h"
 
+namespace content {
+struct DesktopMediaID;
+}
+
 namespace crosapi {
 
 // This class is the ash-chrome implementation of the ScreenManager interface.
@@ -36,6 +40,15 @@ class ScreenManagerAsh : public mojom::ScreenManager {
       mojo::PendingReceiver<mojom::SnapshotCapturer> receiver) override;
   void GetWindowCapturer(
       mojo::PendingReceiver<mojom::SnapshotCapturer> receiver) override;
+  void GetScreenVideoCapturer(
+      mojo::PendingReceiver<mojom::VideoCaptureDevice> receiver,
+      uint64_t screen_id) override;
+  void GetWindowVideoCapturer(
+      mojo::PendingReceiver<mojom::VideoCaptureDevice> receiver,
+      uint64_t window_id) override;
+
+  // Returns window by ID if present.
+  aura::Window* GetWindowById(uint64_t id) const;
 
  private:
   class ScreenCapturerImpl;
@@ -43,6 +56,9 @@ class ScreenManagerAsh : public mojom::ScreenManager {
 
   ScreenCapturerImpl* GetScreenCapturerImpl();
   WindowCapturerImpl* GetWindowCapturerImpl();
+  void CreateVideoCaptureDevice(
+      mojo::PendingReceiver<mojom::VideoCaptureDevice> receiver,
+      const content::DesktopMediaID& device_id);
 
   std::unique_ptr<ScreenCapturerImpl> screen_capturer_impl_;
   std::unique_ptr<WindowCapturerImpl> window_capturer_impl_;

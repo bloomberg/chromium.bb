@@ -101,7 +101,7 @@ void V4L2ProcessingTrace(const struct v4l2_buffer* v4l2_buffer, bool start) {
   constexpr char kTracingCategory[] = "media,gpu";
   constexpr char kQueueBuffer[] = "V4L2 Queue Buffer";
   constexpr char kDequeueBuffer[] = "V4L2 Dequeue Buffer";
-  constexpr char kVideoProcessing[] = "V4L2 Video Processing";
+  constexpr char kVideoDecoding[] = "V4L2 Video Decoding";
 
   bool tracing_enabled = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTracingCategory, &tracing_enabled);
@@ -117,12 +117,12 @@ void V4L2ProcessingTrace(const struct v4l2_buffer* v4l2_buffer, bool start) {
     return;
 
   if (start && v4l2_buffer->type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTracingCategory, kVideoProcessing,
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTracingCategory, kVideoDecoding,
                                       TRACE_ID_LOCAL(timestamp), "timestamp",
                                       timestamp);
   } else if (!start &&
              v4l2_buffer->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
-    TRACE_EVENT_NESTABLE_ASYNC_END1(kTracingCategory, kVideoProcessing,
+    TRACE_EVENT_NESTABLE_ASYNC_END1(kTracingCategory, kVideoDecoding,
                                     TRACE_ID_LOCAL(timestamp), "timestamp",
                                     timestamp);
   }
@@ -208,7 +208,7 @@ V4L2Buffer::V4L2Buffer(scoped_refptr<V4L2Device> device,
                        size_t buffer_id)
     : device_(device), format_(format) {
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(type));
-  DCHECK_LE(format.fmt.pix_mp.num_planes, base::size(v4l2_planes_));
+  DCHECK_LE(format.fmt.pix_mp.num_planes, std::size(v4l2_planes_));
 
   memset(&v4l2_buffer_, 0, sizeof(v4l2_buffer_));
   memset(v4l2_planes_, 0, sizeof(v4l2_planes_));
@@ -216,7 +216,7 @@ V4L2Buffer::V4L2Buffer(scoped_refptr<V4L2Device> device,
   // Just in case we got more planes than we want.
   v4l2_buffer_.length =
       std::min(static_cast<size_t>(format.fmt.pix_mp.num_planes),
-               base::size(v4l2_planes_));
+               std::size(v4l2_planes_));
   v4l2_buffer_.index = buffer_id;
   v4l2_buffer_.type = type;
   v4l2_buffer_.memory = memory;
@@ -452,7 +452,7 @@ V4L2BufferRefBase::V4L2BufferRefBase(const struct v4l2_buffer& v4l2_buffer,
     : queue_(std::move(queue)), return_to_(queue_->free_buffers_) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(v4l2_buffer.type));
-  DCHECK_LE(v4l2_buffer.length, base::size(v4l2_planes_));
+  DCHECK_LE(v4l2_buffer.length, std::size(v4l2_planes_));
   DCHECK(return_to_);
 
   memcpy(&v4l2_buffer_, &v4l2_buffer, sizeof(v4l2_buffer_));
@@ -1524,6 +1524,18 @@ scoped_refptr<V4L2Device> V4L2Device::Create() {
   return nullptr;
 }
 
+std::string V4L2Device::GetDriverName() {
+  struct v4l2_capability caps;
+  memset(&caps, 0, sizeof(caps));
+  if (Ioctl(VIDIOC_QUERYCAP, &caps) != 0) {
+    VPLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP"
+              << ", caps check failed: 0x" << std::hex << caps.capabilities;
+    return "";
+  }
+
+  return std::string(reinterpret_cast<const char*>(caps.driver));
+}
+
 // static
 uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
                                                    bool slice_based) {
@@ -1996,8 +2008,8 @@ std::vector<uint32_t> V4L2Device::EnumerateSupportedPixelformats(
   fmtdesc.type = buf_type;
 
   for (; Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
-    DVLOGF(3) << "Found " << fmtdesc.description << std::hex << " (0x"
-              << fmtdesc.pixelformat << ")";
+    DVLOGF(3) << "Found " << FourccToString(fmtdesc.pixelformat) << " ("
+              << fmtdesc.description << ")";
     pixelformats.push_back(fmtdesc.pixelformat);
   }
 
@@ -2048,6 +2060,8 @@ V4L2Device::EnumerateSupportedEncodeProfiles() {
     VideoEncodeAccelerator::SupportedProfile profile;
     profile.max_framerate_numerator = 30;
     profile.max_framerate_denominator = 1;
+    // TODO(b/182240945): remove hard-coding when VBR is supported
+    profile.rate_control_modes = media::VideoEncodeAccelerator::kConstantMode;
     gfx::Size min_resolution;
     GetSupportedResolution(pixelformat, &min_resolution,
                            &profile.max_resolution);
@@ -2073,7 +2087,7 @@ bool V4L2Device::StartPolling(V4L2DevicePoller::EventCallback event_callback,
 
   if (!device_poller_) {
     device_poller_ =
-        std::make_unique<V4L2DevicePoller>(this, "V4L2DeviceThreadPoller");
+        std::make_unique<V4L2DevicePoller>(this, "V4L2DevicePollerThread");
   }
 
   bool ret = device_poller_->StartPolling(std::move(event_callback),

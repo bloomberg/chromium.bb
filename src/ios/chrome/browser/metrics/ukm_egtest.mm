@@ -52,7 +52,7 @@ using chrome_test_util::SettingsDoneButton;
   // Note: URL-keyed anonymized data collection is turned on as part of the
   // flow to Sign in to Chrome and Turn sync on. This matches the main user
   // flow that enables UKM.
-  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGrey fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeChromeIdentity fakeIdentity1]];
   [ChromeEarlGrey waitForSyncInitialized:YES
                              syncTimeout:syncher::kSyncUKMOperationsTimeout];
 
@@ -264,7 +264,7 @@ using chrome_test_util::SettingsDoneButton;
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
-  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGrey fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeChromeIdentity fakeIdentity1]];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");
 }
@@ -283,21 +283,21 @@ using chrome_test_util::SettingsDoneButton;
     // Toggle "Make searches and browsing better" switch off.
 
     [[[EarlGrey
-        selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+        selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                      @"betterSearchAndBrowsingItem_switch",
                                      YES)]
            usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
         onElementWithMatcher:chrome_test_util::GoogleServicesSettingsView()]
-        performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+        performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
     GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
                @"Failed to assert that UKM was not enabled.");
 
     // Toggle "Make searches and browsing better" switch on.
     [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+        selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                      @"betterSearchAndBrowsingItem_switch", NO)]
-        performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+        performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
     GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
                @"Failed to assert that UKM was enabled.");
@@ -325,7 +325,7 @@ using chrome_test_util::SettingsDoneButton;
                      @"Client ID was not reset.");
 
   const uint64_t clientID2 = [MetricsAppInterface UKMClientID];
-  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGrey fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeChromeIdentity fakeIdentity1]];
 
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");

@@ -16,18 +16,18 @@
 
 #include "base/memory/raw_ptr.h"
 #include "net/base/request_priority.h"
-#include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
-#include "net/third_party/quiche/src/quic/core/quic_clock.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_frame_data_producer.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_encoder_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_data_producer.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/http_encoder.h"
+#include "net/third_party/quiche/src/quiche/quic/core/qpack/qpack_encoder.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_clock.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_stream_frame_data_producer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/qpack/qpack_encoder_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/qpack/qpack_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/simple_data_producer.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_framer.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 
 namespace net {
 namespace test {
@@ -604,8 +604,8 @@ class QuicTestPacketMaker {
   quic::test::MockRandom random_generator_;
   std::map<quic::QuicStreamId, quic::QuicStreamOffset> stream_offsets_;
   quic::Perspective perspective_;
-  quic::EncryptionLevel encryption_level_;
-  quic::QuicLongHeaderType long_header_type_;
+  quic::EncryptionLevel encryption_level_ = quic::ENCRYPTION_FORWARD_SECURE;
+  quic::QuicLongHeaderType long_header_type_ = quic::INVALID_PACKET_TYPE;
   // If true, generated request headers will include non-default HTTP2 stream
   // dependency info.
   bool client_headers_include_h2_stream_dependency_;
@@ -614,7 +614,7 @@ class QuicTestPacketMaker {
   std::vector<std::unique_ptr<std::string>> saved_stream_data_;
   // If |save_packet_frames_| is true, save generated packets in
   // |saved_frames_|, allowing retransmission packets to be built.
-  bool save_packet_frames_;
+  bool save_packet_frames_ = false;
   std::map<quic::QuicPacketNumber, quic::QuicFrames> saved_frames_;
 
   // State necessary for building the current packet.

@@ -25,6 +25,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
@@ -73,8 +74,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void FlushLocalFrameMessages();
 
   // RenderFrameHostImpl overrides (same values, but in Test*/Mock* types)
-  TestRenderViewHost* GetRenderViewHost() override;
-  MockRenderProcessHost* GetProcess() override;
+  TestRenderViewHost* GetRenderViewHost() const override;
+  MockRenderProcessHost* GetProcess() const override;
   MockAgentSchedulingGroupHost& GetAgentSchedulingGroup() override;
   TestRenderWidgetHost* GetRenderWidgetHost() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
@@ -102,6 +103,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   const std::vector<std::string>& GetConsoleMessages() override;
   int GetHeavyAdIssueCount(HeavyAdIssueType type) override;
   void SimulateManifestURLUpdate(const GURL& manifest_url) override;
+  TestRenderFrameHost* AppendFencedFrame(
+      blink::mojom::FencedFrameMode mode =
+          blink::mojom::FencedFrameMode::kDefault) override;
 
   void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,
@@ -112,6 +116,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       mojom::DidCommitProvisionalLoadParamsPtr params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
       bool was_within_same_document);
+  void SendDidCommitSameDocumentNavigation(
+      mojom::DidCommitProvisionalLoadParamsPtr params,
+      blink::mojom::SameDocumentNavigationType same_document_navigation_type);
 
   // With the current navigation logic this method is a no-op.
   // Simulates a renderer-initiated navigation to |url| starting in the
@@ -134,6 +141,11 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   void DidEnforceInsecureRequestPolicy(
       blink::mojom::InsecureRequestPolicy policy);
+
+  // Returns the number of FedCM issues sent to DevTools with the given
+  // FederatedAuthRequestResult.
+  int GetFederatedAuthRequestIssueCount(
+      blink::mojom::FederatedAuthRequestResult result);
 
   // If set, navigations will appear to have cleared the history list in the
   // RenderFrame (DidCommitProvisionalLoadParams::history_list_was_cleared).
@@ -287,6 +299,11 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   int heavy_ad_issue_network_count_ = 0;
   int heavy_ad_issue_cpu_total_count_ = 0;
   int heavy_ad_issue_cpu_peak_count_ = 0;
+
+  // Keeps a count of federated authentication request issues sent to
+  // ReportInspectorIssue.
+  std::unordered_map<blink::mojom::FederatedAuthRequestResult, int>
+      federated_auth_counts_;
 
   TestRenderFrameHostCreationObserver child_creation_observer_;
 

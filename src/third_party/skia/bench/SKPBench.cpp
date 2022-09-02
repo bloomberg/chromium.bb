@@ -8,7 +8,7 @@
 #include "bench/SKPBench.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
 #include "tools/flags/CommandLineFlags.h"
 
 
@@ -49,7 +49,11 @@ void SKPBench::onPerCanvasPreDraw(SkCanvas* canvas) {
     bounds.intersect(fPic->cullRect().roundOut());
     SkAssertResult(!bounds.isEmpty());
 
+#if defined(SK_GRAPHITE_ENABLED)
+    const bool gpu = canvas->recordingContext() != nullptr || canvas->recorder() != nullptr;
+#else
     const bool gpu = canvas->recordingContext() != nullptr;
+#endif
     int tileW = gpu ? FLAGS_GPUbenchTileW : FLAGS_CPUbenchTileW,
         tileH = gpu ? FLAGS_GPUbenchTileH : FLAGS_CPUbenchTileH;
 
@@ -136,7 +140,7 @@ void SKPBench::drawPicture() {
     }
 }
 
-#include "src/gpu/GrGpu.h"
+#include "src/gpu/ganesh/GrGpu.h"
 static void draw_pic_for_stats(SkCanvas* canvas,
                                GrDirectContext* dContext,
                                const SkPicture* picture,

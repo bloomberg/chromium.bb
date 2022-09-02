@@ -6,6 +6,7 @@
 
 #include "ash/quick_pair/proto/fastpair_data.pb.h"
 #include "ash/quick_pair/repository/fast_pair/device_metadata.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 
 namespace ash {
@@ -93,6 +94,13 @@ nearby::fastpair::FastPairInfo BuildFastPairInfo(
 
   device->set_discovery_item_bytes(discovery_item.SerializeAsString());
 
+  return proto;
+}
+
+nearby::fastpair::FastPairInfo BuildFastPairInfoForOptIn(
+    nearby::fastpair::OptInStatus opt_in_status) {
+  nearby::fastpair::FastPairInfo proto;
+  proto.set_opt_in_status(opt_in_status);
   return proto;
 }
 

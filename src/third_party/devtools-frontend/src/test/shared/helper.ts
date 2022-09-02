@@ -6,10 +6,10 @@ import {assert, AssertionError} from 'chai';
 import * as os from 'os';
 import * as puppeteer from 'puppeteer';
 
-import {reloadDevTools} from '../conductor/hooks.js';
+import {getDevToolsFrontendHostname, reloadDevTools} from '../conductor/hooks.js';
 import {getBrowserAndPages, getTestServerPort} from '../conductor/puppeteer-state.js';
 import {getTestRunnerConfigSetting} from '../conductor/test_runner_config.js';
-import {AsyncScope} from './mocha-extensions.js';
+import {AsyncScope} from './async-scope.js';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -371,6 +371,16 @@ export const enableExperiment = async (
   await reloadDevTools(options);
 };
 
+export const setDevToolsSettings = async (settings: Record<string, string>) => {
+  const {frontend} = getBrowserAndPages();
+  await frontend.evaluate(settings => {
+    for (const name in settings) {
+      globalThis.InspectorFrontendHost.setPreference(name, JSON.stringify(settings[name]));
+    }
+  }, settings);
+  await reloadDevTools();
+};
+
 export const goTo = async (url: string) => {
   const {target} = getBrowserAndPages();
   await target.goto(url);
@@ -579,14 +589,14 @@ export const installEventListener = function(frontend: puppeteer.Page, eventType
   }, eventType);
 };
 
-export const getPendingEvents = function(frontend: puppeteer.Page, eventType: string) {
+export const getPendingEvents = function(frontend: puppeteer.Page, eventType: string): Promise<Event[]|undefined> {
   return frontend.evaluate(eventType => {
     if (!('__pendingEvents' in window)) {
-      return [];
+      return undefined;
     }
     const pendingEvents = window.__pendingEvents.get(eventType);
     window.__pendingEvents.set(eventType, []);
-    return pendingEvents || [];
+    return pendingEvents;
   }, eventType);
 };
 
@@ -613,7 +623,7 @@ export function assertNotNullOrUndefined<T>(val: T): asserts val is NonNullable<
 
 // We export Puppeteer so other test utils can import it from here and not rely
 // on Node modules resolution to import it.
-export {getBrowserAndPages, getTestServerPort, reloadDevTools, puppeteer};
+export {getBrowserAndPages, getDevToolsFrontendHostname, getTestServerPort, reloadDevTools, puppeteer};
 
 export function matchString(actual: string, expected: string|RegExp): true|string {
   if (typeof expected === 'string') {

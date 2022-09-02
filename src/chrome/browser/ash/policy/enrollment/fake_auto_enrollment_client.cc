@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/policy/enrollment/fake_auto_enrollment_client.h"
 
+#include "chrome/browser/ash/policy/enrollment/private_membership/psm_rlwe_dmserver_client.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
@@ -40,7 +41,7 @@ FakeAutoEnrollmentClient::FactoryImpl::CreateForInitialEnrollment(
     const std::string& device_brand_code,
     int power_initial,
     int power_limit,
-    PrivateMembershipRlweClient::Factory* psm_rlwe_client_factory) {
+    std::unique_ptr<PsmRlweDmserverClient> psm_rlwe_dmserver_client) {
   std::unique_ptr<FakeAutoEnrollmentClient> fake_client =
       std::make_unique<FakeAutoEnrollmentClient>(progress_callback);
   fake_client_created_callback_.Run(fake_client.get());
@@ -62,14 +63,6 @@ void FakeAutoEnrollmentClient::Retry() {}
 
 void FakeAutoEnrollmentClient::CancelAndDeleteSoon() {
   delete this;
-}
-
-std::string FakeAutoEnrollmentClient::device_id() const {
-  return std::string();
-}
-
-AutoEnrollmentState FakeAutoEnrollmentClient::state() const {
-  return state_;
 }
 
 void FakeAutoEnrollmentClient::SetState(AutoEnrollmentState target_state) {

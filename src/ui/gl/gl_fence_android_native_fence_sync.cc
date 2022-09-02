@@ -10,11 +10,12 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_surface_egl.h"
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include <unistd.h>
 
 #include "base/posix/eintr_wrapper.h"
@@ -29,7 +30,7 @@ GLFenceAndroidNativeFenceSync::~GLFenceAndroidNativeFenceSync() {}
 // static
 std::unique_ptr<GLFenceAndroidNativeFenceSync>
 GLFenceAndroidNativeFenceSync::CreateInternal(EGLenum type, EGLint* attribs) {
-  DCHECK(GLSurfaceEGL::IsAndroidNativeFenceSyncSupported());
+  DCHECK(GLSurfaceEGL::GetGLDisplayEGL()->IsAndroidNativeFenceSyncSupported());
 
   // Can't use MakeUnique, the no-args constructor is private.
   auto fence = base::WrapUnique(new GLFenceAndroidNativeFenceSync());
@@ -57,7 +58,7 @@ GLFenceAndroidNativeFenceSync::CreateFromGpuFence(
 }
 
 std::unique_ptr<gfx::GpuFence> GLFenceAndroidNativeFenceSync::GetGpuFence() {
-  DCHECK(GLSurfaceEGL::IsAndroidNativeFenceSyncSupported());
+  DCHECK(GLSurfaceEGL::GetGLDisplayEGL()->IsAndroidNativeFenceSyncSupported());
 
   const EGLint sync_fd = eglDupNativeFenceFDANDROID(display_, sync_);
   if (sync_fd < 0)

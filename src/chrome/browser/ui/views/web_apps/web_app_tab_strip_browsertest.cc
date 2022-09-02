@@ -18,15 +18,19 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/commands/fetch_manifest_and_install_command.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/background_color_change_waiter.h"
@@ -66,12 +70,12 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
     GURL start_url = embedded_test_server()->GetURL(kAppPath);
 
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"Test app";
     web_app_info->background_color = kAppBackgroundColor;
-    web_app_info->user_display_mode = DisplayMode::kTabbed;
+    web_app_info->user_display_mode = UserDisplayMode::kTabbed;
     AppId app_id = test::InstallWebApp(profile, std::move(web_app_info));
 
     Browser* app_browser = LaunchWebAppBrowser(profile, app_id);
@@ -144,28 +148,28 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, PopOutTabOnInstall) {
     auto* provider = WebAppProvider::GetForTest(browser()->profile());
     DCHECK(provider);
     test::WaitUntilReady(provider);
-    provider->install_manager().InstallWebAppFromManifestWithFallback(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        /*force_shortcut_app=*/false,
-        webapps::WebappInstallSource::MENU_BROWSER_TAB,
-        /*dialog_callback=*/
-        base::BindLambdaForTesting(
-            [](content::WebContents*,
-               std::unique_ptr<WebApplicationInfo> web_app_info,
-               ForInstallableSite,
-               WebAppInstallationAcceptanceCallback acceptance_callback) {
-              web_app_info->user_display_mode = DisplayMode::kTabbed;
-              std::move(acceptance_callback)
-                  .Run(/*user_accepted=*/true, std::move(web_app_info));
-            }),
-        /*callback=*/
-        base::BindLambdaForTesting(
-            [&run_loop, &app_id](const AppId& installed_app_id,
-                                 InstallResultCode code) {
-              DCHECK_EQ(code, InstallResultCode::kSuccessNewInstall);
+    provider->command_manager().ScheduleCommand(
+        std::make_unique<FetchManifestAndInstallCommand>(
+            &provider->install_finalizer(), &provider->registrar(),
+            webapps::WebappInstallSource::MENU_BROWSER_TAB,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
+            /*bypass_service_worker_check=*/false,
+            base::BindLambdaForTesting(
+                [](content::WebContents*,
+                   std::unique_ptr<WebAppInstallInfo> web_app_info,
+                   WebAppInstallationAcceptanceCallback acceptance_callback) {
+                  web_app_info->user_display_mode = UserDisplayMode::kTabbed;
+                  std::move(acceptance_callback)
+                      .Run(/*user_accepted=*/true, std::move(web_app_info));
+                }),
+            base::BindLambdaForTesting([&run_loop, &app_id](
+                                           const AppId& installed_app_id,
+                                           webapps::InstallResultCode code) {
+              DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
               app_id = installed_app_id;
               run_loop.Quit();
-            }));
+            }),
+            /*use_fallback=*/true, WebAppInstallFlow::kInstallSite));
     run_loop.Run();
   }
 
@@ -180,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, PopOutTabOnInstall) {
 }
 
 // TODO(crbug.com/897314) Enabled tab strip for web apps on non-Chrome OS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
                        ActiveTabColorIsBackgroundColor) {
@@ -194,7 +198,8 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
 
   // Expect manifest background color prior to page loading.
   {
-    ASSERT_FALSE(app.web_contents->IsDocumentOnLoadCompletedInMainFrame());
+    ASSERT_FALSE(
+        app.web_contents->IsDocumentOnLoadCompletedInPrimaryMainFrame());
     EXPECT_EQ(app.browser->app_controller()->GetBackgroundColor().value(),
               kAppBackgroundColor);
     EXPECT_EQ(GetTabColor(app.browser_view), kAppBackgroundColor);
@@ -234,6 +239,6 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
   }
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace web_app

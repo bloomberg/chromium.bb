@@ -40,6 +40,7 @@ class WebMouseEvent;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace content {
@@ -189,9 +190,6 @@ class RenderViewTest : public testing::Test {
   void OnSameDocumentNavigation(blink::WebLocalFrame* frame,
                                 bool is_new_navigation);
 
-  // Enables to use zoom for device scale.
-  void SetUseZoomForDSFEnabled(bool zoom_for_dsf);
-
   blink::WebFrameWidget* GetWebFrameWidget();
 
   // Allows a subclass to override the various content client implementations.
@@ -242,7 +240,7 @@ class RenderViewTest : public testing::Test {
   std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
   mojo::BinderMap binders_;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;
 #endif
 

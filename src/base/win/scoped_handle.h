@@ -5,14 +5,14 @@
 #ifndef BASE_WIN_SCOPED_HANDLE_H_
 #define BASE_WIN_SCOPED_HANDLE_H_
 
-#include "base/win/windows_types.h"
+#include <ostream>
 
 #include "base/base_export.h"
 #include "base/check_op.h"
-#include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
+#include "base/win/windows_types.h"
 #include "build/build_config.h"
 
 // TODO(rvargas): remove this with the rest of the verifier.
@@ -26,6 +26,16 @@
 
 namespace base {
 namespace win {
+
+enum class HandleOperation {
+  kHandleAlreadyTracked,
+  kCloseHandleNotTracked,
+  kCloseHandleNotOwner,
+  kCloseHandleHook,
+  kDuplicateHandleHook
+};
+
+std::ostream& operator<<(std::ostream& os, HandleOperation operation);
 
 // Generic wrapper for raw handles that takes care of closing handles
 // automatically. The class interface follows the style of
@@ -57,7 +67,10 @@ class GenericScopedHandle {
 
   ~GenericScopedHandle() { Close(); }
 
-  bool IsValid() const { return Traits::IsHandleValid(handle_); }
+  bool is_valid() const { return Traits::IsHandleValid(handle_); }
+
+  // TODO(crbug.com/1291793): Migrate callers to is_valid().
+  bool IsValid() const { return is_valid(); }
 
   GenericScopedHandle& operator=(GenericScopedHandle&& other) {
     DCHECK_NE(this, &other);
@@ -80,10 +93,13 @@ class GenericScopedHandle {
     }
   }
 
-  Handle Get() const { return handle_; }
+  Handle get() const { return handle_; }
+
+  // TODO(crbug.com/1291793): Migrate callers to get().
+  Handle Get() const { return get(); }
 
   // Transfers ownership away from this object.
-  Handle Take() WARN_UNUSED_RESULT {
+  [[nodiscard]] Handle release() {
     Handle temp = handle_;
     handle_ = Traits::NullHandle();
     if (Traits::IsHandleValid(temp)) {
@@ -92,6 +108,9 @@ class GenericScopedHandle {
     }
     return temp;
   }
+
+  // TODO(crbug.com/1291793): Migrate callers to release().
+  [[nodiscard]] Handle Take() { return release(); }
 
   // Explicitly closes the owned handle.
   void Close() {
@@ -105,8 +124,9 @@ class GenericScopedHandle {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, HandleVerifierWrongOwner);
-  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, HandleVerifierUntrackedHandle);
+  FRIEND_TEST_ALL_PREFIXES(ScopedHandleDeathTest, HandleVerifierWrongOwner);
+  FRIEND_TEST_ALL_PREFIXES(ScopedHandleDeathTest,
+                           HandleVerifierUntrackedHandle);
   Handle handle_;
 };
 
@@ -175,7 +195,7 @@ using UncheckedScopedHandle =
     GenericScopedHandle<HandleTraits, DummyVerifierTraits>;
 using CheckedScopedHandle = GenericScopedHandle<HandleTraits, VerifierTraits>;
 
-#if DCHECK_IS_ON() && !defined(ARCH_CPU_64_BITS)
+#if DCHECK_IS_ON()
 using ScopedHandle = CheckedScopedHandle;
 #else
 using ScopedHandle = UncheckedScopedHandle;
@@ -190,7 +210,8 @@ BASE_EXPORT void DisableHandleVerifier();
 // verification of improper handle closing is desired. If |handle| is being
 // tracked by the handle verifier and ScopedHandle is not the one closing it,
 // a CHECK is generated.
-BASE_EXPORT void OnHandleBeingClosed(HANDLE handle);
+BASE_EXPORT void OnHandleBeingClosed(HANDLE handle, HandleOperation operation);
+
 }  // namespace win
 }  // namespace base
 

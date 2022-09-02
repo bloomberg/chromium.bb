@@ -40,8 +40,8 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
     this.promiseMap_.set(methodName, promise);
   }
 
-  protected handleMethod(methodName: string, opt_arg?: any): Promise<any> {
-    this.methodCalled(methodName, opt_arg);
+  protected handleMethod(methodName: string, arg?: any): Promise<any> {
+    this.methodCalled(methodName, arg);
     const promise = this.promiseMap_.get(methodName);
     if (promise !== undefined) {
       this.promiseMap_.delete(methodName);
@@ -86,7 +86,7 @@ class TestSecurityKeysResetBrowserProxy extends TestSecurityKeysBrowserProxy
     ]);
   }
 
-  reset() {
+  override reset() {
     return this.handleMethod('reset');
   }
 
@@ -1074,7 +1074,7 @@ suite('SecurityKeysBioEnrollment', function() {
   test('EnrollCancel', async function() {
     // Simulate starting an enrollment and then cancelling it.
     browserProxy.setResponseFor('enumerateEnrollments', Promise.resolve([]));
-    const enrollResolver = new PromiseResolver;
+    const enrollResolver = new PromiseResolver();
     browserProxy.setResponseFor('startEnrolling', enrollResolver.promise);
 
     document.body.appendChild(dialog);
@@ -1108,7 +1108,7 @@ suite('SecurityKeysBioEnrollment', function() {
   test('EnrollError', async function() {
     // Test that resolving the startEnrolling promise with a CTAP error brings
     // up the error page.
-    const enrollResolver = new PromiseResolver;
+    const enrollResolver = new PromiseResolver();
     browserProxy.setResponseFor('startEnrolling', enrollResolver.promise);
 
     document.body.appendChild(dialog);

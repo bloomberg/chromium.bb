@@ -13,6 +13,7 @@
 #include "ash/components/arc/mojom/power.mojom.h"
 #include "ash/components/arc/power/arc_power_bridge.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/throttle_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -34,9 +35,11 @@ class ArcPowerControlHandler : public content::WebUIMessageHandler,
   using WakefulnessModeEvents =
       std::vector<std::pair<base::TimeTicks, arc::mojom::WakefulnessMode>>;
   using ThrottlingEvents =
-      std::vector<std::pair<base::TimeTicks, ThrottleObserver::PriorityLevel>>;
+      std::vector<std::pair<base::TimeTicks, bool /*should_throttle*/>>;
 
   ArcPowerControlHandler();
+  ArcPowerControlHandler(ArcPowerControlHandler const&) = delete;
+  ArcPowerControlHandler& operator=(ArcPowerControlHandler const&) = delete;
   ~ArcPowerControlHandler() override;
 
   // content::WebUIMessageHandler:
@@ -46,7 +49,7 @@ class ArcPowerControlHandler : public content::WebUIMessageHandler,
   void OnWakefulnessChanged(arc::mojom::WakefulnessMode mode) override;
 
   // ThrottleService::ServiceObserver:
-  void OnThrottle(ThrottleObserver::PriorityLevel level) override;
+  void OnThrottle(bool throttled) override;
 
  private:
   // Handlers for calls from JS.
@@ -87,9 +90,6 @@ class ArcPowerControlHandler : public content::WebUIMessageHandler,
   bool power_control_enabled_ = false;
 
   base::WeakPtrFactory<ArcPowerControlHandler> weak_ptr_factory_{this};
-
-  ArcPowerControlHandler(ArcPowerControlHandler const&) = delete;
-  ArcPowerControlHandler& operator=(ArcPowerControlHandler const&) = delete;
 };
 
 }  // namespace chromeos

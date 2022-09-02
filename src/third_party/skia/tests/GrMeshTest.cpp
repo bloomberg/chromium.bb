@@ -7,33 +7,37 @@
 
 #include "tests/Test.h"
 
+
+#include "include/core/SkBitmap.h"
+#include "include/core/SkColorSpace.h"
+#include "include/gpu/GrDirectContext.h"
+#include "src/gpu/KeyBuilder.h"
+#include "src/gpu/ResourceKey.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGeometryProcessor.h"
+#include "src/gpu/ganesh/GrImageInfo.h"
+#include "src/gpu/ganesh/GrMemoryPool.h"
+#include "src/gpu/ganesh/GrOpFlushState.h"
+#include "src/gpu/ganesh/GrOpsRenderPass.h"
+#include "src/gpu/ganesh/GrProgramInfo.h"
+#include "src/gpu/ganesh/GrResourceProvider.h"
+#include "src/gpu/ganesh/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/ganesh/glsl/GrGLSLVarying.h"
+#include "src/gpu/ganesh/glsl/GrGLSLVertexGeoBuilder.h"
+#include "src/gpu/ganesh/ops/GrSimpleMeshDrawOpHelper.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
+
 #include <array>
 #include <memory>
 #include <vector>
-#include "include/core/SkBitmap.h"
-#include "include/gpu/GrDirectContext.h"
-#include "include/private/GrResourceKey.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGeometryProcessor.h"
-#include "src/gpu/GrImageInfo.h"
-#include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/GrOpsRenderPass.h"
-#include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLVarying.h"
-#include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 #if 0
 #include "tools/ToolUtils.h"
 #define WRITE_PNG_CONTEXT_TYPE kANGLE_D3D11_ES3_ContextType
 #endif
 
-GR_DECLARE_STATIC_UNIQUE_KEY(gIndexBufferKey);
+SKGPU_DECLARE_STATIC_UNIQUE_KEY(gIndexBufferKey);
 
 static constexpr int kBoxSize = 2;
 static constexpr int kBoxCountY = 8;
@@ -264,7 +268,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrMeshTest, reporter, ctxInfo) {
                          int baseVertex = 0;
                          switch (y % 3) {
                              case 0:
-                                 if (dContext->priv().caps()->shaderCaps()->vertexIDSupport()) {
+                                 if (dContext->priv().caps()->shaderCaps()->fVertexIDSupport) {
                                      break;
                                  }
                                  [[fallthrough]];
@@ -450,7 +454,7 @@ public:
 
     const char* name() const override { return "GrMeshTestProcessor"; }
 
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const final {
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder* b) const final {
         b->add32(fInstanceLocation.isInitialized());
         b->add32(fVertexPosition.isInitialized());
     }
@@ -467,17 +471,17 @@ private:
     MeshTestProcessor(bool instanced, bool hasVertexBuffer)
             : INHERITED(kGrMeshTestProcessor_ClassID) {
         if (instanced) {
-            fInstanceLocation = {"location", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
-            fInstanceColor = {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
-            this->setInstanceAttributes(&fInstanceLocation, 2);
+            fInstanceLocation = {"location", kFloat2_GrVertexAttribType, SkSLType::kHalf2};
+            fInstanceColor = {"color", kUByte4_norm_GrVertexAttribType, SkSLType::kHalf4};
+            this->setInstanceAttributesWithImplicitOffsets(&fInstanceLocation, 2);
             if (hasVertexBuffer) {
-                fVertexPosition = {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
-                this->setVertexAttributes(&fVertexPosition, 1);
+                fVertexPosition = {"vertex", kFloat2_GrVertexAttribType, SkSLType::kHalf2};
+                this->setVertexAttributesWithImplicitOffsets(&fVertexPosition, 1);
             }
         } else {
-            fVertexPosition = {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
-            fVertexColor = {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
-            this->setVertexAttributes(&fVertexPosition, 2);
+            fVertexPosition = {"vertex", kFloat2_GrVertexAttribType, SkSLType::kHalf2};
+            fVertexColor = {"color", kUByte4_norm_GrVertexAttribType, SkSLType::kHalf4};
+            this->setVertexAttributesWithImplicitOffsets(&fVertexPosition, 2);
         }
     }
 
@@ -521,7 +525,7 @@ std::unique_ptr<GrGeometryProcessor::ProgramImpl> MeshTestProcessor::makeProgram
                 v->codeAppendf("float2 vertex = %s + offset * %i;", mp.fInstanceLocation.name(),
                                kBoxSize);
             }
-            gpArgs->fPositionVar.set(kFloat2_GrSLType, "vertex");
+            gpArgs->fPositionVar.set(SkSLType::kFloat2, "vertex");
 
             f->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
         }
@@ -533,18 +537,22 @@ std::unique_ptr<GrGeometryProcessor::ProgramImpl> MeshTestProcessor::makeProgram
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 sk_sp<const GrBuffer> DrawMeshHelper::makeIndexBuffer(const uint16_t indices[], int count) {
-    return sk_sp<const GrBuffer>(fState->resourceProvider()->createBuffer(
-            count * sizeof(uint16_t), GrGpuBufferType::kIndex, kDynamic_GrAccessPattern, indices));
+    return fState->resourceProvider()->createBuffer(indices,
+                                                    count*sizeof(uint16_t),
+                                                    GrGpuBufferType::kIndex,
+                                                    kDynamic_GrAccessPattern);
 }
 
 template<typename T>
 sk_sp<const GrBuffer> DrawMeshHelper::makeVertexBuffer(const T* data, int count) {
-    return sk_sp<const GrBuffer>(fState->resourceProvider()->createBuffer(
-            count * sizeof(T), GrGpuBufferType::kVertex, kDynamic_GrAccessPattern, data));
+    return fState->resourceProvider()->createBuffer(data,
+                                                    count*sizeof(T),
+                                                    GrGpuBufferType::kVertex,
+                                                    kDynamic_GrAccessPattern);
 }
 
 sk_sp<const GrBuffer> DrawMeshHelper::getIndexBuffer() {
-    GR_DEFINE_STATIC_UNIQUE_KEY(gIndexBufferKey);
+    SKGPU_DEFINE_STATIC_UNIQUE_KEY(gIndexBufferKey);
     return fState->resourceProvider()->findOrCreatePatternedIndexBuffer(
             kIndexPattern, 6, kIndexPatternRepeatCount, 4, gIndexBufferKey);
 }
@@ -571,7 +579,7 @@ GrOpsRenderPass* DrawMeshHelper::bindPipeline(GrPrimitiveType primitiveType, boo
                                                        hasVertexBuffer);
 
     GrProgramInfo programInfo(fState->caps(), fState->writeView(), fState->usesMSAASurface(),
-                              pipeline, &GrUserStencilSettings::kUnused, mtp, primitiveType, 0,
+                              pipeline, &GrUserStencilSettings::kUnused, mtp, primitiveType,
                               fState->renderPassBarriers(), fState->colorLoadOp());
 
     fState->opsRenderPass()->bindPipeline(programInfo, SkRect::MakeIWH(kImageWidth, kImageHeight));

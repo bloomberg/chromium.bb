@@ -152,6 +152,14 @@ bool CallerAppIsFirstParty(MobileSessionCallerApp callerApp) {
   }
 }
 
+TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
+    const std::string& poa_param) {
+  if (poa_param == "default-browser-settings") {
+    return SHOW_DEFAULT_BROWSER_SETTINGS;
+  }
+  return NO_ACTION;
+}
+
 }  // namespace
 
 @implementation ChromeAppStartupParameters {
@@ -254,17 +262,24 @@ bool CallerAppIsFirstParty(MobileSessionCallerApp callerApp) {
         (!url.SchemeIs(url::kHttpScheme) && !url.SchemeIs(url::kHttpsScheme))) {
       return nil;
     }
+    TabOpeningPostOpeningAction postOpeningAction =
+        XCallbackPoaToPostOpeningAction(parameters["poa"]);
 
-    return [[ChromeAppStartupParameters alloc] initWithExternalURL:url
-                                                 declaredSourceApp:appId
-                                                   secureSourceApp:nil
-                                                       completeURL:completeURL];
-
+    ChromeAppStartupParameters* startupParameters =
+        [[ChromeAppStartupParameters alloc] initWithExternalURL:url
+                                              declaredSourceApp:appId
+                                                secureSourceApp:nil
+                                                    completeURL:completeURL];
+    // postOpeningAction can only be NO_ACTION or SHOW_DEFAULT_BROWSER_SETTINGS
+    // (these are the only values returned by `XCallbackPoaToPostOpeningAction`)
+    // so this assignment should not DCHECK, no matter what the URL is.
+    startupParameters.postOpeningAction = postOpeningAction;
+    return startupParameters;
   } else if (gurl.SchemeIsFile()) {
     UMA_HISTOGRAM_ENUMERATION(kUMAMobileSessionStartActionHistogram,
                               START_ACTION_OPEN_FILE,
                               MOBILE_SESSION_START_ACTION_COUNT);
-    // |url| is the path to a file received from another application.
+    // `url` is the path to a file received from another application.
     GURL::Replacements replacements;
     const std::string host(kChromeUIExternalFileHost);
     std::string filename = gurl.ExtractFileName();
@@ -292,7 +307,7 @@ bool CallerAppIsFirstParty(MobileSessionCallerApp callerApp) {
           base::UserMetricsAction("MobileDefaultBrowserViewIntent"));
     } else {
       // Replace the scheme with https or http depending on whether the input
-      // |url| scheme ends with an 's'.
+      // `url` scheme ends with an 's'.
       BOOL useHttps = gurl.scheme()[gurl.scheme().length() - 1] == 's';
       action = useHttps ? START_ACTION_OPEN_HTTPS : START_ACTION_OPEN_HTTP;
       base::RecordAction(base::UserMetricsAction("MobileFirstPartyViewIntent"));
@@ -344,7 +359,7 @@ bool CallerAppIsFirstParty(MobileSessionCallerApp callerApp) {
 
   [sharedDefaults removeObjectForKey:commandDictionaryPreference];
 
-  // |sharedDefaults| is used for communication between apps. Synchronize to
+  // `sharedDefaults` is used for communication between apps. Synchronize to
   // avoid synchronization issues (like removing the next order).
   [sharedDefaults synchronize];
 
@@ -634,11 +649,11 @@ bool CallerAppIsFirstParty(MobileSessionCallerApp callerApp) {
   // Takes care of degenerated case of no QUERY_STRING.
   if (![query length])
     return first_run::LAUNCH_BY_MOBILESAFARI;
-  // Look for |kSmartAppBannerKey| anywhere within the query string.
+  // Look for `kSmartAppBannerKey` anywhere within the query string.
   NSRange found = [query rangeOfString:kSmartAppBannerKey];
   if (found.location == NSNotFound)
     return first_run::LAUNCH_BY_MOBILESAFARI;
-  // |kSmartAppBannerKey| can be at the beginning or end of the query
+  // `kSmartAppBannerKey` can be at the beginning or end of the query
   // string and may also be optionally followed by a equal sign and a value.
   // For now, just look for the presence of the key and ignore the value.
   if (found.location + found.length < [query length]) {

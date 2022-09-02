@@ -146,7 +146,8 @@ bool IntersectionObservation::ShouldCompute(unsigned flags) const {
     return false;
   if (!needs_update_)
     return false;
-  if (target_->isConnected() && Observer()->trackVisibility()) {
+  if (target_->isConnected() && target_->GetDocument().GetFrame() &&
+      Observer()->trackVisibility()) {
     mojom::blink::FrameOcclusionState occlusion_state =
         target_->GetDocument().GetFrame()->GetOcclusionState();
     // If we're tracking visibility, and we don't have occlusion information
@@ -186,28 +187,9 @@ bool IntersectionObservation::CanUseCachedRects() const {
     PaintLayer* root_layer = target->GetDocument().GetLayoutView()->Layer();
     if (!root_layer)
       return false;
-    if (!root_layer->NeedsCompositingInputsUpdate() &&
-        !root_layer->ChildNeedsCompositingInputsUpdate()) {
-      const PaintLayer* painting_layer = target->PaintingLayer();
-      if (!painting_layer)
-        return false;
-      const PaintLayer* scrolling_layer = nullptr;
-      if (&painting_layer->GetLayoutObject() == target) {
-        scrolling_layer = painting_layer->AncestorScrollingLayer();
-      } else if (painting_layer->ScrollsOverflow()) {
-        scrolling_layer = painting_layer;
-      } else {
-        scrolling_layer = painting_layer->AncestorScrollingLayer();
-      }
-      if (scrolling_layer &&
-          scrolling_layer->GetLayoutObject().GetNode() == observer_->root()) {
+    if (LayoutBox* scroller = target->EnclosingScrollableBox()) {
+      if (scroller->GetNode() == observer_->root())
         return true;
-      }
-    } else {
-      if (LayoutBox* scroller = target->EnclosingScrollableBox()) {
-        if (scroller->GetNode() == observer_->root())
-          return true;
-      }
     }
   }
   return false;

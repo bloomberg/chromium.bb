@@ -26,6 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DIALOG_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DIALOG_ELEMENT_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/closewatcher/close_watcher.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
@@ -54,15 +56,25 @@ class CORE_EXPORT HTMLDialogElement final : public HTMLElement {
     return_value_ = return_value;
   }
 
+  void CloseWatcherFiredCancel();
+  void CloseWatcherFiredClose();
+
  private:
   void DefaultEventHandler(Event&) override;
 
   void SetIsModal(bool is_modal);
   void ScheduleCloseEvent();
 
+  // https://html.spec.whatwg.org/C/#the-dialog-element
+  // Chooses the focused element when show() or showModal() is invoked.
+  static void SetFocusForDialog(HTMLDialogElement* dialog);
+
   bool is_modal_;
   String return_value_;
   WeakMember<Element> previously_focused_element_;
+
+  Member<CloseWatcher> close_watcher_;
+  bool cancel_fired_since_last_close_ = false;
 };
 
 }  // namespace blink

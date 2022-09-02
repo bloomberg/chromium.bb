@@ -173,14 +173,14 @@ rtc::scoped_refptr<webrtc::VideoFrameBuffer> MakeFrameAdapter(
     scoped_refptr<media::VideoFrame> video_frame) {
   switch (video_frame->format()) {
     case media::PIXEL_FORMAT_I420:
-      return new rtc::RefCountedObject<I420FrameAdapter>(
-          std::move(video_frame));
+      return rtc::scoped_refptr<webrtc::VideoFrameBuffer>(
+          new rtc::RefCountedObject<I420FrameAdapter>(std::move(video_frame)));
     case media::PIXEL_FORMAT_I420A:
-      return new rtc::RefCountedObject<I420AFrameAdapter>(
-          std::move(video_frame));
+      return rtc::scoped_refptr<webrtc::VideoFrameBuffer>(
+          new rtc::RefCountedObject<I420AFrameAdapter>(std::move(video_frame)));
     case media::PIXEL_FORMAT_NV12:
-      return new rtc::RefCountedObject<NV12FrameAdapter>(
-          std::move(video_frame));
+      return rtc::scoped_refptr<webrtc::VideoFrameBuffer>(
+          new rtc::RefCountedObject<NV12FrameAdapter>(std::move(video_frame)));
     default:
       NOTREACHED();
       return nullptr;
@@ -228,16 +228,16 @@ scoped_refptr<media::VideoFrame> MakeScaledVideoFrame(
   if (tmp_buffer_needed) {
     std::unique_ptr<std::vector<uint8_t>> tmp_buffer =
         shared_resources->CreateTemporaryVectorBuffer();
-    media::Status status =
+    media::EncoderStatus status =
         media::ConvertAndScaleFrame(*source_frame, *dst_frame, *tmp_buffer);
     shared_resources->ReleaseTemporaryVectorBuffer(std::move(tmp_buffer));
-    return status == media::StatusCode::kOk ? dst_frame : nullptr;
+    return status.is_ok() ? dst_frame : nullptr;
   }
 
   std::vector<uint8_t> tmp_buffer;
-  media::Status status =
+  media::EncoderStatus status =
       media::ConvertAndScaleFrame(*source_frame, *dst_frame, tmp_buffer);
-  return status == media::StatusCode::kOk ? dst_frame : nullptr;
+  return status.is_ok() ? dst_frame : nullptr;
 }
 
 scoped_refptr<media::VideoFrame> MaybeConvertAndScaleFrame(
@@ -414,9 +414,10 @@ scoped_refptr<media::VideoFrame> ConvertFromMappedWebRtcVideoFrameBuffer(
       return nullptr;
   }
   // The bind ensures that we keep a reference to the underlying buffer.
-  video_frame->AddDestructionObserver(ConvertToBaseOnceCallback(
-      CrossThreadBindOnce([](const scoped_refptr<rtc::RefCountInterface>&) {},
-                          scoped_refptr<webrtc::VideoFrameBuffer>(buffer))));
+  video_frame->AddDestructionObserver(
+      ConvertToBaseOnceCallback(CrossThreadBindOnce(
+          [](const scoped_refptr<rtc::RefCountInterface>&) {},
+          scoped_refptr<webrtc::VideoFrameBuffer>(buffer.get()))));
   return video_frame;
 }
 

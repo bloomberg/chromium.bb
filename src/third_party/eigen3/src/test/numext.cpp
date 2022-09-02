@@ -11,7 +11,7 @@
 
 template<typename T, typename U>
 bool check_if_equal_or_nans(const T& actual, const U& expected) {
-  return ((actual == expected) || ((numext::isnan)(actual) && (numext::isnan)(expected)));
+  return (numext::equal_strict(actual, expected) || ((numext::isnan)(actual) && (numext::isnan)(expected)));
 }
 
 template<typename T, typename U>

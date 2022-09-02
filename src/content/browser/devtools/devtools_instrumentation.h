@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "content/browser/devtools/devtools_throttle_handle.h"
+#include "content/browser/prerender/prerender_host.h"
+#include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/global_routing_id.h"
@@ -58,7 +60,6 @@ class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
-class RenderFrameHost;
 class RenderFrameHostImpl;
 class RenderProcessHost;
 class SharedWorkerHost;
@@ -156,7 +157,13 @@ void WillBeginDownload(download::DownloadCreateInfo* info,
 
 void BackForwardCacheNotUsed(
     const NavigationRequest* nav_request,
-    const BackForwardCacheCanStoreDocumentResult* result);
+    const BackForwardCacheCanStoreDocumentResult* result,
+    const BackForwardCacheCanStoreTreeResult* tree_result);
+
+void DidActivatePrerender(const NavigationRequest& nav_request);
+void DidCancelPrerender(const GURL& prerendering_url,
+                        FrameTreeNode* ftn,
+                        PrerenderHost::FinalStatus status);
 
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
@@ -238,24 +245,13 @@ void FencedFrameCreated(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
     FencedFrame* fenced_frame);
 
-void ReportSameSiteCookieIssue(
+void ReportCookieIssue(
     RenderFrameHostImpl* render_frame_host_impl,
     const network::mojom::CookieOrLineWithAccessResultPtr& excluded_cookie,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    blink::mojom::SameSiteCookieOperation operation,
+    blink::mojom::CookieOperation operation,
     const absl::optional<std::string>& devtools_request_id);
-
-enum class AttributionReportingIssueType {
-  kAttributionTriggerDataTooLarge,
-  kAttributionEventSourceTriggerDataTooLarge,
-};
-
-void ReportAttributionReportingIssue(
-    RenderFrameHost* render_frame_host,
-    AttributionReportingIssueType issue_type,
-    const absl::optional<std::string>& request_id,
-    const absl::optional<std::string>& invalid_parameter);
 
 // This function works similar to RenderFrameHostImpl::AddInspectorIssue, in
 // that it reports an InspectorIssue to DevTools clients. The difference is that
@@ -289,7 +285,17 @@ void OnWebTransportHandshakeFailed(
 
 void OnServiceWorkerMainScriptFetchingFailed(
     const GlobalRenderFrameHostId& requesting_frame_id,
-    const std::string& error);
+    const ServiceWorkerContextWrapper* context_wrapper,
+    int64_t version_id,
+    const std::string& error,
+    const network::URLLoaderCompletionStatus& status,
+    const network::mojom::URLResponseHead* response_head,
+    const GURL& url);
+void OnServiceWorkerMainScriptRequestWillBeSent(
+    const GlobalRenderFrameHostId& requesting_frame_id,
+    const ServiceWorkerContextWrapper* context_wrapper,
+    int64_t version_id,
+    network::ResourceRequest& request);
 
 // Fires `Network.onLoadingFailed` event for a dedicated worker main script.
 // Used for PlzDedicatedWorker.

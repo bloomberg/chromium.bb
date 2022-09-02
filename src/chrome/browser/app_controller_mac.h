@@ -16,7 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class AppControllerProfileObserver;
@@ -24,15 +24,19 @@ class AppControllerProfileObserver;
 class BookmarkMenuBridge;
 class CommandUpdater;
 class GURL;
-class HandoffActiveURLObserverBridge;
 @class HandoffManager;
 class HistoryMenuBridge;
+class HandoffObserver;
 class Profile;
 @class ProfileMenuController;
 class QuitWithAppsController;
 class ScopedKeepAlive;
 @class ShareMenuController;
 class TabMenuBridge;
+
+namespace ui {
+class ThemeProvider;
+}  // namespace ui
 
 // The application controller object, created by loading the MainMenu nib.
 // This handles things like responding to menus when there are no windows
@@ -78,7 +82,7 @@ class TabMenuBridge;
 
   std::unique_ptr<TabMenuBridge> _tabMenuBridge;
 
-  // If we're told to open URLs (in particular, via |-application:openFiles:| by
+  // If we're told to open URLs (in particular, via |-application:openURLs:| by
   // Launch Services) before we've launched the browser, we queue them up in
   // |startupUrls_| so that they can go in the first browser window/tab.
   std::vector<GURL> _startupUrls;
@@ -103,15 +107,21 @@ class TabMenuBridge;
   // Responsible for maintaining all state related to the Handoff feature.
   base::scoped_nsobject<HandoffManager> _handoffManager;
 
-  // Observes changes to the active URL.
-  std::unique_ptr<HandoffActiveURLObserverBridge>
-      _handoff_active_url_observer_bridge;
+  // Observes changes to the active web contents.
+  std::unique_ptr<HandoffObserver> _handoff_observer;
 
   // This will be true after receiving a NSWorkspaceWillPowerOffNotification.
   BOOL _isPoweringOff;
 
   // Request to keep the browser alive during that object's lifetime.
   std::unique_ptr<ScopedKeepAlive> _keep_alive;
+
+  // Remembers whether _lastProfile had TabRestoreService entries. This is saved
+  // when _lastProfile is destroyed and Chromium enters the zero-profile state.
+  //
+  // By remembering this bit, Chromium knows whether to enable or disable
+  // Cmd+Shift+T and the related "File > Reopen Closed Tab" entry.
+  BOOL _tabRestoreWasEnabled;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;
@@ -193,12 +203,26 @@ class TabMenuBridge;
 // the original or the incognito profile.
 - (void)setLastProfile:(Profile*)profile;
 
+// Returns the last active ThemeProvider. It is only valid to call this with a
+// last available profile.
+- (const ui::ThemeProvider&)lastActiveThemeProvider;
+
 // Certain NSMenuItems [Close Tab and Close Window] have different
 // keyEquivalents depending on context. This must be invoked in two locations:
 //   * In menuNeedsUpdate:, which is called prior to showing the NSMenu.
 //   * In CommandDispatcher, which independently searches for a matching
 //     keyEquivalent.
 - (void)updateMenuItemKeyEquivalents;
+
+// Returns YES if `window` is a normal, tabbed, non-app browser window.
+// Serves as a swizzle point for unit tests to avoid creating Browser
+// instances.
+- (BOOL)windowHasBrowserTabs:(NSWindow*)window;
+
+// Testing API.
+- (void)setCloseWindowMenuItemForTesting:(NSMenuItem*)menuItem;
+- (void)setCloseTabMenuItemForTesting:(NSMenuItem*)menuItem;
+- (void)setLastProfileForTesting:(Profile*)profile;
 
 @end
 

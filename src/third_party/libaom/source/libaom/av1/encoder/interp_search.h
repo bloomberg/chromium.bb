@@ -119,6 +119,17 @@ typedef struct HandleInterModeArgs {
    * as a previous search.
    */
   INTERPOLATION_FILTER_STATS interp_filter_stats[MAX_INTERP_FILTER_STATS];
+
+  /*!
+   * Stack to store full pixel search start mv of NEWMV mode.
+   */
+  FULLPEL_MV start_mv_stack[(MAX_REF_MV_SEARCH - 1) * 2];
+
+  /*!
+   * Count of mvs in start mv stack.
+   */
+  int start_mv_cnt;
+
   /*!
    * Index of the last set of saved stats in the interp_filter_stats array.
    */

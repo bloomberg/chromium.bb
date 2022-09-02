@@ -11,7 +11,6 @@
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 #include "chromeos/components/quick_answers/utils/unit_conversion_constants.h"
 
-namespace ash {
 namespace quick_answers {
 namespace {
 
@@ -68,7 +67,7 @@ const Value* UnitConverter::FindProperDestinationUnit(
   // no proper unit found, return nullptr.
   const Value* dst_unit = nullptr;
   double min_rate = preferred_range;
-  for (const Value& unit : units->GetList()) {
+  for (const Value& unit : units->GetListDeprecated()) {
     const auto* name = unit.FindStringPath(kNamePath);
     const auto rate_a = unit.FindDoublePath(kConversionRateAPath);
     if (*name == *src_name || !rate_a.has_value() || rate_a.value() == 0)
@@ -85,9 +84,9 @@ const Value* UnitConverter::FindProperDestinationUnit(
 
 const Value* UnitConverter::GetConversionForCategory(
     const std::string& target_category) {
-  if (rule_set_.GetList().empty())
+  if (rule_set_.GetListDeprecated().empty())
     return nullptr;
-  for (const Value& conversion : rule_set_.GetList()) {
+  for (const Value& conversion : rule_set_.GetListDeprecated()) {
     const auto* category = conversion.FindStringPath(kCategoryPath);
     if (category && *category == target_category)
       return &conversion;
@@ -106,4 +105,3 @@ const Value* UnitConverter::GetPossibleUnitsForCategory(
 }
 
 }  // namespace quick_answers
-}  // namespace ash

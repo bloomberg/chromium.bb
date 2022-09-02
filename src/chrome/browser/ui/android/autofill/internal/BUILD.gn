@@ -30,6 +30,7 @@ android_library("java") {
     ":jni_headers",
     "//base:base_java",
     "//base:jni_java",
+    "//build/android:build_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
@@ -65,7 +66,6 @@ android_library("junit") {
   ]
   deps = [
     ":java",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
@@ -76,6 +76,7 @@ android_library("junit") {
     "//third_party/junit:junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_full_java",
+    "//ui/android:ui_java_test_support",
   ]
 }
 

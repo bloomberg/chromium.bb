@@ -178,7 +178,7 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
 
 }  // namespace
 
-std::vector<InterfaceInfo> GetAllInterfaces() {
+std::vector<InterfaceInfo> GetNetworkInterfaces() {
   std::vector<InterfaceInfo> results;
   ifaddrs* interfaces;
   if (getifaddrs(&interfaces) == 0) {

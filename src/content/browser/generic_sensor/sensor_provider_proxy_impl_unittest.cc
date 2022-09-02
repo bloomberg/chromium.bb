@@ -16,24 +16,26 @@
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 
 namespace content {
 
 namespace {
 
 // MockPermissionManager with a RequestPermission() implementation that always
-// grants PermissionType::SENSORS requests.
+// grants blink::PermissionType::SENSORS requests.
 class TestPermissionManager : public MockPermissionManager {
  public:
-  void RequestPermission(
-      PermissionType permission,
-      RenderFrameHost* render_frame_host,
-      const GURL& requesting_origin,
+  void RequestPermissionsFromCurrentDocument(
+      const std::vector<blink::PermissionType>& permissions,
+      content::RenderFrameHost* render_frame_host,
       bool user_gesture,
-      base::OnceCallback<void(blink::mojom::PermissionStatus)> callback)
+      base::OnceCallback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
       override {
-    ASSERT_EQ(permission, PermissionType::SENSORS);
-    std::move(callback).Run(blink::mojom::PermissionStatus::GRANTED);
+    ASSERT_EQ(permissions.size(), 1ul);
+    ASSERT_EQ(permissions[0], blink::PermissionType::SENSORS);
+    std::move(callback).Run({blink::mojom::PermissionStatus::GRANTED});
   }
 };
 

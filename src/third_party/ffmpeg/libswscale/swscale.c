@@ -18,22 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <inttypes.h>
-#include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "libavutil/avassert.h"
-#include "libavutil/avutil.h"
 #include "libavutil/bswap.h"
+#include "libavutil/common.h"
 #include "libavutil/cpu.h"
-#include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
-#include "libavutil/mathematics.h"
 #include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
 #include "config.h"
-#include "rgb2rgb.h"
 #include "swscale_internal.h"
 #include "swscale.h"
 
@@ -329,7 +325,7 @@ static int swscale(SwsContext *c, const uint8_t *src[],
     ) {
         SwsContext *const ctx = c->parent ? c->parent : c;
         int cpu_flags = av_get_cpu_flags();
-        if (HAVE_MMXEXT && (cpu_flags & AV_CPU_FLAG_SSE2) &&
+        if (flags & SWS_PRINT_INFO && HAVE_MMXEXT && (cpu_flags & AV_CPU_FLAG_SSE2) &&
             !atomic_exchange_explicit(&ctx->stride_unaligned_warned,1, memory_order_relaxed)) {
             av_log(c, AV_LOG_WARNING, "Warning: data is not aligned! This can lead to a speed loss\n");
         }

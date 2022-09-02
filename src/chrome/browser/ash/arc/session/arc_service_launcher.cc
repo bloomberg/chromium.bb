@@ -54,7 +54,6 @@
 #include "chrome/browser/ash/arc/auth/arc_auth_service.h"
 #include "chrome/browser/ash/arc/bluetooth/arc_bluetooth_bridge.h"
 #include "chrome/browser/ash/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
-#include "chrome/browser/ash/arc/cast_receiver/arc_cast_receiver_service.h"
 #include "chrome/browser/ash/arc/enterprise/arc_enterprise_reporting_service.h"
 #include "chrome/browser/ash/arc/enterprise/cert_store/cert_store_service.h"
 #include "chrome/browser/ash/arc/file_system_watcher/arc_file_system_watcher_service.h"
@@ -69,12 +68,14 @@
 #include "chrome/browser/ash/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/ash/arc/metrics/arc_metrics_service_proxy.h"
 #include "chrome/browser/ash/arc/nearby_share/arc_nearby_share_bridge.h"
+#include "chrome/browser/ash/arc/net/cert_manager_impl.h"
 #include "chrome/browser/ash/arc/notification/arc_boot_error_notification.h"
 #include "chrome/browser/ash/arc/notification/arc_provision_notification_service.h"
 #include "chrome/browser/ash/arc/oemcrypto/arc_oemcrypto_bridge.h"
 #include "chrome/browser/ash/arc/pip/arc_pip_bridge.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ash/arc/print_spooler/arc_print_spooler_bridge.h"
+#include "chrome/browser/ash/arc/privacy_items/arc_privacy_items_bridge.h"
 #include "chrome/browser/ash/arc/process/arc_process_service.h"
 #include "chrome/browser/ash/arc/screen_capture/arc_screen_capture_bridge.h"
 #include "chrome/browser/ash/arc/session/arc_demo_mode_preference_handler.h"
@@ -95,10 +96,23 @@
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/channel_info.h"
+#include "components/arc/common/intent_helper/arc_icon_cache_delegate.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
+#if BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
+#include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
+#include "chromeos/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
+
+// Delay for repeatedly checking if the TPM is owned or not.
+constexpr base::TimeDelta kTpmOwnershipCheckDelay = base::Seconds(5);
+// Timeout for waiting for the daemon to become available after we have owned
+// the TPM.
+constexpr base::TimeDelta kDaemonWaitTimeoutSec = base::Seconds(30);
+#endif  // BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
 namespace arc {
 namespace {
 
@@ -149,7 +163,22 @@ ArcServiceLauncher* ArcServiceLauncher::Get() {
 }
 
 void ArcServiceLauncher::Initialize() {
+#if BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
+  // If we have ARC HWDRM then we need to wait for the CdmFactoryDaemon service
+  // to advertise avalability so that arc-prepare-host-generated-dir can query
+  // it via D-Bus for the CDM client information.
+  chromeos::CdmFactoryDaemonClient::Get()->WaitForServiceToBeAvailable(
+      base::BindOnce(&ArcServiceLauncher::OnCdmFactoryDaemonAvailable,
+                     weak_factory_.GetWeakPtr(), /*from_timeout=*/false));
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ArcServiceLauncher::OnCheckTpmStatus,
+                     weak_factory_.GetWeakPtr()),
+      kTpmOwnershipCheckDelay);
+#else
   arc_session_manager_->ExpandPropertyFilesAndReadSalt();
+#endif  // BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
 }
 
 void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {
@@ -197,7 +226,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcBootErrorNotification::GetForBrowserContext(profile);
   ArcBootPhaseMonitorBridge::GetForBrowserContext(profile);
   ArcCameraBridge::GetForBrowserContext(profile);
-  ArcCastReceiverService::GetForBrowserContext(profile);
   ArcClipboardBridge::GetForBrowserContext(profile);
   ArcCrashCollectorBridge::GetForBrowserContext(profile);
   ArcDarkThemeBridge::GetForBrowserContext(profile);
@@ -214,6 +242,12 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   if (ash::features::IsArcInputOverlayEnabled())
     ArcInputOverlayManager::GetForBrowserContext(profile);
   ArcInstanceThrottle::GetForBrowserContext(profile);
+  {
+    auto* intent_helper = ArcIntentHelperBridge::GetForBrowserContext(profile);
+    intent_helper->SetDelegate(std::make_unique<FactoryResetDelegate>());
+    arc_icon_cache_delegate_provider_ =
+        std::make_unique<ArcIconCacheDelegateProvider>(intent_helper);
+  }
   ArcIntentHelperBridge::GetForBrowserContext(profile)->SetDelegate(
       std::make_unique<FactoryResetDelegate>());
   ArcKeyboardShortcutBridge::GetForBrowserContext(profile);
@@ -228,15 +262,20 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcMetricsServiceProxy::GetForBrowserContext(profile);
   ArcMidisBridge::GetForBrowserContext(profile);
   ArcNearbyShareBridge::GetForBrowserContext(profile);
-  ArcNetHostImpl::GetForBrowserContext(profile)->SetPrefService(
-      profile->GetPrefs());
+  {
+    auto* arc_net_host_impl = ArcNetHostImpl::GetForBrowserContext(profile);
+    arc_net_host_impl->SetPrefService(profile->GetPrefs());
+    arc_net_host_impl->SetCertManager(
+        std::make_unique<CertManagerImpl>(profile));
+  }
   ArcOemCryptoBridge::GetForBrowserContext(profile);
   ArcPaymentAppBridge::GetForBrowserContext(profile);
   ArcPipBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);
   ArcPowerBridge::GetForBrowserContext(profile)->SetUserIdHash(
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile));
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile));
   ArcPrintSpoolerBridge::GetForBrowserContext(profile);
+  ArcPrivacyItemsBridge::GetForBrowserContext(profile);
   ArcProcessService::GetForBrowserContext(profile);
   ArcPropertyBridge::GetForBrowserContext(profile);
   ArcProvisionNotificationService::GetForBrowserContext(profile);
@@ -283,6 +322,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
 void ArcServiceLauncher::Shutdown() {
   arc_play_store_enabled_preference_handler_.reset();
   arc_session_manager_->Shutdown();
+  arc_icon_cache_delegate_provider_.reset();
 }
 
 void ArcServiceLauncher::ResetForTesting() {
@@ -298,5 +338,55 @@ void ArcServiceLauncher::ResetForTesting() {
       arc_service_manager_->arc_bridge_service(), chrome::GetChannel(),
       scheduler_configuration_manager_);
 }
+
+#if BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
+void ArcServiceLauncher::OnCdmFactoryDaemonAvailable(
+    bool from_timeout,
+    bool is_service_available) {
+  if (is_service_available && !expanded_property_files_) {
+    if (from_timeout) {
+      LOG(ERROR)
+          << "Timed out waiting for CdmFactoryDaemon service in ARC startup";
+    }
+    expanded_property_files_ = true;
+    arc_session_manager_->ExpandPropertyFilesAndReadSalt();
+    weak_factory_.InvalidateWeakPtrs();
+  }
+}
+
+void ArcServiceLauncher::OnCheckTpmStatus() {
+  chromeos::TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
+      ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
+      base::BindOnce(&ArcServiceLauncher::OnGetTpmStatus,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ArcServiceLauncher::OnGetTpmStatus(
+    const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply) {
+  if (expanded_property_files_)
+    return;
+
+  if (reply.status() == ::tpm_manager::TpmManagerStatus::STATUS_SUCCESS &&
+      reply.is_owned()) {
+    // The TPM is owned, so we should invoke OnCdmFactoryDaemonAvailable() after
+    // our timeout so that the property files get expanded even if the daemon
+    // doesn't come online.
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ArcServiceLauncher::OnCdmFactoryDaemonAvailable,
+                       weak_factory_.GetWeakPtr(),
+                       /*from_timeout=*/true,
+                       /*is_service_available=*/true),
+        kDaemonWaitTimeoutSec);
+    return;
+  }
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ArcServiceLauncher::OnCheckTpmStatus,
+                     weak_factory_.GetWeakPtr()),
+      kTpmOwnershipCheckDelay);
+}
+#endif  // BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
 
 }  // namespace arc

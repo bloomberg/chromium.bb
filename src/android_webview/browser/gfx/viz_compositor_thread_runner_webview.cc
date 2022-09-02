@@ -13,6 +13,7 @@
 #include "base/notreached.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/viz/common/features.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
@@ -68,9 +69,18 @@ void VizCompositorThreadRunnerWebView::InitFrameSinkManagerOnViz() {
   // SharedBitmap.
   server_shared_bitmap_manager_ =
       std::make_unique<viz::ServerSharedBitmapManager>();
-  frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
-      viz::FrameSinkManagerImpl::InitParams(
-          server_shared_bitmap_manager_.get()));
+
+  auto init_params = viz::FrameSinkManagerImpl::InitParams(
+      server_shared_bitmap_manager_.get());
+
+  if (base::FeatureList::IsEnabled(features::kWebViewNewInvalidateHeuristic)) {
+    // HWUI has 2 frames pipelineing and we need another one because we force
+    // client to be frame behind.
+    init_params.max_uncommitted_frames = 3;
+  }
+
+  frame_sink_manager_ =
+      std::make_unique<viz::FrameSinkManagerImpl>(init_params);
 }
 
 viz::FrameSinkManagerImpl*
@@ -98,26 +108,22 @@ void VizCompositorThreadRunnerWebView::PostTaskAndBlock(
 
 VizCompositorThreadRunnerWebView::~VizCompositorThreadRunnerWebView() = default;
 
-base::PlatformThreadId VizCompositorThreadRunnerWebView::thread_id() {
-  DCHECK(viz_thread_.IsRunning());
-  return viz_thread_.GetThreadId();
-}
-
 base::SingleThreadTaskRunner* VizCompositorThreadRunnerWebView::task_runner() {
   return viz_task_runner_.get();
 }
 
-void VizCompositorThreadRunnerWebView::CreateFrameSinkManager(
-    viz::mojom::FrameSinkManagerParamsPtr params) {
-  // Does not support software compositing.
-  NOTREACHED();
+bool VizCompositorThreadRunnerWebView::CreateHintSessionFactory(
+    base::flat_set<base::PlatformThreadId> thread_ids,
+    base::RepeatingClosure* wake_up_closure) {
+  return false;
 }
 
 void VizCompositorThreadRunnerWebView::CreateFrameSinkManager(
     viz::mojom::FrameSinkManagerParamsPtr params,
-    gpu::CommandBufferTaskExecutor* task_executor,
-    viz::GpuServiceImpl* gpu_service,
-    viz::HintSessionFactory* hint_session_factory) {
+    viz::GpuServiceImpl* gpu_service) {
+  // Does not support software compositing.
+  DCHECK(gpu_service);
+
   viz_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

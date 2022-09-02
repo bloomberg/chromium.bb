@@ -104,10 +104,13 @@ class Trans4x4WHT : public libaom_test::TransformTestBase<tran_low_t>,
 
       int16_t *input_block = reinterpret_cast<int16_t *>(
           aom_memalign(16, sizeof(int16_t) * stride * height_));
+      ASSERT_NE(input_block, nullptr);
       tran_low_t *output_ref_block = reinterpret_cast<tran_low_t *>(
           aom_memalign(16, sizeof(output_ref_block[0]) * num_coeffs_));
+      ASSERT_NE(output_ref_block, nullptr);
       tran_low_t *output_block = reinterpret_cast<tran_low_t *>(
           aom_memalign(16, sizeof(output_block[0]) * num_coeffs_));
+      ASSERT_NE(output_block, nullptr);
 
       for (int i = 0; i < count_test_block; ++i) {
         int j, k;

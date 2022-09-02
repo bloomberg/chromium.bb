@@ -30,6 +30,50 @@ namespace tflite {
 namespace gpu {
 namespace cl {
 
+absl::Status RunPredefinedLayoutSample(const std::string& model_name) {
+  auto flatbuffer = tflite::FlatBufferModel::BuildFromFile(model_name.c_str());
+  GraphFloat32 graph_cl;
+  ops::builtin::BuiltinOpResolver op_resolver;
+  RETURN_IF_ERROR(BuildFromFlatBuffer(*flatbuffer, op_resolver, &graph_cl,
+                                      /*allow_quant_ops=*/true));
+
+  Environment env;
+  RETURN_IF_ERROR(CreateEnvironment(&env));
+
+  CreateGpuModelInfo create_info;
+  create_info.precision = env.IsSupported(CalculationsPrecision::F16)
+                              ? CalculationsPrecision::F16
+                              : CalculationsPrecision::F32;
+  create_info.storage_type = GetFastestStorageType(env.device().GetInfo());
+  create_info.hints.Add(ModelHints::kAllowSpecialKernels);
+  {
+    // Example of adding predefined descriptor
+    // Assumed that graph has first input with batch = 1.
+    auto data_type = DeduceDataTypeFromPrecision(create_info.precision);
+    create_info.predefined[graph_cl.inputs()[0]->id] =
+        TensorDescriptor{data_type, TensorStorageType::BUFFER, Layout::HWC};
+  }
+  std::cout << "Precision: " << ToString(create_info.precision) << std::endl;
+  std::cout << "Storage type: " << ToString(create_info.storage_type)
+            << std::endl;
+  InferenceContext context;
+  RETURN_IF_ERROR(
+      context.InitFromGraphWithTransforms(create_info, &graph_cl, &env));
+
+  // After initialization we can receive input tensor
+  // in_ten will have TensorStorageType::BUFFER storage type
+  Tensor* in_ten = context.GetTensor(graph_cl.inputs()[0]->id);
+  if (in_ten->GetStorageType() != TensorStorageType::BUFFER) {
+    return absl::InternalError("Failed preconditiion");
+  }
+
+  RETURN_IF_ERROR(context.AddToQueue(env.queue()));
+
+  std::cout << "Finished RunPredefinedLayoutSample." << std::endl;
+
+  return absl::OkStatus();
+}
+
 absl::Status RunExternalImmutableSample(const std::string& model_name) {
   auto flatbuffer = tflite::FlatBufferModel::BuildFromFile(model_name.c_str());
   GraphFloat32 graph_cl;
@@ -40,7 +84,7 @@ absl::Status RunExternalImmutableSample(const std::string& model_name) {
   Environment env;
   RETURN_IF_ERROR(CreateEnvironment(&env));
 
-  InferenceContext::CreateInferenceInfo create_info;
+  CreateGpuModelInfo create_info;
   create_info.precision = env.IsSupported(CalculationsPrecision::F16)
                               ? CalculationsPrecision::F16
                               : CalculationsPrecision::F32;
@@ -94,7 +138,7 @@ absl::Status RunSerializedTest(const std::string& model_name) {
   Environment env;
   RETURN_IF_ERROR(CreateEnvironment(&env));
 
-  InferenceContext::CreateInferenceInfo create_info;
+  CreateGpuModelInfo create_info;
   create_info.precision = env.IsSupported(CalculationsPrecision::F16)
                               ? CalculationsPrecision::F16
                               : CalculationsPrecision::F32;
@@ -182,6 +226,53 @@ absl::Status RunSerializedTest(const std::string& model_name) {
   return absl::OkStatus();
 }
 
+absl::Status RunCommandBufferSample(int num_tests, int num_runs_per_sec,
+                                    Environment* env,
+                                    InferenceContext* context) {
+  if (!env->device().GetInfo().SupportsExtension("cl_khr_command_buffer")) {
+    return absl::OkStatus();
+  }
+
+  cl_command_queue command_queue = env->queue()->queue();
+  cl_int errcode_ret;
+  std::vector<cl_command_buffer_khr> cbs(num_runs_per_sec);
+  for (auto& cb : cbs) {
+    cb = clCreateCommandBufferKHR(1, &command_queue, nullptr, &errcode_ret);
+    if (errcode_ret != CL_SUCCESS) {
+      return absl::InternalError("Failed clCreateCommandBufferKHR.");
+    }
+    RETURN_IF_ERROR(context->AddToCommanBuffer(cb));
+    errcode_ret = clFinalizeCommandBufferKHR(cb);
+    if (errcode_ret != CL_SUCCESS) {
+      return absl::InternalError("Failed clFinalizeCommandBufferKHR.");
+    }
+  }
+
+  for (int i = 0; i < num_tests; ++i) {
+    const auto start = std::chrono::high_resolution_clock::now();
+    for (auto& cb : cbs) {
+      cl_int error_code =
+          clEnqueueCommandBufferKHR(1, &command_queue, cb, 0, nullptr, nullptr);
+      if (error_code != CL_SUCCESS) {
+        return absl::UnknownError(
+            absl::StrCat("Failed to clEnqueueCommandBufferKHR - ",
+                         CLErrorCodeToString(error_code)));
+      }
+      clFlush(command_queue);
+    }
+    clFinish(command_queue);
+    const auto end = std::chrono::high_resolution_clock::now();
+    const double total_time_ms = (end - start).count() * 1e-6f;
+    const double average_inference_time = total_time_ms / num_runs_per_sec;
+    std::cout << "Total time CB - " << average_inference_time << "ms"
+              << std::endl;
+  }
+  for (auto& cb : cbs) {
+    clReleaseCommandBufferKHR(cb);
+  }
+  return absl::OkStatus();
+}
+
 absl::Status RunModelSample(const std::string& model_name) {
   auto flatbuffer = tflite::FlatBufferModel::BuildFromFile(model_name.c_str());
   GraphFloat32 graph_cl;
@@ -192,7 +283,7 @@ absl::Status RunModelSample(const std::string& model_name) {
   Environment env;
   RETURN_IF_ERROR(CreateEnvironment(&env));
 
-  InferenceContext::CreateInferenceInfo create_info;
+  CreateGpuModelInfo create_info;
   create_info.precision = env.IsSupported(CalculationsPrecision::F16)
                               ? CalculationsPrecision::F16
                               : CalculationsPrecision::F32;
@@ -209,9 +300,16 @@ absl::Status RunModelSample(const std::string& model_name) {
   ProfilingInfo profiling_info;
   RETURN_IF_ERROR(context.Profile(queue, &profiling_info));
   std::cout << profiling_info.GetDetailedReport() << std::endl;
-  uint64_t mem_bytes = context.GetSizeOfMemoryAllocatedForIntermediateTensors();
+  const uint64_t runtime_mem_bytes =
+      context.GetSizeOfMemoryAllocatedForIntermediateTensors();
   std::cout << "Memory for intermediate tensors - "
-            << mem_bytes / 1024.0 / 1024.0 << " MB" << std::endl;
+            << runtime_mem_bytes / 1024.0 / 1024.0 << " MB" << std::endl;
+  const uint64_t const_mem_bytes = context.GetConstantTensorsSize();
+  std::cout << "Memory for constant tensors - "
+            << const_mem_bytes / 1024.0 / 1024.0 << " MB" << std::endl;
+  std::cout << "Total tensors memory(const + intermediate) - "
+            << (const_mem_bytes + runtime_mem_bytes) / 1024.0 / 1024.0 << " MB"
+            << std::endl;
 
   const int num_runs_per_sec = std::max(
       1, static_cast<int>(1000.0f / absl::ToDoubleMilliseconds(
@@ -229,6 +327,9 @@ absl::Status RunModelSample(const std::string& model_name) {
     const double average_inference_time = total_time_ms / num_runs_per_sec;
     std::cout << "Total time - " << average_inference_time << "ms" << std::endl;
   }
+
+  RETURN_IF_ERROR(
+      RunCommandBufferSample(kNumRuns, num_runs_per_sec, &env, &context));
 
   return absl::OkStatus();
 }
@@ -267,6 +368,15 @@ int main(int argc, char** argv) {
   bool run_with_external_immutable_tensors = false;
   if (run_with_external_immutable_tensors) {
     run_status = tflite::gpu::cl::RunExternalImmutableSample(argv[1]);
+    if (!run_status.ok()) {
+      std::cerr << run_status.message();
+      return -1;
+    }
+  }
+
+  bool run_with_predefined_layout = false;
+  if (run_with_predefined_layout) {
+    run_status = tflite::gpu::cl::RunPredefinedLayoutSample(argv[1]);
     if (!run_status.ok()) {
       std::cerr << run_status.message();
       return -1;

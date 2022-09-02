@@ -45,6 +45,7 @@ namespace {
 
 using google_breakpad::Minidump;
 using google_breakpad::MinidumpThreadList;
+using google_breakpad::MinidumpThreadNameList;
 using google_breakpad::MinidumpModuleList;
 using google_breakpad::MinidumpMemoryInfoList;
 using google_breakpad::MinidumpMemoryList;
@@ -120,6 +121,11 @@ static bool PrintMinidumpDump(const Options& options) {
     BPLOG(ERROR) << "minidump.GetThreadList() failed";
   } else {
     thread_list->Print();
+  }
+
+  MinidumpThreadNameList *thread_name_list = minidump.GetThreadNameList();
+  if (thread_name_list) {
+    thread_name_list->Print();
   }
 
   // It's useful to be able to see the full list of modules here even if it

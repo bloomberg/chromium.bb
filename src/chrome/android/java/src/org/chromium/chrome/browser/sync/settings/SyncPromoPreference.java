@@ -13,7 +13,6 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -75,7 +74,6 @@ public class SyncPromoPreference extends Preference
         mAccountManagerFacade.addObserver(this);
         signinManager.addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
-        FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone();
         mSigninPromoController = new SigninPromoController(
                 SigninAccessPoint.SETTINGS, SyncConsentActivityLauncherImpl.get());
 
@@ -92,16 +90,6 @@ public class SyncPromoPreference extends Preference
         signinManager.removeSignInStateObserver(this);
         mProfileDataCache.removeObserver(this);
         mSigninPromoController = null;
-    }
-
-    /**
-     * Should be called when the {@link PreferenceFragmentCompat} which used {@link
-     * SyncPromoPreference} gets destroyed. Used to record "ImpressionsTilDismiss" histogram.
-     */
-    public void onPreferenceFragmentDestroyed() {
-        if (mSigninPromoController != null) {
-            mSigninPromoController.onPromoDestroyed();
-        }
     }
 
     /** Returns the state of the preference. Not valid until registerForUpdates is called. */

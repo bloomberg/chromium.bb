@@ -22,13 +22,14 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_handle.h"
 #endif
 
 namespace base {
 class CommandLine;
 class FilePath;
+class WaitableEvent;
 }
 
 namespace discardable_memory {

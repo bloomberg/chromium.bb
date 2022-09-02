@@ -8,9 +8,11 @@
 #ifndef SKSL_PIPELINESTAGECODEGENERATOR
 #define SKSL_PIPELINESTAGECODEGENERATOR
 
-#include "include/private/SkSLString.h"
+#include "include/core/SkTypes.h"
 
-#if defined(SKSL_STANDALONE) || SK_SUPPORT_GPU
+#if defined(SKSL_STANDALONE) || SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
+
+#include <string>
 
 namespace SkSL {
 
@@ -22,16 +24,20 @@ namespace PipelineStage {
     public:
         virtual ~Callbacks() = default;
 
-        virtual String getMangledName(const char* name) { return name; }
+        virtual std::string getMainName() { return "main"; }
+        virtual std::string getMangledName(const char* name) { return name; }
         virtual void   defineFunction(const char* declaration, const char* body, bool isMain) = 0;
         virtual void   declareFunction(const char* declaration) = 0;
         virtual void   defineStruct(const char* definition) = 0;
         virtual void   declareGlobal(const char* declaration) = 0;
 
-        virtual String declareUniform(const VarDeclaration*) = 0;
-        virtual String sampleShader(int index, String coords) = 0;
-        virtual String sampleColorFilter(int index, String color) = 0;
-        virtual String sampleBlender(int index, String src, String dst) = 0;
+        virtual std::string declareUniform(const VarDeclaration*) = 0;
+        virtual std::string sampleShader(int index, std::string coords) = 0;
+        virtual std::string sampleColorFilter(int index, std::string color) = 0;
+        virtual std::string sampleBlender(int index, std::string src, std::string dst) = 0;
+
+        virtual std::string toLinearSrgb(std::string color) = 0;
+        virtual std::string fromLinearSrgb(std::string color) = 0;
     };
 
     /*

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_PASSWORD_STORE_ANDROID_BACKEND_BRIDGE_IMPL_H_
 
 #include "base/android/scoped_java_ref.h"
-#include "base/compiler_specific.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_bridge.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 
@@ -35,23 +34,9 @@ class PasswordStoreAndroidBackendBridgeImpl
       jint job_id,
       const base::android::JavaParamRef<jbyteArray>& passwords);
 
-  // Called via JNI. Called when the api call with `job_id` finished and
-  // provides serialized PasswordWithLocalData identifying the added 'login'.
-  void OnLoginAdded(JNIEnv* env,
-                    jint job_id,
-                    const base::android::JavaParamRef<jbyteArray>& login);
-
-  // Called via JNI. Called when the api call with `job_id` finished and
-  // provides serialized PasswordWithLocalData identifying the updated 'login'.
-  void OnLoginUpdated(JNIEnv* env,
-                      jint job_id,
-                      const base::android::JavaParamRef<jbyteArray>& login);
-
-  // Called via JNI. Called when the api call with `job_id` finished and
-  // provides Serialized PasswordSpecificsData identifying the deleted 'login'.
-  void OnLoginDeleted(JNIEnv* env,
-                      jint job_id,
-                      const base::android::JavaParamRef<jbyteArray>& login);
+  // Called via JNI. Called when the api call with `job_id` finished that could
+  // have added, modified or deleted a login.
+  void OnLoginChanged(JNIEnv* env, jint job_id);
 
   // Called via JNI. Called when the api call with `job_id` finished with
   // an exception.
@@ -60,18 +45,18 @@ class PasswordStoreAndroidBackendBridgeImpl
  private:
   // Implements PasswordStoreAndroidBackendBridge interface.
   void SetConsumer(base::WeakPtr<Consumer> consumer) override;
-  JobId GetAllLogins() override WARN_UNUSED_RESULT;
-  JobId GetAutofillableLogins() override WARN_UNUSED_RESULT;
-  JobId GetLoginsForSignonRealm(const std::string& signon_realm) override
-      WARN_UNUSED_RESULT;
-  JobId AddLogin(const password_manager::PasswordForm& form) override
-      WARN_UNUSED_RESULT;
-  JobId UpdateLogin(const password_manager::PasswordForm& form) override
-      WARN_UNUSED_RESULT;
-  JobId RemoveLogin(const password_manager::PasswordForm& form) override
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] JobId GetAllLogins(Account account) override;
+  [[nodiscard]] JobId GetAutofillableLogins(Account account) override;
+  [[nodiscard]] JobId GetLoginsForSignonRealm(const std::string& signon_realm,
+                                              Account account) override;
+  [[nodiscard]] JobId AddLogin(const password_manager::PasswordForm& form,
+                               Account account) override;
+  [[nodiscard]] JobId UpdateLogin(const password_manager::PasswordForm& form,
+                                  Account account) override;
+  [[nodiscard]] JobId RemoveLogin(const password_manager::PasswordForm& form,
+                                  Account account) override;
 
-  JobId GetNextJobId() WARN_UNUSED_RESULT;
+  [[nodiscard]] JobId GetNextJobId();
 
   // This member stores the unique ID last used for an API request.
   JobId last_job_id_{0};

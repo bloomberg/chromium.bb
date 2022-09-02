@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2022 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,50 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+type Tokenizer = (line: string, callback: (value: string, style: string|null) => void) => void;
 
-import type * as CodeMirrorModule from '../../third_party/codemirror/codemirror-legacy.js'; // eslint-disable-line @typescript-eslint/no-unused-vars
-import '../../third_party/codemirror/package/addon/runmode/runmode-standalone.js';
-import '../../third_party/codemirror/package/mode/css/css.js';
+export function createCssTokenizer(): Tokenizer {
+  async function tokenize(line: string, callback: (value: string, style: string|null) => void): Promise<void> {
+    const streamParser = await CodeMirror.cssStreamParser();
+    const stream = new CodeMirror.StringStream();
+    stream.string = line;
 
-import type * as TextUtils from './TextUtils.js';
-
-let tokenizerFactoryInstance: TokenizerFactory;
-
-export type Tokenizer =
-    (line: string, callback: (value: string, style: string|null, start: number, end: number) => void) => void;
-
-export class TokenizerFactory implements TextUtils.TokenizerFactory {
-  static instance(opts: {forceNew: boolean|null} = {forceNew: null}): TokenizerFactory {
-    const {forceNew} = opts;
-    if (!tokenizerFactoryInstance || forceNew) {
-      tokenizerFactoryInstance = new TokenizerFactory();
+    const startState = streamParser.startState();
+    let lastPos = stream.pos;
+    while (!stream.eol()) {
+      const token = streamParser.token(stream, startState);
+      const segment = stream.current().substring(lastPos, stream.pos);
+      callback(segment, token);
+      lastPos = stream.pos;
     }
-
-    return tokenizerFactoryInstance;
   }
-
-  // https://crbug.com/1151919 * = CodeMirror.Mode
-  getMode(mimeType: string): any {
-    return CodeMirror.getMode({indentUnit: 2}, mimeType);
-  }
-
-  // https://crbug.com/1151919 * = CodeMirror.Mode
-  createTokenizer(mimeType: string): Tokenizer {
-    const cmMode = CodeMirror.getMode({indentUnit: 2}, mimeType);
-    const state = CodeMirror.startState(cmMode);
-
-    function tokenize(
-        line: string, callback: (value: string, style: string|null, start: number, end: number) => void): void {
-      const stream = new CodeMirror.StringStream(line);
-      while (!stream.eol()) {
-        const style =
-            (cmMode.token as (stream: CodeMirror.StringStream, state: unknown) => string | null)(stream, state);
-        const value = stream.current();
-        callback(value, style, stream.start, stream.start + value.length);
-        stream.start = stream.pos;
-      }
-    }
-    return tokenize;
-  }
+  return tokenize;
 }

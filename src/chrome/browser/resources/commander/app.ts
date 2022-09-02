@@ -1,31 +1,24 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './icons.html.js';
 import './option.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
-import {Debouncer, enqueueDebouncer, html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Debouncer, DomRepeatEvent, enqueueDebouncer, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {getTemplate} from './app.html.js';
 import {BrowserProxy} from './browser_proxy.js';
-import {CommanderOptionElement} from './option.js';
-import {Action, Entity, Option, ViewModel} from './types.js';
-
-/** Event interface for dom-repeat */
-interface OptionRepeaterEvent extends CustomEvent {
-  model: {
-    item: Option,
-    index: number,
-  }
-}
+import {Action, Option, ViewModel} from './types.js';
 
 interface CommanderAppElement {
   $: {
     input: HTMLInputElement,
     inputRow: HTMLElement,
-  }
+  };
 }
 
 
@@ -35,7 +28,7 @@ class CommanderAppElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -65,7 +58,7 @@ class CommanderAppElement extends PolymerElement {
     this.browserProxy_ = BrowserProxy.getInstance();
   }
 
-  ready() {
+  override ready() {
     super.ready();
     addWebUIListener('view-model-updated', this.onViewModelUpdated_.bind(this));
     addWebUIListener('initialize', this.initialize_.bind(this));
@@ -122,8 +115,8 @@ class CommanderAppElement extends PolymerElement {
     if (viewModel.action === Action.DISPLAY_RESULTS) {
       this.options_ = viewModel.options || [];
       this.resultSetId_ = viewModel.resultSetId;
-      this.showNoResults_ =
-          this.resultSetId_ != null && this.options_.length === 0;
+      this.showNoResults_ = this.resultSetId_ != null &&
+          this.$.input.value !== '' && this.options_.length === 0;
       if (this.options_.length > 0) {
         this.focusedIndex_ = 0;
       }
@@ -148,7 +141,7 @@ class CommanderAppElement extends PolymerElement {
   /**
    * Called when a result option is clicked via mouse.
    */
-  private onOptionClick_(e: OptionRepeaterEvent) {
+  private onOptionClick_(e: DomRepeatEvent<Option>) {
     this.notifySelectedAtIndex_(e.model.index);
   }
 

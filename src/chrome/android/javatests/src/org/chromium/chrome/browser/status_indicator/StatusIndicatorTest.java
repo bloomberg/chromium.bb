@@ -24,10 +24,8 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,10 +46,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.RecentTabsPageTestUtils;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.UiRestriction;
 
 /**
@@ -61,15 +57,10 @@ import org.chromium.ui.test.util.UiRestriction;
 // clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.DisableFeatures({ChromeFeatureList.OFFLINE_INDICATOR_V2})
 // TODO(crbug.com/1035584): Enable for tablets once we support them.
 @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
 public class StatusIndicatorTest {
     // clang-format on
-
-    @ClassRule
-    public static DisableAnimationsTestRule mDisableAnimationsTestRule =
-            new DisableAnimationsTestRule();
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -81,7 +72,6 @@ public class StatusIndicatorTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        TabbedRootUiCoordinator.setEnableStatusIndicatorForTests(true);
         mActivityTestRule.startMainActivityOnBlankPage();
         mStatusIndicatorCoordinator = ((TabbedRootUiCoordinator) mActivityTestRule.getActivity()
                                                .getRootUiCoordinatorForTesting())
@@ -89,11 +79,6 @@ public class StatusIndicatorTest {
         mStatusIndicatorSceneLayer = mStatusIndicatorCoordinator.getSceneLayer();
         mControlContainer = mActivityTestRule.getActivity().findViewById(R.id.control_container);
         mBrowserControlsStateProvider = mActivityTestRule.getActivity().getBrowserControlsManager();
-    }
-
-    @After
-    public void tearDown() {
-        TabbedRootUiCoordinator.setEnableStatusIndicatorForTests(false);
     }
 
     @Test
@@ -221,8 +206,7 @@ public class StatusIndicatorTest {
         // clang-format on
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
 
-        onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
-                .check(matches(isDisplayed()));
+        onView(withId(R.id.secondary_tasks_surface_view)).check(matches(isDisplayed()));
         onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
         onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
         Assert.assertFalse("Wrong initial composited view visibility.",
@@ -241,7 +225,7 @@ public class StatusIndicatorTest {
 
         onView(withId(R.id.control_container))
                 .check(matches(withTopMargin(getStatusIndicator().getHeight())));
-        onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
+        onView(withId(R.id.secondary_tasks_surface_view))
                 .check(matches(
                         withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
 
@@ -253,7 +237,7 @@ public class StatusIndicatorTest {
         onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(VISIBLE)));
         onView(withId(R.id.control_container))
                 .check(matches(withTopMargin(getStatusIndicator().getHeight())));
-        onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
+        onView(withId(R.id.secondary_tasks_surface_view))
                 .check(matches(
                         withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
 
@@ -265,7 +249,7 @@ public class StatusIndicatorTest {
 
         onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
         onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
-        onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
+        onView(withId(R.id.secondary_tasks_surface_view))
                 .check(matches(
                         withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
     }

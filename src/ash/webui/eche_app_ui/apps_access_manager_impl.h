@@ -7,6 +7,9 @@
 
 #include <ostream>
 
+#include "ash/components/phonehub/multidevice_feature_access_manager.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#include "ash/services/secure_channel/public/cpp/client/connection_manager.h"
 #include "ash/webui/eche_app_ui/apps_access_manager.h"
 #include "ash/webui/eche_app_ui/eche_connector.h"
 #include "ash/webui/eche_app_ui/eche_message_receiver.h"
@@ -19,18 +22,27 @@ class PrefService;
 namespace ash {
 namespace eche_app {
 
+using AccessStatus =
+    ash::phonehub::MultideviceFeatureAccessManager::AccessStatus;
+using ConnectionStatus = secure_channel::ConnectionManager::Status;
+
 // Implements AppsAccessManager by persisting the last-known
 // apps access value to user prefs.
-class AppsAccessManagerImpl : public AppsAccessManager,
-                              public EcheMessageReceiver::Observer,
-                              public FeatureStatusProvider::Observer {
+class AppsAccessManagerImpl
+    : public AppsAccessManager,
+      public EcheMessageReceiver::Observer,
+      public FeatureStatusProvider::Observer,
+      public secure_channel::ConnectionManager::Observer {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  explicit AppsAccessManagerImpl(EcheConnector* eche_connector,
-                                 EcheMessageReceiver* message_receiver,
-                                 FeatureStatusProvider* feature_status_provider,
-                                 PrefService* pref_service);
+  explicit AppsAccessManagerImpl(
+      EcheConnector* eche_connector,
+      EcheMessageReceiver* message_receiver,
+      FeatureStatusProvider* feature_status_provider,
+      PrefService* pref_service,
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      secure_channel::ConnectionManager* connection_manager);
 
   ~AppsAccessManagerImpl() override;
 
@@ -47,23 +59,38 @@ class AppsAccessManagerImpl : public AppsAccessManager,
   void OnSendAppsSetupResponseReceived(
       proto::SendAppsSetupResponse apps_setup_response) override;
   void OnStatusChange(proto::StatusChangeType status_change_type) override {}
+  void OnAppPolicyStateChange(
+      proto::AppStreamingPolicy app_policy_state) override;
 
   // FeatureStatusProvider::Observer:
   void OnFeatureStatusChanged() override;
 
+  // secure_channel::ConnectionManager::Observer:
+  void OnConnectionStatusChanged() override;
+
   void AttemptAppsAccessStateRequest();
   void GetAppsAccessStateRequest();
   void SendShowAppsAccessSetupRequest();
+  void UpdateFeatureEnabledState(AccessStatus access_status);
+  bool IsWaitingForAccessToInitiallyEnableApps() const;
+  bool IsEligibleForOnboarding(FeatureStatus feature_status) const;
+  void UpdateSetupOperationState();
 
-  AppsAccessManager::AccessStatus ComputeAppsAccessState(
-      proto::AppsAccessState apps_access_state);
+  AccessStatus ComputeAppsAccessState();
 
   FeatureStatus current_feature_status_;
+  ConnectionStatus current_connection_status_;
   EcheConnector* eche_connector_;
   EcheMessageReceiver* message_receiver_;
   FeatureStatusProvider* feature_status_provider_;
   PrefService* pref_service_;
+  multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
+  secure_channel::ConnectionManager* connection_manager_;
   bool initialized_ = false;
+  proto::AppStreamingPolicy current_app_policy_state_ =
+      proto::AppStreamingPolicy::APP_POLICY_UNKNOWN;
+  proto::AppsAccessState current_apps_access_state_ =
+      proto::AppsAccessState::ACCESS_UNKNOWN;
 };
 
 }  // namespace eche_app

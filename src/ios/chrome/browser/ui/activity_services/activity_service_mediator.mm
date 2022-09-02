@@ -55,6 +55,9 @@
 
 @property(nonatomic, weak) UIViewController* baseViewController;
 
+// The navigation agent.
+@property(nonatomic, readonly) WebNavigationBrowserAgent* navigationAgent;
+
 @end
 
 @implementation ActivityServiceMediator
@@ -66,7 +69,8 @@
             qrGenerationHandler:(id<QRGenerationCommands>)qrGenerationHandler
                     prefService:(PrefService*)prefService
                   bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-             baseViewController:(UIViewController*)baseViewController {
+             baseViewController:(UIViewController*)baseViewController
+                navigationAgent:(WebNavigationBrowserAgent*)navigationAgent {
   if (self = [super init]) {
     _handler = handler;
     _bookmarksHandler = bookmarksHandler;
@@ -74,6 +78,7 @@
     _prefService = prefService;
     _bookmarkModel = bookmarkModel;
     _baseViewController = baseViewController;
+    _navigationAgent = navigationAgent;
   }
   return self;
 }
@@ -82,8 +87,8 @@
     (NSArray<ShareToData*>*)dataItems {
   NSMutableArray* items = [[NSMutableArray alloc] init];
 
-  // The |additionalText| is not added when sharing multiple URLs since items
-  // are not associated with each other and the |additionalText| is not likely
+  // The `additionalText` is not added when sharing multiple URLs since items
+  // are not associated with each other and the `additionalText` is not likely
   // be meaningful without the context of the page it came from.
   if (dataItems.count == 1 && dataItems.firstObject.additionalText) {
     [items addObject:[[ChromeActivityTextSource alloc]
@@ -147,7 +152,8 @@
     RequestDesktopOrMobileSiteActivity* requestActivity =
         [[RequestDesktopOrMobileSiteActivity alloc]
             initWithUserAgent:data.userAgent
-                      handler:self.handler];
+                      handler:self.handler
+              navigationAgent:self.navigationAgent];
     [applicationActivities addObject:requestActivity];
   }
 

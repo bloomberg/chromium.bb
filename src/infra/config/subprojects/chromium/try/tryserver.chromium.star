@@ -15,7 +15,7 @@ try_.defaults.set(
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
@@ -46,13 +46,22 @@ try_.builder(
 try_.builder(
     name = "mac-official",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    mirrors = [
+        "ci/mac-official",
+    ],
     cores = None,
+    # TODO(crbug.com/1279290) builds with PGO change take long time.
+    # Keep in sync with mac-official in ci/chromium.star.
+    execution_timeout = 7 * time.hour,
     os = os.MAC_ANY,
 )
 
 try_.builder(
     name = "win-official",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    mirrors = [
+        "ci/win-official",
+    ],
     os = os.WINDOWS_DEFAULT,
     execution_timeout = 6 * time.hour,
 )
@@ -62,4 +71,7 @@ try_.builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     os = os.WINDOWS_DEFAULT,
     execution_timeout = 6 * time.hour,
+    mirrors = [
+        "ci/win32-official",
+    ],
 )

@@ -17,7 +17,7 @@ title: Compositor Thread Architecture
 
 **### Background**
 
-**Some background on the basic frontend compositor archtecture, as well as Chrome’s gpu architecture, can be found here: <http://dev.chromium.org/developers/design-documents/gpu-accelerated-compositing-in-chrome>**
+**Some background on the basic frontend compositor archtecture, as well as Chrome’s gpu architecture, can be found here: <http://www.chromium.org/developers/design-documents/gpu-accelerated-compositing-in-chrome>**
 
 **### Basic Approach**
 

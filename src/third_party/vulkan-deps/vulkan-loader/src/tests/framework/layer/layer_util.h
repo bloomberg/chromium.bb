@@ -30,14 +30,14 @@
 #include "test_util.h"
 
 struct LayerDefinition {
-    std::string layerName;
-    uint32_t specVersion = VK_MAKE_VERSION(1, 0, 0);
-    uint32_t implementationVersion = VK_MAKE_VERSION(1, 0, 0);
-    std::string description;
-    std::vector<Extension> extensions;
+    BUILDER_VALUE(LayerDefinition, std::string, layerName, {})
+    BUILDER_VALUE(LayerDefinition, uint32_t, specVersion, VK_API_VERSION_1_0)
+    BUILDER_VALUE(LayerDefinition, uint32_t, implementationVersion, VK_API_VERSION_1_0)
+    BUILDER_VALUE(LayerDefinition, std::string, description, {})
+    BUILDER_VECTOR(LayerDefinition, Extension, extensions, extension)
 
-    LayerDefinition(std::string layerName, uint32_t specVersion = VK_MAKE_VERSION(1, 0, 0),
-                    uint32_t implementationVersion = VK_MAKE_VERSION(1, 0, 0), std::string description = "",
+    LayerDefinition(std::string layerName, uint32_t specVersion = VK_API_VERSION_1_0,
+                    uint32_t implementationVersion = VK_API_VERSION_1_0, std::string description = "",
                     std::vector<Extension> extensions = {})
         : layerName(layerName),
           specVersion(specVersion),

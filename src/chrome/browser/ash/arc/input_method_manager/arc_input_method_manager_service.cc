@@ -10,10 +10,12 @@
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ash/components/arc/mojom/ime_mojom_traits.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/keyboard/arc/arc_input_method_bounds_tracker.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/cxx20_erase.h"
@@ -27,11 +29,17 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/base/ime/ash/component_extension_ime_manager.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/ime/input_method_observer.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace arc {
 
@@ -154,6 +162,24 @@ class ArcInputMethodStateDelegateImpl : public ArcInputMethodState::Delegate {
   Profile* const profile_;
 };
 
+// The default implmentation of WindowDelegate.
+// It depends on ash::Shell.
+class WindowDelegateImpl : public ArcInputMethodManagerService::WindowDelegate {
+ public:
+  WindowDelegateImpl() = default;
+  WindowDelegateImpl(const WindowDelegateImpl&) = default;
+  WindowDelegateImpl& operator=(const WindowDelegateImpl&) = default;
+  ~WindowDelegateImpl() override = default;
+
+  aura::Window* GetFocusedWindow() const override {
+    return ash::window_util::GetFocusedWindow();
+  }
+
+  aura::Window* GetActiveWindow() const override {
+    return ash::window_util::GetActiveWindow();
+  }
+};
+
 }  // namespace
 
 class ArcInputMethodManagerService::ArcInputMethodBoundsObserver
@@ -183,7 +209,7 @@ class ArcInputMethodManagerService::ArcInputMethodBoundsObserver
 };
 
 class ArcInputMethodManagerService::InputMethodEngineObserver
-    : public ash::input_method::InputMethodEngineBase::Observer {
+    : public ash::input_method::InputMethodEngineObserver {
  public:
   explicit InputMethodEngineObserver(ArcInputMethodManagerService* owner)
       : owner_(owner) {}
@@ -194,7 +220,7 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
 
   ~InputMethodEngineObserver() override = default;
 
-  // ash::input_method::InputMethodEngineBase::Observer overrides:
+  // ash::input_method::InputMethodEngineObserver overrides:
   void OnActivate(const std::string& engine_id) override {
     owner_->is_arc_ime_active_ = true;
     // TODO(yhanada): Remove this line after we migrate to SPM completely.
@@ -241,11 +267,10 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
                                 int offset_pos) override {
     owner_->UpdateTextInputState();
   }
-  void OnCandidateClicked(
-      const std::string& component_id,
-      int candidate_id,
-      ash::input_method::InputMethodEngineBase::MouseButtonEvent button)
-      override {}
+  void OnCandidateClicked(const std::string& component_id,
+                          int candidate_id,
+                          ash::input_method::MouseButtonEvent button) override {
+  }
   void OnMenuItemActivated(const std::string& component_id,
                            const std::string& menu_id) override {}
   void OnScreenProjectionChanged(bool is_projected) override {}
@@ -351,7 +376,8 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
       tablet_mode_observer_(std::make_unique<TabletModeObserver>(this)),
       input_method_observer_(std::make_unique<InputMethodObserver>(this)),
       input_method_bounds_observer_(
-          std::make_unique<ArcInputMethodBoundsObserver>(this)) {
+          std::make_unique<ArcInputMethodBoundsObserver>(this)),
+      window_delegate_(std::make_unique<WindowDelegateImpl>()) {
   auto* imm = ash::input_method::InputMethodManager::Get();
   imm->AddObserver(this);
   imm->AddImeMenuObserver(this);
@@ -382,6 +408,11 @@ ArcInputMethodManagerService::~ArcInputMethodManagerService() = default;
 void ArcInputMethodManagerService::SetInputMethodManagerBridgeForTesting(
     std::unique_ptr<ArcInputMethodManagerBridge> test_bridge) {
   imm_bridge_ = std::move(test_bridge);
+}
+
+void ArcInputMethodManagerService::SetWindowDelegateForTesting(
+    std::unique_ptr<WindowDelegate> delegate) {
+  window_delegate_ = std::move(delegate);
 }
 
 void ArcInputMethodManagerService::AddObserver(Observer* observer) {
@@ -664,7 +695,16 @@ void ArcInputMethodManagerService::Focus(int context_id) {
   if (!is_arc_ime_active_)
     return;
 
-  DCHECK(!active_connection_);
+  // Some ChromeOS's native text field sets itself as a focused TextInputClient
+  // before a window containing the field, so we have to check both of a focused
+  // and an active window.
+  auto* focused = window_delegate_->GetFocusedWindow();
+  auto* active = window_delegate_->GetActiveWindow();
+  if (focused && focused->GetProperty(aura::client::kSkipImeProcessing) &&
+      ash::IsArcWindow(active)) {
+    return;
+  }
+
   active_connection_ = std::make_unique<InputConnectionImpl>(
       proxy_ime_engine_.get(), imm_bridge_.get(), context_id);
   mojo::PendingRemote<mojom::InputConnection> connection_remote;

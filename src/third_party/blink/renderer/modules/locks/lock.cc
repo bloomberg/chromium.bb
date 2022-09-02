@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/locks/lock_manager.h"
@@ -21,7 +23,7 @@ const char* kLockModeNameExclusive = "exclusive";
 const char* kLockModeNameShared = "shared";
 }  // namespace
 
-class Lock::ThenFunction final : public NewScriptFunction::Callable {
+class Lock::ThenFunction final : public ScriptFunction::Callable {
  public:
   enum ResolveType {
     kFulfilled,
@@ -33,7 +35,7 @@ class Lock::ThenFunction final : public NewScriptFunction::Callable {
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(lock_);
-    NewScriptFunction::Callable::Trace(visitor);
+    ScriptFunction::Callable::Trace(visitor);
   }
 
   ScriptValue Call(ScriptState*, ScriptValue value) override {
@@ -90,10 +92,10 @@ void Lock::HoldUntil(ScriptPromise promise, ScriptPromiseResolver* resolver) {
 
   ScriptState* script_state = resolver->GetScriptState();
   resolver_ = resolver;
-  promise.Then(MakeGarbageCollected<NewScriptFunction>(
+  promise.Then(MakeGarbageCollected<ScriptFunction>(
                    script_state, MakeGarbageCollected<ThenFunction>(
                                      this, ThenFunction::kFulfilled)),
-               MakeGarbageCollected<NewScriptFunction>(
+               MakeGarbageCollected<ScriptFunction>(
                    script_state, MakeGarbageCollected<ThenFunction>(
                                      this, ThenFunction::kRejected)));
 }
@@ -149,9 +151,21 @@ void Lock::ReleaseIfHeld() {
 }
 
 void Lock::OnConnectionError() {
+  DCHECK(resolver_);
+
   ReleaseIfHeld();
-  resolver_->Reject(MakeGarbageCollected<DOMException>(
-      DOMExceptionCode::kAbortError,
+
+  ScriptState* const script_state = resolver_->GetScriptState();
+
+  if (!IsInParallelAlgorithmRunnable(resolver_->GetExecutionContext(),
+                                     script_state)) {
+    return;
+  }
+
+  ScriptState::Scope script_state_scope(script_state);
+
+  resolver_->Reject(V8ThrowDOMException::CreateOrDie(
+      script_state->GetIsolate(), DOMExceptionCode::kAbortError,
       "Lock broken by another request with the 'steal' option."));
 }
 

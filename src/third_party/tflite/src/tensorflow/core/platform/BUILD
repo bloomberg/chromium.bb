@@ -18,6 +18,7 @@ load(
     "tf_additional_lib_hdrs",
     "tf_additional_tensor_coding_deps",
     "tf_additional_test_srcs",
+    "tf_cuda_libdevice_path_deps",
     "tf_fingerprint_deps",
     "tf_google_mobile_srcs_no_runtime",
     "tf_google_mobile_srcs_only_runtime",
@@ -60,9 +61,6 @@ load("//tensorflow:tensorflow.bzl", "filegroup")
 
 # buildifier: disable=same-origin-load
 load("//tensorflow:tensorflow.bzl", "get_compatible_with_portable")
-
-# buildifier: disable=same-origin-load
-load("//tensorflow:tensorflow.bzl", "tf_native_cc_shared_library")
 
 package(
     default_visibility = [
@@ -213,26 +211,6 @@ cc_library(
     ],
 )
 
-# Used by //tensorflow/python/platform:platform.
-tf_native_cc_shared_library(
-    name = "_cpu_feature_guard.so",
-    static_deps = [
-        # copybara:comment_begin(oss only)
-        "@bazel_tools//:__subpackages__",
-        "@com_google_absl//:__subpackages__",
-        "@eigen_archive//:__subpackages__",
-        "@hwloc//:__subpackages__",
-        "@local_config_cuda//:__subpackages__",
-        "@nsync//:__subpackages__",
-        "@snappy//:__subpackages__",
-        "//:__subpackages__",
-        # copybara:comment_end
-    ],
-    deps = [
-        "//tensorflow/core/platform:cpu_feature_guard",
-    ],
-)
-
 cc_library(
     name = "casts",
     hdrs = ["casts.h"],
@@ -254,7 +232,7 @@ cc_library(
 cc_library(
     name = "cuda_libdevice_path",
     textual_hdrs = ["cuda_libdevice_path.h"],
-    deps = tf_platform_deps("cuda_libdevice_path"),
+    deps = tf_cuda_libdevice_path_deps(),
 )
 
 cc_library(
@@ -282,6 +260,7 @@ tf_cc_test(
 cc_library(
     name = "dynamic_annotations",
     hdrs = ["dynamic_annotations.h"],
+    compatible_with = get_compatible_with_portable(),
     deps = [
         ":platform",
     ] + tf_platform_deps("dynamic_annotations"),
@@ -305,6 +284,7 @@ cc_library(
 
 cc_library(
     name = "env_time",
+    compatible_with = get_compatible_with_portable(),
     textual_hdrs = ["env_time.h"],
     deps = tf_windows_aware_platform_deps("env_time"),
 )
@@ -321,6 +301,7 @@ cc_library(
         ":str_util",
         ":strcat",
         ":types",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -396,6 +377,7 @@ cc_library(
 
 cc_library(
     name = "logging",
+    compatible_with = get_compatible_with_portable(),
     textual_hdrs = ["logging.h"],
     deps = tf_logging_deps(),
 )
@@ -403,6 +385,7 @@ cc_library(
 cc_library(
     name = "macros",
     hdrs = ["macros.h"],
+    compatible_with = get_compatible_with_portable(),
 )
 
 filegroup(
@@ -727,7 +710,6 @@ cc_library(
         ":stacktrace",
         ":str_util",
         ":strcat",
-        ":stringpiece",
         ":stringprintf",
         ":types",
         "//tensorflow/core/protobuf:error_codes_proto_impl_cc",
@@ -878,6 +860,7 @@ cc_library(
 cc_library(
     name = "threadpool_interface",
     hdrs = ["threadpool_interface.h"],
+    compatible_with = get_compatible_with_portable(),
     deps = [
         ":mutex",
         ":types",
@@ -888,6 +871,7 @@ cc_library(
 cc_library(
     name = "threadpool_options",
     hdrs = ["threadpool_options.h"],
+    compatible_with = get_compatible_with_portable(),
     deps = [
         ":threadpool_interface",
     ],
@@ -1142,6 +1126,16 @@ cc_library(
     alwayslink = 1,
 )
 
+cc_library(
+    name = "error_payloads",
+    srcs = ["error_payloads.cc"],
+    hdrs = ["error_payloads.h"],
+    deps = [
+        "//tensorflow/core/lib/core:status",
+        "//tensorflow/core/protobuf:for_core_protos_cc",
+    ],
+)
+
 alias(
     name = "profile_utils_cpu_utils",
     actual = "//tensorflow/core/platform/profile_utils:profile_utils_cpu_utils",
@@ -1150,6 +1144,12 @@ alias(
 filegroup(
     name = "tensor_float_32_hdr",
     srcs = ["tensor_float_32_utils.h"],
+    compatible_with = get_compatible_with_portable(),
+)
+
+cc_library(
+    name = "tensor_float_32_hdr_lib",
+    hdrs = [":tensor_float_32_hdr"],
     compatible_with = get_compatible_with_portable(),
 )
 
@@ -1357,6 +1357,7 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//third_party/eigen3",
+        "@com_google_absl//absl/strings:cord",
     ],
 )
 
@@ -1530,6 +1531,7 @@ filegroup(
         "tstring.h",
         "types.h",
     ],
+    compatible_with = get_compatible_with_portable(),
     visibility = ["//tensorflow/core:__pkg__"],
 )
 
@@ -1708,6 +1710,7 @@ filegroup(
         "tstring.h",
         "types.h",
     ],
+    compatible_with = get_compatible_with_portable(),
     visibility = [
         "//tensorflow/core:__pkg__",
         "//tensorflow/core/lib/jpeg:__pkg__",
@@ -1862,6 +1865,7 @@ filegroup(
         "platform_strings.cc",
         "platform_strings.h",
         "platform_strings_computed.h",
+        "png.h",
         "//tensorflow/core/platform/profile_utils:android_armv7a_cpu_utils_helper.cc",
         "//tensorflow/core/platform/profile_utils:android_armv7a_cpu_utils_helper.h",
         "//tensorflow/core/platform/profile_utils:cpu_utils.cc",
@@ -1939,4 +1943,5 @@ bzl_library(
     srcs = [
         "rules_cc.bzl",
     ] + tf_platform_alias("rules_cc.bzl"),
+    deps = ["@bazel_skylib//rules:common_settings"],
 )

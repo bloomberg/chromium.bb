@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
@@ -20,7 +19,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
+#include "build/chromeos_buildflags.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/timezone.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
+#include "services/device/time_zone_monitor/time_zone_monitor_lacros.h"
+#endif
 
 namespace device {
 
@@ -132,7 +138,7 @@ class TimeZoneMonitorLinuxImpl
     const char* const kFilesToWatch[] = {
         "/etc/localtime", "/etc/timezone", "/etc/TZ",
     };
-    for (size_t index = 0; index < base::size(kFilesToWatch); ++index) {
+    for (size_t index = 0; index < std::size(kFilesToWatch); ++index) {
       file_path_watchers_.push_back(std::make_unique<base::FilePathWatcher>());
       file_path_watchers_.back()->Watch(
           base::FilePath(kFilesToWatch[index]),
@@ -200,8 +206,18 @@ TimeZoneMonitorLinux::~TimeZoneMonitorLinux() {
 // static
 std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
-  return std::unique_ptr<TimeZoneMonitor>(
-      new TimeZoneMonitorLinux(file_task_runner));
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(crbug.com/1288168): This is a temporary measure to allow Lacros
+  // to work with older versions of Ash by using there TimeZoneMonitorLinux.
+  auto* lacros_service = chromeos::LacrosService::Get();
+  if (lacros_service->IsAvailable<crosapi::mojom::TimeZoneService>())
+    return std::make_unique<TimeZoneMonitorLacros>();
+
+  LOG(WARNING) << "TimeZoneService crosapi is not available in ash-chrome now. "
+               << "Fallback to TimeZoneMonitorLinux.";
+#endif
+
+  return std::make_unique<TimeZoneMonitorLinux>(file_task_runner);
 }
 
 }  // namespace device

@@ -10,17 +10,16 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
-import collections
 import json
 import logging
+import random
 import shlex
 
 from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models.quest import execution as execution_module
 from dashboard.pinpoint.models.quest import quest
 from dashboard.services import swarming
-from dashboard.services import crrev_service
-from dashboard.services.request import NotFoundError
+import six
 
 _TESTER_SERVICE_ACCOUNT = (
     'chrome-tester@chops-service-accounts.iam.gserviceaccount.com')
@@ -63,7 +62,12 @@ class RunTest(quest.Quest):
 
     # We want subsequent executions use the same bot as the first one.
     self._canonical_executions = []
-    self._execution_counts = collections.defaultdict(int)
+
+    self._bots = None
+    self._comparison_mode = None
+    self._attempt_count = None
+
+    self._started_executions = {}
 
   def __eq__(self, other):
     return (isinstance(other, type(self))
@@ -71,9 +75,12 @@ class RunTest(quest.Quest):
             and self._dimensions == other._dimensions
             and self._extra_args == other._extra_args
             and self._canonical_executions == other._canonical_executions
-            and self._execution_counts == other._execution_counts
             and self._command == other._command
-            and self._relative_cwd == other._relative_cwd)
+            and self._relative_cwd == other._relative_cwd
+            and self._bots == other._bots
+            and self._comparison_mode == other._comparison_mode
+            and self._attempt_count == other._attempt_count
+            and self._started_executions == other._started_executions)
 
   def __str__(self):
     return 'Test'
@@ -99,6 +106,9 @@ class RunTest(quest.Quest):
     if not hasattr(self, '_swarming_tags'):
       self._swarming_tags = {}
     self._swarming_tags.update(SwarmingTagsFromJob(job))
+    self._comparison_mode = job.comparison_mode
+    self._attempt_count = job.state.attempt_count
+    self._bots = [str(b) for b in job.bots]
 
   def Start(self, change, isolate_server, isolate_hash):
     return self._Start(change, isolate_server, isolate_hash, self._extra_args,
@@ -106,62 +116,74 @@ class RunTest(quest.Quest):
 
   def _Start(self, change, isolate_server, isolate_hash, extra_args,
              swarming_tags, execution_timeout_secs):
-    index = self._execution_counts[change]
-    self._execution_counts[change] += 1
+    if not hasattr(self, '_started_executions'):
+      self._started_executions = {}
+    if change not in self._started_executions:
+      self._started_executions[change] = []
+    index = len(self._started_executions[change])
 
     if self._swarming_tags:
       swarming_tags.update(self._swarming_tags)
 
-    # Pinpoint started to run on Python 3 on 11/23/2021. However, if user tries
-    # to launch try job or bisect on old commits where scripts are not python3
-    # compatible, it fails. E.g.: crbug/1278382
-    # Here is a workaround to handle such cases. When the commit position is
-    # prior than X, we run the test in python 2.
-    # A more complete fix will be checking the whole series of commits and run
-    # all in python 2 if any of the commit is prior than X.
-    # Here we picked X as 926914 where the print issue in the bug was fixed.
-    if self.command and 'vpython3' in self.command:
-      try:
-        commit_hash = change.commits[0].git_hash
-        commit_result = crrev_service.GetCommit(commit_hash)
-        if 'number' in commit_result:
-          commit_position = int(commit_result['number'])
-          if commit_position < 926914:
-            logging.info(
-                'Running test on python 2. Hash: %s, Commit position: %s ',
-                commit_hash, commit_position)
-            vpython3_pos = self.command.index('vpython3')
-            self.command[vpython3_pos] = 'vpython'
-      except NotFoundError:
-        logging.info('Failed to request commit position with hash: %s',
-                     commit_hash)
+    dimensions = self._GetDimensions(index)
 
-    if len(self._canonical_executions) <= index:
-      execution = _RunTestExecution(
-          self._swarming_server,
-          self._dimensions,
-          extra_args,
-          isolate_server,
-          isolate_hash,
-          swarming_tags,
-          command=self.command,
-          relative_cwd=self.relative_cwd,
-          execution_timeout_secs=execution_timeout_secs)
-      self._canonical_executions.append(execution)
-    else:
-      execution = _RunTestExecution(
-          self._swarming_server,
-          self._dimensions,
-          extra_args,
-          isolate_server,
-          isolate_hash,
-          swarming_tags,
-          previous_execution=self._canonical_executions[index],
-          command=self.command,
-          relative_cwd=self.relative_cwd,
-          execution_timeout_secs=execution_timeout_secs)
+    test_execution = _RunTestExecution(
+        self,
+        self._swarming_server,
+        dimensions,
+        extra_args,
+        isolate_server,
+        isolate_hash,
+        swarming_tags,
+        index,
+        change,
+        command=self.command,
+        relative_cwd=self.relative_cwd,
+        execution_timeout_secs=execution_timeout_secs)
+    self._started_executions[change].append(test_execution)
+    return test_execution
 
-    return execution
+  def _StartAllTasks(self):
+    # We need to wait for all of the builds to be complete.
+    if len(self._started_executions) != 2:
+      return
+    a_list, b_list = self._started_executions.values()
+    if len(a_list) != self._attempt_count or len(b_list) != self._attempt_count:
+      return
+
+    orderings = self._GetABOrderings(self._attempt_count)
+    for i in range(self._attempt_count):
+      if orderings[i]:
+        a_list[i]._StartTask()
+        b_list[i]._StartTask()
+      else:
+        b_list[i]._StartTask()
+        a_list[i]._StartTask()
+
+  def _GetABOrderings(self, attempt_count):
+    # Get a list of if a/0 or b/1 should go first, such that
+    # - half of As and half of Bs go first
+    # - which half is random
+    half = attempt_count // 2
+    orderings = [0] * half + [1] * half
+    if attempt_count % 2:
+      orderings.append(0)
+    random.shuffle(orderings)
+    return orderings
+
+  def _GetDimensions(self, index):
+    # Adds a bot_id to dimensions
+    if not hasattr(
+        self,
+        '_comparison_mode') or self._comparison_mode != 'try' or not hasattr(
+            self, '_bots'):
+      return self._dimensions
+    dimensions = list(self._dimensions)
+
+    bot_id = self._bots[index % len(self._bots)]
+    if bot_id:
+      dimensions.append({'key': 'id', 'value': bot_id})
+    return dimensions
 
   @classmethod
   def _ComputeCommand(cls, arguments):
@@ -186,7 +208,7 @@ class RunTest(quest.Quest):
     dimensions = arguments.get('dimensions')
     if not dimensions:
       raise TypeError('Missing a "dimensions" argument.')
-    if isinstance(dimensions, basestring):
+    if isinstance(dimensions, six.string_types):
       dimensions = json.loads(dimensions)
     if not any(dimension['key'] == 'pool' for dimension in dimensions):
       raise ValueError('Missing a "pool" dimension.')
@@ -220,27 +242,31 @@ class RunTest(quest.Quest):
 class _RunTestExecution(execution_module.Execution):
 
   def __init__(self,
+               containing_quest,
                swarming_server,
                dimensions,
                extra_args,
                isolate_server,
                isolate_hash,
                swarming_tags,
-               previous_execution=None,
+               index,
+               change,
                command=None,
                relative_cwd='out/Release',
                execution_timeout_secs=None):
     super(_RunTestExecution, self).__init__()
+    self._quest = containing_quest
     self._bot_id = None
     self._command = command
     self._dimensions = dimensions
     self._extra_args = extra_args
     self._isolate_hash = isolate_hash
     self._isolate_server = isolate_server
-    self._previous_execution = previous_execution
     self._relative_cwd = relative_cwd
     self._swarming_server = swarming_server
     self._swarming_tags = swarming_tags
+    self._index = index
+    self._change = change
     self._execution_timeout_secs = execution_timeout_secs
     self._task_id = None
 
@@ -305,7 +331,7 @@ class _RunTestExecution(execution_module.Execution):
 
   def _Poll(self):
     if not self._task_id:
-      self._StartTask()
+      self._StartTasksIfMasterOrNotTry()
       return
 
     logging.debug('_RunTestExecution Polling swarming: %s', self._task_id)
@@ -315,8 +341,13 @@ class _RunTestExecution(execution_module.Execution):
     logging.debug('swarming response: %s', result)
 
     if 'bot_id' in result:
-      # Set bot_id to pass the info back to the Quest.
+      # For bisects, this will be set after the task is allocated to a bot.
+      # A/Bs will set this elsewhere.
       self._bot_id = result['bot_id']
+
+    if self._bot_id:
+      if not swarming.IsBotAlive(self._bot_id, self._swarming_server):
+        raise errors.SwarmingTaskError('Bot is dead.')
 
     if result['state'] == 'PENDING' or result['state'] == 'RUNNING':
       return
@@ -353,12 +384,20 @@ class _RunTestExecution(execution_module.Execution):
   def _IsCasDigest(d):
     return '/' in d
 
+  def _StartTasksIfMasterOrNotTry(self):
+    if not hasattr(self, '_quest') or self._quest._comparison_mode != 'try':
+      self._StartTask()
+      return
+
+    if self._change.variant != 0 or self._index != 0:
+      # This task is not responsible for kicking off all other tasks
+      return
+
+    # This will call _StartTask on all tasks, including this one
+    self._quest._StartAllTasks()
+
   def _StartTask(self):
     """Kick off a Swarming task to run a test."""
-    if (self._previous_execution and not self._previous_execution.bot_id
-        and self._previous_execution.failed):
-      raise errors.SwarmingNoBots()
-
     # TODO(fancl): Seperate cas input from isolate (including endpoint and
     # datastore module)
     if self._IsCasDigest(self._isolate_hash):
@@ -443,6 +482,10 @@ class _RunTestExecution(execution_module.Execution):
                   },
               }),
       })
+
+    for d in self._dimensions:
+      if d['key'] == 'id':
+        self._bot_id = d['value']
 
     logging.debug('Requesting swarming task with parameters: %s', body)
     response = swarming.Swarming(self._swarming_server).Tasks().New(body)

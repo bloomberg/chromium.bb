@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "device/vr/public/cpp/vr_device_provider.h"
 #include "device/vr/vr_device_base.h"
 #include "device/vr/vr_export.h"
@@ -29,26 +30,13 @@ class DEVICE_VR_EXPORT FakeVRDeviceProvider : public VRDeviceProvider {
   void AddDevice(std::unique_ptr<VRDeviceBase> device);
   void RemoveDevice(mojom::XRDeviceId device_id);
 
-  void Initialize(
-      base::RepeatingCallback<void(mojom::XRDeviceId,
-                                   mojom::VRDisplayInfoPtr,
-                                   mojom::XRDeviceDataPtr,
-                                   mojo::PendingRemote<mojom::XRRuntime>)>
-          add_device_callback,
-      base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
-      base::OnceClosure initialization_complete,
-      XrFrameSinkClientFactory xr_frame_sink_client_factory) override;
+  void Initialize(VRDeviceProviderClient* client) override;
   bool Initialized() override;
 
  private:
   std::vector<std::unique_ptr<VRDeviceBase>> devices_;
   bool initialized_;
-  base::RepeatingCallback<void(mojom::XRDeviceId,
-                               mojom::VRDisplayInfoPtr,
-                               mojom::XRDeviceDataPtr,
-                               mojo::PendingRemote<mojom::XRRuntime>)>
-      add_device_callback_;
-  base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback_;
+  raw_ptr<VRDeviceProviderClient> client_ = nullptr;
 };
 
 }  // namespace device

@@ -4,6 +4,7 @@
 
 #include "net/cookies/cookie_store_test_helpers.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -11,9 +12,11 @@
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 using net::registry_controlled_domains::GetDomainAndRegistry;
@@ -69,9 +72,9 @@ DelayedCookieMonsterChangeDispatcher::AddCallbackForAllChanges(
 }
 
 DelayedCookieMonster::DelayedCookieMonster()
-    : cookie_monster_(
-          new CookieMonster(nullptr /* store */, nullptr /* netlog */)),
-      did_run_(false),
+    : cookie_monster_(new CookieMonster(nullptr /* store */,
+                                        nullptr /* netlog */,
+                                        false /* first_party_sets_enabled */)),
       result_(CookieAccessResult(CookieInclusionStatus(
           CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE))) {}
 
@@ -95,12 +98,14 @@ void DelayedCookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     const GURL& source_url,
     const CookieOptions& options,
-    SetCookiesCallback callback) {
+    SetCookiesCallback callback,
+    absl::optional<CookieAccessResult> cookie_access_result) {
   did_run_ = false;
   cookie_monster_->SetCanonicalCookieAsync(
       std::move(cookie), source_url, options,
       base::BindOnce(&DelayedCookieMonster::SetCookiesInternalCallback,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      std::move(cookie_access_result));
   DCHECK_EQ(did_run_, true);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -210,7 +215,7 @@ std::string CookieURLHelper::Format(const std::string& format_string) const {
 //
 // FlushablePersistentStore
 //
-FlushablePersistentStore::FlushablePersistentStore() : flush_count_(0) {}
+FlushablePersistentStore::FlushablePersistentStore() = default;
 
 void FlushablePersistentStore::Load(LoadedCallback loaded_callback,
                                     const NetLogWithSource& /* net_log */) {
@@ -253,7 +258,7 @@ FlushablePersistentStore::~FlushablePersistentStore() = default;
 //
 // CallbackCounter
 //
-CallbackCounter::CallbackCounter() : callback_count_(0) {}
+CallbackCounter::CallbackCounter() = default;
 
 void CallbackCounter::Callback() {
   base::AutoLock lock(callback_count_lock_);
@@ -266,5 +271,10 @@ int CallbackCounter::callback_count() {
 }
 
 CallbackCounter::~CallbackCounter() = default;
+
+std::string FutureCookieExpirationString() {
+  return "; expires=" +
+         base::TimeFormatHTTP(base::Time::Now() + base::Days(365));
+}
 
 }  // namespace net

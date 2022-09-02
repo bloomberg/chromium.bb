@@ -64,6 +64,12 @@ struct CrossThreadCopier<rtc::scoped_refptr<T>> {
   static Type Copy(Type pointer) { return pointer; }
 };
 
+template <>
+struct CrossThreadCopier<base::Value::List>
+    : public CrossThreadCopierByValuePassThrough<base::Value::List> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
 }  // namespace WTF
 
 namespace blink {
@@ -231,10 +237,6 @@ String SerializeTransceiver(const RTCRtpTransceiverPlatform& transceiver) {
     result.Append("  receiver:");
     result.Append(SerializeReceiver("  ", *transceiver.Receiver()));
     result.Append(",\n");
-    // stopped:false,
-    result.Append("  stopped:");
-    result.Append(SerializeBoolean(transceiver.Stopped()));
-    result.Append(",\n");
     // direction:'sendrecv',
     result.Append("  direction:");
     result.Append(SerializeDirection(transceiver.Direction()));
@@ -375,11 +377,11 @@ const char* GetTransceiverUpdatedReasonString(
 // Note:
 // The format must be consistent with what webrtc_internals.js expects.
 // If you change it here, you must change webrtc_internals.js as well.
-absl::optional<base::Value> GetDictValueStats(const StatsReport& report) {
+absl::optional<base::Value::Dict> GetDictValueStats(const StatsReport& report) {
   if (report.values().empty())
     return absl::nullopt;
 
-  base::Value values(base::Value::Type::LIST);
+  base::Value::List values;
 
   for (const auto& v : report.values()) {
     const StatsReport::ValuePtr& value = v.second;
@@ -409,26 +411,26 @@ absl::optional<base::Value> GetDictValueStats(const StatsReport& report) {
     }
   }
 
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetDoubleKey("timestamp", report.timestamp());
-  dict.SetKey("values", std::move(values));
+  base::Value::Dict dict;
+  dict.Set("timestamp", report.timestamp());
+  dict.Set("values", std::move(values));
 
   return dict;
 }
 
 // Builds a dictionary Value from the StatsReport.
-absl::optional<base::Value> GetDictValue(const StatsReport& report) {
-  absl::optional<base::Value> stats = GetDictValueStats(report);
+absl::optional<base::Value::Dict> GetDictValue(const StatsReport& report) {
+  absl::optional<base::Value::Dict> stats = GetDictValueStats(report);
   if (!stats)
     return absl::nullopt;
 
   // Note:
   // The format must be consistent with what webrtc_internals.js expects.
   // If you change it here, you must change webrtc_internals.js as well.
-  base::Value result(base::Value::Type::DICTIONARY);
-  result.SetKey("stats", std::move(stats).value());
-  result.SetStringKey("id", report.id()->ToString());
-  result.SetStringKey("type", report.TypeToString());
+  base::Value::Dict result;
+  result.Set("stats", std::move(stats).value());
+  result.Set("id", report.id()->ToString());
+  result.Set("type", report.TypeToString());
 
   return result;
 }
@@ -450,20 +452,20 @@ class InternalLegacyStatsObserver : public webrtc::StatsObserver {
   InternalLegacyStatsObserver(
       int lid,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      CrossThreadOnceFunction<void(int, base::Value)> completion_callback)
+      CrossThreadOnceFunction<void(int, base::Value::List)> completion_callback)
       : lid_(lid),
         main_thread_(std::move(main_thread)),
         completion_callback_(std::move(completion_callback)) {}
 
   void OnComplete(const StatsReports& reports) override {
-    auto list = std::make_unique<base::ListValue>();
+    base::Value::List list;
     for (const auto* r : reports) {
-      absl::optional<base::Value> report = GetDictValue(*r);
+      absl::optional<base::Value::Dict> report = GetDictValue(*r);
       if (report)
-        list->Append(std::move(report).value());
+        list.Append(std::move(*report));
     }
 
-    if (!list->GetList().empty()) {
+    if (!list.empty()) {
       PostCrossThreadTask(
           *main_thread_.get(), FROM_HERE,
           CrossThreadBindOnce(&InternalLegacyStatsObserver::OnCompleteImpl,
@@ -484,16 +486,17 @@ class InternalLegacyStatsObserver : public webrtc::StatsObserver {
   // Static since |this| will most likely have been deleted by the time we
   // get here.
   static void OnCompleteImpl(
-      std::unique_ptr<base::ListValue> list,
+      base::Value::List list,
       int lid,
-      CrossThreadOnceFunction<void(int, base::Value)> completion_callback) {
-    DCHECK(!list->GetList().empty());
-    std::move(completion_callback).Run(lid, std::move(*list.get()));
+      CrossThreadOnceFunction<void(int, base::Value::List)>
+          completion_callback) {
+    DCHECK(!list.empty());
+    std::move(completion_callback).Run(lid, std::move(list));
   }
 
   const int lid_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  CrossThreadOnceFunction<void(int, base::Value)> completion_callback_;
+  CrossThreadOnceFunction<void(int, base::Value::List)> completion_callback_;
 };
 
 // chrome://webrtc-internals displays stats and stats graphs. The call path
@@ -506,7 +509,7 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
   InternalStandardStatsObserver(
       int lid,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      CrossThreadOnceFunction<void(int, base::Value)> completion_callback)
+      CrossThreadOnceFunction<void(int, base::Value::List)> completion_callback)
       : lid_(lid),
         main_thread_(std::move(main_thread)),
         completion_callback_(std::move(completion_callback)) {}
@@ -528,23 +531,21 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
  private:
   void OnStatsDeliveredOnMainThread(
       rtc::scoped_refptr<const webrtc::RTCStatsReport> report) {
-    auto list = ReportToList(report);
-    std::move(completion_callback_).Run(lid_, std::move(*list.get()));
+    std::move(completion_callback_).Run(lid_, ReportToList(report));
   }
 
-  std::unique_ptr<base::ListValue> ReportToList(
+  base::Value::List ReportToList(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
-    std::unique_ptr<base::ListValue> result_list(new base::ListValue());
+    base::Value::List result_list;
     for (const auto& stats : *report) {
       // The format of "stats_subdictionary" is:
       // {timestamp:<milliseconds>, values: [<key-value pairs>]}
-      base::Value stats_subdictionary(base::Value::Type::DICTIONARY);
+      base::Value::Dict stats_subdictionary;
       // Timestamp is reported in milliseconds.
-      stats_subdictionary.SetDoubleKey("timestamp",
-                                       stats.timestamp_us() / 1000.0);
+      stats_subdictionary.Set("timestamp", stats.timestamp_us() / 1000.0);
       // Values are reported as
       // "values": ["member1", value, "member2", value...]
-      base::Value name_value_pairs(base::Value::Type::LIST);
+      base::Value::List name_value_pairs;
       for (const auto* member : stats.Members()) {
         if (!member->is_defined())
           continue;
@@ -554,15 +555,15 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
         name_value_pairs.Append(member->name() + postfix);
         name_value_pairs.Append(MemberToValue(*member));
       }
-      stats_subdictionary.SetKey("values", std::move(name_value_pairs));
+      stats_subdictionary.Set("values", std::move(name_value_pairs));
 
       // The format of "stats_dictionary" is:
       // {id:<string>, stats:<stats_subdictionary>, type:<string>}
-      base::Value stats_dictionary(base::Value::Type::DICTIONARY);
-      stats_dictionary.SetKey("stats", std::move(stats_subdictionary));
-      stats_dictionary.SetStringKey("id", stats.id());
-      stats_dictionary.SetStringKey("type", stats.type());
-      result_list->Append(std::move(stats_dictionary));
+      base::Value::Dict stats_dictionary;
+      stats_dictionary.Set("stats", std::move(stats_subdictionary));
+      stats_dictionary.Set("id", stats.id());
+      stats_dictionary.Set("type", stats.type());
+      result_list.Append(std::move(stats_dictionary));
     }
     return result_list;
   }
@@ -599,7 +600,7 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
 
   const int lid_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  CrossThreadOnceFunction<void(int, base::Value)> completion_callback_;
+  CrossThreadOnceFunction<void(int, base::Value::List)> completion_callback_;
 };
 
 // static
@@ -744,7 +745,7 @@ void PeerConnectionTracker::GetLegacyStats() {
             pair.value, main_thread_task_runner_,
             CrossThreadBindOnce(&PeerConnectionTracker::AddLegacyStats,
                                 WrapCrossThreadWeakPersistent(this))));
-    pair.key->GetStats(observer,
+    pair.key->GetStats(observer.get(),
                        webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
                        nullptr);
   }
@@ -813,39 +814,15 @@ void PeerConnectionTracker::TrackCreateOffer(
                            "options: {" + SerializeOfferOptions(options) + "}");
 }
 
-void PeerConnectionTracker::TrackCreateOffer(
-    RTCPeerConnectionHandler* pc_handler,
-    const MediaConstraints& constraints) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  int id = GetLocalIDForHandler(pc_handler);
-  if (id == -1)
-    return;
-  SendPeerConnectionUpdate(
-      id, "createOffer",
-      "constraints: {" + SerializeMediaConstraints(constraints) + "}");
-}
-
 void PeerConnectionTracker::TrackCreateAnswer(
     RTCPeerConnectionHandler* pc_handler,
-    blink::RTCAnswerOptionsPlatform* options) {
+    RTCAnswerOptionsPlatform* options) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
   SendPeerConnectionUpdate(
       id, "createAnswer", "options: {" + SerializeAnswerOptions(options) + "}");
-}
-
-void PeerConnectionTracker::TrackCreateAnswer(
-    RTCPeerConnectionHandler* pc_handler,
-    const MediaConstraints& constraints) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  int id = GetLocalIDForHandler(pc_handler);
-  if (id == -1)
-    return;
-  SendPeerConnectionUpdate(
-      id, "createAnswer",
-      "constraints: {" + SerializeMediaConstraints(constraints) + "}");
 }
 
 void PeerConnectionTracker::TrackSetSessionDescription(
@@ -1160,7 +1137,7 @@ void PeerConnectionTracker::TrackGetUserMedia(
 
 void PeerConnectionTracker::TrackGetUserMediaSuccess(
     UserMediaRequest* user_media_request,
-    MediaStream* stream) {
+    const MediaStream* stream) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
 
   // Serialize audio and video track information (id and label) or an
@@ -1226,11 +1203,11 @@ void PeerConnectionTracker::SendPeerConnectionUpdate(
                                                       value);
 }
 
-void PeerConnectionTracker::AddStandardStats(int lid, base::Value value) {
+void PeerConnectionTracker::AddStandardStats(int lid, base::Value::List value) {
   peer_connection_tracker_host_->AddStandardStats(lid, std::move(value));
 }
 
-void PeerConnectionTracker::AddLegacyStats(int lid, base::Value value) {
+void PeerConnectionTracker::AddLegacyStats(int lid, base::Value::List value) {
   peer_connection_tracker_host_->AddLegacyStats(lid, std::move(value));
 }
 

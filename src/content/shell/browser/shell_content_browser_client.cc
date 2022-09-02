@@ -5,11 +5,12 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -17,12 +18,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequence_local_storage_slot.h"
-#include <base/task/post_task.h>
 #include <base/task/task_traits.h>
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/custom_handlers/protocol_handler_throttle.h"
+#include "components/custom_handlers/simple_protocol_handler_registry_factory.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -47,6 +50,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switch_dependent_feature_overrides.h"
 #include "content/public/common/content_switches.h"
@@ -74,27 +78,28 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/android/path_utils.h"
 #include "components/variations/android/variations_seed_bridge.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "services/device/public/cpp/test/fake_geolocation_manager.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #include "components/crash/core/app/crash_switches.h"
 #include "components/crash/core/app/crashpad.h"
 #include "content/public/common/content_descriptors.h"
@@ -113,11 +118,11 @@ base::Thread* g_in_process_renderer_thread = 0;
 
 bool g_enable_expect_ct_for_testing = false;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 int GetCrashSignalFD(const base::CommandLine& command_line) {
   return crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
 }
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 int GetCrashSignalFD(const base::CommandLine& command_line) {
   int fd;
   pid_t pid;
@@ -177,6 +182,15 @@ class ShellVariationsServiceClient
   bool IsEnterprise() override { return false; }
 };
 
+// Returns the full user agent string for the content shell.
+std::string GetShellFullUserAgent() {
+  std::string product = "Chrome/" CONTENT_SHELL_VERSION;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
+    product += " Mobile";
+  return BuildUserAgentFromProduct(product);
+}
+
 // Returns the reduced user agent string for the content shell.
 std::string GetShellReducedUserAgent() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -202,14 +216,13 @@ class ShellContentBrowserClient::ShellFieldTrials
 };
 
 std::string GetShellUserAgent() {
+  if (base::FeatureList::IsEnabled(blink::features::kFullUserAgent))
+    return GetShellFullUserAgent();
+
   if (base::FeatureList::IsEnabled(blink::features::kReduceUserAgent))
     return GetShellReducedUserAgent();
 
-  std::string product = "Chrome/" CONTENT_SHELL_VERSION;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-  return BuildUserAgentFromProduct(product);
+  return GetShellFullUserAgent();
 }
 
 std::string GetShellLanguage() {
@@ -225,10 +238,11 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
                                                 CONTENT_SHELL_VERSION);
   metadata.full_version = CONTENT_SHELL_VERSION;
   metadata.platform = "Unknown";
-  metadata.architecture = BuildCpuInfo();
+  metadata.architecture = GetCpuArchitecture();
   metadata.model = BuildModelInfo();
 
-  metadata.bitness = GetLowEntropyCpuBitness();
+  metadata.bitness = GetCpuBitness();
+  metadata.wow64 = content::IsWoW64();
 
   return metadata;
 }
@@ -243,7 +257,7 @@ ShellContentBrowserClient* ShellContentBrowserClient::Get() {
 
 ShellContentBrowserClient::ShellContentBrowserClient() {
   DCHECK(!g_browser_client);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   location_manager_ = std::make_unique<device::FakeGeolocationManager>();
   location_manager_->SetSystemPermission(
       device::LocationSystemPermissionStatus::kAllowed);
@@ -257,13 +271,41 @@ ShellContentBrowserClient::~ShellContentBrowserClient() {
 
 std::unique_ptr<BrowserMainParts>
 ShellContentBrowserClient::CreateBrowserMainParts(
-    MainFunctionParams parameters) {
-  auto browser_main_parts =
-      std::make_unique<ShellBrowserMainParts>(std::move(parameters));
-
+    bool /* is_integration_test */) {
+  auto browser_main_parts = std::make_unique<ShellBrowserMainParts>();
   shell_browser_main_parts_ = browser_main_parts.get();
-
   return browser_main_parts;
+}
+
+bool ShellContentBrowserClient::HasCustomSchemeHandler(
+    content::BrowserContext* browser_context,
+    const std::string& scheme) {
+  if (custom_handlers::ProtocolHandlerRegistry* protocol_handler_registry =
+          custom_handlers::SimpleProtocolHandlerRegistryFactory::
+              GetForBrowserContext(browser_context)) {
+    return protocol_handler_registry->IsHandledProtocol(scheme);
+  }
+  return false;
+}
+
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+ShellContentBrowserClient::CreateURLLoaderThrottles(
+    const network::ResourceRequest& request,
+    BrowserContext* browser_context,
+    const base::RepeatingCallback<WebContents*()>& wc_getter,
+    NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
+
+  auto* factory = custom_handlers::SimpleProtocolHandlerRegistryFactory::
+      GetForBrowserContext(browser_context);
+  // null in unit tests.
+  if (factory) {
+    result.push_back(
+        std::make_unique<custom_handlers::ProtocolHandlerThrottle>(*factory));
+  }
+
+  return result;
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
@@ -286,7 +328,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
   static const char* kForwardSwitches[] = {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // Needed since on Mac, content_browsertests doesn't use
     // content_test_launcher.cc and instead uses shell_main.cc. So give a signal
     // to shell_main.cc that it's a browser test.
@@ -299,10 +341,9 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   };
 
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kForwardSwitches,
-                                 base::size(kForwardSwitches));
+                                 kForwardSwitches, std::size(kForwardSwitches));
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     int fd;
@@ -313,11 +354,11 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
           base::NumberToString(pid));
     }
   }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 }
 
 device::GeolocationManager* ShellContentBrowserClient::GetGeolocationManager() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return location_manager_.get();
 #else
   return nullptr;
@@ -346,7 +387,7 @@ void ShellContentBrowserClient::StartInProcessRendererThread(
 
   g_in_process_renderer_thread =
       CreateInProcessRendererThread(InProcessChildThreadParams(
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+          content::GetIOThreadTaskRunner({}),
           broker_client_invitation), renderer_client_id);
 
   base::Thread::Options options;
@@ -372,11 +413,21 @@ std::string ShellContentBrowserClient::GetDefaultDownloadName() {
   return "download";
 }
 
-WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
+std::unique_ptr<WebContentsViewDelegate>
+ShellContentBrowserClient::GetWebContentsViewDelegate(
     WebContents* web_contents) {
   performance_manager::PerformanceManagerRegistry::GetInstance()
       ->MaybeCreatePageNodeForWebContents(web_contents);
   return CreateShellWebContentsViewDelegate(web_contents);
+}
+
+bool ShellContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  // Enable application isolation level to allow restricted APIs in WPT.
+  // Note that this will not turn on application isolation for all URLs; the
+  // content layer will still run its own checks.
+  return true;
 }
 
 scoped_refptr<content::QuotaPermissionContext>
@@ -503,18 +554,18 @@ std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
   return nullptr;
 }
 
-base::DictionaryValue ShellContentBrowserClient::GetNetLogConstants() {
-  base::DictionaryValue client_constants;
-  client_constants.SetString("name", "content_shell");
+base::Value::Dict ShellContentBrowserClient::GetNetLogConstants() {
+  base::Value::Dict client_constants;
+  client_constants.Set("name", "content_shell");
   base::CommandLine::StringType command_line =
       base::CommandLine::ForCurrentProcess()->GetCommandLineString();
-#if defined(OS_WIN)
-  client_constants.SetString("command_line", base::WideToUTF8(command_line));
+#if BUILDFLAG(IS_WIN)
+  client_constants.Set("command_line", base::WideToUTF8(command_line));
 #else
-  client_constants.SetString("command_line", command_line);
+  client_constants.Set("command_line", command_line);
 #endif
-  base::DictionaryValue constants;
-  constants.SetKey("clientInfo", std::move(client_constants));
+  base::Value::Dict constants;
+  constants.Set("clientInfo", std::move(client_constants));
   return constants;
 }
 
@@ -523,8 +574,16 @@ ShellContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
   return browser_context()->GetPath();
 }
 
+base::FilePath ShellContentBrowserClient::GetFirstPartySetsDirectory() {
+  return browser_context()->GetPath();
+}
+
 std::string ShellContentBrowserClient::GetUserAgent() {
   return GetShellUserAgent();
+}
+
+std::string ShellContentBrowserClient::GetFullUserAgent() {
+  return GetShellFullUserAgent();
 }
 
 std::string ShellContentBrowserClient::GetReducedUserAgent() {
@@ -546,12 +605,12 @@ void ShellContentBrowserClient::OverrideURLLoaderFactoryParams(
   }
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
     content::PosixFileDescriptorInfo* mappings) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   mappings->ShareWithRegion(
       kShellPakDescriptor,
       base::GlobalDescriptors::GetInstance()->Get(kShellPakDescriptor),
@@ -562,7 +621,8 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_ANDROID)
 
 void ShellContentBrowserClient::ConfigureNetworkContextParams(
     BrowserContext* context,
@@ -684,7 +744,7 @@ void ShellContentBrowserClient::SetUpFieldTrials() {
   field_trials_ = std::make_unique<ShellFieldTrials>();
 
   std::unique_ptr<variations::SeedResponse> initial_seed;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (!local_state_->HasPrefPath(variations::prefs::kVariationsSeedSignature)) {
     DVLOG(1) << "Importing first run seed from Java preferences.";
     initial_seed = variations::android::GetVariationsFirstRunSeed();
@@ -723,9 +783,22 @@ void ShellContentBrowserClient::OnNetworkServiceCreated(
   // using `MockCertVerifier` (otherwise CT validation would fail due to the
   // empty log list).
   if (g_enable_expect_ct_for_testing) {
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     network_service->UpdateCtLogList(
-        std::vector<network::mojom::CTLogInfoPtr>(), base::Time::Now());
+        std::vector<network::mojom::CTLogInfoPtr>(), base::Time::Now(),
+        run_loop.QuitClosure());
+    run_loop.Run();
   }
+}
+
+blink::ParsedPermissionsPolicy
+ShellContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
+    content::BrowserContext* browser_context,
+    const url::Origin& app_origin) {
+  blink::ParsedPermissionsPolicyDeclaration decl(
+      blink::mojom::PermissionsPolicyFeature::kDirectSockets, {app_origin},
+      /*matches_all_origins=*/false, /*matches_opaque_src=*/false);
+  return {decl};
 }
 
 }  // namespace content

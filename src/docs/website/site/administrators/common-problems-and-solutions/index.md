@@ -74,9 +74,9 @@ network drive?**
 > That said, there are policies for controlling the location of the user profile
 > and the cache:
 
-> <http://dev.chromium.org/administrators/policy-list-3#UserDataDir>
+> <http://www.chromium.org/administrators/policy-list-3#UserDataDir>
 
-> <http://dev.chromium.org/administrators/policy-list-3#DiskCacheDir>
+> <http://www.chromium.org/administrators/policy-list-3#DiskCacheDir>
 
 **I'm trying to install the MSI over an existing MSI install, but I keep getting
 the error "more recent version exists".**

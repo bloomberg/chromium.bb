@@ -15,12 +15,15 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
-#include "media/base/status_codes.h"
+#include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_pool.h"
+#include "media/base/video_types.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -62,7 +65,7 @@ void FillRegionOutsideVisibleRect(uint8_t* data,
   }
 }
 
-VideoPixelFormat ReadbackFormat(const media::VideoFrame& frame) {
+VideoPixelFormat ReadbackFormat(const VideoFrame& frame) {
   switch (frame.format()) {
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_I420A:
@@ -95,8 +98,8 @@ SkColorType SkColorTypeForPlane(VideoPixelFormat format, size_t plane) {
       // kGray_8_SkColorType would make more sense but doesn't work on Windows.
       return kAlpha_8_SkColorType;
     case PIXEL_FORMAT_NV12:
-      return plane == media::VideoFrame::kYPlane ? kAlpha_8_SkColorType
-                                                 : kR8G8_unorm_SkColorType;
+      return plane == VideoFrame::kYPlane ? kAlpha_8_SkColorType
+                                          : kR8G8_unorm_SkColorType;
     case PIXEL_FORMAT_XBGR:
     case PIXEL_FORMAT_ABGR:
       return kRGBA_8888_SkColorType;
@@ -213,8 +216,89 @@ bool ReadbackTexturePlaneToMemorySyncOOP(const VideoFrame& src_frame,
                                 sk_color_type, sk_alpha_type);
   ri->ReadbackImagePixels(holder.mailbox, info, dest_stride, src_rect.x(),
                           src_rect.y(), dest_pixels);
-  DCHECK_EQ(ri->GetError(), static_cast<GLenum>(GL_NO_ERROR));
-  return true;
+  return ri->GetGraphicsResetStatusKHR() == GL_NO_ERROR &&
+         ri->GetError() == GL_NO_ERROR;
+}
+
+void LetterboxPlane(const gfx::Rect& view_area_in_bytes,
+                    uint8_t* ptr,
+                    int rows,
+                    int row_bytes,
+                    int stride,
+                    int bytes_per_element,
+                    uint8_t fill_byte) {
+  if (view_area_in_bytes.IsEmpty()) {
+    libyuv::SetPlane(ptr, stride, row_bytes, rows, fill_byte);
+    return;
+  }
+
+  if (view_area_in_bytes.y() > 0) {
+    libyuv::SetPlane(ptr, stride, row_bytes, view_area_in_bytes.y(), fill_byte);
+    ptr += stride * view_area_in_bytes.y();
+  }
+
+  if (view_area_in_bytes.width() < row_bytes) {
+    if (view_area_in_bytes.x() > 0) {
+      libyuv::SetPlane(ptr, stride, view_area_in_bytes.x(),
+                       view_area_in_bytes.height(), fill_byte);
+    }
+    if (view_area_in_bytes.right() < row_bytes) {
+      libyuv::SetPlane(ptr + view_area_in_bytes.right(), stride,
+                       row_bytes - view_area_in_bytes.right(),
+                       view_area_in_bytes.height(), fill_byte);
+    }
+  }
+
+  ptr += stride * view_area_in_bytes.height();
+
+  if (view_area_in_bytes.bottom() < rows) {
+    libyuv::SetPlane(ptr, stride, row_bytes, rows - view_area_in_bytes.bottom(),
+                     fill_byte);
+  }
+}
+
+void LetterboxPlane(VideoFrame* frame,
+                    int plane,
+                    uint8_t* ptr,
+                    const gfx::Rect& view_area_in_pixels,
+                    uint8_t fill_byte) {
+  const int rows = frame->rows(plane);
+  const int row_bytes = frame->row_bytes(plane);
+  const int stride = frame->stride(plane);
+  const int bytes_per_element =
+      VideoFrame::BytesPerElement(frame->format(), plane);
+
+  gfx::Rect view_area_in_bytes(view_area_in_pixels.x() * bytes_per_element,
+                               view_area_in_pixels.y(),
+                               view_area_in_pixels.width() * bytes_per_element,
+                               view_area_in_pixels.height());
+
+  CHECK_GE(stride, row_bytes);
+  CHECK_GE(view_area_in_bytes.x(), 0);
+  CHECK_GE(view_area_in_bytes.y(), 0);
+  CHECK_LE(view_area_in_bytes.right(), row_bytes);
+  CHECK_LE(view_area_in_bytes.bottom(), rows);
+
+  LetterboxPlane(view_area_in_bytes, ptr, rows, row_bytes, stride,
+                 bytes_per_element, fill_byte);
+}
+
+// Helper for `LetterboxVideoFrame()`, assumes that if |frame| is GMB-backed,
+// the GpuMemoryBuffer is already mapped (via a call to `Map()`).
+void LetterboxPlane(VideoFrame* frame,
+                    int plane,
+                    const gfx::Rect& view_area_in_pixels,
+                    uint8_t fill_byte) {
+  uint8_t* ptr = nullptr;
+  if (frame->IsMappable()) {
+    ptr = frame->data(plane);
+  } else if (frame->HasGpuMemoryBuffer()) {
+    ptr = static_cast<uint8_t*>(frame->GetGpuMemoryBuffer()->memory(plane));
+  }
+
+  DCHECK(ptr);
+
+  LetterboxPlane(frame, plane, ptr, view_area_in_pixels, fill_byte);
 }
 
 }  // namespace
@@ -238,57 +322,13 @@ void FillYUVA(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v, uint8_t a) {
                    frame->rows(VideoFrame::kAPlane), a);
 }
 
-static void LetterboxPlane(VideoFrame* frame,
-                           int plane,
-                           const gfx::Rect& view_area_in_pixels,
-                           uint8_t fill_byte) {
-  uint8_t* ptr = frame->data(plane);
-  const int rows = frame->rows(plane);
-  const int row_bytes = frame->row_bytes(plane);
-  const int stride = frame->stride(plane);
-  const int bytes_per_element =
-      VideoFrame::BytesPerElement(frame->format(), plane);
-  gfx::Rect view_area(view_area_in_pixels.x() * bytes_per_element,
-                      view_area_in_pixels.y(),
-                      view_area_in_pixels.width() * bytes_per_element,
-                      view_area_in_pixels.height());
-
-  CHECK_GE(stride, row_bytes);
-  CHECK_GE(view_area.x(), 0);
-  CHECK_GE(view_area.y(), 0);
-  CHECK_LE(view_area.right(), row_bytes);
-  CHECK_LE(view_area.bottom(), rows);
-
-  if (view_area.IsEmpty()) {
-    libyuv::SetPlane(ptr, stride, row_bytes, rows, fill_byte);
-    return;
-  }
-
-  if (view_area.y() > 0) {
-    libyuv::SetPlane(ptr, stride, row_bytes, view_area.y(), fill_byte);
-    ptr += stride * view_area.y();
-  }
-
-  if (view_area.width() < row_bytes) {
-    if (view_area.x() > 0) {
-      libyuv::SetPlane(ptr, stride, view_area.x(), view_area.height(),
-                       fill_byte);
-    }
-    if (view_area.right() < row_bytes) {
-      libyuv::SetPlane(ptr + view_area.right(), stride,
-                       row_bytes - view_area.right(), view_area.height(),
-                       fill_byte);
-    }
-  }
-  ptr += stride * view_area.height();
-
-  if (view_area.bottom() < rows) {
-    libyuv::SetPlane(ptr, stride, row_bytes, rows - view_area.bottom(),
-                     fill_byte);
-  }
-}
-
 void LetterboxVideoFrame(VideoFrame* frame, const gfx::Rect& view_area) {
+  bool gmb_mapped = false;
+  if (!frame->IsMappable() && frame->HasGpuMemoryBuffer()) {
+    gmb_mapped = frame->GetGpuMemoryBuffer()->Map();
+    DCHECK(gmb_mapped);
+  }
+
   switch (frame->format()) {
     case PIXEL_FORMAT_ARGB:
       LetterboxPlane(frame, VideoFrame::kARGBPlane, view_area, 0x00);
@@ -299,6 +339,7 @@ void LetterboxVideoFrame(VideoFrame* frame, const gfx::Rect& view_area) {
       DCHECK(!(view_area.y() & 1));
       DCHECK(!(view_area.width() & 1));
       DCHECK(!(view_area.height() & 1));
+
       LetterboxPlane(frame, VideoFrame::kYPlane, view_area, 0x00);
       gfx::Rect half_view_area(view_area.x() / 2, view_area.y() / 2,
                                view_area.width() / 2, view_area.height() / 2);
@@ -306,8 +347,25 @@ void LetterboxVideoFrame(VideoFrame* frame, const gfx::Rect& view_area) {
       LetterboxPlane(frame, VideoFrame::kVPlane, half_view_area, 0x80);
       break;
     }
+    case PIXEL_FORMAT_NV12: {
+      DCHECK(!(view_area.x() & 1));
+      DCHECK(!(view_area.y() & 1));
+      DCHECK(!(view_area.width() & 1));
+      DCHECK(!(view_area.height() & 1));
+
+      LetterboxPlane(frame, VideoFrame::kYPlane, view_area, 0x00);
+      gfx::Rect half_view_area(view_area.x() / 2, view_area.y() / 2,
+                               view_area.width() / 2, view_area.height() / 2);
+
+      LetterboxPlane(frame, VideoFrame::kUVPlane, half_view_area, 0x80);
+      break;
+    }
     default:
       NOTREACHED();
+  }
+
+  if (gmb_mapped) {
+    frame->GetGpuMemoryBuffer()->Unmap();
   }
 }
 
@@ -487,6 +545,23 @@ gfx::Rect ComputeLetterboxRegionForI420(const gfx::Rect& bounds,
   return result;
 }
 
+gfx::Rect MinimallyShrinkRectForI420(const gfx::Rect& rect) {
+  constexpr int kMinDimension = -1 * limits::kMaxDimension;
+  DCHECK(gfx::Rect(kMinDimension, kMinDimension, limits::kMaxDimension * 2,
+                   limits::kMaxDimension * 2)
+             .Contains(rect));
+
+  const auto positive_mod = [](int a, int b) { return (a % b + b) % b; };
+
+  const int left = rect.x() + positive_mod(rect.x(), 2);
+  const int top = rect.y() + positive_mod(rect.y(), 2);
+  const int right = rect.right() - (rect.right() % 2);
+  const int bottom = rect.bottom() - (rect.bottom() % 2);
+
+  return gfx::Rect(left, top, std::max(0, right - left),
+                   std::max(0, bottom - top));
+}
+
 gfx::Size ScaleSizeToFitWithinTarget(const gfx::Size& size,
                                      const gfx::Size& target) {
   return ScaleSizeToTarget(size, target, true);
@@ -639,6 +714,8 @@ scoped_refptr<VideoFrame> ReadbackTextureBackedFrameToMemorySync(
     VideoFramePool* pool) {
   DCHECK(ri);
 
+  TRACE_EVENT2("media", "ReadbackTextureBackedFrameToMemorySync", "timestamp",
+               txt_frame.timestamp(), "gr_ctx", !!gr_context);
   VideoPixelFormat format = ReadbackFormat(txt_frame);
   if (format == PIXEL_FORMAT_UNKNOWN) {
     DLOG(ERROR) << "Readback is not possible for this frame: "
@@ -688,17 +765,20 @@ bool ReadbackTexturePlaneToMemorySync(const VideoFrame& src_frame,
                                              dest_pixels, dest_stride, ri);
 }
 
-Status ConvertAndScaleFrame(const VideoFrame& src_frame,
-                            VideoFrame& dst_frame,
-                            std::vector<uint8_t>& tmp_buf) {
+EncoderStatus ConvertAndScaleFrame(const VideoFrame& src_frame,
+                                   VideoFrame& dst_frame,
+                                   std::vector<uint8_t>& tmp_buf) {
+  TRACE_EVENT2("media", "ConvertAndScaleFrame", "src_format",
+               VideoPixelFormatToString(src_frame.format()), "dst_format",
+               VideoPixelFormatToString(dst_frame.format()));
   constexpr auto kDefaultFiltering = libyuv::kFilterBox;
   if (!src_frame.IsMappable() || !dst_frame.IsMappable())
-    return Status(StatusCode::kUnsupportedFrameFormatError);
+    return EncoderStatus::Codes::kUnsupportedFrameFormat;
 
   // I420A can only be produced from I420A.
   if (dst_frame.format() == PIXEL_FORMAT_I420A &&
       src_frame.format() != PIXEL_FORMAT_I420A) {
-    return Status(StatusCode::kUnsupportedFrameFormatError);
+    return EncoderStatus::Codes::kUnsupportedFrameFormat;
   }
 
   if ((dst_frame.format() == PIXEL_FORMAT_I420 ||
@@ -727,7 +807,7 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
           dst_frame.visible_rect().width(), dst_frame.visible_rect().height(),
           kDefaultFiltering);
       if (error)
-        return Status(StatusCode::kInvalidArgument);
+        return EncoderStatus::Codes::kScalingError;
       src_data = tmp_buf.data();
       src_stride = stride;
     }
@@ -745,7 +825,9 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
           dst_frame.visible_data(VideoFrame::kVPlane),
           dst_frame.stride(VideoFrame::kVPlane),
           dst_frame.visible_rect().width(), dst_frame.visible_rect().height());
-      return error ? Status(StatusCode::kInvalidArgument) : Status();
+      if (error)
+        return EncoderStatus::Codes::kFormatConversionError;
+      return OkStatus();
     }
 
     auto convert_fn = (src_frame.format() == PIXEL_FORMAT_XBGR ||
@@ -758,7 +840,9 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
         dst_frame.visible_data(VideoFrame::kUVPlane),
         dst_frame.stride(VideoFrame::kUVPlane),
         dst_frame.visible_rect().width(), dst_frame.visible_rect().height());
-    return error ? Status(StatusCode::kInvalidArgument) : Status();
+    if (error)
+      return EncoderStatus::Codes::kFormatConversionError;
+    return OkStatus();
   }
 
   // Converting between YUV formats doesn't change the color space.
@@ -770,14 +854,13 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
       (src_frame.format() == PIXEL_FORMAT_I420 ||
        src_frame.format() == PIXEL_FORMAT_I420A)) {
     if (dst_frame.format() == PIXEL_FORMAT_I420A) {
-      libyuv::ScalePlane(src_frame.visible_data(media::VideoFrame::kAPlane),
-                         src_frame.stride(media::VideoFrame::kAPlane),
-                         src_frame.visible_rect().width(),
-                         src_frame.visible_rect().height(),
-                         dst_frame.data(media::VideoFrame::kAPlane),
-                         dst_frame.stride(media::VideoFrame::kAPlane),
-                         dst_frame.coded_size().width(),
-                         dst_frame.coded_size().height(), kDefaultFiltering);
+      libyuv::ScalePlane(
+          src_frame.visible_data(VideoFrame::kAPlane),
+          src_frame.stride(VideoFrame::kAPlane),
+          src_frame.visible_rect().width(), src_frame.visible_rect().height(),
+          dst_frame.data(VideoFrame::kAPlane),
+          dst_frame.stride(VideoFrame::kAPlane), dst_frame.coded_size().width(),
+          dst_frame.coded_size().height(), kDefaultFiltering);
     }
     int error = libyuv::I420Scale(
         src_frame.visible_data(VideoFrame::kYPlane),
@@ -794,7 +877,9 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
         dst_frame.visible_data(VideoFrame::kVPlane),
         dst_frame.stride(VideoFrame::kVPlane), dst_frame.visible_rect().width(),
         dst_frame.visible_rect().height(), kDefaultFiltering);
-    return error ? Status(StatusCode::kInvalidArgument) : Status();
+    if (error)
+      return EncoderStatus::Codes::kScalingError;
+    return OkStatus();
   }
 
   // Both frames are NV12, only scaling is required.
@@ -812,12 +897,14 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
         dst_frame.stride(VideoFrame::kUVPlane),
         dst_frame.visible_rect().width(), dst_frame.visible_rect().height(),
         kDefaultFiltering);
-    return error ? Status(StatusCode::kInvalidArgument) : Status();
+    if (error)
+      return EncoderStatus::Codes::kScalingError;
+    return OkStatus();
   }
 
   if (dst_frame.format() == PIXEL_FORMAT_I420 &&
       src_frame.format() == PIXEL_FORMAT_NV12) {
-    if (src_frame.visible_rect() == dst_frame.visible_rect()) {
+    if (src_frame.visible_rect().size() == dst_frame.visible_rect().size()) {
       // Both frames have the same size, only NV12-to-I420 conversion is
       // required.
       int error = libyuv::NV12ToI420(
@@ -832,7 +919,9 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
           dst_frame.visible_data(VideoFrame::kVPlane),
           dst_frame.stride(VideoFrame::kVPlane),
           dst_frame.visible_rect().width(), dst_frame.visible_rect().height());
-      return error ? Status(StatusCode::kInvalidArgument) : Status();
+      if (error)
+        return EncoderStatus::Codes::kFormatConversionError;
+      return OkStatus();
     } else {
       // Both resize and NV12-to-I420 conversion are required.
       // First, split UV planes into two, basically producing a I420 frame.
@@ -868,13 +957,15 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
           dst_frame.stride(VideoFrame::kVPlane),
           dst_frame.visible_rect().width(), dst_frame.visible_rect().height(),
           kDefaultFiltering);
-      return error ? Status(StatusCode::kInvalidArgument) : Status();
+      if (error)
+        return EncoderStatus::Codes::kScalingError;
+      return OkStatus();
     }
   }
 
   if (dst_frame.format() == PIXEL_FORMAT_NV12 &&
       src_frame.format() == PIXEL_FORMAT_I420) {
-    if (src_frame.visible_rect() == dst_frame.visible_rect()) {
+    if (src_frame.visible_rect().size() == dst_frame.visible_rect().size()) {
       // Both frames have the same size, only I420-to-NV12 conversion is
       // required.
       int error = libyuv::I420ToNV12(
@@ -889,7 +980,9 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
           dst_frame.visible_data(VideoFrame::kUVPlane),
           dst_frame.stride(VideoFrame::kUVPlane),
           dst_frame.visible_rect().width(), dst_frame.visible_rect().height());
-      return error ? Status(StatusCode::kInvalidArgument) : Status();
+      if (error)
+        return EncoderStatus::Codes::kFormatConversionError;
+      return OkStatus();
     } else {
       // Both resize and I420-to-NV12 conversion are required.
       // First, merge U and V planes into one, basically producing a NV12 frame.
@@ -922,11 +1015,13 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
           dst_frame.stride(VideoFrame::kUVPlane),
           dst_frame.visible_rect().width(), dst_frame.visible_rect().height(),
           kDefaultFiltering);
-      return error ? Status(StatusCode::kInvalidArgument) : Status();
+      if (error)
+        return EncoderStatus::Codes::kScalingError;
+      return OkStatus();
     }
   }
 
-  return Status(StatusCode::kUnsupportedFrameFormatError)
+  return EncoderStatus(EncoderStatus::Codes::kUnsupportedFrameFormat)
       .WithData("src", src_frame.AsHumanReadableString())
       .WithData("dst", dst_frame.AsHumanReadableString());
 }
@@ -935,12 +1030,12 @@ MEDIA_EXPORT VideoPixelFormat
 VideoPixelFormatFromSkColorType(SkColorType sk_color_type, bool is_opaque) {
   switch (sk_color_type) {
     case kRGBA_8888_SkColorType:
-      return is_opaque ? media::PIXEL_FORMAT_XBGR : media::PIXEL_FORMAT_ABGR;
+      return is_opaque ? PIXEL_FORMAT_XBGR : PIXEL_FORMAT_ABGR;
     case kBGRA_8888_SkColorType:
-      return is_opaque ? media::PIXEL_FORMAT_XRGB : media::PIXEL_FORMAT_ARGB;
+      return is_opaque ? PIXEL_FORMAT_XRGB : PIXEL_FORMAT_ARGB;
     default:
       // TODO(crbug.com/1073995): Add F16 support.
-      return media::PIXEL_FORMAT_UNKNOWN;
+      return PIXEL_FORMAT_UNKNOWN;
   }
 }
 

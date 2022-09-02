@@ -9,8 +9,11 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_session_plugin_handler_delegate.h"
 
+class PrefRegistrySimple;
+class PrefService;
 class Profile;
 class Browser;
 
@@ -24,18 +27,52 @@ class AppWindow;
 
 namespace chromeos {
 
+// Kiosk histogram metrics-related constants.
+extern const char kKioskMetrics[];
+extern const char kKioskSessionStateHistogram[];
+extern const char kKioskSessionCountPerDayHistogram[];
+extern const char kKioskSessionDurationNormalHistogram[];
+extern const char kKioskSessionDurationInDaysNormalHistogram[];
+extern const char kKioskSessionDurationCrashedHistogram[];
+extern const char kKioskSessionDurationInDaysCrashedHistogram[];
+
+extern const char kKioskSessionLastDayList[];
+extern const char kKioskSessionStartTime[];
+
+extern const base::TimeDelta kKioskSessionDurationHistogramLimit;
+
 class KioskSessionPluginHandler;
+class AppSessionMetricsService;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Keep in sync with respective enum in tools/metrics/histograms/enums.xml
+enum class KioskSessionState {
+  kStarted = 0,
+  kWebStarted = 1,
+  kCrashed = 2,
+  kStopped = 3,
+  kPluginCrashed = 4,
+  kPluginHung = 5,
+  // No longer used, use kWebStarted for lacros platform.
+  // kWebWithLacrosStarted = 6, 
+  kRestored = 7,
+  kMaxValue = kRestored,
+};
 
 // AppSession maintains a kiosk session and handles its lifetime.
 class AppSession : public KioskSessionPluginHandlerDelegate {
  public:
   AppSession();
-  explicit AppSession(base::OnceClosure attempt_user_exit);
+  explicit AppSession(base::OnceClosure attempt_user_exit,
+                      PrefService* local_state);
   AppSession(const AppSession&) = delete;
   AppSession& operator=(const AppSession&) = delete;
   ~AppSession() override;
 
-  // Initializes an app session.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Initializes an app session for Chrome App Kiosk.
   virtual void Init(Profile* profile, const std::string& app_id);
 
   // Initializes an app session for Web kiosk.
@@ -59,7 +96,8 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
 
  private:
   // AppWindowHandler watches for app window and exits the session when the
-  // last window of a given app is closed.
+  // last window of a given app is closed. This class is only used for Chrome
+  // App Kiosk.
   class AppWindowHandler;
 
   // BrowserWindowHandler monitors Browser object being created during
@@ -88,6 +126,8 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
   Profile* profile_ = nullptr;
 
   base::OnceClosure attempt_user_exit_;
+  const std::unique_ptr<AppSessionMetricsService> metrics_service_;
+
   // Is called whenever a new browser creation was handled by the
   // BrowserWindowHandler.
   base::RepeatingClosure on_handle_browser_callback_;

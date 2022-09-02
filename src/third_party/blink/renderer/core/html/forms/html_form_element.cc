@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -263,9 +264,14 @@ bool HTMLFormElement::ValidateInteractively() {
       String message(
           "An invalid form control with name='%name' is not focusable.");
       message.Replace("%name", unhandled->GetName());
-      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::ConsoleMessageSource::kRendering,
-          mojom::ConsoleMessageLevel::kError, message));
+
+      ConsoleMessage* console_message = MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kRendering,
+          mojom::blink::ConsoleMessageLevel::kError, message);
+      console_message->SetNodes(
+          GetDocument().GetFrame(),
+          {DOMNodeIds::IdForNode(&unhandled->ToHTMLElement())});
+      GetDocument().AddConsoleMessage(console_message);
     }
   }
   return false;
@@ -349,6 +355,12 @@ void HTMLFormElement::PrepareForSubmission(
     }
   }
   if (should_submit) {
+    // If this form already made a request to navigate another frame which is
+    // still pending, then we should cancel that one.
+    if (cancel_last_submission_ &&
+        RuntimeEnabledFeatures::CancelFormSubmissionInDefaultHandlerEnabled()) {
+      std::move(cancel_last_submission_).Run();
+    }
     ScheduleFormSubmission(event, submit_button);
   }
 }
@@ -553,7 +565,8 @@ void HTMLFormElement::ScheduleFormSubmission(
     target_local_frame->Loader().CancelClientNavigation();
   }
 
-  target_frame->ScheduleFormSubmission(scheduler, form_submission);
+  cancel_last_submission_ =
+      target_frame->ScheduleFormSubmission(scheduler, form_submission);
 }
 
 FormData* HTMLFormElement::ConstructEntryList(
@@ -573,7 +586,7 @@ FormData* HTMLFormElement::ConstructEntryList(
       control->AppendToFormData(form_data);
     if (auto* input = DynamicTo<HTMLInputElement>(element)) {
       if (input->type() == input_type_names::kPassword &&
-          !input->value().IsEmpty())
+          !input->Value().IsEmpty())
         form_data.SetContainsPasswordData(true);
     }
   }
@@ -716,7 +729,8 @@ void HTMLFormElement::CollectListedElements(
       // prevent multiple forms from "owning" the same |listed_element| as shown
       // by their |elements_including_shadow_trees|. |elements| doesn't have
       // this problem because it can check |listed_element->Form()|.
-      if (in_shadow_tree && !HasFormInBetween(&root, &element)) {
+      if (in_shadow_tree && !HasFormInBetween(&root, &element) &&
+          !listed_element->Form()) {
         elements_including_shadow_trees->push_back(listed_element);
       } else if (listed_element->Form() == this) {
         elements.push_back(listed_element);
@@ -725,7 +739,7 @@ void HTMLFormElement::CollectListedElements(
       }
     }
     if (elements_including_shadow_trees && element.AuthorShadowRoot() &&
-        !HasFormInBetween(&root, &element)) {
+        !HasFormInBetween(in_shadow_tree ? &root : this, &element)) {
       const Node& shadow = *element.AuthorShadowRoot();
       CollectListedElements(shadow, elements, elements_including_shadow_trees,
                             /*in_shadow_tree=*/true);
@@ -879,11 +893,10 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
   SECURITY_DCHECK(To<HTMLElement>(element)->formOwner() == this);
   if (IsA<HTMLImageElement>(*element)) {
     SECURITY_DCHECK(ImageElements().Find(element) != kNotFound);
-  } else if (auto* html_image_element = DynamicTo<HTMLObjectElement>(element)) {
-    SECURITY_DCHECK(ListedElements().Find(html_image_element) != kNotFound);
   } else {
-    SECURITY_DCHECK(ListedElements().Find(
-                        To<HTMLFormControlElement>(element)) != kNotFound);
+    auto* listed_element = ListedElement::From(*element);
+    SECURITY_DCHECK(listed_element &&
+                    ListedElements().Find(listed_element) != kNotFound);
   }
 #endif
   return element;

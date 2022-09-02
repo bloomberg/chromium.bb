@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -89,6 +90,7 @@ class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
   ui::AXTreeID GetParentTreeID() const override;
   ui::AXNode* GetRootAsAXNode() const override;
   ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
+  std::string ToString() const override;
 
   // AXActionHandlerBase implementation.
   void PerformAction(const ui::AXActionData& data) override;
@@ -98,13 +100,13 @@ class VIEWS_EXPORT ViewsAXTreeManager : public ui::AXTreeManager,
 
   // WidgetObserver implementation.
   void OnWidgetDestroyed(Widget* widget) override;
-  void OnWidgetClosing(Widget* widget) override;
 
  private:
   using ViewsAXTreeSerializer = ui::AXTreeSerializer<AXAuraObjWrapper*>;
 
   void SerializeTreeUpdates();
   void UnserializeTreeUpdates(const std::vector<ui::AXTreeUpdate>& updates);
+  void FireLoadComplete();
 
   // Determines the platform node which corresponds to the given |node| and
   // fires the given |event| on it.

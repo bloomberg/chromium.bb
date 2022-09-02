@@ -6,10 +6,11 @@
 #define ASH_WEBUI_DIAGNOSTICS_UI_BACKEND_INPUT_DATA_PROVIDER_TOUCH_H_
 
 #include "ash/webui/diagnostics_ui/mojom/input_data_provider.mojom.h"
-#include "ui/events/ozone/evdev/event_device_info.h"
 
 namespace ash {
 namespace diagnostics {
+
+class InputDeviceInformation;
 
 // Helper to provide InputDataProvider diagnostic interface with touch-specific
 // logic.
@@ -21,9 +22,7 @@ class InputDataProviderTouch {
   ~InputDataProviderTouch();
 
   mojom::TouchDeviceInfoPtr ConstructTouchDevice(
-      int id,
-      const ui::EventDeviceInfo* device_info,
-      mojom::ConnectionType connection_type);
+      const InputDeviceInformation* device_info);
 };
 
 }  // namespace diagnostics

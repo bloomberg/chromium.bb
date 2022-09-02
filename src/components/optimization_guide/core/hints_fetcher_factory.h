@@ -11,10 +11,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "url/gurl.h"
 
+class OptimizationGuideLogger;
 class PrefService;
 
 namespace network {
-class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 }  // namespace network
 
@@ -29,15 +29,15 @@ class HintsFetcherFactory {
   HintsFetcherFactory(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const GURL& optimization_guide_service_url,
-      PrefService* pref_service,
-      network::NetworkConnectionTracker* network_connection_tracker);
+      PrefService* pref_service);
   HintsFetcherFactory(const HintsFetcherFactory&) = delete;
   HintsFetcherFactory& operator=(const HintsFetcherFactory&) = delete;
   virtual ~HintsFetcherFactory();
 
   // Creates a new instance of HintsFetcher. Virtualized for testing so that the
   // testing code can override this to provide a mocked instance.
-  virtual std::unique_ptr<HintsFetcher> BuildInstance();
+  virtual std::unique_ptr<HintsFetcher> BuildInstance(
+      OptimizationGuideLogger* optimization_guide_logger);
 
   // Override the optimization guide hints server URL. Used for testing.
   void OverrideOptimizationGuideServiceUrlForTesting(
@@ -53,10 +53,6 @@ class HintsFetcherFactory {
 
   // A reference to the PrefService for this profile. Not owned.
   raw_ptr<PrefService> pref_service_ = nullptr;
-
-  // A reference to the object that listens for changes in network connection.
-  // Not owned. Guaranteed to outlive |this|.
-  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 };
 
 }  // namespace optimization_guide

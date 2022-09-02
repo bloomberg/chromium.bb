@@ -21,15 +21,14 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/test/model/fake_sync_change_processor.h"
 #include "components/sync/test/model/sync_error_factory_mock.h"
@@ -73,7 +72,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
     InitializeEmptyExtensionService();
 
     if (is_child)
-      profile_.get()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+      profile_->SetIsSupervisedProfile();
 
     service_->Init();
 
@@ -124,7 +123,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
     }
   }
 
-  void ValidateExternalProviderCountInAppMode(int expected_count) {
+  void ValidateExternalProviderCountInAppMode(size_t expected_count) {
     base::CommandLine* command = base::CommandLine::ForCurrentProcess();
     command->AppendSwitchASCII(switches::kForceAppMode, std::string());
     command->AppendSwitchASCII(switches::kAppId, std::string("app_id"));
@@ -206,7 +205,7 @@ TEST_F(ExternalProviderImplChromeOSTest, DISABLED_StandaloneChild) {
 // Normal mode, standalone app should be installed, because sync is disabled.
 // TODO(crbug.com/1181737): Flaky test
 TEST_F(ExternalProviderImplChromeOSTest, DISABLED_SyncDisabled) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(syncer::kDisableSync);
 
   InitServiceWithExternalProviders(true);
 
@@ -287,7 +286,6 @@ TEST_P(ExternalProviderImplChromeOSSyncCategorizationTest,
 
   // OOBE screen completed with OS sync enabled.
   PrefService* prefs = profile()->GetPrefs();
-  prefs->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled, true);
   prefs->SetBoolean(chromeos::prefs::kSyncOobeCompleted, true);
 
   // App sync will wait for priority sync to complete.
@@ -330,7 +328,7 @@ TEST_F(ExternalProviderImplChromeOSTest, ChromeAppKiosk) {
   fake_user_manager()->AddKioskAppUser(kiosk_account_id);
   fake_user_manager()->LoginUser(kiosk_account_id);
 
-  ValidateExternalProviderCountInAppMode(3);
+  ValidateExternalProviderCountInAppMode(3u);
 }
 
 // Validate the external providers enabled in the ARC++ App Kiosk session. The
@@ -341,7 +339,7 @@ TEST_F(ExternalProviderImplChromeOSTest, ArcAppKiosk) {
   fake_user_manager()->AddArcKioskAppUser(kiosk_account_id);
   fake_user_manager()->LoginUser(kiosk_account_id);
 
-  ValidateExternalProviderCountInAppMode(1);
+  ValidateExternalProviderCountInAppMode(1u);
 }
 
 // Validate the external providers enabled in the Web App Kiosk session. The
@@ -352,7 +350,7 @@ TEST_F(ExternalProviderImplChromeOSTest, WebAppKiosk) {
   fake_user_manager()->AddWebKioskAppUser(kiosk_account_id);
   fake_user_manager()->LoginUser(kiosk_account_id);
 
-  ValidateExternalProviderCountInAppMode(1);
+  ValidateExternalProviderCountInAppMode(1u);
 }
 
 }  // namespace extensions

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "build/chromeos_buildflags.h"
 #include "crypto/crypto_export.h"
 #include "crypto/scoped_nss_types.h"
@@ -24,11 +23,21 @@ class FilePath;
 
 namespace crypto {
 
-// Opens an NSS software database in folder |path|, with the (potentially)
-// user-visible description |description|. Returns the slot for the opened
-// database, or nullptr if the database could not be opened.
+// Opens an NSS software database in folder `path`, with the (potentially)
+// user-visible description `description`. Returns the slot for the opened
+// database, or nullptr if the database could not be opened. Can be called
+// multiple times for the same `path`, thread-safe.
 CRYPTO_EXPORT ScopedPK11Slot OpenSoftwareNSSDB(const base::FilePath& path,
                                                const std::string& description);
+
+// Closes the underlying database for the `slot`. All remaining slots
+// referencing the same database will remain valid objects, but won't be able to
+// successfully retrieve certificates, etc. Should be used for all databases
+// that were opened with `OpenSoftwareNSSDB` (instead of `SECMOD_CloseUserDB`).
+// Can be called multiple times. Returns `SECSuccess` if the database was
+// successfully closed, returns `SECFailure` if it was never opened, was already
+// closed by an earlier call, or failed to close. Thread-safe.
+CRYPTO_EXPORT SECStatus CloseSoftwareNSSDB(PK11SlotInfo* slot);
 
 // A helper class that acquires the SECMOD list read lock while the
 // AutoSECMODListReadLock is in scope.
@@ -84,8 +93,8 @@ CRYPTO_EXPORT bool InitializeNSSForChromeOSUser(
 // true is returned, the caller can proceed to initialize TPM slot for the
 // user, but should call |WillInitializeTPMForChromeOSUser| first.
 // |InitializeNSSForChromeOSUser| must have been called first.
-CRYPTO_EXPORT bool ShouldInitializeTPMForChromeOSUser(
-    const std::string& username_hash) WARN_UNUSED_RESULT;
+[[nodiscard]] CRYPTO_EXPORT bool ShouldInitializeTPMForChromeOSUser(
+    const std::string& username_hash);
 
 // Makes |ShouldInitializeTPMForChromeOSUser| start returning false.
 // Should be called before starting TPM initialization for the user.
@@ -105,15 +114,15 @@ CRYPTO_EXPORT void InitializePrivateSoftwareSlotForChromeOSUser(
     const std::string& username_hash);
 
 // Returns a reference to the public slot for user.
-CRYPTO_EXPORT ScopedPK11Slot GetPublicSlotForChromeOSUser(
-    const std::string& username_hash) WARN_UNUSED_RESULT;
+[[nodiscard]] CRYPTO_EXPORT ScopedPK11Slot
+GetPublicSlotForChromeOSUser(const std::string& username_hash);
 
 // Returns the private slot for |username_hash| if it is loaded. If it is not
 // loaded and |callback| is non-null, the |callback| will be run once the slot
 // is loaded.
-CRYPTO_EXPORT ScopedPK11Slot GetPrivateSlotForChromeOSUser(
+[[nodiscard]] CRYPTO_EXPORT ScopedPK11Slot GetPrivateSlotForChromeOSUser(
     const std::string& username_hash,
-    base::OnceCallback<void(ScopedPK11Slot)> callback) WARN_UNUSED_RESULT;
+    base::OnceCallback<void(ScopedPK11Slot)> callback);
 
 // Closes the NSS DB for |username_hash| that was previously opened by the
 // *Initialize*ForChromeOSUser functions.

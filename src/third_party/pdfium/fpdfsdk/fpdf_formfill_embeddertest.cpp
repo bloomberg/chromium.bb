@@ -21,7 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/cxx17_backports.h"
 
 using pdfium::kTextFormChecksum;
 
@@ -833,7 +832,7 @@ TEST_F(FPDFFormFillEmbedderTest, FormFillContinuousTab) {
 
   static constexpr int kExpectedAnnotIndex[] = {1, 2, 3, 0};
   // Tabs should iterate focus over annotations.
-  for (size_t i = 0; i < pdfium::size(kExpectedAnnotIndex); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedAnnotIndex); ++i) {
     ASSERT_TRUE(FORM_OnKeyDown(form_handle(), page, FWL_VKEY_Tab, 0));
     int page_index = -2;
     FPDF_ANNOTATION annot = nullptr;
@@ -857,7 +856,7 @@ TEST_F(FPDFFormFillEmbedderTest, FormFillContinuousShiftTab) {
 
   static constexpr int kExpectedAnnotIndex[] = {0, 3, 2, 1};
   // Shift-tabs should iterate focus over annotations.
-  for (size_t i = 0; i < pdfium::size(kExpectedAnnotIndex); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedAnnotIndex); ++i) {
     ASSERT_TRUE(FORM_OnKeyDown(form_handle(), page, FWL_VKEY_Tab,
                                FWL_EVENTFLAG_ShiftKey));
     int page_index = -2;
@@ -1319,12 +1318,17 @@ TEST_F(FPDFFormFillEmbedderTest, BUG_765384) {
 #endif  // PDF_ENABLE_V8
 
 TEST_F(FPDFFormFillEmbedderTest, FormText) {
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#if defined(_SKIA_SUPPORT_)
   const char kFocusedTextFormWithAbcChecksum[] =
-      "199536b979a42da3c2745297f6e87a77";
+      "07a179a9dfb8f5462746262984109a99";
   const char kUnfocusedTextFormWithAbcChecksum[] =
-      "574aa06445957315f0dadd24a0c59811";
-#elif defined(OS_APPLE)
+      "a21b74cc620db8a9891ebd69e1aeda98";
+#elif defined(_SKIA_SUPPORT_PATHS_)
+  const char kFocusedTextFormWithAbcChecksum[] =
+      "2866312fb36e9afdc0a99d547027d484";
+  const char kUnfocusedTextFormWithAbcChecksum[] =
+      "03216cae48813f71f81f53b49e3a8aaa";
+#elif BUILDFLAG(IS_APPLE)
   const char kFocusedTextFormWithAbcChecksum[] =
       "9fb14198d75ca0a107060c60ca21b0c7";
   const char kUnfocusedTextFormWithAbcChecksum[] =
@@ -1405,10 +1409,130 @@ TEST_F(FPDFFormFillEmbedderTest, BUG_1281) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFFormFillEmbedderTest, RemoveFormFieldHighlight) {
+TEST_F(FPDFFormFillEmbedderTest, Bug1302455RenderOnly) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-  const char kMd5NoHighlight[] = "013aa241c39c02505d9525550be04e48";
-#elif defined(OS_APPLE)
+  const char kChecksum[] = "520c4415c9977f40d6b4af5a0a94d764";
+#else
+  const char kChecksum[] = "bbee92af1daec2340c81f482878744d8";
+#endif
+  {
+    ASSERT_TRUE(OpenDocument("bug_1302455.pdf"));
+    FPDF_PAGE page = LoadPage(0);
+    ASSERT_TRUE(page);
+
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 300, 300, kChecksum);
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+
+    UnloadPage(page);
+  }
+  VerifySavedDocument(300, 300, kChecksum);
+}
+
+TEST_F(FPDFFormFillEmbedderTest, Bug1302455EditFirstForm) {
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  const char kChecksum[] = "29a06da3e47f67535e266b090a5ac82d";
+#elif BUILDFLAG(IS_APPLE)
+  const char kChecksum[] = "bf5423874f188427d2500a2bc4abebbe";
+#else
+  const char kChecksum[] = "6a4ac9a15d2c34589616c8f2b05fbedd";
+#endif
+  {
+    ASSERT_TRUE(OpenDocument("bug_1302455.pdf"));
+    FPDF_PAGE page = LoadPage(0);
+    ASSERT_TRUE(page);
+
+    EXPECT_EQ(FPDF_FORMFIELD_TEXTFIELD,
+              FPDFPage_HasFormFieldAtPoint(form_handle(), page, 110, 110));
+    FORM_OnMouseMove(form_handle(), page, 0, 110, 110);
+    FORM_OnLButtonDown(form_handle(), page, 0, 110, 110);
+    FORM_OnLButtonUp(form_handle(), page, 0, 110, 110);
+    FORM_OnChar(form_handle(), page, 'A', 0);
+
+    FORM_ForceToKillFocus(form_handle());
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 300, 300, kChecksum);
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+
+    UnloadPage(page);
+  }
+  VerifySavedDocument(300, 300, kChecksum);
+}
+
+TEST_F(FPDFFormFillEmbedderTest, Bug1302455EditSecondForm) {
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  const char kChecksum[] = "19f8574d6378ee36e349376d88b7a2c4";
+#elif BUILDFLAG(IS_APPLE)
+  const char kChecksum[] = "8a0fd8772dba6e1e952e49d159cc64b5";
+#else
+  const char kChecksum[] = "45a7694933c2ba3c5dc8f6cc18b79175";
+#endif
+  {
+    ASSERT_TRUE(OpenDocument("bug_1302455.pdf"));
+    FPDF_PAGE page = LoadPage(0);
+    ASSERT_TRUE(page);
+
+    EXPECT_EQ(FPDF_FORMFIELD_TEXTFIELD,
+              FPDFPage_HasFormFieldAtPoint(form_handle(), page, 110, 170));
+    FORM_OnMouseMove(form_handle(), page, 0, 110, 170);
+    FORM_OnLButtonDown(form_handle(), page, 0, 110, 170);
+    FORM_OnLButtonUp(form_handle(), page, 0, 110, 170);
+    FORM_OnChar(form_handle(), page, 'B', 0);
+
+    FORM_ForceToKillFocus(form_handle());
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 300, 300, kChecksum);
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+
+    UnloadPage(page);
+  }
+  VerifySavedDocument(300, 300, kChecksum);
+}
+
+TEST_F(FPDFFormFillEmbedderTest, Bug1302455EditBothForms) {
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  const char kChecksum[] = "edbc9b0e190118a9039fffc11e494081";
+#elif BUILDFLAG(IS_APPLE)
+  const char kChecksum[] = "1f422ee1c520ad74b1a993b64bd4dc4a";
+#else
+  const char kChecksum[] = "13984969b1e141079ab5f4aa80185463";
+#endif
+  {
+    ASSERT_TRUE(OpenDocument("bug_1302455.pdf"));
+    FPDF_PAGE page = LoadPage(0);
+    ASSERT_TRUE(page);
+
+    EXPECT_EQ(FPDF_FORMFIELD_TEXTFIELD,
+              FPDFPage_HasFormFieldAtPoint(form_handle(), page, 110, 110));
+    FORM_OnMouseMove(form_handle(), page, 0, 110, 110);
+    FORM_OnLButtonDown(form_handle(), page, 0, 110, 110);
+    FORM_OnLButtonUp(form_handle(), page, 0, 110, 110);
+    FORM_OnChar(form_handle(), page, 'A', 0);
+
+    EXPECT_EQ(FPDF_FORMFIELD_TEXTFIELD,
+              FPDFPage_HasFormFieldAtPoint(form_handle(), page, 110, 170));
+    FORM_OnMouseMove(form_handle(), page, 0, 110, 170);
+    FORM_OnLButtonDown(form_handle(), page, 0, 110, 170);
+    FORM_OnLButtonUp(form_handle(), page, 0, 110, 170);
+    FORM_OnChar(form_handle(), page, 'B', 0);
+
+    FORM_ForceToKillFocus(form_handle());
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 300, 300, kChecksum);
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+
+    UnloadPage(page);
+  }
+  VerifySavedDocument(300, 300, kChecksum);
+}
+
+TEST_F(FPDFFormFillEmbedderTest, RemoveFormFieldHighlight) {
+#if BUILDFLAG(IS_APPLE) && !defined(_SKIA_SUPPORT_) && \
+    !defined(_SKIA_SUPPORT_PATHS_)
   const char kMd5NoHighlight[] = "5c82aa43e3b478aa1e4c94bb9ef1f11f";
 #else
   const char kMd5NoHighlight[] = "a6268304f7eedfa9ee98fac3caaf2efb";
@@ -3122,7 +3246,7 @@ TEST_F(FPDFFormFillTextFormEmbedderTest, SelectAllWithKeyboardShortcut) {
   CheckSelection(L"");
 
   // Select all with the keyboard shortcut.
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   constexpr int kCorrectModifier = FWL_EVENTFLAG_MetaKey;
 #else
   constexpr int kCorrectModifier = FWL_EVENTFLAG_ControlKey;
@@ -3136,7 +3260,7 @@ TEST_F(FPDFFormFillTextFormEmbedderTest, SelectAllWithKeyboardShortcut) {
   CheckSelection(L"");
 
   // Select all with the keyboard shortcut using the wrong modifier key.
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   constexpr int kWrongModifier = FWL_EVENTFLAG_ControlKey;
 #else
   constexpr int kWrongModifier = FWL_EVENTFLAG_MetaKey;
@@ -3191,7 +3315,7 @@ class FPDFFormFillActionUriTest : public EmbedderTest {
     // Set Widget and Link as supported tabbable annots.
     constexpr FPDF_ANNOTATION_SUBTYPE kFocusableSubtypes[] = {FPDF_ANNOT_WIDGET,
                                                               FPDF_ANNOT_LINK};
-    constexpr size_t kSubtypeCount = pdfium::size(kFocusableSubtypes);
+    constexpr size_t kSubtypeCount = std::size(kFocusableSubtypes);
     ASSERT_TRUE(FPDFAnnot_SetFocusableSubtypes(
         form_handle(), kFocusableSubtypes, kSubtypeCount));
   }

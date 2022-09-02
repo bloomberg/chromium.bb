@@ -4,8 +4,10 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
@@ -18,6 +20,7 @@ class EGLApiTest : public testing::Test {
   void SetUp() override {
     fake_client_extension_string_ = "";
     fake_extension_string_ = "";
+    display_ = nullptr;
 
     g_driver_egl.fn.eglInitializeFn = &FakeInitialize;
     g_driver_egl.fn.eglTerminateFn = &FakeTerminate;
@@ -27,7 +30,7 @@ class EGLApiTest : public testing::Test {
     g_driver_egl.fn.eglGetErrorFn = &FakeGetError;
     g_driver_egl.fn.eglGetProcAddressFn = &FakeGetProcAddress;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     SetGLImplementation(kGLImplementationEGLANGLE);
 #else
     SetGLImplementation(kGLImplementationEGLGLES2);
@@ -35,7 +38,7 @@ class EGLApiTest : public testing::Test {
   }
 
   void TearDown() override {
-    init::ShutdownGL(false);
+    init::ShutdownGL(display_, false);
     api_.reset(nullptr);
 
     fake_client_extension_string_ = "";
@@ -49,9 +52,10 @@ class EGLApiTest : public testing::Test {
     if (disabled_extensions) {
       SetDisabledExtensionsEGL(disabled_extensions);
     }
-    g_driver_egl.InitializeClientExtensionBindings();
-    GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform(EGL_DEFAULT_DISPLAY));
-    g_driver_egl.InitializeExtensionBindings();
+    g_driver_egl.ext.InitializeClientExtensionSettings();
+    display_ = GLSurfaceEGL::InitializeDisplay(
+        EGLDisplayPlatform(EGL_DEFAULT_DISPLAY), /*system_device_id=*/0);
+    g_driver_egl.ext.InitializeExtensionSettings(display_);
   }
 
   void SetFakeExtensionString(const char* fake_string,
@@ -107,6 +111,7 @@ class EGLApiTest : public testing::Test {
   static const char* fake_extension_string_;
   static const char* fake_client_extension_string_;
 
+  raw_ptr<GLDisplayEGL> display_ = nullptr;
   std::unique_ptr<RealEGLApi> api_;
 };
 

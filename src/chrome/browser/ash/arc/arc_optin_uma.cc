@@ -19,6 +19,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace arc {
 
 namespace {
@@ -166,11 +170,10 @@ void UpdatePlayStoreLaunchTime(const base::TimeDelta& elapsed_time) {
                                 base::Milliseconds(10), base::Seconds(20), 50);
 }
 
-void UpdatePlayStoreShownTimeDeprecated(const base::TimeDelta& elapsed_time,
-                                        const Profile* profile) {
+void UpdateDeferredLaunchTime(const base::TimeDelta& elapsed_time) {
   base::UmaHistogramCustomTimes(
-      GetHistogramNameByUserType("Arc.PlayStoreShown.TimeDelta", profile),
-      elapsed_time, base::Seconds(1), base::Minutes(10), 50);
+      "Arc.FirstAppLaunchDelay.TimeDeltaUntilAppLaunch", elapsed_time,
+      base::Milliseconds(10), base::Seconds(60), 50);
 }
 
 void UpdateAuthTiming(const char* histogram_name,

@@ -36,7 +36,7 @@ int av1_alloc_above_context_buffers(struct CommonContexts *above_contexts,
                                     int num_planes);
 void av1_free_above_context_buffers(struct CommonContexts *above_contexts);
 int av1_alloc_context_buffers(struct AV1Common *cm, int width, int height,
-                              int mode, BLOCK_SIZE min_partition_size);
+                              BLOCK_SIZE min_partition_size);
 void av1_init_mi_buffers(struct CommonModeInfoParams *mi_params);
 void av1_free_context_buffers(struct AV1Common *cm);
 
@@ -47,11 +47,9 @@ void av1_alloc_cdef_buffers(struct AV1Common *const cm,
                             int init_worker);
 void av1_free_cdef_buffers(struct AV1Common *const cm,
                            struct AV1CdefWorker **cdef_worker,
-                           struct AV1CdefSyncData *cdef_sync, int num_workers);
-#if !CONFIG_REALTIME_ONLY
+                           struct AV1CdefSyncData *cdef_sync);
 void av1_alloc_restoration_buffers(struct AV1Common *cm);
 void av1_free_restoration_buffers(struct AV1Common *cm);
-#endif
 
 int av1_alloc_state_buffers(struct AV1Common *cm, int width, int height);
 void av1_free_state_buffers(struct AV1Common *cm);

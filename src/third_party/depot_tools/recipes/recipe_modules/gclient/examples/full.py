@@ -25,7 +25,6 @@ TEST_CONFIGS = [
   'custom_tabs_client',
   'dart',
   'dawn',
-  'disable_syntax_validation',
   'emscripten_releases',
   'expect_tests',
   'gerrit',

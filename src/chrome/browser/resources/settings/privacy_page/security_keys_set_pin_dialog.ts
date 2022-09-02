@@ -22,9 +22,10 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SecurityKeysPINBrowserProxy, SecurityKeysPINBrowserProxyImpl} from './security_keys_browser_proxy.js';
+import {getTemplate} from './security_keys_set_pin_dialog.html.js';
 
 export enum SetPINDialogPage {
   INITIAL = 'initial',
@@ -58,7 +59,7 @@ export class SettingsSecurityKeysSetPinDialogElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -208,7 +209,7 @@ export class SettingsSecurityKeysSetPinDialogElement extends
   private browserProxy_: SecurityKeysPINBrowserProxy =
       SecurityKeysPINBrowserProxyImpl.getInstance();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.title_ = this.i18n('securityKeysSetPINInitialTitle');
@@ -346,7 +347,7 @@ export class SettingsSecurityKeysSetPinDialogElement extends
     // Therefore, iterate over the string (which does yield codepoints) and
     // check that |minLength| or more were seen.
     let length = 0;
-    for (const codepoint of pin) {
+    for (const _codepoint of pin) {
       length++;
     }
 

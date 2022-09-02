@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "components/optimization_guide/core/page_content_annotation_type.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "net/nqe/effective_connection_type.h"
@@ -29,11 +30,28 @@ extern const base::Feature kContextMenuPerformanceInfoAndRemoteHintFetching;
 extern const base::Feature kOptimizationTargetPrediction;
 extern const base::Feature kOptimizationGuideModelDownloading;
 extern const base::Feature kPageContentAnnotations;
+extern const base::Feature kPageEntitiesPageContentAnnotations;
+extern const base::Feature kPageVisibilityPageContentAnnotations;
+extern const base::Feature kPageEntitiesModelBypassFilters;
 extern const base::Feature kPageTextExtraction;
 extern const base::Feature kPushNotifications;
 extern const base::Feature kOptimizationGuideMetadataValidation;
 extern const base::Feature kPageTopicsBatchAnnotations;
 extern const base::Feature kPageVisibilityBatchAnnotations;
+extern const base::Feature kPageEntitiesModelResetOnShutdown;
+extern const base::Feature kPageEntitiesModelBypassFilters;
+extern const base::Feature kUseLocalPageEntitiesMetadataProvider;
+extern const base::Feature kPageContentAnnotationsValidation;
+extern const base::Feature kPreventLongRunningPredictionModels;
+extern const base::Feature kOverrideNumThreadsForModelExecution;
+extern const base::Feature kOptGuideEnableXNNPACKDelegateWithTFLite;
+extern const base::Feature kRemotePageMetadata;
+extern const base::Feature kOptimizationHintsComponent;
+
+// Enables use of task runner with trait CONTINUE_ON_SHUTDOWN for page content
+// annotations on-device models.
+extern const base::Feature
+    kOptimizationGuideUseContinueOnShutdownForPageContentAnnotations;
 
 // The grace period duration for how long to give outstanding page text dump
 // requests to respond after DidFinishLoad.
@@ -68,11 +86,14 @@ GURL GetOptimizationGuideServiceGetHintsURL();
 // Model Features.
 GURL GetOptimizationGuideServiceGetModelsURL();
 
+// Whether prediction of optimization targets is enabled.
+bool IsOptimizationTargetPredictionEnabled();
+
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
 
 // Returns true if the feature to fetch from the remote Optimization Guide
-// Service is enabled.
+// Service is enabled. This controls the fetching of both hints and models.
 bool IsRemoteFetchingEnabled();
 
 // Returns true if the feature to fetch data for users that have consented to
@@ -133,7 +154,7 @@ base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
 
 // The maximum duration for which models can remain in the
 // OptimizationGuideStore without being loaded.
-base::TimeDelta StoredModelsInactiveDuration();
+base::TimeDelta StoredModelsValidDuration();
 
 // The amount of time URL-keyed hints within the hint cache will be
 // allowed to be used and not be purged.
@@ -177,9 +198,19 @@ int PredictionModelFetchRandomMaxDelaySecs();
 // models.
 base::TimeDelta PredictionModelFetchRetryDelay();
 
+// Returns the time to wait after browser start before fetching prediciton
+// models.
+base::TimeDelta PredictionModelFetchStartupDelay();
+
 // Returns the time to wait after a successful fetch of prediction models to
 // refresh models.
 base::TimeDelta PredictionModelFetchInterval();
+
+// Whether to use the model execution watchdog.
+bool IsModelExecutionWatchdogEnabled();
+
+// The default timeout for the watchdog to use if none is given by the caller.
+base::TimeDelta ModelExecutionWatchdogDefaultTimeout();
 
 // Returns a set of field trial name hashes that can be sent in the request to
 // the remote Optimization Guide Service if the client is in one of the
@@ -196,12 +227,9 @@ bool IsUnrestrictedModelDownloadingEnabled();
 // Returns whether the feature to annotate page content is enabled.
 bool IsPageContentAnnotationEnabled();
 
-// Returns the max size that should be requested for a page content text dump.
-uint64_t MaxSizeForPageContentTextDump();
-
-// Returns whether the title should always be annotated instead of a page
-// content text dump.
-bool ShouldAnnotateTitleInsteadOfPageContent();
+// Whether search metadata should be persisted for non-Google searches, as
+// identified by the TemplateURLService.
+bool ShouldPersistSearchMetadataForNonGoogleSearches();
 
 // Whether we should write content annotations to History Service.
 bool ShouldWriteContentAnnotationsToHistoryService();
@@ -214,19 +242,21 @@ size_t MaxContentAnnotationRequestsCached();
 // as part of page content annotations.
 bool ShouldExtractRelatedSearches();
 
-// Returns an ordered vector of models to execute on the page content for each
-// page load. It is guaranteed that an optimization target will only be present
-// at most once in the returned vector. However, it is not guaranteed that it
-// will only contain models that the current PageContentAnnotationsService
-// supports, so it is up to the caller to ensure that it can execute the
-// specified models. `locale` is used for implement client-side locale filtering
-// for models that only work for some locales.
-std::vector<optimization_guide::proto::OptimizationTarget>
-GetPageContentModelsToExecute(const std::string& locale);
+// Returns whether the page entities model should be executed on page content
+// for a user using |locale| as their browser language.
+bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale);
+
+// Returns whether the page visibility model should be executed on page content
+// for a user using |locale| as their browser language.
+bool ShouldExecutePageVisibilityModelOnPageContent(const std::string& locale);
 
 // Returns whether page entities should be retrieved from the remote
 // Optimization Guide service.
 bool RemotePageEntitiesEnabled();
+
+// Returns whether page metadata should be retrieved from the remote
+// Optimization Guide service.
+bool RemotePageMetadataEnabled();
 
 // The time to wait beyond the onload event before sending the hints request for
 // link predictions.
@@ -248,6 +278,40 @@ bool PageTopicsBatchAnnotationsEnabled();
 
 // Returns if Page Visibility Batch Annotations are enabled.
 bool PageVisibilityBatchAnnotationsEnabled();
+
+// Whether to use the leveldb-based page entities metadata provider.
+bool UseLocalPageEntitiesMetadataProvider();
+
+// The number of visits batch before running the page content annotation
+// models. A size of 1 is equivalent to annotating one page load at time
+// immediately after requested.
+size_t AnnotateVisitBatchSize();
+
+// Whether the page content annotation validation feature or command line flag
+// is enabled for the given annotation type.
+bool PageContentAnnotationValidationEnabledForType(AnnotationType type);
+
+// The time period between browser start and running a running page content
+// annotation validation.
+base::TimeDelta PageContentAnnotationValidationStartupDelay();
+
+// The size of batches to run for page content validation.
+size_t PageContentAnnotationsValidationBatchSize();
+
+// The maximum size of the visit annotation cache.
+size_t MaxVisitAnnotationCacheSize();
+
+// Returns the number of threads to use for model inference on the given
+// optimization target.
+absl::optional<int> OverrideNumThreadsForOptTarget(
+    proto::OptimizationTarget opt_target);
+
+// Whether XNNPACK should be used with TFLite, on platforms where it is
+// supported. This is a no-op on unsupported platforms.
+bool TFLiteXNNPACKDelegateEnabled();
+
+// Whether to check the pref for whether a previous component version failed.
+bool ShouldCheckFailedComponentVersionPref();
 
 }  // namespace features
 }  // namespace optimization_guide

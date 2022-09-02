@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
@@ -44,23 +45,32 @@ void LargestContentfulPaintCalculator::UpdateLargestContentfulImage(
     const ImageRecord* largest_image) {
   DCHECK(window_performance_);
   DCHECK(largest_image);
-  const ImageResourceContent* cached_image = largest_image->cached_image;
+  const MediaTiming* media_timing = largest_image->media_timing;
   Node* image_node = DOMNodeIds::NodeForId(largest_image->node_id);
 
-  // |cached_image| is a weak pointer, so it may be null. This can only happen
+  // |media_timing| is a weak pointer, so it may be null. This can only happen
   // if the image has been removed, which means that the largest image is not
   // up-to-date. This can happen when this method call came from
   // OnLargestTextUpdated(). If a largest-image is added and removed so fast
   // that it does not get to be reported here, we consider it safe to ignore.
   // For similar reasons, |image_node| may be null and it is safe to ignore
   // the |largest_image| content in this case as well.
-  if (!cached_image || !image_node)
+  if (!media_timing || !image_node)
     return;
 
-  largest_reported_size_ = largest_image->first_size;
-  const KURL& url = cached_image->Url();
+  uint64_t size = largest_image->first_size;
+  double bpp = largest_image->EntropyForLCP();
+
+  if (base::FeatureList::IsEnabled(features::kExcludeLowEntropyImagesFromLCP)) {
+    if (bpp < features::kMinimumEntropyForLCP.Get()) {
+      return;
+    }
+  }
+  largest_image_bpp_ = bpp;
+  largest_reported_size_ = size;
+  const KURL& url = media_timing->Url();
   bool expose_paint_time_to_api =
-      url.ProtocolIsData() || cached_image->GetResponse().TimingAllowPassed();
+      url.ProtocolIsData() || media_timing->TimingAllowPassed();
   const String& image_url =
       url.ProtocolIsData()
           ? url.GetString().Left(ImageElementTiming::kInlineImageMaxChars)
@@ -127,6 +137,8 @@ LargestContentfulPaintCalculator::TextCandidateTraceData(
   value->SetInteger("size", static_cast<int>(largest_text.first_size));
   value->SetInteger("candidateIndex", ++count_candidates_);
   auto* window = window_performance_->DomWindow();
+  value->SetBoolean("isOutermostMainFrame",
+                    window->GetFrame()->IsOutermostMainFrame());
   value->SetBoolean("isMainFrame", window->GetFrame()->IsMainFrame());
   value->SetString("navigationId",
                    IdentifiersFactory::LoaderId(window->document()->Loader()));
@@ -142,6 +154,8 @@ LargestContentfulPaintCalculator::ImageCandidateTraceData(
   value->SetInteger("size", static_cast<int>(largest_image->first_size));
   value->SetInteger("candidateIndex", ++count_candidates_);
   auto* window = window_performance_->DomWindow();
+  value->SetBoolean("isOutermostMainFrame",
+                    window->GetFrame()->IsOutermostMainFrame());
   value->SetBoolean("isMainFrame", window->GetFrame()->IsMainFrame());
   value->SetString("navigationId",
                    IdentifiersFactory::LoaderId(window->document()->Loader()));

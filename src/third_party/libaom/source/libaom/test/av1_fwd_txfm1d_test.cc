@@ -9,6 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <memory>
+#include <new>
+
 #include "av1/encoder/av1_fwd_txfm1d.h"
 #include "test/av1_txfm_test.h"
 
@@ -65,10 +68,14 @@ TEST(av1_fwd_txfm1d, accuracy) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   for (int si = 0; si < txfm_size_num; ++si) {
     int txfm_size = txfm_size_ls[si];
-    int32_t *input = new int32_t[txfm_size];
-    int32_t *output = new int32_t[txfm_size];
-    double *ref_input = new double[txfm_size];
-    double *ref_output = new double[txfm_size];
+    std::unique_ptr<int32_t[]> input(new (std::nothrow) int32_t[txfm_size]);
+    std::unique_ptr<int32_t[]> output(new (std::nothrow) int32_t[txfm_size]);
+    std::unique_ptr<double[]> ref_input(new (std::nothrow) double[txfm_size]);
+    std::unique_ptr<double[]> ref_output(new (std::nothrow) double[txfm_size]);
+    ASSERT_NE(input, nullptr);
+    ASSERT_NE(output, nullptr);
+    ASSERT_NE(ref_input, nullptr);
+    ASSERT_NE(ref_output, nullptr);
 
     for (int ti = 0; ti < txfm_type_num; ++ti) {
       TYPE_TXFM txfm_type = txfm_type_ls[ti];
@@ -83,8 +90,9 @@ TEST(av1_fwd_txfm1d, accuracy) {
             ref_input[ni] = static_cast<double>(input[ni]);
           }
 
-          fwd_txfm_func(input, output, cos_bit, range_bit);
-          reference_hybrid_1d(ref_input, ref_output, txfm_size, txfm_type);
+          fwd_txfm_func(input.get(), output.get(), cos_bit, range_bit);
+          reference_hybrid_1d(ref_input.get(), ref_output.get(), txfm_size,
+                              txfm_type);
 
           for (int ni = 0; ni < txfm_size; ++ni) {
             ASSERT_LE(
@@ -95,11 +103,6 @@ TEST(av1_fwd_txfm1d, accuracy) {
         }
       }
     }
-
-    delete[] input;
-    delete[] output;
-    delete[] ref_input;
-    delete[] ref_output;
   }
 }
 }  // namespace

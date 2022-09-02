@@ -70,6 +70,10 @@ AudioCodec StringToAudioCodec(const std::string& codec_id) {
     return AudioCodec::kAC3;
   if (codec_id == "ec-3" || codec_id == "mp4a.A6" || codec_id == "mp4a.a6")
     return AudioCodec::kEAC3;
+  if (codec_id == "dtsc")
+    return AudioCodec::kDTS;
+  if (codec_id == "dtsx")
+    return AudioCodec::kDTSXP2;
   if (codec_id == "mp3" || codec_id == "mp4a.69" || codec_id == "mp4a.6B")
     return AudioCodec::kMP3;
   if (codec_id == "alac")
@@ -84,6 +88,10 @@ AudioCodec StringToAudioCodec(const std::string& codec_id) {
     return AudioCodec::kOpus;
   if (codec_id == "vorbis")
     return AudioCodec::kVorbis;
+  if (codec_id == "dtsc")
+    return AudioCodec::kDTS;
+  if (codec_id == "dtsx")
+    return AudioCodec::kDTSXP2;
   if (base::StartsWith(codec_id, "mp4a.40.", base::CompareCase::SENSITIVE))
     return AudioCodec::kAAC;
   return AudioCodec::kUnknown;

@@ -44,7 +44,8 @@ def RunSteps(api):
                                         'main',
                                         {'chrome/VERSION': '99.99.99.99'},
                                         'Dummy CL.',
-                                        submit=True)
+                                        submit=True,
+                                        cc_list=['foo@example.com'])
   assert int(change_info['_number']) == 91827, change_info
   assert change_info['status'] == 'MERGED'
 
@@ -102,6 +103,8 @@ def GenTests(api):
                        api.gerrit.make_gerrit_create_tag_response_data()) +
          api.step_data('gerrit create change at (v8/v8 main)',
                        api.gerrit.update_files_response_data()) +
+         api.step_data('verify the patchset exists on CL 91827.gerrit changes',
+                       api.gerrit.get_empty_changes_response_data()) +
          api.step_data('gerrit submit change 91827',
                        api.gerrit.update_files_response_data(status='MERGED')) +
          api.step_data('gerrit get_gerrit_branch (v8/v8 main)',

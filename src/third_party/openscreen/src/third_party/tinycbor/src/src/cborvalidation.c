@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation
+** Copyright (C) 2021 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -293,7 +293,6 @@ static inline CborError validate_simple_type(uint8_t simple_type, uint32_t flags
 static inline CborError validate_number(const CborValue *it, CborType type, uint32_t flags)
 {
     CborError err = CborNoError;
-    const uint8_t *ptr = it->ptr;
     size_t bytesUsed, bytesNeeded;
     uint64_t value;
 
@@ -302,11 +301,10 @@ static inline CborError validate_number(const CborValue *it, CborType type, uint
     if (type >= CborHalfFloatType && type <= CborDoubleType)
         return err;     /* checked elsewhere */
 
-    err = _cbor_value_extract_number(&ptr, it->parser->end, &value);
+    err = extract_number_checked(it, &value, &bytesUsed);
     if (err)
         return err;
 
-    bytesUsed = (size_t)(ptr - it->ptr - 1);
     bytesNeeded = 0;
     if (value >= Value8Bit)
         ++bytesNeeded;
@@ -380,7 +378,7 @@ static inline CborError validate_floating_point(CborValue *it, CborType type, ui
     int r;
     double val;
     float valf;
-    uint16_t valf16;
+    uint16_t valf16 = 0x7c01;       /* dummy value, an infinity */
 
     if (type != CborDoubleType) {
         if (type == CborFloatType) {
@@ -473,34 +471,23 @@ static CborError validate_container(CborValue *it, int containerType, uint32_t f
             continue;
 
         if (flags & CborValidateMapIsSorted) {
+            if (it->parser->flags & CborParserFlag_ExternalSource)
+                return CborErrorUnimplementedValidation;
             if (previous) {
-                uint64_t len1, len2;
-                const uint8_t *ptr;
+                size_t bytelen1 = (size_t)(previous_end - previous);
+                size_t bytelen2 = (size_t)(cbor_value_get_next_byte(it) - current);
+                int r = memcmp(previous, current, bytelen1 <= bytelen2 ? bytelen1 : bytelen2);
 
-                /* extract the two lengths */
-                ptr = previous;
-                _cbor_value_extract_number(&ptr, it->parser->end, &len1);
-                ptr = current;
-                _cbor_value_extract_number(&ptr, it->parser->end, &len2);
-
-                if (len1 > len2)
+                if (r == 0 && bytelen1 != bytelen2)
+                    r = bytelen1 < bytelen2 ? -1 : +1;
+                if (r > 0)
                     return CborErrorMapNotSorted;
-                if (len1 == len2) {
-                    size_t bytelen1 = (size_t)(previous_end - previous);
-                    size_t bytelen2 = (size_t)(it->ptr - current);
-                    int r = memcmp(previous, current, bytelen1 <= bytelen2 ? bytelen1 : bytelen2);
-
-                    if (r == 0 && bytelen1 != bytelen2)
-                        r = bytelen1 < bytelen2 ? -1 : +1;
-                    if (r > 0)
-                        return CborErrorMapNotSorted;
-                    if (r == 0 && (flags & CborValidateMapKeysAreUnique) == CborValidateMapKeysAreUnique)
-                        return CborErrorMapKeysNotUnique;
-                }
+                if (r == 0 && (flags & CborValidateMapKeysAreUnique) == CborValidateMapKeysAreUnique)
+                    return CborErrorMapKeysNotUnique;
             }
 
             previous = current;
-            previous_end = it->ptr;
+            previous_end = cbor_value_get_next_byte(it);
         }
 
         /* map: that was the key, so get the value */
@@ -534,7 +521,7 @@ static CborError validate_value(CborValue *it, uint32_t flags, int recursionLeft
         if (!err)
             err = validate_container(&recursed, type, flags, recursionLeft - 1);
         if (err) {
-            it->ptr = recursed.ptr;
+            copy_current_position(it, &recursed);
             return err;
         }
         err = cbor_value_leave_container(it, &recursed);
@@ -556,24 +543,24 @@ static CborError validate_value(CborValue *it, uint32_t flags, int recursionLeft
         size_t n = 0;
         const void *ptr;
 
-        err = _cbor_value_prepare_string_iteration(it);
+        err = cbor_value_begin_string_iteration(it);
         if (err)
             return err;
 
         while (1) {
             CborValue next;
             err = _cbor_value_get_string_chunk(it, &ptr, &n, &next);
-            if (err)
-                return err;
-            if (ptr) {
+            if (!err) {
                 err = validate_number(it, type, flags);
                 if (err)
                     return err;
             }
 
             *it = next;
-            if (!ptr)
-                break;
+            if (err == CborErrorNoMoreStringChunks)
+                return cbor_value_finish_string_iteration(it);
+            if (err)
+                return err;
 
             if (type == CborTextStringType && flags & CborValidateUtf8) {
                 err = validate_utf8_string(ptr, n);
@@ -660,7 +647,7 @@ CborError cbor_value_validate(const CborValue *it, uint32_t flags)
     CborError err = validate_value(&value, flags, CBOR_PARSER_MAX_RECURSIONS);
     if (err)
         return err;
-    if (flags & CborValidateCompleteData && it->ptr != it->parser->end)
+    if (flags & CborValidateCompleteData && can_read_bytes(it, 1))
         return CborErrorGarbageAtEnd;
     return CborNoError;
 }

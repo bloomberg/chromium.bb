@@ -8,25 +8,29 @@
 #ifndef SKSL_THREADCONTEXT
 #define SKSL_THREADCONTEXT
 
-#include "include/core/SkStringView.h"
-#include "include/private/SkSLModifiers.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLProgramKind.h"
+#include "include/sksl/SkSLErrorReporter.h"
+#include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLMangler.h"
+#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/ir/SkSLProgram.h"
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-#include "src/gpu/GrFragmentProcessor.h"
-#endif // !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-#include <list>
-#include <stack>
+
+#include <memory>
+#include <string_view>
+#include <vector>
 
 namespace SkSL {
 
 class Compiler;
-class Context;
-struct ParsedModule;
+class ModifiersPool;
+class Pool;
+class Position;
 class ProgramElement;
 class SymbolTable;
-class Type;
 class Variable;
+struct Modifiers;
+struct ParsedModule;
 
 namespace dsl {
 
@@ -63,7 +67,7 @@ public:
     /**
      * Returns the Settings used by DSL operations in the current thread.
      */
-    static SkSL::ProgramSettings& Settings();
+    static const SkSL::ProgramSettings& Settings();
 
     /**
      * Returns the Program::Inputs used by the current thread.
@@ -99,7 +103,7 @@ public:
     /**
      * Returns the current ProgramConfig.
      */
-    static std::unique_ptr<ProgramConfig>& GetProgramConfig() { return Instance().fConfig; }
+    static const std::unique_ptr<ProgramConfig>& GetProgramConfig() { return Instance().fConfig; }
 
     static bool IsModule() { return GetProgramConfig()->fIsBuiltinCode; }
 
@@ -123,43 +127,13 @@ public:
      */
     static RTAdjustData& RTAdjustState();
 
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-    /**
-     * Returns the fragment processor for which DSL output is being generated for the current
-     * thread.
-     */
-    static GrFragmentProcessor::ProgramImpl* CurrentProcessor() {
-        SkASSERTF(!Instance().fStack.empty(), "This feature requires a FragmentProcessor");
-        return Instance().fStack.top().fProcessor;
+    static const char* Filename() {
+        return Instance().fFilename;
     }
 
-    /**
-     * Returns the EmitArgs for fragment processor output in the current thread.
-     */
-    static GrFragmentProcessor::ProgramImpl::EmitArgs* CurrentEmitArgs() {
-        SkASSERTF(!Instance().fStack.empty(), "This feature requires a FragmentProcessor");
-        return Instance().fStack.top().fEmitArgs;
+    static void SetFilename(const char* filename) {
+        Instance().fFilename = filename;
     }
-
-    static bool InFragmentProcessor() {
-        return !Instance().fStack.empty();
-    }
-
-    /**
-     * Pushes a new processor / emitArgs pair for the current thread.
-     */
-    static void StartFragmentProcessor(GrFragmentProcessor::ProgramImpl* processor,
-                                       GrFragmentProcessor::ProgramImpl::EmitArgs* emitArgs);
-
-    /**
-     * Pops the processor / emitArgs pair associated with the current thread.
-     */
-    static void EndFragmentProcessor();
-#else
-    static bool InFragmentProcessor() {
-        return false;
-    }
-#endif // !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
 
     /**
      * Returns the ErrorReporter associated with the current thread. This object will be notified
@@ -175,12 +149,7 @@ public:
      * Notifies the current ErrorReporter that an error has occurred. The default error handler
      * prints the message to stderr and aborts.
      */
-    static void ReportError(skstd::string_view msg, PositionInfo info = PositionInfo::Capture());
-
-    /**
-     * Forwards any pending errors to the DSL ErrorReporter.
-     */
-    static void ReportErrors(PositionInfo pos);
+    static void ReportError(std::string_view msg, Position pos = {});
 
     static ThreadContext& Instance();
 
@@ -188,7 +157,7 @@ public:
 
 private:
     class DefaultErrorReporter : public ErrorReporter {
-        void handleError(skstd::string_view msg, PositionInfo pos) override;
+        void handleError(std::string_view msg, Position pos) override;
     };
 
     void setupSymbolTable();
@@ -207,15 +176,8 @@ private:
     Mangler fMangler;
     RTAdjustData fRTAdjust;
     Program::Inputs fInputs;
-
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-    struct StackFrame {
-        GrFragmentProcessor::ProgramImpl* fProcessor;
-        GrFragmentProcessor::ProgramImpl::EmitArgs* fEmitArgs;
-        SkSL::StatementArray fSavedDeclarations;
-    };
-    std::stack<StackFrame, std::list<StackFrame>> fStack;
-#endif // !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
+    // for DSL error reporting purposes
+    const char* fFilename = "";
 
     friend class dsl::DSLCore;
     friend class dsl::DSLWriter;

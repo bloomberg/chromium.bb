@@ -31,17 +31,19 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_context.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
+#include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/input/widget_event_handler.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
-#include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -63,7 +65,7 @@ class WidgetBase;
 class DOMRect;
 
 class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
-                                           public PageWidgetEventHandler,
+                                           public WidgetEventHandler,
                                            public PagePopup,
                                            public RefCounted<WebPagePopupImpl>,
                                            public WidgetBaseClient {
@@ -111,7 +113,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void PostMessageToPopup(const String& message) override;
   void Update() override;
 
-  // PageWidgetEventHandler implementation.
+  // WidgetEventHandler implementation.
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
 
   // Return the LayerTreeHost backing this popup widget.
@@ -134,7 +136,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) override;
   bool SupportsBufferedTouchEvents() override { return true; }
-  void FocusChanged(bool enabled) override;
+  void FocusChanged(mojom::blink::FocusState focus_state) override;
   void ScheduleAnimation() override;
   void UpdateVisualProperties(
       const VisualProperties& visual_properties) override;
@@ -189,7 +191,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   gfx::Size VisibleViewportSizeInDIPs() override;
   bool IsHidden() const override;
 
-  // PageWidgetEventHandler functions
+  // WidgetEventHandler functions
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
   void HandleMouseDown(LocalFrame& main_frame, const WebMouseEvent&) override;

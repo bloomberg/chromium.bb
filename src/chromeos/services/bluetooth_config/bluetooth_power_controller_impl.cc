@@ -79,6 +79,23 @@ void BluetoothPowerControllerImpl::SetBluetoothEnabledState(bool enabled) {
   SetAdapterState(enabled);
 }
 
+void BluetoothPowerControllerImpl::SetBluetoothHidDetectionActive(bool active) {
+  if (active) {
+    BLUETOOTH_LOG(EVENT) << "HID detection started, enabling adapter.";
+    SetAdapterState(true);
+    return;
+  }
+
+  DCHECK(local_state_)
+      << "HID detection finished but unable to restore persisted Bluetooth "
+         "state because local_state_ is null.";
+  DCHECK(!user_manager::UserManager::Get()->GetActiveUser());
+
+  BLUETOOTH_LOG(EVENT)
+      << "HID detection finished, restoring persisted Bluetooth state.";
+  ApplyBluetoothLocalStatePref();
+}
+
 void BluetoothPowerControllerImpl::SetPrefs(PrefService* primary_profile_prefs,
                                             PrefService* local_state) {
   InitLocalStatePrefService(local_state);
@@ -107,10 +124,19 @@ void BluetoothPowerControllerImpl::OnAdapterStateChanged() {
 
 void BluetoothPowerControllerImpl::InitLocalStatePrefService(
     PrefService* local_state) {
+  BLUETOOTH_LOG(EVENT) << "Initializing local state pref service";
+
   // Return early if |local_state_| has already been initialized or
   // |local_state| is invalid.
-  if (local_state_ || !local_state)
+  if (local_state_) {
+    BLUETOOTH_LOG(EVENT) << "Local state has already be initialized";
     return;
+  }
+
+  if (!local_state) {
+    BLUETOOTH_LOG(EVENT) << "local_state is null, not initializing";
+    return;
+  }
 
   local_state_ = local_state;
 
@@ -123,13 +149,12 @@ void BluetoothPowerControllerImpl::InitLocalStatePrefService(
 void BluetoothPowerControllerImpl::ApplyBluetoothLocalStatePref() {
   if (local_state_->FindPreference(prefs::kSystemBluetoothAdapterEnabled)
           ->IsDefaultValue()) {
-    // If the device has not had the local state Bluetooth pref, set the pref
-    // according to whatever the current Bluetooth power is.
-    BLUETOOTH_LOG(EVENT) << "Saving current power state of "
-                         << adapter_state_controller_->GetAdapterState()
-                         << " to local state.";
-    SaveCurrentPowerStateToPrefs(local_state_,
-                                 prefs::kSystemBluetoothAdapterEnabled);
+    // If the device has not had the local state Bluetooth pref set, this is a
+    // fresh install. On fresh installs, the Bluetooth adapter defaults to
+    // powered on. Save this state to prefs.
+    BLUETOOTH_LOG(EVENT) << "No local state pref has been set, saving"
+                         << "Bluetooth power state of enabled to local state";
+    local_state_->SetBoolean(ash::prefs::kSystemBluetoothAdapterEnabled, true);
     return;
   }
 
@@ -142,8 +167,11 @@ void BluetoothPowerControllerImpl::ApplyBluetoothLocalStatePref() {
 
 void BluetoothPowerControllerImpl::InitPrimaryUserPrefService(
     PrefService* primary_profile_prefs) {
+  BLUETOOTH_LOG(EVENT) << "Initializing primary user pref service";
+
   primary_profile_prefs_ = primary_profile_prefs;
   if (!primary_profile_prefs_) {
+    BLUETOOTH_LOG(EVENT) << "primary_profile_prefs_ is null, not initializing";
     return;
   }
 
@@ -151,6 +179,8 @@ void BluetoothPowerControllerImpl::InitPrimaryUserPrefService(
             user_manager::UserManager::Get()->GetPrimaryUser());
 
   if (!has_attempted_apply_primary_user_pref_) {
+    BLUETOOTH_LOG(EVENT)
+        << "Primary user pref has not been attempted to be applied, applying";
     ApplyBluetoothPrimaryUserPref();
     has_attempted_apply_primary_user_pref_ = true;
   }

@@ -225,9 +225,9 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
     }
 
     @Override
-    public void didCloseTab(int tabId, boolean incognito) {
+    public void didCloseTabs(List<Tab> tabs) {
         for (TabModelObserver observer : mFilteredObservers) {
-            observer.didCloseTab(tabId, incognito);
+            observer.didCloseTabs(tabs);
         }
     }
 
@@ -261,6 +261,13 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
     }
 
     @Override
+    public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.multipleTabsPendingClosure(tabs, isAllTabs);
+        }
+    }
+
+    @Override
     public void tabClosureUndone(Tab tab) {
         addTab(tab);
         reorder();
@@ -277,16 +284,16 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
     }
 
     @Override
-    public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
+    public void willCloseAllTabs(boolean incognito) {
         for (TabModelObserver observer : mFilteredObservers) {
-            observer.multipleTabsPendingClosure(tabs, isAllTabs);
+            observer.willCloseAllTabs(incognito);
         }
     }
 
     @Override
-    public void allTabsClosureCommitted() {
+    public void allTabsClosureCommitted(boolean isIncognito) {
         for (TabModelObserver observer : mFilteredObservers) {
-            observer.allTabsClosureCommitted();
+            observer.allTabsClosureCommitted(isIncognito);
         }
     }
 

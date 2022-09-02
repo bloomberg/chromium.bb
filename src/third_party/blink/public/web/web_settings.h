@@ -113,7 +113,7 @@ class WebSettings {
   virtual void SetAntialiased2dCanvasEnabled(bool) = 0;
   virtual void SetAntialiasedClips2dCanvasEnabled(bool) = 0;
   virtual void SetAutoplayPolicy(mojom::AutoplayPolicy) = 0;
-  virtual void SetAutoZoomFocusedNodeToLegibleScale(bool) = 0;
+  virtual void SetAutoZoomFocusedEditableToLegibleScale(bool) = 0;
   virtual void SetCaretBrowsingEnabled(bool) = 0;
   virtual void SetClobberUserAgentInitialScaleQuirk(bool) = 0;
   virtual void SetCookieEnabled(bool) = 0;
@@ -140,6 +140,8 @@ class WebSettings {
   virtual void SetWebGL2Enabled(bool) = 0;
   virtual void SetFantasyFontFamily(const WebString&,
                                     UScriptCode = USCRIPT_COMMON) = 0;
+  virtual void SetMathFontFamily(const WebString&,
+                                 UScriptCode = USCRIPT_COMMON) = 0;
   virtual void SetFixedFontFamily(const WebString&,
                                   UScriptCode = USCRIPT_COMMON) = 0;
   virtual void SetNetworkQuietTimeout(double timeout) = 0;
@@ -163,7 +165,6 @@ class WebSettings {
   virtual void SetMainFrameResizesAreOrientationChanges(bool) = 0;
   virtual void SetMaxTouchPoints(int) = 0;
   virtual void SetPictureInPictureEnabled(bool) = 0;
-  virtual void SetDataSaverHoldbackWebApi(bool) = 0;
   virtual void SetWebAppScope(const WebString&) = 0;
   virtual void SetPresentationRequiresUserGesture(bool) = 0;
   virtual void SetEmbeddedMediaExperienceEnabled(bool) = 0;
@@ -267,11 +268,6 @@ class WebSettings {
   virtual void SetLazyImageLoadingDistanceThresholdPx2G(int) = 0;
   virtual void SetLazyImageLoadingDistanceThresholdPx3G(int) = 0;
   virtual void SetLazyImageLoadingDistanceThresholdPx4G(int) = 0;
-  virtual void SetLazyImageFirstKFullyLoadUnknown(int) = 0;
-  virtual void SetLazyImageFirstKFullyLoadSlow2G(int) = 0;
-  virtual void SetLazyImageFirstKFullyLoad2G(int) = 0;
-  virtual void SetLazyImageFirstKFullyLoad3G(int) = 0;
-  virtual void SetLazyImageFirstKFullyLoad4G(int) = 0;
   virtual void SetForceDarkModeEnabled(bool) = 0;
   virtual void SetPreferredColorScheme(blink::mojom::PreferredColorScheme) = 0;
   virtual void SetPreferredContrast(mojom::PreferredContrast) = 0;
@@ -281,7 +277,6 @@ class WebSettings {
   virtual void SetSelectionClipboardBufferAvailable(bool) = 0;
   virtual void SetAccessibilityIncludeSvgGElement(bool) = 0;
   virtual void SetWebXRImmersiveArAllowed(bool) = 0;
-  virtual void SetLitePageSubresourceRedirectOrigin(const WebString&) = 0;
 
  protected:
   ~WebSettings() = default;

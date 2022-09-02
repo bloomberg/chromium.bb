@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('ChromeVoxKbHandler');
-
-goog.require('ChromeVox');
-goog.require('KeyMap');
-goog.require('KeySequence');
-goog.require('KeyUtil');
-goog.require('ChromeVoxState');
-
 /**
  * @fileoverview Handles user keyboard input events.
- *
  */
-ChromeVoxKbHandler = {};
+import {UserActionMonitor} from '/chromevox/background/user_action_monitor.js';
+import {KeyMap} from '/chromevox/common/key_map.js';
+import {KeyUtil} from '/chromevox/common/key_util.js';
+
+export const ChromeVoxKbHandler = {};
 
 /**
  * The key map
@@ -73,8 +68,7 @@ ChromeVoxKbHandler.sortKeyToFunctionsTable_ = function(keyToFunctionsTable) {
  */
 ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
   const keySequence = KeyUtil.keyEventToKeySequence(evt);
-  const chromeVoxState = ChromeVoxState.instance;
-  const monitor = chromeVoxState ? chromeVoxState.getUserActionMonitor() : null;
+  const monitor = UserActionMonitor.instance;
   if (monitor && !monitor.onKeySequence(keySequence)) {
     // UserActionMonitor returns true if this key sequence should propagate.
     // Prevent the default action if it returns false.
@@ -108,10 +102,5 @@ ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
     returnValue = false;
   }
 
-  // If the whole document is hidden from screen readers, let the app
-  // catch keys as well.
-  if (ChromeVox.entireDocumentIsHidden) {
-    returnValue = true;
-  }
   return returnValue;
 };

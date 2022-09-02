@@ -17,6 +17,7 @@
 #include <d3d11_3.h>
 #include <d3d12.h>
 #include <dxgi.h>
+#include <dxgi1_6.h>
 #include <vulkan/vulkan.h>
 #include <wrl/client.h>
 
@@ -42,18 +43,6 @@ namespace gpu {
 
 namespace {
 
-// TODO(magchen@): Remove PFN_D3D12_CREATE_DEVICE_CHROMIUM and use
-// PFN_D3D12_CREATE_DEVICE from d3d12.h directly once the Windows toolchain is
-// updated.
-
-// Declaration for D3D12CreateDevice() with D3D_FEATURE_LEVEL_12_2 support in
-// D3D_FEATURE_LEVEL_CHROMIUM.
-typedef HRESULT(WINAPI* PFN_D3D12_CREATE_DEVICE_CHROMIUM)(
-    _In_opt_ IUnknown*,
-    D3D_FEATURE_LEVEL_CHROMIUM,
-    _In_ REFIID,
-    _COM_Outptr_opt_ void**);
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 // This should match enum D3D12FeatureLevel in
@@ -73,15 +62,15 @@ inline D3D12FeatureLevel ConvertToHistogramFeatureLevel(
   switch (d3d_feature_level) {
     case 0:
       return D3D12FeatureLevel::kD3DFeatureLevelUnknown;
-    case D3D12_FEATURE_LEVEL_12_0:
+    case D3D_FEATURE_LEVEL_12_0:
       return D3D12FeatureLevel::kD3DFeatureLevel_12_0;
-    case D3D12_FEATURE_LEVEL_12_1:
+    case D3D_FEATURE_LEVEL_12_1:
       return D3D12FeatureLevel::kD3DFeatureLevel_12_1;
-    case D3D12_FEATURE_LEVEL_12_2:
+    case D3D_FEATURE_LEVEL_12_2:
       return D3D12FeatureLevel::kD3DFeatureLevel_12_2;
-    case D3D12_FEATURE_LEVEL_11_0:
+    case D3D_FEATURE_LEVEL_11_0:
       return D3D12FeatureLevel::kD3DFeatureLevel_11_0;
-    case D3D12_FEATURE_LEVEL_11_1:
+    case D3D_FEATURE_LEVEL_11_1:
       return D3D12FeatureLevel::kD3DFeatureLevel_11_1;
     default:
       NOTREACHED();
@@ -101,7 +90,8 @@ enum class D3D12ShaderModel {
   kD3DShaderModel_6_4 = 6,
   kD3DShaderModel_6_5 = 7,
   kD3DShaderModel_6_6 = 8,
-  kMaxValue = kD3DShaderModel_6_6,
+  kD3DShaderModel_6_7 = 9,
+  kMaxValue = kD3DShaderModel_6_7,
 };
 
 D3D12ShaderModel ConvertToHistogramShaderVersion(uint32_t version) {
@@ -124,6 +114,8 @@ D3D12ShaderModel ConvertToHistogramShaderVersion(uint32_t version) {
       return D3D12ShaderModel::kD3DShaderModel_6_5;
     case D3D_SHADER_MODEL_6_6:
       return D3D12ShaderModel::kD3DShaderModel_6_6;
+    case D3D_SHADER_MODEL_6_7:
+      return D3D12ShaderModel::kD3DShaderModel_6_7;
 
     default:
       NOTREACHED();
@@ -157,8 +149,7 @@ bool GetActiveAdapterLuid(LUID* luid) {
     return false;
 
   DXGI_ADAPTER_DESC desc;
-  if (FAILED(adapter->GetDesc(&desc)))
-    return false;
+  CHECK_EQ(S_OK, adapter->GetDesc(&desc));
 
   // Zero isn't a valid LUID.
   if (desc.AdapterLuid.HighPart == 0 && desc.AdapterLuid.LowPart == 0)
@@ -230,7 +221,7 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
   for (i = 0; SUCCEEDED(dxgi_factory->EnumAdapters(i, &dxgi_adapter)); i++) {
     DXGI_ADAPTER_DESC desc;
-    dxgi_adapter->GetDesc(&desc);
+    CHECK_EQ(S_OK, dxgi_adapter->GetDesc(&desc));
 
     GPUInfo::GPUDevice device;
     device.vendor_id = desc.VendorId;
@@ -290,6 +281,30 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
     }
   }
 
+  Microsoft::WRL::ComPtr<IDXGIFactory6> dxgi_factory6;
+  if (gpu_info->GpuCount() > 1 && SUCCEEDED(dxgi_factory.As(&dxgi_factory6))) {
+    if (SUCCEEDED(dxgi_factory6->EnumAdapterByGpuPreference(
+            0, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+            IID_PPV_ARGS(&dxgi_adapter)))) {
+      DXGI_ADAPTER_DESC desc;
+      CHECK_EQ(S_OK, dxgi_adapter->GetDesc(&desc));
+      GPUInfo::GPUDevice* device = gpu_info->FindGpuByLuid(
+          desc.AdapterLuid.LowPart, desc.AdapterLuid.HighPart);
+      DCHECK(device);
+      device->gpu_preference = gl::GpuPreference::kHighPerformance;
+    }
+    if (SUCCEEDED(dxgi_factory6->EnumAdapterByGpuPreference(
+            0, DXGI_GPU_PREFERENCE_MINIMUM_POWER,
+            IID_PPV_ARGS(&dxgi_adapter)))) {
+      DXGI_ADAPTER_DESC desc;
+      CHECK_EQ(S_OK, dxgi_adapter->GetDesc(&desc));
+      GPUInfo::GPUDevice* device = gpu_info->FindGpuByLuid(
+          desc.AdapterLuid.LowPart, desc.AdapterLuid.HighPart);
+      DCHECK(device);
+      device->gpu_preference = gl::GpuPreference::kLowPower;
+    }
+  }
+
   return i > 0;
 }
 
@@ -298,10 +313,7 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
 // are known driver bugs.
 bool CanCreateD3D12Device(IDXGIAdapter* dxgi_adapter) {
   DXGI_ADAPTER_DESC desc;
-  HRESULT hr = dxgi_adapter->GetDesc(&desc);
-  if (FAILED(hr)) {
-    return false;
-  }
+  CHECK_EQ(S_OK, dxgi_adapter->GetDesc(&desc));
 
   // Known driver bugs are Intel-only. Expand in the future, as necessary, for
   // other IHVs.
@@ -309,7 +321,8 @@ bool CanCreateD3D12Device(IDXGIAdapter* dxgi_adapter) {
     return true;
 
   LARGE_INTEGER umd_version;
-  hr = dxgi_adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice), &umd_version);
+  HRESULT hr =
+      dxgi_adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice), &umd_version);
   if (FAILED(hr)) {
     return false;
   }
@@ -347,13 +360,12 @@ void GetGpuSupportedD3D12Version(uint32_t& d3d12_feature_level,
     return;
 
   // The order of feature levels to attempt to create in D3D CreateDevice
-  const D3D_FEATURE_LEVEL_CHROMIUM feature_levels[] = {
-      D3D12_FEATURE_LEVEL_12_2, D3D12_FEATURE_LEVEL_12_1,
-      D3D12_FEATURE_LEVEL_12_0, D3D12_FEATURE_LEVEL_11_1,
-      D3D12_FEATURE_LEVEL_11_0};
+  const D3D_FEATURE_LEVEL feature_levels[] = {
+      D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0,
+      D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0};
 
-  PFN_D3D12_CREATE_DEVICE_CHROMIUM D3D12CreateDevice =
-      reinterpret_cast<PFN_D3D12_CREATE_DEVICE_CHROMIUM>(
+  PFN_D3D12_CREATE_DEVICE D3D12CreateDevice =
+      reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(
           d3d12_library.GetFunctionPointer("D3D12CreateDevice"));
   Microsoft::WRL::ComPtr<ID3D12Device> d3d12_device;
   if (D3D12CreateDevice) {
@@ -387,6 +399,8 @@ void GetGpuSupportedD3D12Version(uint32_t& d3d12_feature_level,
   // Query the maximum supported shader model version.
   if (d3d12_device) {
     D3D12_FEATURE_DATA_SHADER_MODEL shader_model_data = {};
+    // TODO(crbug.com/1312519): Setting the HighestShaderModel to 6_7 will cause
+    // failure in CheckFeatureSupport(). Use D3D_SHADER_MODEL_6_6 for now.
     shader_model_data.HighestShaderModel = D3D_SHADER_MODEL_6_6;
     if (SUCCEEDED(d3d12_device->CheckFeatureSupport(
             D3D12_FEATURE_SHADER_MODEL, &shader_model_data,
@@ -644,7 +658,9 @@ bool CollectD3D11FeatureInfo(D3D_FEATURE_LEVEL* d3d11_feature_level,
   if (!D3D11CreateDevice)
     return false;
 
-  // The order of feature levels to attempt to create in D3D CreateDevice
+  // The order of feature levels to attempt to create in D3D CreateDevice.
+  // TODO(crbug.com/1312519): Using 12_2 in kFeatureLevels[] will cause failure
+  // in D3D11CreateDevice(). Limit the highest feature to 12_1.
   const D3D_FEATURE_LEVEL kFeatureLevels[] = {
       D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1,
       D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
@@ -656,7 +672,8 @@ bool CollectD3D11FeatureInfo(D3D_FEATURE_LEVEL* d3d11_feature_level,
   for (UINT ii = 0; SUCCEEDED(dxgi_factory->EnumAdapters(ii, &dxgi_adapter));
        ++ii) {
     DXGI_ADAPTER_DESC desc;
-    if (SUCCEEDED(dxgi_adapter->GetDesc(&desc)) && desc.VendorId == 0x1414) {
+    CHECK_EQ(S_OK, dxgi_adapter->GetDesc(&desc));
+    if (desc.VendorId == 0x1414) {
       // Bypass Microsoft software renderer.
       continue;
     }

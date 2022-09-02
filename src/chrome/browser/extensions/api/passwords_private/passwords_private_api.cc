@@ -53,9 +53,7 @@ ResponseAction PasswordsPrivateChangeSavedPasswordFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
   if (!GetDelegate(browser_context())
-           ->ChangeSavedPassword(parameters->ids,
-                                 base::UTF8ToUTF16(parameters->new_username),
-                                 base::UTF8ToUTF16(parameters->new_password))) {
+           ->ChangeSavedPassword(parameters->ids, parameters->params)) {
     return RespondNow(Error(
         "Could not change the password. Either the password is empty, the user "
         "is not authenticated, vector of ids is empty or no matching password "
@@ -353,6 +351,60 @@ ResponseAction PasswordsPrivateRemoveInsecureCredentialFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+// PasswordsPrivateMuteInsecureCredentialFunction:
+PasswordsPrivateMuteInsecureCredentialFunction::
+    ~PasswordsPrivateMuteInsecureCredentialFunction() = default;
+
+ResponseAction PasswordsPrivateMuteInsecureCredentialFunction::Run() {
+  auto parameters =
+      api::passwords_private::MuteInsecureCredential::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  if (!GetDelegate(browser_context())
+           ->MuteInsecureCredential(parameters->credential)) {
+    return RespondNow(
+        Error("Could not mute the insecure credential. Probably no matching "
+              "password could be found."));
+  }
+
+  return RespondNow(NoArguments());
+}
+
+// PasswordsPrivateUnmuteInsecureCredentialFunction:
+PasswordsPrivateUnmuteInsecureCredentialFunction::
+    ~PasswordsPrivateUnmuteInsecureCredentialFunction() = default;
+
+ResponseAction PasswordsPrivateUnmuteInsecureCredentialFunction::Run() {
+  auto parameters =
+      api::passwords_private::UnmuteInsecureCredential::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  if (!GetDelegate(browser_context())
+           ->UnmuteInsecureCredential(parameters->credential)) {
+    return RespondNow(
+        Error("Could not unmute the insecure credential. Probably no matching "
+              "password could be found."));
+  }
+
+  return RespondNow(NoArguments());
+}
+
+// PasswordsPrivateRecordChangePasswordFlowStartedFunction:
+PasswordsPrivateRecordChangePasswordFlowStartedFunction::
+    ~PasswordsPrivateRecordChangePasswordFlowStartedFunction() = default;
+
+ResponseAction PasswordsPrivateRecordChangePasswordFlowStartedFunction::Run() {
+  auto parameters =
+      api::passwords_private::RecordChangePasswordFlowStarted::Params::Create(
+          args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  GetDelegate(browser_context())
+      ->RecordChangePasswordFlowStarted(parameters->credential,
+                                        parameters->is_manual_flow);
+  return RespondNow(NoArguments());
+}
+
 // PasswordsPrivateStartPasswordCheckFunction:
 PasswordsPrivateStartPasswordCheckFunction::
     ~PasswordsPrivateStartPasswordCheckFunction() = default;
@@ -428,6 +480,7 @@ ResponseAction PasswordsPrivateAddPasswordFunction::Run() {
            ->AddPassword(parameters->options.url,
                          base::UTF8ToUTF16(parameters->options.username),
                          base::UTF8ToUTF16(parameters->options.password),
+                         base::UTF8ToUTF16(parameters->options.note),
                          parameters->options.use_account_store,
                          GetSenderWebContents())) {
     return RespondNow(Error(

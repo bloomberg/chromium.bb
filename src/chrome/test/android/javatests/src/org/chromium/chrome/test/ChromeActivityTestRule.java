@@ -200,7 +200,11 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
     public void startActivityCompletely(Intent intent) {
         launchActivity(intent);
         waitForActivityNativeInitializationComplete();
+        waitForActivityCompletelyLoaded();
+    }
 
+    /** Wait until the activity is completely loaded, and a tab is shown. */
+    public void waitForActivityCompletelyLoaded() {
         CriteriaHelper.pollUiThread(
                 () -> getActivity().getActivityTab() != null, "Tab never selected/initialized.");
         Tab tab = getActivity().getActivityTab();
@@ -353,7 +357,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
                 }
             });
         } catch (ExecutionException e) {
-            Assert.fail("Failed to create new tab");
+            throw new AssertionError("Failed to create new tab", e);
         }
         ChromeTabUtils.waitForTabPageLoaded(tab, url);
         ChromeTabUtils.waitForInteractable(tab);
@@ -412,6 +416,16 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
      */
     public String runJavaScriptCodeInCurrentTab(String code) throws TimeoutException {
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                getActivity().getCurrentWebContents(), code);
+    }
+
+    /**
+     * Executes the given snippet of JavaScript code within the current tab, acting as if a user
+     * gesture has been made. Returns the result of its execution in JSON format.
+     */
+    public String runJavaScriptCodeWithUserGestureInCurrentTab(String code)
+            throws TimeoutException {
+        return JavaScriptUtils.executeJavaScriptWithUserGestureAndWaitForResult(
                 getActivity().getCurrentWebContents(), code);
     }
 

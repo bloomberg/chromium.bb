@@ -117,13 +117,14 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
 
 // The following functions are disabled on Android, because enterprise reporting
 // extension is not supported.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
   virtual void MaybeReportPasswordReuseDetected(
       PasswordProtectionRequest* request,
       const std::string& username,
       PasswordType password_type,
-      bool is_phishing_url) = 0;
+      bool is_phishing_url,
+      bool warning_shown) = 0;
 
   // Called when a protected password change is detected. Must be called on
   // UI thread.
@@ -249,6 +250,11 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
   virtual ChromeUserPopulation::UserPopulation GetUserPopulationPref()
       const = 0;
 
+  std::set<scoped_refptr<PasswordProtectionRequest>>&
+  get_pending_requests_for_testing() {
+    return pending_requests_;
+  }
+
  protected:
   friend class PasswordProtectionRequest;
   friend class PasswordProtectionRequestContent;
@@ -261,8 +267,7 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
                    const GURL& main_frame_url,
                    ReusedPasswordAccountType password_type);
 
-  // If ReusedPasswordAccountType is GMAIL and syncing and
-  // kPasswordProtectionForSignedInUsers is enabled.
+  // If ReusedPasswordAccountType is GMAIL and syncing.
   bool IsSyncingGMAILPasswordWithSignedInProtectionEnabled(
       ReusedPasswordAccountType password_type) const;
 
@@ -361,9 +366,9 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
       const GURL& url,
       ReusedPasswordAccountType password_type) = 0;
 
-  // Subclasses may override this method to either cancel or resume deferred
-  // navigations. By default, deferred navigations are not handled.
-  virtual void MaybeHandleDeferredNavigations(
+  // Subclasses may override this method to resume deferred navigations when a
+  // request finishes. By default, deferred navigations are not handled.
+  virtual void ResumeDeferredNavigationsIfNeeded(
       PasswordProtectionRequest* request) {}
 
   bool CanGetAccessToken();
@@ -403,6 +408,8 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
                            TestRemoveCachedVerdictOnURLsDeleted);
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
                            TestCleanUpExpiredVerdict);
+  FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
+                           NoSendPingPrivateIpHostname);
 
   // Overridden from history::HistoryServiceObserver.
   void OnURLsDeleted(history::HistoryService* history_service,

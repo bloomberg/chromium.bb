@@ -52,7 +52,7 @@ TEST_P(VideoCodecTestAv1, HighBitrate) {
   auto config = CreateConfig("foreman_cif");
   config.SetCodecSettings(cricket::kAv1CodecName, 1, 1, 1, false, true, true,
                           kCifWidth, kCifHeight);
-  config.codec_settings.SetScalabilityMode("NONE");
+  config.codec_settings.SetScalabilityMode(ScalabilityMode::kL1T1);
   config.num_frames = kNumFramesLong;
   auto fixture = CreateVideoCodecTestFixture(config);
 
@@ -61,7 +61,7 @@ TEST_P(VideoCodecTestAv1, HighBitrate) {
   std::vector<RateControlThresholds> rc_thresholds = {
       {12, 1, 0, 1, 0.3, 0.1, 0, 1}};
 
-  std::vector<QualityThresholds> quality_thresholds = {{37, 34, 0.94, 0.915}};
+  std::vector<QualityThresholds> quality_thresholds = {{37, 34, 0.94, 0.91}};
 
   fixture->RunTest(rate_profiles, &rc_thresholds, &quality_thresholds, nullptr);
 }
@@ -70,7 +70,7 @@ TEST_P(VideoCodecTestAv1, VeryLowBitrate) {
   auto config = CreateConfig("foreman_cif");
   config.SetCodecSettings(cricket::kAv1CodecName, 1, 1, 1, false, true, true,
                           kCifWidth, kCifHeight);
-  config.codec_settings.SetScalabilityMode("NONE");
+  config.codec_settings.SetScalabilityMode(ScalabilityMode::kL1T1);
   auto fixture = CreateVideoCodecTestFixture(config);
 
   std::vector<RateProfile> rate_profiles = {{50, 30, 0}};
@@ -78,7 +78,7 @@ TEST_P(VideoCodecTestAv1, VeryLowBitrate) {
   std::vector<RateControlThresholds> rc_thresholds = {
       {15, 8, 75, 2, 2, 2, 2, 1}};
 
-  std::vector<QualityThresholds> quality_thresholds = {{28, 25, 0.70, 0.60}};
+  std::vector<QualityThresholds> quality_thresholds = {{28, 24.8, 0.70, 0.55}};
 
   fixture->RunTest(rate_profiles, &rc_thresholds, &quality_thresholds, nullptr);
 }
@@ -90,7 +90,7 @@ TEST_P(VideoCodecTestAv1, Hd) {
   auto config = CreateConfig("ConferenceMotion_1280_720_50");
   config.SetCodecSettings(cricket::kAv1CodecName, 1, 1, 1, false, true, true,
                           kHdWidth, kHdHeight);
-  config.codec_settings.SetScalabilityMode("NONE");
+  config.codec_settings.SetScalabilityMode(ScalabilityMode::kL1T1);
   config.num_frames = kNumFramesLong;
   auto fixture = CreateVideoCodecTestFixture(config);
 
@@ -99,7 +99,8 @@ TEST_P(VideoCodecTestAv1, Hd) {
   std::vector<RateControlThresholds> rc_thresholds = {
       {13, 3, 0, 1, 0.3, 0.1, 0, 1}};
 
-  std::vector<QualityThresholds> quality_thresholds = {{36, 31.7, 0.93, 0.87}};
+  std::vector<QualityThresholds> quality_thresholds = {
+      {35.9, 31.5, 0.925, 0.865}};
 
   fixture->RunTest(rate_profiles, &rc_thresholds, &quality_thresholds, nullptr);
 }

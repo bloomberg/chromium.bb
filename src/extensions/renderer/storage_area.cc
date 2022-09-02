@@ -303,7 +303,7 @@ void StorageArea::HandleFunctionCall(const std::string& method_name,
     return;
   }
 
-  parse_result.arguments_list->Insert(
+  parse_result.arguments_list->GetList().Insert(
       parse_result.arguments_list->GetList().begin(), base::Value(name_));
 
   v8::Local<v8::Promise> promise = request_handler_->StartRequest(

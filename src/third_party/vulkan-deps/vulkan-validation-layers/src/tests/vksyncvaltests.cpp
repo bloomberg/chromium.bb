@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1320,7 +1320,7 @@ TEST_F(VkSyncValTest, SyncCmdDispatchDrawHazards) {
 
     // Enable VK_KHR_draw_indirect_count for KHR variants
     ASSERT_NO_FATAL_FAILURE(InitSyncValFramework());
-    VkPhysicalDeviceVulkan12Features features12 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES, nullptr};
+    VkPhysicalDeviceVulkan12Features features12 = LvlInitStruct<VkPhysicalDeviceVulkan12Features>();
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME);
         if (DeviceValidationVersion() >= VK_API_VERSION_1_2) {
@@ -1409,7 +1409,7 @@ TEST_F(VkSyncValTest, SyncCmdDispatchDrawHazards) {
 
     CreateComputePipelineHelper pipe(*this);
     pipe.InitInfo();
-    pipe.cs_.reset(new VkShaderObj(m_device, csSource.c_str(), VK_SHADER_STAGE_COMPUTE_BIT, this));
+    pipe.cs_.reset(new VkShaderObj(this, csSource, VK_SHADER_STAGE_COMPUTE_BIT));
     pipe.InitState();
     pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {&descriptor_set.layout_});
     pipe.CreateComputePipeline();
@@ -1500,8 +1500,8 @@ TEST_F(VkSyncValTest, SyncCmdDispatchDrawHazards) {
     vbo.init(*m_device, vbo.create_info(sizeof(vbo_data), buffer_usage, nullptr), mem_prop);
     vbo2.init(*m_device, vbo2.create_info(sizeof(vbo_data), buffer_usage, nullptr), mem_prop);
 
-    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
-    VkShaderObj fs(m_device, csSource.c_str(), VK_SHADER_STAGE_FRAGMENT_BIT, this);
+    VkShaderObj vs(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, csSource, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     CreatePipelineHelper g_pipe(*this);
     g_pipe.InitInfo();
@@ -1948,8 +1948,7 @@ TEST_F(VkSyncValTest, SyncCmdQuery) {
     }
 
     vk_testing::QueryPool query_pool;
-    VkQueryPoolCreateInfo query_pool_create_info{};
-    query_pool_create_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+    VkQueryPoolCreateInfo query_pool_create_info = LvlInitStruct<VkQueryPoolCreateInfo>();
     query_pool_create_info.queryType = VK_QUERY_TYPE_TIMESTAMP;
     query_pool_create_info.queryCount = 1;
     query_pool.init(*m_device, query_pool_create_info);
@@ -2482,8 +2481,8 @@ TEST_F(VkSyncValTest, SyncLayoutTransition) {
         }
     )glsl";
 
-    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
-    VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+    VkShaderObj vs(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     CreatePipelineHelper g_pipe(*this);
     g_pipe.InitInfo();
@@ -2723,8 +2722,8 @@ TEST_F(VkSyncValTest, SyncSubpassMultiDep) {
         }
     )glsl";
 
-    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
-    VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+    VkShaderObj vs(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     CreatePipelineHelper g_pipe(*this);
     g_pipe.InitInfo();
@@ -2847,9 +2846,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
     constexpr uint32_t kWidth = 32, kHeight = 32;
     constexpr uint32_t kNumImages = 4;
 
-    VkImageCreateInfo src_img_info = {};
-    src_img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    src_img_info.pNext = NULL;
+    VkImageCreateInfo src_img_info = LvlInitStruct<VkImageCreateInfo>();
     src_img_info.flags = 0;
     src_img_info.imageType = VK_IMAGE_TYPE_2D;
     src_img_info.format = kFormat;
@@ -2864,9 +2861,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
     src_img_info.pQueueFamilyIndices = nullptr;
     src_img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    VkImageCreateInfo dst_img_info = {};
-    dst_img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    dst_img_info.pNext = nullptr;
+    VkImageCreateInfo dst_img_info = LvlInitStruct<VkImageCreateInfo>();
     dst_img_info.flags = 0;
     dst_img_info.imageType = VK_IMAGE_TYPE_2D;
     dst_img_info.format = kFormat;
@@ -2911,7 +2906,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
 
         color_refs[i] = {i, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
-        img_barriers[i].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        img_barriers[i] = LvlInitStruct<VkImageMemoryBarrier>();
         img_barriers[i].srcAccessMask = 0;
         img_barriers[i].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         img_barriers[i].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -2944,9 +2939,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
         subpasses[i].pPreserveAttachments = preserve_subpass[i - 1].data();
     }
 
-    VkRenderPassCreateInfo renderpass_info = {};
-    renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderpass_info.pNext = nullptr;
+    VkRenderPassCreateInfo renderpass_info = LvlInitStruct<VkRenderPassCreateInfo>();
     renderpass_info.flags = 0;
     renderpass_info.attachmentCount = attachment_descriptions.size();
     renderpass_info.pAttachments = attachment_descriptions.data();
@@ -2955,9 +2948,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
     renderpass_info.dependencyCount = 0;
     renderpass_info.pDependencies = nullptr;
 
-    VkFramebufferCreateInfo fbci = {};
-    fbci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fbci.pNext = nullptr;
+    VkFramebufferCreateInfo fbci = LvlInitStruct<VkFramebufferCreateInfo>();
     fbci.flags = 0;
     fbci.attachmentCount = attachments.size();
     fbci.pAttachments = attachments.data();
@@ -2977,8 +2968,8 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
         }
     )glsl";
 
-    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
-    VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+    VkShaderObj vs(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     VkClearValue clear = {};
     clear.color = m_clear_color;
@@ -3560,20 +3551,17 @@ TEST_F(VkSyncValTest, SyncEventsCommandHazards) {
 
 TEST_F(VkLayerTest, CmdWaitEvents2KHRUsedButSynchronizaion2Disabled) {
     TEST_DESCRIPTION("Using CmdWaitEvents2KHR when synchronization2 is not enabled");
+    SetTargetApiVersion(VK_API_VERSION_1_3);
 
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework());
-    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME)) {
-        printf("%s Synchronization2 not supported, skipping test\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
-    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-        printf("%s %s not supported, skipping test\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-        return;
-    }
-    m_device_extension_names.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
-    m_device_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     InitState();
 
+    bool vulkan_13 = (DeviceValidationVersion() >= VK_API_VERSION_1_3);
     auto fpCmdWaitEvents2KHR = (PFN_vkCmdWaitEvents2KHR)vk::GetDeviceProcAddr(m_device->device(), "vkCmdWaitEvents2KHR");
 
     VkEventObj event;
@@ -3583,32 +3571,31 @@ TEST_F(VkLayerTest, CmdWaitEvents2KHRUsedButSynchronizaion2Disabled) {
     VkDependencyInfoKHR dependency_info = LvlInitStruct<VkDependencyInfoKHR>();
 
     m_commandBuffer->begin();
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWaitEvents2KHR-synchronization2-03836");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWaitEvents2-synchronization2-03836");
     fpCmdWaitEvents2KHR(m_commandBuffer->handle(), 1, &event_handle, &dependency_info);
     m_errorMonitor->VerifyFound();
+    if (vulkan_13) {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWaitEvents2-synchronization2-03836");
+        vk::CmdWaitEvents2(m_commandBuffer->handle(), 1, &event_handle, &dependency_info);
+        m_errorMonitor->VerifyFound();
+    }
     m_commandBuffer->end();
 }
 
 TEST_F(VkLayerTest, Sync2FeatureDisabled) {
     TEST_DESCRIPTION("Call sync2 functions when the feature is disabled");
 
-    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    } else {
-        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
-               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-        return;
-    }
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework());
-    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME)) {
-        m_device_extension_names.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
-    } else {
-        printf("%s Synchronization2 not supported, skipping test\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     ASSERT_NO_FATAL_FAILURE(InitState());
 
+    bool vulkan_13 = (DeviceValidationVersion() >= VK_API_VERSION_1_3);
     VkPhysicalDeviceSynchronization2FeaturesKHR synchronization2 = LvlInitStruct<VkPhysicalDeviceSynchronization2FeaturesKHR>();
     synchronization2.synchronization2 = VK_FALSE;  // Invalid
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&synchronization2);
@@ -3635,7 +3622,7 @@ TEST_F(VkLayerTest, Sync2FeatureDisabled) {
 
     VkDependencyInfoKHR dependency_info = LvlInitStruct<VkDependencyInfoKHR>();
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier2KHR-synchronization2-03848");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier2-synchronization2-03848");
     vkCmdPipelineBarrier2KHR(m_commandBuffer->handle(), &dependency_info);
     m_errorMonitor->VerifyFound();
 
@@ -3645,11 +3632,11 @@ TEST_F(VkLayerTest, Sync2FeatureDisabled) {
 
     VkPipelineStageFlagBits2KHR stage = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR;
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResetEvent2KHR-synchronization2-03829");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResetEvent2-synchronization2-03829");
     vkCmdResetEvent2KHR(m_commandBuffer->handle(), event.handle(), stage);
     m_errorMonitor->VerifyFound();
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdSetEvent2KHR-synchronization2-03824");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdSetEvent2-synchronization2-03824");
     vkCmdSetEvent2KHR(m_commandBuffer->handle(), event.handle(), &dependency_info);
     m_errorMonitor->VerifyFound();
 
@@ -3661,10 +3648,762 @@ TEST_F(VkLayerTest, Sync2FeatureDisabled) {
         vk_testing::QueryPool query_pool;
         query_pool.init(*m_device, qpci);
 
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWriteTimestamp2KHR-synchronization2-03858");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWriteTimestamp2-synchronization2-03858");
         vkCmdWriteTimestamp2KHR(m_commandBuffer->handle(), stage, query_pool.handle(), 0);
+        m_errorMonitor->VerifyFound();
+        if (vulkan_13) {
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWriteTimestamp2-synchronization2-03858");
+            vk::CmdWriteTimestamp2(m_commandBuffer->handle(), stage, query_pool.handle(), 0);
+            m_errorMonitor->VerifyFound();
+        }
+    }
+    if (vulkan_13) {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier2-synchronization2-03848");
+        vk::CmdPipelineBarrier2(m_commandBuffer->handle(), &dependency_info);
+        m_errorMonitor->VerifyFound();
+
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResetEvent2-synchronization2-03829");
+        vk::CmdResetEvent2(m_commandBuffer->handle(), event.handle(), stage);
+        m_errorMonitor->VerifyFound();
+
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdSetEvent2-synchronization2-03824");
+        vk::CmdSetEvent2(m_commandBuffer->handle(), event.handle(), &dependency_info);
         m_errorMonitor->VerifyFound();
     }
 
     m_commandBuffer->end();
+}
+
+TEST_F(VkSyncValTest, DestroyedUnusedDescriptors) {
+    TEST_DESCRIPTION("Verify unused descriptors are ignored and don't crash syncval if they've been destroyed.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_MAINTENANCE_3_EXTENSION_NAME);
+    AddRequiredExtensions(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitSyncValFramework());
+
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+
+    auto indexing_features = LvlInitStruct<VkPhysicalDeviceDescriptorIndexingFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>();
+    features2.pNext = &indexing_features;
+
+    auto vkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(
+        vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR"));
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    if (!indexing_features.descriptorBindingPartiallyBound) {
+        printf("%s Partially bound bindings not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (!indexing_features.descriptorBindingUpdateUnusedWhilePending) {
+        printf("%s Updating unused while pending is not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitViewport());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+    m_errorMonitor->ExpectSuccess();
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfoEXT layout_createinfo_binding_flags =
+        LvlInitStruct<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT>();
+    constexpr size_t kNumDescriptors = 6;
+
+    std::array<VkDescriptorBindingFlagsEXT, kNumDescriptors> ds_binding_flags;
+    for (auto &elem : ds_binding_flags) {
+        elem = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT;
+    }
+
+    layout_createinfo_binding_flags.bindingCount = ds_binding_flags.size();
+    layout_createinfo_binding_flags.pBindingFlags = ds_binding_flags.data();
+
+    // Prepare descriptors
+    OneOffDescriptorSet descriptor_set(m_device,
+                                       {
+                                           {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                           {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                           {2, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                           {3, VK_DESCRIPTOR_TYPE_SAMPLER, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                           {4, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                           {5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                       },
+                                       0, &layout_createinfo_binding_flags, 0);
+    const VkPipelineLayoutObj pipeline_layout(m_device, {&descriptor_set.layout_});
+    uint32_t qfi = 0;
+    auto buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    buffer_create_info.size = 32;
+    buffer_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    buffer_create_info.queueFamilyIndexCount = 1;
+    buffer_create_info.pQueueFamilyIndices = &qfi;
+
+    VkBufferObj doit_buffer;
+    doit_buffer.init(*m_device, buffer_create_info);
+
+    auto buffer = layer_data::make_unique<VkBufferObj>();
+    buffer->init(*m_device, buffer_create_info);
+
+    VkDescriptorBufferInfo buffer_info[2] = {};
+    buffer_info[0].buffer = doit_buffer.handle();
+    buffer_info[0].offset = 0;
+    buffer_info[0].range = sizeof(uint32_t);
+    buffer_info[1].buffer = buffer->handle();
+    buffer_info[1].offset = 0;
+    buffer_info[1].range = sizeof(uint32_t);
+
+    VkBufferObj texel_buffer;
+    buffer_create_info.usage = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
+    texel_buffer.init(*m_device, buffer_create_info);
+
+    auto bvci = LvlInitStruct<VkBufferViewCreateInfo>();
+    bvci.buffer = texel_buffer.handle();
+    bvci.format = VK_FORMAT_R32_SFLOAT;
+    bvci.offset = 0;
+    bvci.range = VK_WHOLE_SIZE;
+
+    auto texel_bufferview = layer_data::make_unique<vk_testing::BufferView>();
+    texel_bufferview->init(*m_device, bvci);
+
+    auto index_buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    index_buffer_create_info.size = sizeof(uint32_t);
+    index_buffer_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    VkBufferObj index_buffer;
+    index_buffer.init(*m_device, index_buffer_create_info);
+
+    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkImageObj sampled_image(m_device);
+    auto image_ci = VkImageObj::ImageCreateInfo2D(128, 128, 1, 1, format, VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL);
+    sampled_image.Init(image_ci);
+    auto sampled_view = layer_data::make_unique<vk_testing::ImageView>();
+    auto imageview_ci = SafeSaneImageViewCreateInfo(sampled_image, format, VK_IMAGE_ASPECT_COLOR_BIT);
+    sampled_view->init(*m_device, imageview_ci);
+
+    VkImageObj combined_image(m_device);
+    image_ci = VkImageObj::ImageCreateInfo2D(128, 128, 1, 1, format, VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL);
+    combined_image.Init(image_ci);
+    imageview_ci = SafeSaneImageViewCreateInfo(combined_image, format, VK_IMAGE_ASPECT_COLOR_BIT);
+    auto combined_view = layer_data::make_unique<vk_testing::ImageView>();
+    combined_view->init(*m_device, imageview_ci);
+
+    vk_testing::Sampler sampler;
+    VkSamplerCreateInfo sampler_ci = SafeSaneSamplerCreateInfo();
+    sampler.init(*m_device, sampler_ci);
+
+    VkDescriptorImageInfo image_info[3] = {};
+    image_info[0].sampler = sampler.handle();
+    image_info[0].imageView = VK_NULL_HANDLE;
+    image_info[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    image_info[1].sampler = VK_NULL_HANDLE;
+    image_info[1].imageView = sampled_view->handle();
+    image_info[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    image_info[2].sampler = sampler.handle();
+    image_info[2].imageView = combined_view->handle();
+    image_info[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    // Update all descriptors
+    std::array<VkWriteDescriptorSet, kNumDescriptors> descriptor_writes;
+    descriptor_writes[0] = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_writes[0].dstSet = descriptor_set.set_;
+    descriptor_writes[0].dstBinding = 0;
+    descriptor_writes[0].descriptorCount = 1;
+    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[0].pBufferInfo = &buffer_info[0];
+
+    descriptor_writes[1] = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_writes[1].dstSet = descriptor_set.set_;
+    descriptor_writes[1].dstBinding = 1;
+    descriptor_writes[1].descriptorCount = 1;
+    descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[1].pBufferInfo = &buffer_info[1];
+
+    descriptor_writes[2] = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_writes[2].dstSet = descriptor_set.set_;
+    descriptor_writes[2].dstBinding = 2;
+    descriptor_writes[2].descriptorCount = 1;
+    descriptor_writes[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+    descriptor_writes[2].pTexelBufferView = &texel_bufferview->handle();
+
+    descriptor_writes[3] = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_writes[3].dstSet = descriptor_set.set_;
+    descriptor_writes[3].dstBinding = 3;
+    descriptor_writes[3].descriptorCount = 1;
+    descriptor_writes[3].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+    descriptor_writes[3].pImageInfo = &image_info[0];
+
+    descriptor_writes[4] = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_writes[4].dstSet = descriptor_set.set_;
+    descriptor_writes[4].dstBinding = 4;
+    descriptor_writes[4].descriptorCount = 1;
+    descriptor_writes[4].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    descriptor_writes[4].pImageInfo = &image_info[1];
+
+    descriptor_writes[5] = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_writes[5].dstSet = descriptor_set.set_;
+    descriptor_writes[5].dstBinding = 5;
+    descriptor_writes[5].descriptorCount = 1;
+    descriptor_writes[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptor_writes[5].pImageInfo = &image_info[2];
+
+    vk::UpdateDescriptorSets(m_device->device(), descriptor_writes.size(), descriptor_writes.data(), 0, NULL);
+
+    // only descriptor 0 is used, the rest are going to get destroyed
+    char const *shader_source = R"glsl(
+        #version 450
+        layout(set = 0, binding = 0) uniform foo_0 { int val; } doit;
+        layout(set = 0, binding = 1) uniform foo_1 { int val; } readit;
+        layout(set = 0, binding = 2) uniform samplerBuffer texels;
+        layout(set = 0, binding = 3) uniform sampler samp;
+        layout(set = 0, binding = 4) uniform texture2D img;
+        layout(set = 0, binding = 5) uniform sampler2D sampled_image;
+
+        void main() {
+            vec4 x;
+            vec4 y;
+            vec4 z;
+            if (doit.val == 0) {
+                gl_Position = vec4(0.0);
+                x = vec4(0.0);
+                y = vec4(0.0);
+                z = vec4(0.0);
+            } else {
+                gl_Position = vec4(readit.val);
+                x = texelFetch(texels, 5);
+                y = texture(sampler2D(img, samp), vec2(0));
+                z = texture(sampled_image, vec2(0));
+	    }
+        }
+    )glsl";
+
+    VkShaderObj vs(this, shader_source, VK_SHADER_STAGE_VERTEX_BIT);
+    VkPipelineObj pipe(m_device);
+    pipe.AddShader(&vs);
+    pipe.AddDefaultColorAttachment();
+    pipe.CreateVKPipeline(pipeline_layout.handle(), m_renderPass);
+    VkCommandBufferBeginInfo begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
+    m_commandBuffer->begin(&begin_info);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
+                              &descriptor_set.set_, 0, nullptr);
+
+    // destroy resources for the unused descriptors
+    buffer.reset();
+    texel_bufferview.reset();
+    sampled_view.reset();
+    combined_view.reset();
+
+    vk::CmdBindIndexBuffer(m_commandBuffer->handle(), index_buffer.handle(), 0, VK_INDEX_TYPE_UINT32);
+    VkViewport viewport = {0, 0, 16, 16, 0, 1};
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    VkRect2D scissor = {{0, 0}, {16, 16}};
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+    vk::CmdDrawIndexed(m_commandBuffer->handle(), 1, 1, 0, 0, 0);
+    vk::CmdEndRenderPass(m_commandBuffer->handle());
+    m_commandBuffer->end();
+    m_commandBuffer->QueueCommandBuffer();
+    vk::QueueWaitIdle(m_device->m_queue);
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkSyncValTest, TestInvalidExternalSubpassDependency) {
+    TEST_DESCRIPTION("Test write after write hazard with invalid external subpass dependency");
+
+    ASSERT_NO_FATAL_FAILURE(InitSyncValFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkSubpassDependency subpass_dependency = {};
+    subpass_dependency.srcSubpass = 0;
+    subpass_dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+    subpass_dependency.srcStageMask = 0;
+    subpass_dependency.dstStageMask = 0;
+    subpass_dependency.srcAccessMask = 0;
+    subpass_dependency.dstAccessMask = 0;
+    subpass_dependency.dependencyFlags = 0;
+
+    VkAttachmentReference attach_ref1 = {};
+    attach_ref1.attachment = 0;
+    attach_ref1.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference attach_ref2 = {};
+    attach_ref2.attachment = 0;
+    attach_ref2.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    VkSubpassDescription subpass_descriptions[2] = {};
+    subpass_descriptions[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_descriptions[0].pDepthStencilAttachment = &attach_ref1;
+    subpass_descriptions[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_descriptions[1].pDepthStencilAttachment = &attach_ref2;
+
+    VkAttachmentDescription attachment_description = {};
+    attachment_description.format = VK_FORMAT_D32_SFLOAT;
+    attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment_description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment_description.initialLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    attachment_description.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    auto rp_ci = LvlInitStruct<VkRenderPassCreateInfo>();
+    rp_ci.subpassCount = 1;
+    rp_ci.pSubpasses = subpass_descriptions;
+    rp_ci.attachmentCount = 1;
+    rp_ci.pAttachments = &attachment_description;
+    rp_ci.dependencyCount = 1;
+    rp_ci.pDependencies = &subpass_dependency;
+
+    vk_testing::RenderPass render_pass;
+    render_pass.init(*m_device, rp_ci);
+
+    VkClearValue clear_value = {};
+    clear_value.color = {{0, 0, 0, 0}};
+
+    VkImageCreateInfo image_ci = LvlInitStruct<VkImageCreateInfo>();
+    image_ci.imageType = VK_IMAGE_TYPE_2D;
+    image_ci.format = VK_FORMAT_D32_SFLOAT;
+    image_ci.extent.width = 32;
+    image_ci.extent.height = 32;
+    image_ci.extent.depth = 1;
+    image_ci.mipLevels = 1;
+    image_ci.arrayLayers = 1;
+    image_ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    VkImageObj image1(m_device);
+    image1.init(&image_ci);
+    ASSERT_TRUE(image1.initialized());
+
+    vk_testing::ImageView image_view1;
+    VkImageViewCreateInfo iv_ci = LvlInitStruct<VkImageViewCreateInfo>();
+    iv_ci.image = image1.handle();
+    iv_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    iv_ci.format = VK_FORMAT_D32_SFLOAT;
+    iv_ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    iv_ci.subresourceRange.baseMipLevel = 0;
+    iv_ci.subresourceRange.levelCount = 1;
+    iv_ci.subresourceRange.baseArrayLayer = 0;
+    iv_ci.subresourceRange.layerCount = 1;
+    image_view1.init(*m_device, iv_ci);
+
+    VkImageView framebuffer_attachments[1] = {image_view1.handle()};
+
+    auto fb_ci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fb_ci.renderPass = render_pass.handle();
+    fb_ci.attachmentCount = 1;
+    fb_ci.pAttachments = framebuffer_attachments;
+    fb_ci.width = 32;
+    fb_ci.height = 32;
+    fb_ci.layers = 1;
+
+    vk_testing::Framebuffer framebuffer;
+    framebuffer.init(*m_device, fb_ci);
+
+    auto rp_bi = LvlInitStruct<VkRenderPassBeginInfo>();
+    rp_bi.renderPass = render_pass.handle();
+    rp_bi.framebuffer = framebuffer.handle();
+    rp_bi.renderArea.extent.width = 32;
+    rp_bi.renderArea.extent.height = 32;
+    rp_bi.clearValueCount = 1;
+    rp_bi.pClearValues = &clear_value;
+
+    auto ds_ci = LvlInitStruct<VkPipelineDepthStencilStateCreateInfo>();
+    ds_ci.depthTestEnable = VK_FALSE;
+    ds_ci.depthWriteEnable = VK_FALSE;
+    ds_ci.depthCompareOp = VK_COMPARE_OP_NEVER;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.gp_ci_.renderPass = render_pass.handle();
+    pipe.gp_ci_.pDepthStencilState = &ds_ci;
+    pipe.InitState();
+    ASSERT_VK_SUCCESS(pipe.CreateGraphicsPipeline());
+
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE_AFTER_WRITE");
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(rp_bi);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkSyncValTest, TestCopyingToCompressedImage) {
+    TEST_DESCRIPTION("Copy from uncompressed to compressed image with and without overlap.");
+
+    ASSERT_NO_FATAL_FAILURE(InitSyncValFramework());
+    bool copy_commands_2 = false;
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME);
+        copy_commands_2 = true;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+
+    VkFormatProperties format_properties;
+    VkFormat mp_format = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+    vk::GetPhysicalDeviceFormatProperties(gpu(), mp_format, &format_properties);
+    if ((format_properties.linearTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT) == 0) {
+        printf(
+            "%s Device does not support VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT for VK_FORMAT_BC1_RGBA_UNORM_BLOCK, skipping test.\n",
+            kSkipPrefix);
+        return;
+    }
+
+    VkImageObj src_image(m_device);
+    src_image.Init(1, 1, 1, VK_FORMAT_R32G32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT, VK_IMAGE_TILING_LINEAR);
+    VkImageObj dst_image(m_device);
+    dst_image.Init(12, 4, 1, VK_FORMAT_BC1_RGBA_UNORM_BLOCK, VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_TILING_LINEAR);
+
+    VkImageCopy copy_regions[2] = {};
+    copy_regions[0].srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy_regions[0].srcSubresource.mipLevel = 0;
+    copy_regions[0].srcSubresource.baseArrayLayer = 0;
+    copy_regions[0].srcSubresource.layerCount = 1;
+    copy_regions[0].srcOffset = {0, 0, 0};
+    copy_regions[0].dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy_regions[0].dstSubresource.mipLevel = 0;
+    copy_regions[0].dstSubresource.baseArrayLayer = 0;
+    copy_regions[0].dstSubresource.layerCount = 1;
+    copy_regions[0].dstOffset = {0, 0, 0};
+    copy_regions[0].extent = {1, 1, 1};
+    copy_regions[1].srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy_regions[1].srcSubresource.mipLevel = 0;
+    copy_regions[1].srcSubresource.baseArrayLayer = 0;
+    copy_regions[1].srcSubresource.layerCount = 1;
+    copy_regions[1].srcOffset = {0, 0, 0};
+    copy_regions[1].dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy_regions[1].dstSubresource.mipLevel = 0;
+    copy_regions[1].dstSubresource.baseArrayLayer = 0;
+    copy_regions[1].dstSubresource.layerCount = 1;
+    copy_regions[1].dstOffset = {4, 0, 0};
+    copy_regions[1].extent = {1, 1, 1};
+
+    m_commandBuffer->begin();
+
+    m_errorMonitor->ExpectSuccess();
+    vk::CmdCopyImage(m_commandBuffer->handle(), src_image.handle(), VK_IMAGE_LAYOUT_GENERAL, dst_image.handle(),
+                     VK_IMAGE_LAYOUT_GENERAL, 1, &copy_regions[0]);
+    vk::CmdCopyImage(m_commandBuffer->handle(), src_image.handle(), VK_IMAGE_LAYOUT_GENERAL, dst_image.handle(),
+                     VK_IMAGE_LAYOUT_GENERAL, 1, &copy_regions[1]);
+    m_errorMonitor->VerifyNotFound();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "SYNC-HAZARD-WRITE_AFTER_WRITE");
+    copy_regions[1].dstOffset = {7, 0, 0};
+    vk::CmdCopyImage(m_commandBuffer->handle(), src_image.handle(), VK_IMAGE_LAYOUT_GENERAL, dst_image.handle(),
+                     VK_IMAGE_LAYOUT_GENERAL, 1, &copy_regions[1]);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+
+    if (copy_commands_2) {
+        auto vkCmdCopyImage2KHR =
+            reinterpret_cast<PFN_vkCmdCopyImage2KHR>(vk::GetInstanceProcAddr(instance(), "vkCmdCopyImage2KHR"));
+        assert(vkCmdCopyImage2KHR != nullptr);
+
+        m_commandBuffer->reset();
+
+        VkImageCopy2KHR copy_regions2[2];
+        copy_regions2[0] = LvlInitStruct<VkImageCopy2KHR>();
+        copy_regions2[0].srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_regions2[0].srcSubresource.mipLevel = 0;
+        copy_regions2[0].srcSubresource.baseArrayLayer = 0;
+        copy_regions2[0].srcSubresource.layerCount = 1;
+        copy_regions2[0].srcOffset = {0, 0, 0};
+        copy_regions2[0].dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_regions2[0].dstSubresource.mipLevel = 0;
+        copy_regions2[0].dstSubresource.baseArrayLayer = 0;
+        copy_regions2[0].dstSubresource.layerCount = 1;
+        copy_regions2[0].dstOffset = {0, 0, 0};
+        copy_regions2[0].extent = {1, 1, 1};
+        copy_regions2[1] = LvlInitStruct<VkImageCopy2KHR>();
+        copy_regions2[1].srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_regions2[1].srcSubresource.mipLevel = 0;
+        copy_regions2[1].srcSubresource.baseArrayLayer = 0;
+        copy_regions2[1].srcSubresource.layerCount = 1;
+        copy_regions2[1].srcOffset = {0, 0, 0};
+        copy_regions2[1].dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_regions2[1].dstSubresource.mipLevel = 0;
+        copy_regions2[1].dstSubresource.baseArrayLayer = 0;
+        copy_regions2[1].dstSubresource.layerCount = 1;
+        copy_regions2[1].dstOffset = {4, 0, 0};
+        copy_regions2[1].extent = {1, 1, 1};
+
+        auto copy_image_info = LvlInitStruct<VkCopyImageInfo2KHR>();
+        copy_image_info.srcImage = src_image.handle();
+        copy_image_info.srcImageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        copy_image_info.dstImage = dst_image.handle();
+        copy_image_info.dstImageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        copy_image_info.regionCount = 2;
+        copy_image_info.pRegions = copy_regions2;
+
+        m_commandBuffer->begin();
+
+        m_errorMonitor->ExpectSuccess();
+        vkCmdCopyImage2KHR(m_commandBuffer->handle(), &copy_image_info);
+        m_errorMonitor->VerifyNotFound();
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "SYNC-HAZARD-WRITE_AFTER_WRITE");
+        copy_image_info.regionCount = 1;
+        copy_image_info.pRegions = &copy_regions2[1];
+        copy_regions[1].dstOffset = {7, 0, 0};
+        vkCmdCopyImage2KHR(m_commandBuffer->handle(), &copy_image_info);
+        m_errorMonitor->VerifyFound();
+
+        m_commandBuffer->end();
+    }
+}
+
+TEST_F(VkSyncValTest, SyncQSBufferCopyHazards) {
+    ASSERT_NO_FATAL_FAILURE(InitSyncValFramework(true));  // Enable QueueSubmit validation
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+
+    VkBufferObj buffer_a;
+    VkBufferObj buffer_b;
+    VkBufferObj buffer_c;
+    VkMemoryPropertyFlags mem_prop = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    buffer_a.init_as_src_and_dst(*m_device, 256, mem_prop);
+    buffer_b.init_as_src_and_dst(*m_device, 256, mem_prop);
+    buffer_c.init_as_src_and_dst(*m_device, 256, mem_prop);
+
+    VkBufferCopy region = {0, 0, 256};
+
+    VkCommandBufferObj cba(m_device, m_commandPool);
+    VkCommandBufferObj cbb(m_device, m_commandPool);
+
+    cba.begin();
+    const VkCommandBuffer h_cba = cba.handle();
+    vk::CmdCopyBuffer(h_cba, buffer_a.handle(), buffer_b.handle(), 1, &region);
+    cba.end();
+
+    const VkCommandBuffer h_cbb = cbb.handle();
+    cbb.begin();
+    vk::CmdCopyBuffer(h_cbb, buffer_c.handle(), buffer_a.handle(), 1, &region);
+    cbb.end();
+
+    auto submit1 = lvl_init_struct<VkSubmitInfo>();
+    submit1.commandBufferCount = 2;
+    VkCommandBuffer two_cbs[2] = {h_cba, h_cbb};
+    submit1.pCommandBuffers = two_cbs;
+
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE_AFTER_READ");
+    vk::QueueSubmit(m_device->m_queue, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+
+    vk::DeviceWaitIdle(m_device->device());
+
+    VkSubmitInfo submit2[2] = {lvl_init_struct<VkSubmitInfo>(), lvl_init_struct<VkSubmitInfo>()};
+    submit2[0].commandBufferCount = 1;
+    submit2[0].pCommandBuffers = &h_cba;
+    submit2[1].commandBufferCount = 1;
+    submit2[1].pCommandBuffers = &h_cbb;
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE_AFTER_READ");
+    vk::QueueSubmit(m_device->m_queue, 2, submit2, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+
+    // With the skip settings, the above QueueSubmit's didn't record, so we can treat the global queue contexts as empty
+    submit1.commandBufferCount = 1;
+    submit1.pCommandBuffers = &h_cba;
+    // Submit A
+    m_errorMonitor->ExpectSuccess();
+    vk::QueueSubmit(m_device->m_queue, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
+
+    submit1.pCommandBuffers = &h_cbb;
+    // Submit B -- which should conflict via the queue's "last batch"
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE_AFTER_READ");
+    vk::QueueSubmit(m_device->m_queue, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+}
+TEST_F(VkSyncValTest, SyncQSBufferCopyVsIdle) {
+    ASSERT_NO_FATAL_FAILURE(InitSyncValFramework(true));  // Enable QueueSubmit validation
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+
+    VkBufferObj buffer_a;
+    VkBufferObj buffer_b;
+    VkBufferObj buffer_c;
+    VkMemoryPropertyFlags mem_prop = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    buffer_a.init_as_src_and_dst(*m_device, 256, mem_prop);
+    buffer_b.init_as_src_and_dst(*m_device, 256, mem_prop);
+    buffer_c.init_as_src_and_dst(*m_device, 256, mem_prop);
+
+    VkBufferCopy region = {0, 0, 256};
+
+    m_errorMonitor->ExpectSuccess();
+    VkCommandBufferObj cba(m_device, m_commandPool);
+    VkCommandBufferObj cbb(m_device, m_commandPool);
+
+    cba.begin();
+    const VkCommandBuffer h_cba = cba.handle();
+    vk::CmdCopyBuffer(h_cba, buffer_a.handle(), buffer_b.handle(), 1, &region);
+    cba.end();
+
+    const VkCommandBuffer h_cbb = cbb.handle();
+    cbb.begin();
+    vk::CmdCopyBuffer(h_cbb, buffer_c.handle(), buffer_a.handle(), 1, &region);
+    cbb.end();
+
+    // Submit A
+    auto submit1 = lvl_init_struct<VkSubmitInfo>();
+    submit1.commandBufferCount = 1;
+    submit1.pCommandBuffers = &h_cba;
+    vk::QueueSubmit(m_device->m_queue, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
+
+    // Submit B which hazards vs. A
+    submit1.pCommandBuffers = &h_cbb;
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE_AFTER_READ");
+    vk::QueueSubmit(m_device->m_queue, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+
+    // With the skip settings, the above QueueSubmit's didn't record, so we can treat the previous submit as not
+    // having happened. So we'll try again with a device wait idle
+    // Submit B again, but after idling, which should remove the hazard
+    m_errorMonitor->ExpectSuccess();
+    vk::DeviceWaitIdle(m_device->device());
+    vk::QueueSubmit(m_device->m_queue, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE_AFTER_WRITE");
+    vk::QueueSubmit(m_device->m_queue, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+
+    // With the skip settings, the above QueueSubmit's didn't record, so we can treat the previous submit as not
+    // having happened. So we'll try again with a queue wait idle
+    // Submit B again, but after idling, which should remove the hazard
+    m_errorMonitor->ExpectSuccess();
+    vk::QueueWaitIdle(m_device->m_queue);
+    vk::QueueSubmit(m_device->m_queue, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkSyncValTest, SyncQSBufferCopyQSORules) {
+    ASSERT_NO_FATAL_FAILURE(InitSyncValFramework(true));  // Enable QueueSubmit validation
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+
+    const auto &queues = m_device->dma_queues();
+    VkQueue q0 = VK_NULL_HANDLE;
+    VkQueue q1 = VK_NULL_HANDLE;
+    uint32_t q_fam = ~0U;
+
+    const uint32_t q_count = static_cast<uint32_t>(queues.size());
+    for (uint32_t q0_index = 0; q0_index < q_count; ++q0_index) {
+        const auto *q0_entry = queues[q0_index];
+        q0 = q0_entry->handle();
+        q_fam = q0_entry->get_family_index();
+        for (uint32_t q1_index = (q0_index + 1); q1_index < q_count; ++q1_index) {
+            const auto *q1_entry = queues[q1_index];
+            if (q_fam == q1_entry->get_family_index()) {
+                q1 = q1_entry->handle();
+                break;
+            }
+        }
+        if (q1 != VK_NULL_HANDLE) {
+            break;
+        }
+    }
+    if (q1 == VK_NULL_HANDLE) {
+        printf("%s Test requires at least 2 TRANSFER capable queues in the same queue_family. Skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkBufferObj buffer_a;
+    VkBufferObj buffer_b;
+    VkBufferObj buffer_c;
+    VkMemoryPropertyFlags mem_prop = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    buffer_a.init_as_src_and_dst(*m_device, 256, mem_prop);
+    buffer_b.init_as_src_and_dst(*m_device, 256, mem_prop);
+    buffer_c.init_as_src_and_dst(*m_device, 256, mem_prop);
+
+    VkBufferCopy region = {0, 0, 256};
+
+    m_errorMonitor->ExpectSuccess();
+    VkCommandPoolObj pool(m_device, q_fam, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+    VkCommandBufferObj cba(m_device, &pool);
+    VkCommandBufferObj cbb(m_device, &pool);
+
+    // Command Buffer A reads froms buffer A and writes to buffer B
+    cba.begin();
+    const VkCommandBuffer h_cba = cba.handle();
+    vk::CmdCopyBuffer(h_cba, buffer_a.handle(), buffer_b.handle(), 1, &region);
+    cba.end();
+
+    // Command Buffer B reads froms buffer C and writes to buffer A, but has a barrier to protect the write to A when
+    // executed on the same queue, given that commands in "queue submission order" are within the first scope of the barrier.
+    const VkCommandBuffer h_cbb = cbb.handle();
+    cbb.begin();
+
+    // Use the barrier to clean up the WAR, which will work for command buffers ealier in queue submission order, or with
+    // correct semaphore operations between queues.
+    auto buffer_barrier = LvlInitStruct<VkBufferMemoryBarrier>();
+    buffer_barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    buffer_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    buffer_barrier.buffer = buffer_a.handle();
+    buffer_barrier.offset = 0;
+    buffer_barrier.size = 256;
+    vk::CmdPipelineBarrier(h_cbb, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &buffer_barrier,
+                           0, nullptr);
+    vk::CmdCopyBuffer(h_cbb, buffer_c.handle(), buffer_a.handle(), 1, &region);
+    cbb.end();
+
+    // Submit A and B on the same queue, to assure us the barrier *would* be sufficient given QSO
+    // This is included in a "Sucess" section, just to verify CBA and CBB are set up correctly.
+    auto submit1 = lvl_init_struct<VkSubmitInfo>();
+    submit1.commandBufferCount = 1;
+    submit1.pCommandBuffers = &h_cba;
+    vk::QueueSubmit(q0, 1, &submit1, VK_NULL_HANDLE);
+    submit1.pCommandBuffers = &h_cbb;
+    vk::QueueSubmit(q0, 1, &submit1, VK_NULL_HANDLE);
+    m_device->wait();  // DeviceWaitIdle, clearing the field for the next subcase
+    m_errorMonitor->VerifyNotFound();
+
+    // Submit A and B on the different queues. Since no semaphore is used between the queues, CB B hazards asynchronously with,
+    // CB A with A being read and written on independent queues.
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE-RACING-READ");
+    submit1.pCommandBuffers = &h_cba;
+    vk::QueueSubmit(q0, 1, &submit1, VK_NULL_HANDLE);
+    submit1.pCommandBuffers = &h_cbb;
+    vk::QueueSubmit(q1, 1, &submit1, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+
+    // Set up the semaphore for the next two cases
+    m_errorMonitor->ExpectSuccess();
+    auto semaphore_ci = LvlInitStruct<VkSemaphoreCreateInfo>();
+    vk_testing::Semaphore semaphore;
+    semaphore.init(*m_device, semaphore_ci);
+    VkSemaphore h_semaphore = semaphore.handle();
+
+    VkSubmitInfo submit_signal = submit1;
+    submit_signal.pCommandBuffers = &h_cba;
+    submit_signal.signalSemaphoreCount = 1;
+    submit_signal.pSignalSemaphores = &h_semaphore;
+
+    VkSubmitInfo submit_wait = submit1;
+    VkPipelineStageFlags wait_mask = 0U;  // for the next case, there is no mask to chain the semaphore to the barrier
+    submit_wait.pCommandBuffers = &h_cbb;
+    submit_wait.pWaitDstStageMask = &wait_mask;
+    submit_wait.waitSemaphoreCount = 1;
+    submit_wait.pWaitSemaphores = &h_semaphore;
+
+    m_device->wait();
+    m_errorMonitor->VerifyNotFound();
+
+    // Submit A and B on the different queues, with an ineffectual semaphore.  The wait mask is empty, thus nothing in CB B is in
+    // the second excution scope of the waited signal.
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE_AFTER_READ");
+    submit1.pCommandBuffers = &h_cba;
+    vk::QueueSubmit(q0, 1, &submit_signal, VK_NULL_HANDLE);
+    submit1.pCommandBuffers = &h_cbb;
+    vk::QueueSubmit(q1, 1, &submit_wait, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+
+    // The since second submit failed, it was skipped. So we can try again, without having to WaitDeviceIdle
+    m_errorMonitor->ExpectSuccess();
+    // Include transfers in the second execution scope of the waited signal, s.t. the PipelineBarrier in CB B can can with it.
+    wait_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    vk::QueueSubmit(q1, 1, &submit_wait, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
 }

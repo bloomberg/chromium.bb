@@ -13,9 +13,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -248,6 +248,22 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
+  void IsFeatureEnabled(const std::string& feature,
+                        IsFeatureEnabledCallback callback) override {
+    dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
+                                 update_engine::kIsFeatureEnabled);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(feature);
+
+    VLOG(1) << "Requesting UpdateEngine to get feature " << feature;
+
+    update_engine_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&UpdateEngineClientImpl::OnIsFeatureEnabled,
+                       weak_ptr_factory_.GetWeakPtr(), feature,
+                       std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     update_engine_proxy_ = bus->GetObjectProxy(
@@ -474,6 +490,28 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     VLOG(1) << "Successfully updated feature value.";
   }
 
+  void OnIsFeatureEnabled(const std::string& feature,
+                          IsFeatureEnabledCallback callback,
+                          dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << update_engine::kIsFeatureEnabled
+                 << " call failed for feature " << feature;
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    bool enabled;
+    if (!reader.PopBool(&enabled)) {
+      LOG(ERROR) << "Bad response: " << response->ToString();
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    VLOG(1) << "Feature " << feature << " is " << enabled;
+    std::move(callback).Run(enabled);
+  }
+
   // Called when a response for SetUpdateOverCellularOneTimePermission() is
   // received.
   void OnSetUpdateOverCellularOneTimePermission(
@@ -636,6 +674,12 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
             << " to: " << (enable ? "enabled" : "disabled");
   }
 
+  void IsFeatureEnabled(const std::string& feature,
+                        IsFeatureEnabledCallback callback) override {
+    VLOG(1) << "Requesting to get " << feature;
+    std::move(callback).Run(absl::nullopt);
+  }
+
  private:
   void StateTransition(bool apply_update) {
     update_engine::Operation next_operation = update_engine::Operation::ERROR;
@@ -717,10 +761,10 @@ bool UpdateEngineClient::IsTargetChannelMoreStable(
     const std::string& target_channel) {
   const char** cix = std::find(
       kReleaseChannelsList,
-      kReleaseChannelsList + base::size(kReleaseChannelsList), current_channel);
+      kReleaseChannelsList + std::size(kReleaseChannelsList), current_channel);
   const char** tix = std::find(
       kReleaseChannelsList,
-      kReleaseChannelsList + base::size(kReleaseChannelsList), target_channel);
+      kReleaseChannelsList + std::size(kReleaseChannelsList), target_channel);
   return tix > cix;
 }
 

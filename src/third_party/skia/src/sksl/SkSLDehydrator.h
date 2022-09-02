@@ -8,34 +8,38 @@
 #ifndef SKSL_DEHYDRATOR
 #define SKSL_DEHYDRATOR
 
-#ifdef SKSL_STANDALONE
-
-#include "include/core/SkSpan.h"
-#include "include/private/SkSLModifiers.h"
-#include "include/private/SkSLSymbol.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkTFitsIn.h"
 #include "include/private/SkTHash.h"
-#include "src/sksl/SkSLOutputStream.h"
 #include "src/sksl/SkSLStringStream.h"
 
-#include <set>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
+
+template <typename T> class SkSpan;
 
 namespace SkSL {
 
-class AnyConstructor;
 class Expression;
+class OutputStream;
 class ProgramElement;
 class Statement;
 class Symbol;
 class SymbolTable;
+struct Layout;
+struct Modifiers;
+struct Program;
 
-// The file has the structure:
-//
-// uint16 total string length
-// string data
-// symboltable
-// elements
+/**
+ * Converts SkSL objects into a binary file. See binary_format.md for a description of the file
+ * format.
+ */
 class Dehydrator {
 public:
     Dehydrator() {
@@ -45,6 +49,8 @@ public:
     ~Dehydrator() {
         SkASSERT(fSymbolMap.size() == 1);
     }
+
+    void write(const Program& program);
 
     void write(const SymbolTable& symbols);
 
@@ -57,7 +63,7 @@ public:
 
 private:
     void writeS8(int32_t i) {
-        SkASSERT(i >= -128 && i <= 127);
+        SkASSERT(SkTFitsIn<int8_t>(i));
         fBody.write8(i);
     }
 
@@ -67,40 +73,44 @@ private:
     }
 
     void writeU8(int32_t i) {
-        SkASSERT(i >= 0 && i <= 255);
+        SkASSERT(SkTFitsIn<uint8_t>(i));
         fBody.write8(i);
     }
 
     void writeS16(int32_t i) {
-        SkASSERT(i >= -32768 && i <= 32767);
+        SkASSERT(SkTFitsIn<int16_t>(i));
         fBody.write16(i);
     }
 
     void writeU16(int32_t i) {
-        SkASSERT(i >= 0 && i <= 65535);
+        SkASSERT(SkTFitsIn<uint16_t>(i));
         fBody.write16(i);
     }
 
     void writeS32(int64_t i) {
-        SkASSERT(i >= -2147483648 && i <= 2147483647);
+        SkASSERT(SkTFitsIn<int32_t>(i));
         fBody.write32(i);
     }
 
-    void writeId(const Symbol* s) {
-        if (!symbolId(s, false)) {
-            fSymbolMap.back()[s] = fNextId++;
-        }
-        this->writeU16(symbolId(s));
+    void writeU32(int64_t i) {
+        SkASSERT(SkTFitsIn<uint32_t>(i));
+        fBody.write32(i);
     }
 
-    uint16_t symbolId(const Symbol* s, bool required = true) {
+    void allocSymbolId(const Symbol* s) {
+        SkASSERT(!symbolId(s));
+        fSymbolMap.back()[s] = fNextId++;
+    }
+
+    void writeId(const Symbol* s);
+
+    uint16_t symbolId(const Symbol* s) {
         for (const auto& symbols : fSymbolMap) {
             auto found = symbols.find(s);
             if (found != symbols.end()) {
                 return found->second;
             }
         }
-        SkASSERT(!required);
         return 0;
     }
 
@@ -108,9 +118,9 @@ private:
 
     void write(Modifiers m);
 
-    void write(skstd::string_view s);
+    void write(std::string_view s);
 
-    void write(String s);
+    void write(std::string s);
 
     void write(const ProgramElement& e);
 
@@ -128,7 +138,7 @@ private:
 
     StringStream fBody;
 
-    std::unordered_map<String, int> fStrings;
+    std::unordered_map<std::string, int> fStrings;
 
     std::vector<std::unordered_map<const Symbol*, int>> fSymbolMap;
     SkTHashSet<size_t> fStringBreaks;
@@ -139,8 +149,6 @@ private:
     friend class AutoDehydratorSymbolTable;
 };
 
-} // namespace
-
-#endif
+} // namespace SkSL
 
 #endif

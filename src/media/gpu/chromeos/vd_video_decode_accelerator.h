@@ -14,6 +14,7 @@
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/status.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
@@ -21,6 +22,7 @@
 #include "media/gpu/chromeos/vda_video_frame_pool.h"
 #include "media/gpu/chromeos/video_frame_converter.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -50,7 +52,8 @@ class MEDIA_GPU_EXPORT VdVideoDecodeAccelerator
           scoped_refptr<base::SequencedTaskRunner>,
           std::unique_ptr<DmabufVideoFramePool>,
           std::unique_ptr<VideoFrameConverter>,
-          std::unique_ptr<MediaLog>)>;
+          std::unique_ptr<MediaLog>,
+          mojo::PendingRemote<stable::mojom::StableVideoDecoder>)>;
 
   // Create VdVideoDecodeAccelerator instance, and call Initialize().
   // Return nullptr if Initialize() failed.
@@ -92,10 +95,10 @@ class MEDIA_GPU_EXPORT VdVideoDecodeAccelerator
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Callback methods of |vd_|.
-  void OnInitializeDone(Status status);
-  void OnDecodeDone(int32_t bitstream_buffer_id, Status status);
+  void OnInitializeDone(DecoderStatus status);
+  void OnDecodeDone(int32_t bitstream_buffer_id, DecoderStatus status);
   void OnFrameReady(scoped_refptr<VideoFrame> frame);
-  void OnFlushDone(Status status);
+  void OnFlushDone(DecoderStatus status);
   void OnResetDone();
 
   // Get Picture instance that represents the same buffer as |frame|. Return
@@ -146,6 +149,12 @@ class MEDIA_GPU_EXPORT VdVideoDecodeAccelerator
   std::map<int32_t /* picture_buffer_id */,
            std::pair<scoped_refptr<VideoFrame>, size_t /* num_sent */>>
       picture_at_client_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Indicates we are handling encrypted content which requires an extra check
+  // to see if it is a secure buffer format.
+  bool is_encrypted_ = false;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Main task runner and its sequence checker. All methods should be called
   // on it.

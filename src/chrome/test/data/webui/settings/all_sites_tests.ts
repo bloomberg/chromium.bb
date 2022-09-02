@@ -153,49 +153,47 @@ suite('AllSites_DisabledConsolidatedControls', function() {
     }
   });
 
-  test('can be sorted by most visited', function() {
+  test('can be sorted by most visited', async function() {
     setUpAllSites(prefsVarious);
     testElement.currentRouteChanged(routes.SITE_SETTINGS_ALL);
 
-    return browserProxy.whenCalled('getAllSites').then(() => {
-      // Add additional origins and artificially insert fake engagement scores
-      // to sort.
-      assertEquals(3, testElement.siteGroupMap.size);
-      const fooSiteGroup = testElement.siteGroupMap.get('foo.com')!;
-      fooSiteGroup.origins.push(
-          createOriginInfo('https://login.foo.com', {engagement: 20}));
-      assertEquals(2, fooSiteGroup.origins.length);
-      fooSiteGroup.origins[0]!.engagement = 50.4;
-      const googleSiteGroup = testElement.siteGroupMap.get('google.com')!;
-      assertEquals(1, googleSiteGroup.origins.length);
-      googleSiteGroup.origins[0]!.engagement = 55.1261;
-      const barSiteGroup = testElement.siteGroupMap.get('bar.com')!;
-      assertEquals(1, barSiteGroup.origins.length);
-      barSiteGroup.origins[0]!.engagement = 0.5235;
+    await browserProxy.whenCalled('getAllSites');
 
-      // 'Most visited' is the default sort method, so sort by a different
-      // method first to ensure changing to 'Most visited' works.
-      testElement.$.sortMethod.value = 'name';
-      testElement.$.sortMethod.dispatchEvent(new CustomEvent('change'));
-      flush();
-      let siteEntries =
-          testElement.$.listContainer.querySelectorAll('site-entry');
-      assertEquals('bar.com', siteEntries[0]!.$.displayName.innerText.trim());
-      assertEquals('foo.com', siteEntries[1]!.$.displayName.innerText.trim());
-      assertEquals(
-          'google.com', siteEntries[2]!.$.displayName.innerText.trim());
+    // Add additional origins and artificially insert fake engagement scores
+    // to sort.
+    assertEquals(3, testElement.siteGroupMap.size);
+    const fooSiteGroup = testElement.siteGroupMap.get('foo.com')!;
+    fooSiteGroup.origins.push(
+        createOriginInfo('https://login.foo.com', {engagement: 20}));
+    assertEquals(2, fooSiteGroup.origins.length);
+    fooSiteGroup.origins[0]!.engagement = 50.4;
+    const googleSiteGroup = testElement.siteGroupMap.get('google.com')!;
+    assertEquals(1, googleSiteGroup.origins.length);
+    googleSiteGroup.origins[0]!.engagement = 55.1261;
+    const barSiteGroup = testElement.siteGroupMap.get('bar.com')!;
+    assertEquals(1, barSiteGroup.origins.length);
+    barSiteGroup.origins[0]!.engagement = 0.5235;
 
-      testElement.$.sortMethod.value = 'most-visited';
-      testElement.$.sortMethod.dispatchEvent(new CustomEvent('change'));
-      flush();
-      siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
-      // Each site entry is sorted by its maximum engagement, so expect
-      // 'foo.com' to come after 'google.com'.
-      assertEquals(
-          'google.com', siteEntries[0]!.$.displayName.innerText.trim());
-      assertEquals('foo.com', siteEntries[1]!.$.displayName.innerText.trim());
-      assertEquals('bar.com', siteEntries[2]!.$.displayName.innerText.trim());
-    });
+    // 'Most visited' is the default sort method, so sort by a different
+    // method first to ensure changing to 'Most visited' works.
+    testElement.$.sortMethod.value = 'name';
+    testElement.$.sortMethod.dispatchEvent(new CustomEvent('change'));
+    flush();
+    let siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
+    assertEquals('bar.com', siteEntries[0]!.$.displayName.innerText.trim());
+    assertEquals('foo.com', siteEntries[1]!.$.displayName.innerText.trim());
+    assertEquals('google.com', siteEntries[2]!.$.displayName.innerText.trim());
+
+    testElement.$.sortMethod.value = 'most-visited';
+    testElement.$.sortMethod.dispatchEvent(new CustomEvent('change'));
+    flush();
+    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    // Each site entry is sorted by its maximum engagement, so expect
+    // 'foo.com' to come after 'google.com'.
+    assertEquals('google.com', siteEntries[0]!.$.displayName.innerText.trim());
+    assertEquals('foo.com', siteEntries[1]!.$.displayName.innerText.trim());
+    assertEquals('bar.com', siteEntries[2]!.$.displayName.innerText.trim());
   });
 
   test('can be sorted by storage', async function() {
@@ -226,7 +224,6 @@ suite('AllSites_DisabledConsolidatedControls', function() {
     // name.
     testElement.$.sortMethod.value = 'data-stored';
     testElement.$.sortMethod.dispatchEvent(new CustomEvent('change'));
-
 
     flush();
     siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
@@ -959,8 +956,54 @@ suite('AllSites_EnabledConsolidatedControls', function() {
 
     assertEquals(
         siteGroup.origins[0].origin,
-        await browserProxy.whenCalled('clearOriginDataAndCookies'));
-    assertEquals(1, browserProxy.getCallCount('clearOriginDataAndCookies'));
+        await browserProxy.whenCalled(
+            'clearUnpartitionedOriginDataAndCookies'));
+
+    const [origin, types, setting] =
+        await browserProxy.whenCalled('setOriginPermissions');
+    assertEquals(origin, siteGroup.origins[0].origin);
+    assertEquals(types, null);  // Null affects all content types.
+    assertEquals(setting, ContentSetting.DEFAULT);
+
+    assertEquals(
+        1, browserProxy.getCallCount('clearUnpartitionedOriginDataAndCookies'));
+    assertEquals(1, browserProxy.getCallCount('setOriginPermissions'));
+    assertEquals(5, testElement.$.allSitesList.items![0].numCookies);
+  });
+
+  test('remove partitioned origin', async function() {
+    const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    siteGroup.origins[0].isPartitioned = true;
+    siteGroup.origins[0].numCookies = 1;
+    siteGroup.origins[1].numCookies = 2;
+    siteGroup.origins[2].numCookies = 3;
+    siteGroup.numCookies = 6;
+
+    testElement.siteGroupMap.set(
+        siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+    testElement.forceListUpdateForTesting();
+    flush();
+
+    // Remove the the partitioned entry, which will have been ordered to the
+    // bottom of the displayed origins.
+    const siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
+    const originList = siteEntries[0]!.$.originList.get();
+    flush();
+    const originEntries = originList.querySelectorAll('.hr');
+    assertEquals(3, originEntries.length);
+    originEntries[2]!.querySelector<HTMLElement>(
+                         '#removeOriginButton')!.click();
+    confirmDialog();
+
+    const [origin, etldPlus1] =
+        await browserProxy.whenCalled('clearPartitionedOriginDataAndCookies');
+
+    assertEquals(siteGroup.origins[0].origin, origin);
+    assertEquals(siteGroup.etldPlus1, etldPlus1);
+    assertEquals(
+        1, browserProxy.getCallCount('clearPartitionedOriginDataAndCookies'));
+    assertEquals(0, browserProxy.getCallCount('setOriginPermissions'));
     assertEquals(5, testElement.$.allSitesList.items![0].numCookies);
   });
 
@@ -993,7 +1036,8 @@ suite('AllSites_EnabledConsolidatedControls', function() {
     removeFirstOrigin();
     cancelDialog();
 
-    assertEquals(0, browserProxy.getCallCount('clearOriginDataAndCookies'));
+    assertEquals(
+        0, browserProxy.getCallCount('clearUnpartitionedOriginDataAndCookies'));
     assertEquals(0, browserProxy.getCallCount('setOriginPermissions'));
     assertEquals(6, testElement.$.allSitesList.items![0].numCookies);
   });

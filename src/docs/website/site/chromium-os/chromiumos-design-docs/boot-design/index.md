@@ -20,11 +20,11 @@ Chrome OS Core uses
 [Upstart](http://www.google.com/url?q=http%3A%2F%2Fen.wikipedia.org%2Fwiki%2FUpstart&sa=D&sntz=1&usg=AFQjCNEuUVRg10UCp5SZDMxMYm7uXUDFrQ)
 for its /sbin/init package. Readers of this document should have some basic
 familiarity with Upstart concepts, such as the syntax of [job configuration
-files](http://www.google.com/url?q=http%3A%2F%2Fmanpages.ubuntu.com%2Fmanpages%2Fprecise%2Fen%2Fman5%2Finit.5.html&sa=D&sntz=1&usg=AFQjCNEcyrkvIZPDNeUDdOHLY7pQT9x6AQ),
+files](http://manpages.ubuntu.com/manpages/trusty/man5/init.5.html),
 and Upstart events, such as
-[starting](http://www.google.com/url?q=http%3A%2F%2Fmanpages.ubuntu.com%2Fmanpages%2Fprecise%2Fen%2Fman7%2Fstarting.7.html&sa=D&sntz=1&usg=AFQjCNHlfSoGzcMEjfOaHUjsOhEwfBlRGw)
+[starting](http://manpages.ubuntu.com/manpages/trusty/man7/starting.7.html)
 and
-[started](http://www.google.com/url?q=http%3A%2F%2Fmanpages.ubuntu.com%2Fmanpages%2Fprecise%2Fen%2Fman7%2Fstarted.7.html&sa=D&sntz=1&usg=AFQjCNGpa6z6Q1A7Q-WtTajYsx7etAqUPA).
+[started](http://manpages.ubuntu.com/manpages/trusty/man7/started.7.html).
 Readers should also have some understanding of Linux file system management
 concepts, like
 [mounting](http://www.google.com/url?q=http%3A%2F%2Flinux.die.net%2Fman%2F8%2Fmount&sa=D&sntz=1&usg=AFQjCNHWgzSgniJkKUaQX0F6aoV6tub_Zw)

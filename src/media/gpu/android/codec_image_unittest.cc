@@ -45,15 +45,21 @@ class CodecImageTest : public testing::Test {
     codec_ = codec.get();
     wrapper_ = std::make_unique<CodecWrapper>(
         CodecSurfacePair(std::move(codec), new CodecSurfaceBundle()),
-        base::DoNothing(), base::SequencedTaskRunnerHandle::Get());
+        base::DoNothing(), base::SequencedTaskRunnerHandle::Get(),
+        gfx::Size(640, 480));
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
 
     gl::init::InitializeStaticGLBindingsImplementation(
         gl::GLImplementationParts(gl::kGLImplementationEGLGLES2), false);
-    gl::init::InitializeGLOneOffPlatformImplementation(false, false, false);
+    display_ = gl::init::InitializeGLOneOffPlatformImplementation(
+        /*fallback_to_software_gl=*/false,
+        /*disable_gl_drawing=*/false,
+        /*init_extensions=*/false,
+        /*system_device_id=*/0);
 
-    surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size(320, 240));
+    surface_ = new gl::PbufferGLSurfaceEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(),
+                                           gfx::Size(320, 240));
     surface_->Initialize();
     share_group_ = new gl::GLShareGroup();
     context_ = new gl::GLContextEGL(share_group_.get());
@@ -77,7 +83,7 @@ class CodecImageTest : public testing::Test {
     context_ = nullptr;
     share_group_ = nullptr;
     surface_ = nullptr;
-    gl::init::ShutdownGL(false);
+    gl::init::ShutdownGL(display_, false);
     wrapper_->TakeCodecSurfacePair();
   }
 
@@ -115,6 +121,7 @@ class CodecImageTest : public testing::Test {
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLSurface> surface_;
   GLuint texture_id_ = 0;
+  gl::GLDisplay* display_ = nullptr;
 
   class PromotionHintReceiver {
    public:
@@ -277,8 +284,8 @@ TEST_F(CodecImageTestExplicitBind, RenderToFrontBufferDoesNotBindTexture) {
 
 TEST_F(CodecImageTest, RenderToFrontBufferRestoresGLContext) {
   // Make a new context current.
-  scoped_refptr<gl::GLSurface> surface(
-      new gl::PbufferGLSurfaceEGL(gfx::Size(320, 240)));
+  scoped_refptr<gl::GLSurface> surface(new gl::PbufferGLSurfaceEGL(
+      gl::GLSurfaceEGL::GetGLDisplayEGL(), gfx::Size(320, 240)));
   surface->Initialize();
   scoped_refptr<gl::GLShareGroup> share_group(new gl::GLShareGroup());
   scoped_refptr<gl::GLContext> context(new gl::GLContextEGL(share_group.get()));

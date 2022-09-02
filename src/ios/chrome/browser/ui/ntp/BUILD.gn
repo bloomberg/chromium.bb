@@ -6,9 +6,12 @@ source_set("ntp") {
   sources = [
     "discover_feed_delegate.h",
     "discover_feed_preview_delegate.h",
-    "new_tab_page_commands.h",
+    "feed_control_delegate.h",
+    "new_tab_page_configuring.h",
     "new_tab_page_content_delegate.h",
     "new_tab_page_controller_delegate.h",
+    "new_tab_page_delegate.h",
+    "new_tab_page_follow_delegate.h",
     "new_tab_page_omnibox_positioning.h",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -38,6 +41,7 @@ source_set("constants") {
     "new_tab_page_header_constants.mm",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  public_deps = [ "//ios/chrome/browser/discover_feed:constants" ]
 }
 
 source_set("coordinator") {
@@ -57,22 +61,30 @@ source_set("coordinator") {
     "//components/prefs/ios",
     "//components/search_engines",
     "//ios/chrome/app:tests_hook",
+    "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/discover_feed",
+    "//ios/chrome/browser/discover_feed:discover_feed_factory",
     "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ntp:features",
+    "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
+    "//ios/chrome/browser/ui/content_suggestions:metrics",
     "//ios/chrome/browser/ui/context_menu/link_preview",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/main:scene_state_observer",
+    "//ios/chrome/browser/ui/ntp:metrics",
+    "//ios/chrome/browser/ui/ntp/feed_management",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/util",
@@ -80,8 +92,8 @@ source_set("coordinator") {
     "//ios/chrome/browser/voice",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common/ui/util",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/discover_feed",
+    "//ios/public/provider/chrome/browser/follow",
+    "//ios/public/provider/chrome/browser/ui_utils:ui_utils_api",
     "//ios/web/public",
     "//ui/base",
   ]
@@ -108,6 +120,12 @@ source_set("ntp_internal") {
     "feed_header_view_controller.h",
     "feed_header_view_controller.mm",
     "feed_menu_commands.h",
+    "feed_top_section_coordinator.h",
+    "feed_top_section_coordinator.mm",
+    "feed_top_section_mediator.h",
+    "feed_top_section_mediator.mm",
+    "feed_top_section_view_controller.h",
+    "feed_top_section_view_controller.mm",
     "incognito_view.h",
     "incognito_view.mm",
     "incognito_view_controller.h",
@@ -126,8 +144,12 @@ source_set("ntp_internal") {
   ]
   deps = [
     ":logo",
+    ":metrics",
     ":ntp",
+    "resources:fake_omnibox_bottom_gradient_color",
+    "resources:fake_omnibox_top_gradient_color",
     "resources:incognito_icon",
+    "resources:ntp_background_bottom_gradient_color",
     "resources:ntp_opentabs",
     "resources:ntp_opentabs_clock",
     "resources:ntp_opentabs_header",
@@ -155,10 +177,13 @@ source_set("ntp_internal") {
     "//ios/chrome/app/theme",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/discover_feed:constants",
     "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/metrics:metrics_internal",
+    "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
@@ -169,10 +194,12 @@ source_set("ntp_internal") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
-    "//ios/chrome/browser/ui/content_suggestions:metrics",
+    "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/content_suggestions/cells",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/gestures",
+    "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/thumb_strip:public",
@@ -181,15 +208,14 @@ source_set("ntp_internal") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web_state_list",
-    "//ios/chrome/common",
+    "//ios/chrome/common:string_util",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/ntp_tile",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/elements",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/util",
-    "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/branded_images:branded_images_api",
-    "//ios/public/provider/chrome/browser/discover_feed",
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//net",
@@ -205,10 +231,28 @@ source_set("ntp_internal") {
   ]
 }
 
+source_set("metrics") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "feed_metrics_recorder.h",
+    "feed_metrics_recorder.mm",
+    "feed_session_recorder.h",
+    "feed_session_recorder.mm",
+  ]
+  deps = [
+    ":ntp",
+    "//base",
+    "//components/feed/core/v2/public:common",
+    "//ios/chrome/browser/discover_feed:constants",
+    "//ios/chrome/browser/ui/content_suggestions:metrics",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "feed_session_recorder_unittest.mm",
     "new_tab_page_coordinator_unittest.mm",
     "notification_promo_whats_new_unittest.mm",
     "ntp_tile_saver_unittest.mm",
@@ -216,6 +260,7 @@ source_set("unit_tests") {
   deps = [
     ":coordinator",
     ":feature_flags",
+    ":metrics",
     ":ntp",
     ":ntp_internal",
     "//base",
@@ -233,6 +278,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/main:test_support",
+    "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/ntp_snippets:ntp_snippets",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
@@ -269,10 +315,15 @@ source_set("eg2_tests") {
   sources = [ "new_tab_page_egtest.mm" ]
   deps = [
     "//base/test:test_support",
+    "//components/policy:generated",
+    "//components/policy/core/common:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/metrics:eg_test_support+eg2",
+    "//ios/chrome/browser/policy:eg_test_support+eg2",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",

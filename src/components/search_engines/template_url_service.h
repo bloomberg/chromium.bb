@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -33,7 +34,7 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/webdata/common/web_data_service_consumer.h"
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif
 
@@ -42,7 +43,7 @@ class PrefService;
 class TemplateURLServiceClient;
 class TemplateURLServiceObserver;
 struct TemplateURLData;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 class TemplateUrlServiceAndroid;
 #endif
 
@@ -139,7 +140,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Register Profile preferences in |registry|.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 #endif
 
@@ -170,10 +171,9 @@ class TemplateURLService : public WebDataServiceConsumer,
                            bool supports_replacement_only,
                            TURLsAndMeaningfulLengths* matches);
 
-  // Looks up |keyword| and returns the element it maps to.  Returns NULL if
-  // the keyword was not found.
-  // The caller should not try to delete the returned pointer; the data store
-  // retains ownership of it.
+  // Looks up |keyword| and returns the best TemplateURL for it.  Returns
+  // nullptr if the keyword was not found. The caller should not try to delete
+  // the returned pointer; the data store retains ownership of it.
   TemplateURL* GetTemplateURLForKeyword(const std::u16string& keyword);
   const TemplateURL* GetTemplateURLForKeyword(
       const std::u16string& keyword) const;
@@ -184,10 +184,15 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid);
   const TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid) const;
 
-  // Returns the first TemplateURL found with a URL using the specified |host|,
-  // or NULL if there are no such TemplateURLs
+  // Returns the best TemplateURL found with a URL using the specified |host|,
+  // or nullptr if there are no such TemplateURLs.
   TemplateURL* GetTemplateURLForHost(const std::string& host);
   const TemplateURL* GetTemplateURLForHost(const std::string& host) const;
+
+  // Returns the number of TemplateURLs that match `host`. Used for logging.
+  // Caller must ensure TemplateURLService is loaded before calling this.
+  // TODO(crbug.com/1322216): Delete after bug is fixed.
+  size_t GetTemplateURLCountForHostForLogging(const std::string& host) const;
 
   // Adds a new TemplateURL to this model.
   //
@@ -303,6 +308,15 @@ class TemplateURLService : public WebDataServiceConsumer,
   // provider.
   bool IsSearchResultsPageFromDefaultSearchProvider(const GURL& url) const;
 
+  // Returns true if the default search provider supports the side search
+  // feature.
+  bool IsSideSearchSupportedForDefaultSearchProvider() const;
+
+  // Generates a side search URL for the default search provider's search url.
+  GURL GenerateSideSearchURLForDefaultSearchProvider(
+      const GURL& search_url,
+      const std::string& version) const;
+
   // Returns true if the default search is managed through group policy.
   bool is_default_search_managed() const {
     return default_search_provider_source_ == DefaultSearchManager::FROM_POLICY;
@@ -327,6 +341,15 @@ class TemplateURLService : public WebDataServiceConsumer,
   // After this, the default search engine is reset to the default entry in the
   // prepopulate data.
   void RepairPrepopulatedSearchEngines();
+
+  // Performs the same actions that happen when the starter pack data version is
+  // revved: all existing starter pack entries are checked against the current
+  // starter pack data, any now-extraneous safe_for_autoreplace() entries are
+  // removed, any existing engines are reset to the provided data (except for
+  // user-edited names or keywords), and any new starter pack engines are
+  // added.  Unlike `RepairPrepopulatedSearchEngines()`, this does not modify
+  // the default search engine entry.
+  void RepairStarterPackEngines();
 
   // Observers used to listen for changes to the model.
   // TemplateURLService does NOT delete the observers when deleted.
@@ -477,6 +500,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, LastVisitedTimeUpdate);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest,
                            RepairPrepopulatedSearchEngines);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, RepairStarterPackEngines);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, PreSyncDeletes);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, MergeInSyncTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(LocationBarModelTest, GoogleBaseURL);
@@ -674,6 +698,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Returns the TemplateURL corresponding to |prepopulated_id|, if any.
   TemplateURL* FindPrepopulatedTemplateURL(int prepopulated_id);
 
+  // Returns the TemplateURL corresponding to |starter_pack_id|, if any.
+  TemplateURL* FindStarterPackTemplateURL(int starter_pack_id);
+
   // Returns the TemplateURL associated with |extension_id|, if any.
   TemplateURL* FindTemplateURLForExtension(const std::string& extension_id,
                                            TemplateURL::Type type);
@@ -830,7 +857,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   std::string current_token_;
   base::TimeTicks token_expiration_time_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Manage and fetch the java object that wraps this TemplateURLService on
   // android.
   std::unique_ptr<TemplateUrlServiceAndroid> template_url_service_android_;

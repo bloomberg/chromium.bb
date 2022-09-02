@@ -10,6 +10,7 @@
  */
 
 #include <assert.h>
+#include <stdbool.h>
 
 #include "config/av1_rtcd.h"
 
@@ -120,23 +121,26 @@ void av1_hash_table_destroy(hash_table *p_hash_table) {
   p_hash_table->p_lookup_table = NULL;
 }
 
-void av1_hash_table_create(hash_table *p_hash_table) {
+bool av1_hash_table_create(hash_table *p_hash_table) {
   if (p_hash_table->p_lookup_table != NULL) {
     av1_hash_table_clear_all(p_hash_table);
-    return;
+    return true;
   }
   p_hash_table->p_lookup_table =
-      (Vector **)aom_malloc(sizeof(p_hash_table->p_lookup_table[0]) * kMaxAddr);
-  memset(p_hash_table->p_lookup_table, 0,
-         sizeof(p_hash_table->p_lookup_table[0]) * kMaxAddr);
+      (Vector **)aom_calloc(kMaxAddr, sizeof(p_hash_table->p_lookup_table[0]));
+  if (!p_hash_table) return false;
+  return true;
 }
 
-static void hash_table_add_to_table(hash_table *p_hash_table,
+static bool hash_table_add_to_table(hash_table *p_hash_table,
                                     uint32_t hash_value,
                                     block_hash *curr_block_hash) {
   if (p_hash_table->p_lookup_table[hash_value] == NULL) {
     p_hash_table->p_lookup_table[hash_value] =
         aom_malloc(sizeof(p_hash_table->p_lookup_table[0][0]));
+    if (p_hash_table->p_lookup_table[hash_value] == NULL) {
+      return false;
+    }
     aom_vector_setup(p_hash_table->p_lookup_table[hash_value], 10,
                      sizeof(curr_block_hash[0]));
     aom_vector_push_back(p_hash_table->p_lookup_table[hash_value],
@@ -145,6 +149,7 @@ static void hash_table_add_to_table(hash_table *p_hash_table,
     aom_vector_push_back(p_hash_table->p_lookup_table[hash_value],
                          curr_block_hash);
   }
+  return true;
 }
 
 int32_t av1_hash_table_count(const hash_table *p_hash_table,
@@ -307,7 +312,7 @@ void av1_generate_block_hash_value(IntraBCHashInfo *intrabc_hash_info,
   }
 }
 
-void av1_add_to_hash_map_by_row_with_precal_data(hash_table *p_hash_table,
+bool av1_add_to_hash_map_by_row_with_precal_data(hash_table *p_hash_table,
                                                  uint32_t *pic_hash[2],
                                                  int8_t *pic_is_same,
                                                  int pic_width, int pic_height,
@@ -335,10 +340,14 @@ void av1_add_to_hash_map_by_row_with_precal_data(hash_table *p_hash_table,
         const uint32_t hash_value1 = (src_hash[0][pos] & crc_mask) + add_value;
         curr_block_hash.hash_value2 = src_hash[1][pos];
 
-        hash_table_add_to_table(p_hash_table, hash_value1, &curr_block_hash);
+        if (!hash_table_add_to_table(p_hash_table, hash_value1,
+                                     &curr_block_hash)) {
+          return false;
+        }
       }
     }
   }
+  return true;
 }
 
 int av1_hash_is_horizontal_perfect(const YV12_BUFFER_CONFIG *picture,

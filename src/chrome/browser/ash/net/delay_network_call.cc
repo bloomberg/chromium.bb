@@ -8,15 +8,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
+#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 const unsigned kDefaultNetworkRetryDelayMS = 3000;
 
@@ -55,4 +56,4 @@ void DelayNetworkCall(base::TimeDelta retry, base::OnceClosure callback) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

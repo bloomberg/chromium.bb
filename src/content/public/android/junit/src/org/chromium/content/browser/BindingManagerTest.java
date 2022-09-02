@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.process_launcher.ChildProcessConnection;
@@ -38,6 +39,7 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@LooperMode(LooperMode.Mode.LEGACY)
 public class BindingManagerTest {
     // Creates a mocked ChildProcessConnection that is optionally added to a BindingManager.
     private static ChildProcessConnection createTestChildProcessConnection(
@@ -50,7 +52,7 @@ public class BindingManagerTest {
         connection.start(false /* useStrongBinding */, null /* serviceCallback */);
         manager.addConnection(connection);
         iterable.add(connection);
-        connection.removeModerateBinding(false); // Remove initial binding.
+        connection.removeModerateBinding(); // Remove initial binding.
         return connection;
     }
 
@@ -69,8 +71,8 @@ public class BindingManagerTest {
         LauncherThread.setCurrentThreadAsLauncherThread();
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         mIterable = new ArrayList<>();
-        mManager = new BindingManager(mActivity, 4, mIterable, false);
-        mVariableManager = new BindingManager(mActivity, mIterable, false);
+        mManager = new BindingManager(mActivity, 4, mIterable);
+        mVariableManager = new BindingManager(mActivity, mIterable);
     }
 
     @After

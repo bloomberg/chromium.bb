@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CONTENT_VERIFIER_TEST_UTILS_H_
 #define CHROME_BROWSER_EXTENSIONS_CONTENT_VERIFIER_TEST_UTILS_H_
 
-#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -14,6 +13,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/corrupted_extension_reinstaller.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/content_verifier.h"

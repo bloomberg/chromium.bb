@@ -61,9 +61,9 @@ public class WebXrVrDeviceTest {
      */
     @Test
     @MediumTest
-            @CommandLineFlags.Add({"enable-features=WebXR"})
-            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testWebXrCapabilities() {
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    public void testWebXrCapabilities() {
         mWebXrVrTestFramework.loadFileAndAwaitInitialization(
                 "test_webxr_capabilities", PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.executeStepAndWait("stepCheckCapabilities('Daydream')");

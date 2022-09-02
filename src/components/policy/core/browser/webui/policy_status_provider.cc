@@ -4,6 +4,13 @@
 
 #include "components/policy/core/browser/webui/policy_status_provider.h"
 
+#include <memory>
+
+#include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/no_destructor.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -41,6 +48,14 @@ std::u16string FormatAssociationState(const em::PolicyData* data) {
   return l10n_util::GetStringUTF16(IDS_POLICY_ASSOCIATION_STATE_UNMANAGED);
 }
 
+base::Clock* clock_for_testing_ = nullptr;
+
+const base::Clock* GetClock() {
+  if (clock_for_testing_)
+    return clock_for_testing_;
+  return base::DefaultClock::GetInstance();
+}
+
 }  // namespace
 
 PolicyStatusProvider::PolicyStatusProvider() = default;
@@ -63,6 +78,7 @@ void PolicyStatusProvider::NotifyStatusChange() {
     callback_.Run();
 }
 
+// static
 void PolicyStatusProvider::GetStatusFromCore(const CloudPolicyCore* core,
                                              base::DictionaryValue* dict) {
   const CloudPolicyStore* store = core->store();
@@ -73,45 +89,71 @@ void PolicyStatusProvider::GetStatusFromCore(const CloudPolicyCore* core,
   const std::u16string status = GetPolicyStatusFromStore(store, client);
 
   const em::PolicyData* policy = store->policy();
-  std::string client_id = policy ? policy->device_id() : std::string();
-  std::string username = policy ? policy->username() : std::string();
-
-  if (policy && policy->has_annotated_asset_id())
-    dict->SetString("assetId", policy->annotated_asset_id());
-  if (policy && policy->has_annotated_location())
-    dict->SetString("location", policy->annotated_location());
-  if (policy && policy->has_directory_api_id())
-    dict->SetString("directoryApiId", policy->directory_api_id());
-  if (policy && policy->has_gaia_id())
-    dict->SetString("gaiaId", policy->gaia_id());
+  GetStatusFromPolicyData(policy, dict);
 
   base::TimeDelta refresh_interval = base::Milliseconds(
       refresh_scheduler ? refresh_scheduler->GetActualRefreshDelay()
                         : CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
 
-  // In case state_keys aren't available, we have no scheduler. See also
-  // DeviceCloudPolicyInitializer::TryToCreateClient and b/181140445
-  base::Time last_refresh_time =
-      refresh_scheduler ? refresh_scheduler->last_refresh()
-                        : policy && policy->has_timestamp()
-                              ? base::Time::FromJavaTime(policy->timestamp())
-                              : base::Time();
+  const bool is_push_available =
+      refresh_scheduler && refresh_scheduler->invalidations_available();
 
   bool no_error = store->status() == CloudPolicyStore::STATUS_OK && client &&
                   client->status() == DM_STATUS_SUCCESS;
-  dict->SetBoolean("error", !no_error);
-  dict->SetBoolean(
-      "policiesPushAvailable",
-      refresh_scheduler ? refresh_scheduler->invalidations_available() : false);
-  dict->SetString("status", status);
-  dict->SetString("clientId", client_id);
-  dict->SetString("username", username);
-  dict->SetString(
-      "refreshInterval",
-      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
-                             ui::TimeFormat::LENGTH_SHORT, refresh_interval));
-  dict->SetString("timeSinceLastRefresh",
-                  GetTimeSinceLastRefreshString(last_refresh_time));
+  dict->SetBoolKey("error", !no_error);
+  dict->SetBoolKey("policiesPushAvailable", is_push_available);
+  dict->SetStringKey("status", status);
+  // If push is on, policy update will be done via push. Hide policy fetch
+  // interval label to prevent users from misunderstanding.
+  if (!is_push_available) {
+    dict->SetStringKey(
+        "refreshInterval",
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                               ui::TimeFormat::LENGTH_SHORT, refresh_interval));
+  }
+  base::Time last_refresh_time =
+      policy && policy->has_timestamp()
+          ? base::Time::FromJavaTime(policy->timestamp())
+          : base::Time();
+  dict->SetStringKey("timeSinceLastRefresh",
+                     GetTimeSinceLastActionString(last_refresh_time));
+
+  // In case state_keys aren't available, we have no scheduler. See also
+  // DeviceCloudPolicyInitializer::TryToCreateClient and b/181140445.
+  base::Time last_fetch_attempted_time =
+      refresh_scheduler ? refresh_scheduler->last_refresh() : base::Time();
+  dict->SetStringKey("timeSinceLastFetchAttempt",
+                     GetTimeSinceLastActionString(last_fetch_attempted_time));
+}
+
+// static
+void PolicyStatusProvider::GetStatusFromPolicyData(
+    const em::PolicyData* policy,
+    base::DictionaryValue* dict) {
+  std::string client_id = policy ? policy->device_id() : std::string();
+  std::string username = policy ? policy->username() : std::string();
+
+  if (policy && policy->has_annotated_asset_id())
+    dict->SetStringKey("assetId", policy->annotated_asset_id());
+  if (policy && policy->has_annotated_location())
+    dict->SetStringKey("location", policy->annotated_location());
+  if (policy && policy->has_directory_api_id())
+    dict->SetStringKey("directoryApiId", policy->directory_api_id());
+  if (policy && policy->has_gaia_id())
+    dict->SetStringKey("gaiaId", policy->gaia_id());
+
+  dict->SetStringKey("clientId", client_id);
+  dict->SetStringKey("username", username);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Include the "Managed by:" attribute for the user policy legend.
+  if (policy->state() == enterprise_management::PolicyData::ACTIVE) {
+    if (policy->has_managed_by())
+      dict->SetStringKey("enterpriseDomainManager", policy->managed_by());
+    else if (policy->has_display_domain())
+      dict->SetStringKey("enterpriseDomainManager", policy->display_domain());
+  }
+#endif
 }
 
 // CloudPolicyStore errors take precedence to show in the status message.
@@ -132,16 +174,25 @@ std::u16string PolicyStatusProvider::GetPolicyStatusFromStore(
 }
 
 // static
-std::u16string PolicyStatusProvider::GetTimeSinceLastRefreshString(
-    base::Time last_refresh_time) {
-  if (last_refresh_time.is_null())
+std::u16string PolicyStatusProvider::GetTimeSinceLastActionString(
+    base::Time last_action_time) {
+  if (last_action_time.is_null())
     return l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED);
-  base::Time now = base::Time::NowFromSystemTime();
+  base::Time now = GetClock()->Now();
   base::TimeDelta elapsed_time;
-  if (now > last_refresh_time)
-    elapsed_time = now - last_refresh_time;
+  if (now > last_action_time)
+    elapsed_time = now - last_action_time;
   return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
                                 ui::TimeFormat::LENGTH_SHORT, elapsed_time);
+}
+
+// static
+base::ScopedClosureRunner PolicyStatusProvider::OverrideClockForTesting(
+    base::Clock* clock_for_testing) {
+  CHECK(!clock_for_testing_);
+  clock_for_testing_ = clock_for_testing;
+  return base::ScopedClosureRunner(
+      base::BindOnce([]() { clock_for_testing_ = nullptr; }));
 }
 
 }  // namespace policy

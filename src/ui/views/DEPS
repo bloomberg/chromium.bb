@@ -1,4 +1,5 @@
 include_rules = [
+  "+ash/constants",
   "+cc/paint",
   "+components/crash/core/common/crash_key.h",
   "+components/remote_cocoa",
@@ -49,5 +50,6 @@ specific_include_rules = {
   ],
   ".*test\.cc": [
     "+cc/base",
+    "+cc/test",
   ]
 }

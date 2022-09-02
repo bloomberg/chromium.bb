@@ -73,6 +73,12 @@ void LogUnconsentedOutcome(TailoredSecurityOutcome outcome) {
       outcome);
 }
 
+message_center::NotifierId GetNotifierId() {
+  return message_center::NotifierId(
+      message_center::NotifierType::SYSTEM_COMPONENT,
+      kTailoredSecurityNotifierId);
+}
+
 }  // namespace
 
 TailoredSecurityNotificationHandler::TailoredSecurityNotificationHandler() =
@@ -143,15 +149,8 @@ void TailoredSecurityNotificationHandler::OnClick(
 
 void DisplayTailoredSecurityConsentedModalDesktop(Profile* profile,
                                                   bool enable) {
-  Browser* browser = chrome::FindLastActiveWithProfile(profile);
-  if (!browser)
-    return;
-
-  const ui::ColorProvider* color_provider =
-      browser->window()->GetColorProvider();
-
   std::u16string title, description, primary_button, secondary_button;
-  gfx::Image icon;
+  ui::ImageModel icon;
   std::string notification_id;
   if (enable) {
     notification_id = kTailoredSecurityEnableNotificationId;
@@ -164,9 +163,9 @@ void DisplayTailoredSecurityConsentedModalDesktop(Profile* profile,
     secondary_button = l10n_util::GetStringUTF16(IDS_NO_THANKS);
     // TODO(crbug/1257621): Confirm with UX that it's appropriate to use the
     // blue color here.
-    SkColor icon_color = color_provider->GetColor(ui::kColorAccent);
-    icon = gfx::Image(gfx::CreateVectorIcon(
-        kSafetyCheckIcon, message_center::kNotificationIconSize, icon_color));
+    icon =
+        ui::ImageModel::FromVectorIcon(kSafetyCheckIcon, ui::kColorAccent,
+                                       message_center::kNotificationIconSize);
   } else {
     notification_id = kTailoredSecurityDisableNotificationId;
     title = l10n_util::GetStringUTF16(
@@ -176,20 +175,16 @@ void DisplayTailoredSecurityConsentedModalDesktop(Profile* profile,
     primary_button = l10n_util::GetStringUTF16(
         IDS_TAILORED_SECURITY_CONSENTED_DISABLE_NOTIFICATION_TURN_OFF);
     secondary_button = l10n_util::GetStringUTF16(IDS_NO_THANKS);
-    SkColor icon_color =
-        color_provider->GetColor(ui::kColorSecondaryForeground);
-    icon = gfx::Image(gfx::CreateVectorIcon(
-        vector_icons::kGppMaybeIcon, message_center::kNotificationIconSize,
-        icon_color));
+    icon = ui::ImageModel::FromVectorIcon(
+        vector_icons::kGppMaybeIcon, ui::kColorSecondaryForeground,
+        message_center::kNotificationIconSize);
   }
   LogConsentedOutcome(TailoredSecurityOutcome::kShown, enable);
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
       description, icon,
       l10n_util::GetStringUTF16(IDS_TAILORED_SECURITY_DISPLAY_SOURCE),
-      GURL(kTailoredSecurityNotificationOrigin),
-      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
-                                 kTailoredSecurityNotifierId),
+      GURL(kTailoredSecurityNotificationOrigin), GetNotifierId(),
       message_center::RichNotificationData(),
       /*delegate=*/nullptr);
   notification.set_buttons({message_center::ButtonInfo(primary_button),
@@ -200,13 +195,6 @@ void DisplayTailoredSecurityConsentedModalDesktop(Profile* profile,
 }
 
 void DisplayTailoredSecurityUnconsentedPromotionNotification(Profile* profile) {
-  Browser* browser = chrome::FindLastActiveWithProfile(profile);
-  if (!browser)
-    return;
-
-  const ui::ColorProvider* color_provider =
-      browser->window()->GetColorProvider();
-
   std::string notification_id =
       kTailoredSecurityUnconsentedPromotionNotificationId;
   const std::u16string& title = l10n_util::GetStringUTF16(
@@ -219,17 +207,15 @@ void DisplayTailoredSecurityUnconsentedPromotionNotification(Profile* profile) {
       l10n_util::GetStringUTF16(IDS_NO_THANKS);
   // TODO(crbug/1257622): Confirm with UX that it's appropriate to use the
   // blue color here.
-  SkColor icon_color = color_provider->GetColor(ui::kColorAccent);
-  gfx::Image icon = gfx::Image(gfx::CreateVectorIcon(
-      kSafetyCheckIcon, message_center::kNotificationIconSize, icon_color));
+  auto icon =
+      ui::ImageModel::FromVectorIcon(kSafetyCheckIcon, ui::kColorAccent,
+                                     message_center::kNotificationIconSize);
   LogUnconsentedOutcome(TailoredSecurityOutcome::kShown);
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
       description, icon,
       l10n_util::GetStringUTF16(IDS_TAILORED_SECURITY_DISPLAY_SOURCE),
-      GURL(kTailoredSecurityNotificationOrigin),
-      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
-                                 kTailoredSecurityNotifierId),
+      GURL(kTailoredSecurityNotificationOrigin), GetNotifierId(),
       message_center::RichNotificationData(),
       /*delegate=*/nullptr);
   notification.set_buttons({message_center::ButtonInfo(primary_button),

@@ -89,12 +89,8 @@ bool PageWidgetFilter(CXFA_FFWidget* pWidget,
   return pItem->TestStatusBits(dwFilter);
 }
 
-bool IsLayoutElement(XFA_Element eElement, bool bLayoutContainer) {
+bool IsLayoutElement(XFA_Element eElement) {
   switch (eElement) {
-    case XFA_Element::Draw:
-    case XFA_Element::Field:
-    case XFA_Element::InstanceManager:
-      return !bLayoutContainer;
     case XFA_Element::Area:
     case XFA_Element::Subform:
     case XFA_Element::ExclGroup:
@@ -207,7 +203,7 @@ void OrderContainer(CXFA_LayoutItemIterator* sIterator,
         break;
       }
       tabParams.emplace_back(hWidget);
-      if (IsLayoutElement(pSearchItem->GetFormNode()->GetElementType(), true)) {
+      if (IsLayoutElement(pSearchItem->GetFormNode()->GetElementType())) {
         OrderContainer(sIterator, pSearchItem, &tabParams.back(), bCurrentItem,
                        bContentArea, bMasterPage);
       }
@@ -414,7 +410,8 @@ bool CXFA_FFTabOrderPageWidgetIterator::SetCurrentWidget(
   if (it == m_TabOrderWidgetArray.end())
     return false;
 
-  m_iCurWidget = it - m_TabOrderWidgetArray.begin();
+  m_iCurWidget =
+      pdfium::base::checked_cast<int32_t>(it - m_TabOrderWidgetArray.begin());
   return true;
 }
 

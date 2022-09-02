@@ -29,7 +29,9 @@
 #include "services/viz/public/cpp/compositing/shared_quad_state_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/surface_range_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/quads.mojom-shared.h"
+#include "skia/public/mojom/skcolor4f_mojom_traits.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/hdr_metadata.h"
@@ -119,31 +121,30 @@ struct UnionTraits<viz::mojom::DrawQuadStateDataView, viz::DrawQuad> {
       case viz::DrawQuad::Material::kAggregatedRenderPass:
         break;
       case viz::DrawQuad::Material::kDebugBorder:
-        return viz::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kDebugBorderQuadState;
       case viz::DrawQuad::Material::kPictureContent:
         break;
       case viz::DrawQuad::Material::kCompositorRenderPass:
-        return viz::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kRenderPassQuadState;
       case viz::DrawQuad::Material::kSolidColor:
-        return viz::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kSolidColorQuadState;
       case viz::DrawQuad::Material::kStreamVideoContent:
-        return viz::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kStreamVideoQuadState;
       case viz::DrawQuad::Material::kSurfaceContent:
-        return viz::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kSurfaceQuadState;
       case viz::DrawQuad::Material::kTextureContent:
-        return viz::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kTextureQuadState;
       case viz::DrawQuad::Material::kTiledContent:
-        return viz::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kTileQuadState;
       case viz::DrawQuad::Material::kVideoHole:
-        return viz::mojom::DrawQuadStateDataView::Tag::VIDEO_HOLE_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kVideoHoleQuadState;
       case viz::DrawQuad::Material::kYuvVideoContent:
-        return viz::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kYuvVideoQuadState;
       case viz::DrawQuad::Material::kSharedElement:
-        return viz::mojom::DrawQuadStateDataView::Tag::
-            SHARED_ELEMENT_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::kSharedElementQuadState;
     }
     NOTREACHED();
-    return viz::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
+    return viz::mojom::DrawQuadStateDataView::Tag::kDebugBorderQuadState;
   }
 
   static const viz::DrawQuad& debug_border_quad_state(
@@ -193,25 +194,25 @@ struct UnionTraits<viz::mojom::DrawQuadStateDataView, viz::DrawQuad> {
 
   static bool Read(viz::mojom::DrawQuadStateDataView data, viz::DrawQuad* out) {
     switch (data.tag()) {
-      case viz::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kDebugBorderQuadState:
         return data.ReadDebugBorderQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kRenderPassQuadState:
         return data.ReadRenderPassQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kSolidColorQuadState:
         return data.ReadSolidColorQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kSurfaceQuadState:
         return data.ReadSurfaceQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kTextureQuadState:
         return data.ReadTextureQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kTileQuadState:
         return data.ReadTileQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kStreamVideoQuadState:
         return data.ReadStreamVideoQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::VIDEO_HOLE_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kVideoHoleQuadState:
         return data.ReadVideoHoleQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kYuvVideoQuadState:
         return data.ReadYuvVideoQuadState(out);
-      case viz::mojom::DrawQuadStateDataView::Tag::SHARED_ELEMENT_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::kSharedElementQuadState:
         return data.ReadSharedElementQuadState(out);
     }
     NOTREACHED();
@@ -247,7 +248,7 @@ struct StructTraits<viz::mojom::VideoHoleQuadStateDataView, viz::DrawQuad> {
 
 template <>
 struct StructTraits<viz::mojom::DebugBorderQuadStateDataView, viz::DrawQuad> {
-  static uint32_t color(const viz::DrawQuad& input) {
+  static SkColor4f color(const viz::DrawQuad& input) {
     const viz::DebugBorderDrawQuad* quad =
         viz::DebugBorderDrawQuad::MaterialCast(&input);
     return quad->color;
@@ -334,7 +335,7 @@ struct StructTraits<viz::mojom::CompositorRenderPassQuadStateDataView,
 
 template <>
 struct StructTraits<viz::mojom::SolidColorQuadStateDataView, viz::DrawQuad> {
-  static uint32_t color(const viz::DrawQuad& input) {
+  static SkColor4f color(const viz::DrawQuad& input) {
     const viz::SolidColorDrawQuad* quad =
         viz::SolidColorDrawQuad::MaterialCast(&input);
     return quad->color;
@@ -388,7 +389,7 @@ struct StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad> {
     return quad->surface_range;
   }
 
-  static uint32_t default_background_color(const viz::DrawQuad& input) {
+  static const SkColor4f default_background_color(const viz::DrawQuad& input) {
     const viz::SurfaceDrawQuad* quad =
         viz::SurfaceDrawQuad::MaterialCast(&input);
     return quad->default_background_color;
@@ -448,7 +449,7 @@ struct StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad> {
     return quad->uv_bottom_right;
   }
 
-  static uint32_t background_color(const viz::DrawQuad& input) {
+  static SkColor4f background_color(const viz::DrawQuad& input) {
     const viz::TextureDrawQuad* quad =
         viz::TextureDrawQuad::MaterialCast(&input);
     return quad->background_color;

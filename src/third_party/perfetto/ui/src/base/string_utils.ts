@@ -15,12 +15,12 @@
 import {
   decode as b64Decode,
   encode as b64Encode,
-  length as b64Len
+  length as b64Len,
 } from '@protobufjs/base64';
 import {
   length as utf8Len,
   read as utf8Read,
-  write as utf8Write
+  write as utf8Write,
 } from '@protobufjs/utf8';
 
 import {assertTrue} from './logging';
@@ -46,7 +46,7 @@ try {
       const written = utf8Write(str, arr, 0);
       assertTrue(written === arr.length);
       return arr;
-    }
+    },
   };
 }
 
@@ -55,10 +55,18 @@ export function base64Encode(buffer: Uint8Array): string {
 }
 
 export function base64Decode(str: string): Uint8Array {
-  const arr = new Uint8Array(b64Len(str));
-  const written = b64Decode(str, arr, 0);
+  // if the string is in base64url format, convert to base64
+  const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const arr = new Uint8Array(b64Len(b64));
+  const written = b64Decode(b64, arr, 0);
   assertTrue(written === arr.length);
   return arr;
+}
+
+// encode binary array to hex string
+export function hexEncode(bytes: Uint8Array): string {
+  return bytes.reduce(
+      (prev, cur) => prev + ('0' + cur.toString(16)).slice(-2), '');
 }
 
 export function utf8Encode(str: string): Uint8Array {
@@ -95,4 +103,15 @@ export function binaryDecode(str: string): Uint8Array {
     buf[i] = str.charCodeAt(i);
   }
   return buf;
+}
+
+// A function used to interpolate strings into SQL query. The only replacement
+// is done is that single quote replaced with two single quotes, according to
+// SQLite documentation:
+// https://www.sqlite.org/lang_expr.html#literal_values_constants_
+//
+// The purpose of this function is to use in simple comparisons, to escape
+// strings used in GLOB clauses see escapeQuery function.
+export function sqliteString(str: string): string {
+  return `'${str.replace('\'', '\'\'')}'`;
 }

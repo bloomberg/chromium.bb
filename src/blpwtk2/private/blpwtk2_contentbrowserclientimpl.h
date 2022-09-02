@@ -68,7 +68,7 @@ class ContentBrowserClientImpl final : public content::ContentBrowserClient {
     // before the content layer adds its own BrowserMessageFilters, so
     // that the embedder's IPC filters have priority.
     std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
-        content::MainFunctionParams parameters) override;
+        bool is_integration_test) override;
         // A non-nullptr return value is needed because
         // BrowserMainLoop::PreShutdown() assumes a non-nullptr
 
@@ -95,8 +95,8 @@ class ContentBrowserClientImpl final : public content::ContentBrowserClient {
         // return true, they must also implement StartInProcessRendererThread
         // and StopInProcessRendererThread.
 
-    content::WebContentsViewDelegate *GetWebContentsViewDelegate(
-        content::WebContents *webContents) override;
+    std::unique_ptr<content::WebContentsViewDelegate>
+    GetWebContentsViewDelegate(content::WebContents *webContents) override;
         // If content creates the WebContentsView implementation, it will ask
         // the embedder to return an (optional) delegate to customize it. The
         // view will own the delegate.
@@ -115,10 +115,9 @@ class ContentBrowserClientImpl final : public content::ContentBrowserClient {
         blink::AssociatedInterfaceRegistry* associated_registry,
         content::RenderProcessHost* render_process_host) override;
 
-    bool BindAssociatedReceiverFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedInterfaceEndpointHandle* handle) override;
+    void RegisterAssociatedInterfaceBindersForRenderFrameHost(
+      content::RenderFrameHost& render_frame_host,
+      blink::AssociatedInterfaceRegistry& associated_registry) override;
 
     // Start the in-process renderer thread.  This will only ever be called if
     // SupportsInProcessRenderer() returns true.
@@ -144,6 +143,7 @@ class ContentBrowserClientImpl final : public content::ContentBrowserClient {
     void RegisterNonNetworkSubresourceURLLoaderFactories(
         int render_process_id,
         int render_frame_id,
+        const absl::optional<url::Origin>& request_initiator_origin,
         content::ContentBrowserClient::NonNetworkURLLoaderFactoryMap* factories) override;
 
 };

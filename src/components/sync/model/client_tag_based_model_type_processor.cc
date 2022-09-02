@@ -10,24 +10,25 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/data_type_histogram.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/data_type_activation_response.h"
-#include "components/sync/engine/entity_data.h"
 #include "components/sync/engine/model_type_processor_metrics.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model/client_tag_based_remote_update_handler.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/processor_entity.h"
 #include "components/sync/model/type_entities_count.h"
+#include "components/sync/protocol/entity_data.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -40,8 +41,8 @@ const char kErrorSiteHistogramPrefix[] = "Sync.ModelTypeErrorSite.";
 size_t CountDuplicateClientTags(const EntityMetadataMap& metadata_map) {
   size_t count = 0u;
   std::set<std::string> client_tag_hashes;
-  for (const auto& kv : metadata_map) {
-    const std::string& client_tag_hash = kv.second->client_tag_hash();
+  for (const auto& [storage_key, metadata] : metadata_map) {
+    const std::string& client_tag_hash = metadata->client_tag_hash();
     if (client_tag_hashes.find(client_tag_hash) != client_tag_hashes.end()) {
       count++;
     }
@@ -78,11 +79,11 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
     const DataTypeActivationRequest& request,
     StartCallback start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
-  DCHECK(request.IsValid()) << ModelTypeToString(type_);
-  DCHECK(start_callback) << ModelTypeToString(type_);
-  DCHECK(!start_callback_) << ModelTypeToString(type_);
-  DCHECK(!IsConnected()) << ModelTypeToString(type_);
+  DVLOG(1) << "Sync is starting for " << ModelTypeToDebugString(type_);
+  DCHECK(request.IsValid()) << ModelTypeToDebugString(type_);
+  DCHECK(start_callback) << ModelTypeToDebugString(type_);
+  DCHECK(!start_callback_) << ModelTypeToDebugString(type_);
+  DCHECK(!IsConnected()) << ModelTypeToDebugString(type_);
 
   start_callback_ = std::move(start_callback);
   activation_request_ = request;
@@ -125,7 +126,7 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     // TODO(crbug.com/872360): This DCHECK can currently trigger if the user's
     // persisted Sync metadata is in an inconsistent state.
     DCHECK(commit_only_ || batch->TakeAllMetadata().empty())
-        << ModelTypeToString(type_);
+        << ModelTypeToDebugString(type_);
   }
 
   DCHECK(model_ready_to_sync_);
@@ -252,8 +253,7 @@ void ClientTagBasedModelTypeProcessor::ClearAllProvidedMetadataAndResetState(
     const EntityMetadataMap& metadata_map) {
   std::unique_ptr<MetadataChangeList> change_list =
       bridge_->CreateMetadataChangeList();
-  for (const auto& kv : metadata_map) {
-    const std::string& storage_key = kv.first;
+  for (const auto& [storage_key, metadata] : metadata_map) {
     change_list->ClearMetadata(storage_key);
   }
   change_list->ClearModelTypeState();
@@ -355,7 +355,7 @@ ClientTagBasedModelTypeProcessor::GetControllerDelegate() {
 void ClientTagBasedModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> worker) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
+  DVLOG(1) << "Successfully connected " << ModelTypeToDebugString(type_);
 
   worker_ = std::move(worker);
 
@@ -366,7 +366,7 @@ void ClientTagBasedModelTypeProcessor::DisconnectSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsConnected());
 
-  DVLOG(1) << "Disconnecting sync for " << ModelTypeToString(type_);
+  DVLOG(1) << "Disconnecting sync for " << ModelTypeToDebugString(type_);
   weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
   worker_.reset();
 
@@ -392,6 +392,10 @@ void ClientTagBasedModelTypeProcessor::Put(
     // Ignore changes before the initial sync is done.
     return;
   }
+  // |data->specifics| is about to be committed, and therefore represents the
+  // imminent server-side state in most cases.
+  sync_pb::EntitySpecifics trimmed_specifics =
+      bridge_->TrimRemoteSpecificsForCaching(data->specifics);
 
   ProcessorEntity* entity =
       entity_tracker_->GetEntityForStorageKey(storage_key);
@@ -430,19 +434,25 @@ void ClientTagBasedModelTypeProcessor::Put(
       metadata_change_list->ClearMetadata(entity->storage_key());
       entity_tracker_->UpdateOrOverrideStorageKey(data->client_tag_hash,
                                                   storage_key);
+      entity->RecordLocalUpdate(std::move(data), std::move(trimmed_specifics));
     } else {
       if (data->creation_time.is_null())
         data->creation_time = base::Time::Now();
       if (data->modification_time.is_null())
         data->modification_time = data->creation_time;
-      entity = CreateEntity(storage_key, *data);
+
+      entity = entity_tracker_->AddUnsyncedLocal(storage_key, std::move(data),
+                                                 std::move(trimmed_specifics));
     }
   } else if (entity->MatchesData(*data)) {
     // Ignore changes that don't actually change anything.
     return;
+  } else {
+    entity->RecordLocalUpdate(std::move(data), std::move(trimmed_specifics));
   }
 
-  entity->MakeLocalChange(std::move(data));
+  DCHECK(entity->IsUnsynced());
+
   metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
 
   NudgeForCommitIfNeeded();
@@ -466,7 +476,7 @@ void ClientTagBasedModelTypeProcessor::Delete(
     return;
   }
 
-  if (entity->Delete())
+  if (entity->RecordLocalDeletion())
     metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
   else
     RemoveEntity(entity->storage_key(), metadata_change_list);
@@ -620,7 +630,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
 
   DCHECK(entity_tracker_)
       << "Received commit response when entity tracker is null. Type: "
-      << ModelTypeToString(type_);
+      << ModelTypeToDebugString(type_);
 
   // |error_response_list| is ignored, because all errors are treated as
   // transientand the processor with eventually retry.
@@ -638,7 +648,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
         entity_tracker_->GetEntityForTagHash(data.client_tag_hash);
     if (entity == nullptr) {
       NOTREACHED() << "Received commit response for missing item."
-                   << " type: " << ModelTypeToString(type_)
+                   << " type: " << ModelTypeToDebugString(type_)
                    << " client_tag_hash: " << data.client_tag_hash;
       continue;
     }
@@ -859,7 +869,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
           UpdateDropReason::kTombstoneInFullUpdate, type_);
       DLOG(WARNING) << "Ignoring tombstone found during initial update: "
                     << "client_tag_hash = " << client_tag_hash << " for "
-                    << ModelTypeToString(type_);
+                    << ModelTypeToDebugString(type_);
       continue;
     }
     if (bridge_->SupportsGetClientTag() &&
@@ -868,7 +878,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
       SyncRecordModelTypeUpdateDropReason(
           UpdateDropReason::kInconsistentClientTag, type_);
       DLOG(WARNING) << "Received unexpected client tag hash: "
-                    << client_tag_hash << " for " << ModelTypeToString(type_);
+                    << client_tag_hash << " for "
+                    << ModelTypeToDebugString(type_);
       continue;
     }
 
@@ -879,7 +890,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
         SyncRecordModelTypeUpdateDropReason(
             UpdateDropReason::kCannotGenerateStorageKey, type_);
         DLOG(WARNING) << "Received entity with invalid update for "
-                      << ModelTypeToString(type_);
+                      << ModelTypeToDebugString(type_);
         continue;
       }
     }
@@ -889,11 +900,12 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     // does.
     if (entity_tracker_->GetEntityForTagHash(client_tag_hash)) {
       DLOG(ERROR) << "Received duplicate client_tag_hash " << client_tag_hash
-                  << " for " << ModelTypeToString(type_);
+                  << " for " << ModelTypeToDebugString(type_);
     }
 #endif  // DCHECK_IS_ON()
-    ProcessorEntity* entity = CreateEntity(storage_key, update.entity);
-    entity->RecordAcceptedUpdate(update);
+    ProcessorEntity* entity = entity_tracker_->AddRemote(
+        storage_key, update,
+        bridge_->TrimRemoteSpecificsForCaching(update.entity.specifics));
     entity_data.push_back(
         EntityChange::CreateAdd(storage_key, std::move(update.entity)));
     if (!storage_key.empty())
@@ -940,8 +952,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK(entity_tracker_);
   while (data_batch->HasNext()) {
-    KeyAndData data = data_batch->Next();
-    const std::string& storage_key = data.first;
+    auto [storage_key, data] = data_batch->Next();
 
     storage_keys_to_load.erase(storage_key);
     ProcessorEntity* entity =
@@ -950,7 +961,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     if (entity != nullptr && entity->RequiresCommitData()) {
       // SetCommitData will update EntityData's fields with values from
       // metadata.
-      entity->SetCommitData(std::move(data.second));
+      entity->SetCommitData(std::move(data));
     }
   }
 
@@ -1014,15 +1025,6 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
     }
   }
   std::move(callback).Run(std::move(commit_requests));
-}
-
-ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
-    const std::string& storage_key,
-    const EntityData& data) {
-  DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
-  DCHECK(entity_tracker_);
-  ProcessorEntity* entity_ptr = entity_tracker_->Add(storage_key, data);
-  return entity_ptr;
 }
 
 size_t ClientTagBasedModelTypeProcessor::EstimateMemoryUsage() const {
@@ -1110,17 +1112,16 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
     std::unique_ptr<DataBatch> batch) {
   std::unique_ptr<base::ListValue> all_nodes =
       std::make_unique<base::ListValue>();
-  std::string type_string = ModelTypeToString(type_);
+  std::string type_string = ModelTypeToDebugString(type_);
 
   while (batch->HasNext()) {
-    KeyAndData key_and_data = batch->Next();
-    std::unique_ptr<EntityData> data = std::move(key_and_data.second);
+    auto [storage_key, data] = batch->Next();
 
     // There is an overlap between EntityData fields from the bridge and
     // EntityMetadata fields from the processor's entity, metadata is
     // the authoritative source of truth.
     const ProcessorEntity* entity =
-        entity_tracker_->GetEntityForStorageKey(key_and_data.first);
+        entity_tracker_->GetEntityForStorageKey(storage_key);
     // |entity| could be null if there are some unapplied changes.
     if (entity != nullptr) {
       const sync_pb::EntityMetadata& metadata = entity->metadata();
@@ -1133,29 +1134,28 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
     }
 
     std::unique_ptr<base::DictionaryValue> node = data->ToDictionaryValue();
-    node->SetString("modelType", type_string);
+    node->SetStringKey("modelType", type_string);
     // Copy the whole metadata message into the dictionary (if existing).
     if (entity != nullptr) {
       node->Set("metadata", EntityMetadataToValue(entity->metadata()));
     }
-    all_nodes->Append(std::move(node));
+    all_nodes->Append(base::Value::FromUniquePtrValue(std::move(node)));
   }
 
   // Create a permanent folder for this data type. Since sync server no longer
   // creates root folders, and USS won't migrate root folders from the
   // Directory, we create root folders for each data type here.
-  std::unique_ptr<base::DictionaryValue> rootnode =
-      std::make_unique<base::DictionaryValue>();
+  base::Value::Dict rootnode;
   // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
   // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
   // sync_node_browser.js uses modelType to check if root node is parent of real
   // data node. NON_UNIQUE_NAME will be the name of node to display.
-  rootnode->SetString("PARENT_ID", "r");
-  rootnode->SetString("UNIQUE_SERVER_TAG", type_string);
-  rootnode->SetBoolean("IS_DIR", true);
-  rootnode->SetString("modelType", type_string);
-  rootnode->SetString("NON_UNIQUE_NAME", type_string);
-  all_nodes->Append(std::move(rootnode));
+  rootnode.Set("PARENT_ID", "r");
+  rootnode.Set("UNIQUE_SERVER_TAG", type_string);
+  rootnode.Set("IS_DIR", true);
+  rootnode.Set("modelType", type_string);
+  rootnode.Set("NON_UNIQUE_NAME", type_string);
+  all_nodes->Append(base::Value(std::move(rootnode)));
 
   std::move(callback).Run(type_, std::move(all_nodes));
 }
@@ -1233,6 +1233,23 @@ void ClientTagBasedModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
       entity_tracker_ == nullptr ? 0
                                  : entity_tracker_->CountNonTombstoneEntries();
   SyncRecordModelTypeCountHistogram(type_, non_tombstone_entries_count);
+}
+
+const sync_pb::EntitySpecifics&
+ClientTagBasedModelTypeProcessor::GetPossiblyTrimmedRemoteSpecifics(
+    const std::string& storage_key) const {
+  DCHECK(entity_tracker_);
+  DCHECK(!storage_key.empty());
+  if (!base::FeatureList::IsEnabled(
+          syncer::kCacheBaseEntitySpecificsInMetadata)) {
+    return sync_pb::EntitySpecifics::default_instance();
+  }
+  ProcessorEntity* entity =
+      entity_tracker_->GetEntityForStorageKey(storage_key);
+  if (entity == nullptr) {
+    return sync_pb::EntitySpecifics::default_instance();
+  }
+  return entity->metadata().possibly_trimmed_base_specifics();
 }
 
 }  // namespace syncer

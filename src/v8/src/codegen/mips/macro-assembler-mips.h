@@ -350,7 +350,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // Registers are saved in numerical order, with higher numbered registers
   // saved in higher memory addresses.
   void MultiPush(RegList regs);
-  void MultiPushFPU(RegList regs);
+  void MultiPushFPU(DoubleRegList regs);
 
   // Calculate how much stack space (in bytes) are required to store caller
   // registers excluding those specified in the arguments.
@@ -398,7 +398,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // Pops multiple values from the stack and load them in the
   // registers specified in regs. Pop order is the opposite as in MultiPush.
   void MultiPop(RegList regs);
-  void MultiPopFPU(RegList regs);
+  void MultiPopFPU(DoubleRegList regs);
 
   // Load Scaled Address instructions. Parameter sa (shift argument) must be
   // between [1, 31] (inclusive). On pre-r6 architectures the scratch register
@@ -754,8 +754,12 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
     Mthc1(src_high, dst);
   }
 
-  void Move(FPURegister dst, float imm) { Move(dst, bit_cast<uint32_t>(imm)); }
-  void Move(FPURegister dst, double imm) { Move(dst, bit_cast<uint64_t>(imm)); }
+  void Move(FPURegister dst, float imm) {
+    Move(dst, base::bit_cast<uint32_t>(imm));
+  }
+  void Move(FPURegister dst, double imm) {
+    Move(dst, base::bit_cast<uint64_t>(imm));
+  }
   void Move(FPURegister dst, uint32_t src);
   void Move(FPURegister dst, uint64_t src);
 
@@ -930,6 +934,11 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   // Swap two registers.  If the scratch register is omitted then a slightly
   // less efficient form using xor instead of mov is emitted.
   void Swap(Register reg1, Register reg2, Register scratch = no_reg);
+
+  void TestCodeTIsMarkedForDeoptimizationAndJump(Register codet,
+                                                 Register scratch,
+                                                 Condition cond, Label* target);
+  Operand ClearedValue() const;
 
   void PushRoot(RootIndex index) {
     UseScratchRegisterScope temps(this);
@@ -1163,13 +1172,6 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   void InvokePrologue(Register expected_parameter_count,
                       Register actual_parameter_count, Label* done,
                       InvokeType type);
-
-  // Compute memory operands for safepoint stack slots.
-  static int SafepointRegisterStackIndex(int reg_code);
-
-  // Needs access to SafepointRegisterStackIndex for compiled frame
-  // traversal.
-  friend class CommonFrame;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MacroAssembler);
 };

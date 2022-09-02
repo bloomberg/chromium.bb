@@ -169,6 +169,16 @@ def move_runtime(runtime_cache_folder, xcode_app_path, into_xcode):
   return
 
 
+def remove_runtimes(xcode_app_path):
+  """Removes all runtimes in given xcode path."""
+  runtimes = glob.glob(
+      os.path.join(xcode_app_path, XcodeIOSSimulatorRuntimeRelPath,
+                   '*.simruntime'))
+  for runtime in runtimes:
+    LOGGER.warning('Removing existing %s in xcode.', runtime)
+    shutil.rmtree(runtime)
+
+
 def select(xcode_app_path):
   """Invokes sudo xcode-select -s {xcode_app_path}
 
@@ -319,8 +329,7 @@ def version():
   ]
   LOGGER.debug('Checking XCode version with command: %s' % cmd)
 
-  output = subprocess.check_output(
-      cmd, stderr=subprocess.STDOUT).decode('utf-8')
+  output = subprocess.check_output(cmd).decode('utf-8')
   output = output.splitlines()
   # output sample:
   # Xcode 12.0

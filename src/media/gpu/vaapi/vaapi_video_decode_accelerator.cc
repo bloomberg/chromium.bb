@@ -31,7 +31,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
 #include "media/base/media_log.h"
-#include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_util.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/h264_decoder.h"
@@ -522,7 +521,7 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 
       case AcceleratedVideoDecoder::kNeedContextUpdate:
         // This should not happen as we return false from
-        // IsFrameContextRequired().
+        // NeedsCompressedHeaderParsed().
         NOTREACHED() << "Context updates not supported";
         return;
 

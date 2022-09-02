@@ -10,11 +10,11 @@
 #include "include/core/SkSurfaceCharacterization.h"
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkAutoPixmapStorage.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/SurfaceFillContext.h"
-#include "src/gpu/effects/GrBlendFragmentProcessor.h"
-#include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/SurfaceFillContext.h"
+#include "src/gpu/ganesh/effects/GrBlendFragmentProcessor.h"
+#include "src/gpu/ganesh/effects/GrTextureEffect.h"
 #include "src/image/SkImage_Base.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
@@ -23,15 +23,15 @@
 #include "tools/gpu/ProxyUtils.h"
 
 #ifdef SK_GL
-#include "src/gpu/gl/GrGLCaps.h"
-#include "src/gpu/gl/GrGLDefines.h"
-#include "src/gpu/gl/GrGLGpu.h"
-#include "src/gpu/gl/GrGLUtil.h"
+#include "src/gpu/ganesh/gl/GrGLCaps.h"
+#include "src/gpu/ganesh/gl/GrGLDefines_impl.h"
+#include "src/gpu/ganesh/gl/GrGLGpu.h"
+#include "src/gpu/ganesh/gl/GrGLUtil.h"
 #endif
 
 #ifdef SK_METAL
 #include "include/gpu/mtl/GrMtlTypes.h"
-#include "src/gpu/mtl/GrMtlCppUtil.h"
+#include "src/gpu/ganesh/mtl/GrMtlCppUtil.h"
 #endif
 
 using sk_gpu_test::ManagedBackendTexture;
@@ -43,16 +43,16 @@ void test_wrapping(GrDirectContext* dContext,
                                                               GrMipmapped,
                                                               GrRenderable)> create,
                    GrColorType grColorType,
-                   GrMipmapped mipMapped,
+                   GrMipmapped mipmapped,
                    GrRenderable renderable) {
     GrResourceCache* cache = dContext->priv().getResourceCache();
 
     const int initialCount = cache->getResourceCount();
 
-    sk_sp<ManagedBackendTexture> mbet = create(dContext, mipMapped, renderable);
+    sk_sp<ManagedBackendTexture> mbet = create(dContext, mipmapped, renderable);
     if (!mbet) {
         ERRORF(reporter, "Couldn't create backendTexture for grColorType %d renderable %s\n",
-               grColorType,
+               (int)grColorType,
                GrRenderable::kYes == renderable ? "yes" : "no");
         return;
     }
@@ -108,9 +108,9 @@ void test_wrapping(GrDirectContext* dContext,
             GrTextureProxy* proxy = sk_gpu_test::GetTextureImageProxy(img.get(), dContext);
             REPORTER_ASSERT(reporter, proxy);
 
-            REPORTER_ASSERT(reporter, mipMapped == proxy->proxyMipmapped());
+            REPORTER_ASSERT(reporter, mipmapped == proxy->proxyMipmapped());
             REPORTER_ASSERT(reporter, proxy->isInstantiated());
-            REPORTER_ASSERT(reporter, mipMapped == proxy->mipmapped());
+            REPORTER_ASSERT(reporter, mipmapped == proxy->mipmapped());
 
             REPORTER_ASSERT(reporter,
                             initialCount + cacheEntriesPerProxy == cache->getResourceCount());
@@ -285,7 +285,8 @@ static void check_base_readbacks(GrDirectContext* dContext,
         GrColorInfo info(colorType, kUnpremul_SkAlphaType, nullptr);
         auto surfaceContext = dContext->priv().makeSC(readView, info);
         if (!surfaceContext) {
-            ERRORF(reporter, "Could not create surface context for colorType: %d\n", colorType);
+            ERRORF(reporter, "Could not create surface context for colorType: %d\n",
+                   (int)colorType);
         }
 
         if (!surfaceContext->readPixels(dContext, actual, {0, 0})) {
@@ -293,7 +294,7 @@ static void check_base_readbacks(GrDirectContext* dContext,
             // arbitrary colorType
 #if 0
             ERRORF(reporter, "Couldn't readback from SurfaceContext for colorType: %d\n",
-                   colorType);
+                   (int)colorType);
 #endif
         } else {
             auto name = SkStringPrintf("%s::readPixels",
@@ -593,6 +594,7 @@ void color_type_backend_allocation_test(const sk_gpu_test::ContextInfo& ctxInfo,
         { kA16_float_SkColorType,         kTransCol                },
         { kR16G16_float_SkColorType,      { .25f, .75f, 0, 1 }     },
         { kR16G16B16A16_unorm_SkColorType,{ .25f, .5f, .75f, 1 }   },
+        { kR8_unorm_SkColorType,          { .25f, 0, 0, 1 }        },
     };
 
     static_assert(kLastEnum_SkColorType == SK_ARRAY_COUNT(combinations));
@@ -765,6 +767,7 @@ DEF_GPUTEST_FOR_ALL_GL_CONTEXTS(GLBackendAllocationTest, reporter, ctxInfo) {
 
         { GrColorType::kRGB_888x,         GR_GL_RGBA8,                SkColors::kYellow    },
         { GrColorType::kRGB_888x,         GR_GL_RGB8,                 SkColors::kCyan      },
+        { GrColorType::kRGB_888x,         GR_GL_RGBX8,                SkColors::kCyan      },
 
         { GrColorType::kBGRA_8888,        GR_GL_RGBA8,                SkColors::kBlue      },
         { GrColorType::kBGRA_8888,        GR_GL_BGRA8,                SkColors::kBlue      },
@@ -817,8 +820,8 @@ DEF_GPUTEST_FOR_ALL_GL_CONTEXTS(GLBackendAllocationTest, reporter, ctxInfo) {
                 }
             }
 
-            for (auto mipMapped : {GrMipmapped::kNo, GrMipmapped::kYes}) {
-                if (GrMipmapped::kYes == mipMapped &&
+            for (auto mipmapped : {GrMipmapped::kNo, GrMipmapped::kYes}) {
+                if (GrMipmapped::kYes == mipmapped &&
                     (!glCaps->mipmapSupport() || target == GR_GL_TEXTURE_RECTANGLE)) {
                     continue;
                 }
@@ -832,18 +835,18 @@ DEF_GPUTEST_FOR_ALL_GL_CONTEXTS(GLBackendAllocationTest, reporter, ctxInfo) {
 
                     {
                         auto uninitCreateMtd = [format](GrDirectContext* dContext,
-                                                        GrMipmapped mipMapped,
+                                                        GrMipmapped mipmapped,
                                                         GrRenderable renderable) {
                             return ManagedBackendTexture::MakeWithoutData(dContext,
                                                                           32, 32,
                                                                           format,
-                                                                          mipMapped,
+                                                                          mipmapped,
                                                                           renderable,
                                                                           GrProtected::kNo);
                         };
 
                         test_wrapping(context, reporter, uninitCreateMtd, combo.fColorType,
-                                      mipMapped, renderable);
+                                      mipmapped, renderable);
                     }
 
                     {
@@ -855,16 +858,16 @@ DEF_GPUTEST_FOR_ALL_GL_CONTEXTS(GLBackendAllocationTest, reporter, ctxInfo) {
                         // update our validation code to use a "raw" read that doesn't impose a
                         // color type but for now we just munge the data we upload to match the
                         // expectation.
-                        GrSwizzle swizzle;
+                        skgpu::Swizzle swizzle;
                         switch (combo.fColorType) {
                             case GrColorType::kAlpha_8:
-                                swizzle = GrSwizzle("aaaa");
+                                swizzle = skgpu::Swizzle("aaaa");
                                 break;
                             case GrColorType::kAlpha_16:
-                                swizzle = GrSwizzle("aaaa");
+                                swizzle = skgpu::Swizzle("aaaa");
                                 break;
                             case GrColorType::kAlpha_F16:
-                                swizzle = GrSwizzle("aaaa");
+                                swizzle = skgpu::Swizzle("aaaa");
                                 break;
                             default:
                                 break;
@@ -883,7 +886,7 @@ DEF_GPUTEST_FOR_ALL_GL_CONTEXTS(GLBackendAllocationTest, reporter, ctxInfo) {
                                                                        GrProtected::kNo);
                         };
                         test_color_init(context, reporter, createWithColorMtd, combo.fColorType,
-                                        combo.fColor, mipMapped, renderable);
+                                        combo.fColor, mipmapped, renderable);
                     }
                 }
             }
@@ -897,7 +900,7 @@ DEF_GPUTEST_FOR_ALL_GL_CONTEXTS(GLBackendAllocationTest, reporter, ctxInfo) {
 
 #ifdef SK_VULKAN
 
-#include "src/gpu/vk/GrVkCaps.h"
+#include "src/gpu/ganesh/vk/GrVkCaps.h"
 
 DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkBackendAllocationTest, reporter, ctxInfo) {
     auto context = ctxInfo.directContext();
@@ -957,8 +960,8 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkBackendAllocationTest, reporter, ctxInfo) {
 
         GrBackendFormat format = GrBackendFormat::MakeVk(combo.fFormat);
 
-        for (auto mipMapped : { GrMipmapped::kNo, GrMipmapped::kYes }) {
-            if (GrMipmapped::kYes == mipMapped && !vkCaps->mipmapSupport()) {
+        for (auto mipmapped : { GrMipmapped::kNo, GrMipmapped::kYes }) {
+            if (GrMipmapped::kYes == mipmapped && !vkCaps->mipmapSupport()) {
                 continue;
             }
 
@@ -975,19 +978,19 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkBackendAllocationTest, reporter, ctxInfo) {
 
                 {
                     auto uninitCreateMtd = [format](GrDirectContext* dContext,
-                                                    GrMipmapped mipMapped,
+                                                    GrMipmapped mipmapped,
                                                     GrRenderable renderable) {
                         auto mbet = ManagedBackendTexture::MakeWithoutData(dContext,
                                                                            32, 32,
                                                                            format,
-                                                                           mipMapped,
+                                                                           mipmapped,
                                                                            renderable,
                                                                            GrProtected::kNo);
                         check_vk_tiling(mbet->texture());
                         return mbet;
                     };
 
-                    test_wrapping(context, reporter, uninitCreateMtd, combo.fColorType, mipMapped,
+                    test_wrapping(context, reporter, uninitCreateMtd, combo.fColorType, mipmapped,
                                   renderable);
                 }
 
@@ -1000,47 +1003,47 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkBackendAllocationTest, reporter, ctxInfo) {
                     // Ideally we'd update our validation code to use a "raw" read that doesn't
                     // impose a color type but for now we just munge the data we upload to match the
                     // expectation.
-                    GrSwizzle swizzle;
+                    skgpu::Swizzle swizzle;
                     switch (combo.fColorType) {
                         case GrColorType::kAlpha_8:
                             SkASSERT(combo.fFormat == VK_FORMAT_R8_UNORM);
-                            swizzle = GrSwizzle("aaaa");
+                            swizzle = skgpu::Swizzle("aaaa");
                             break;
                         case GrColorType::kAlpha_16:
                             SkASSERT(combo.fFormat == VK_FORMAT_R16_UNORM);
-                            swizzle = GrSwizzle("aaaa");
+                            swizzle = skgpu::Swizzle("aaaa");
                             break;
                         case GrColorType::kAlpha_F16:
                             SkASSERT(combo.fFormat == VK_FORMAT_R16_SFLOAT);
-                            swizzle = GrSwizzle("aaaa");
+                            swizzle = skgpu::Swizzle("aaaa");
                             break;
                         case GrColorType::kABGR_4444:
                             if (combo.fFormat == VK_FORMAT_B4G4R4A4_UNORM_PACK16) {
-                                swizzle = GrSwizzle("bgra");
+                                swizzle = skgpu::Swizzle("bgra");
                             }
                             break;
                         default:
-                            swizzle = GrSwizzle("rgba");
+                            swizzle = skgpu::Swizzle("rgba");
                             break;
                     }
 
                     auto createWithColorMtd = [format, swizzle](GrDirectContext* dContext,
                                                                 const SkColor4f& color,
-                                                                GrMipmapped mipMapped,
+                                                                GrMipmapped mipmapped,
                                                                 GrRenderable renderable) {
                         auto swizzledColor = swizzle.applyTo(color);
                         auto mbet = ManagedBackendTexture::MakeWithData(dContext,
                                                                         32, 32,
                                                                         format,
                                                                         swizzledColor,
-                                                                        mipMapped,
+                                                                        mipmapped,
                                                                         renderable,
                                                                         GrProtected::kNo);
                         check_vk_tiling(mbet->texture());
                         return mbet;
                     };
                     test_color_init(context, reporter, createWithColorMtd, combo.fColorType,
-                                    combo.fColor, mipMapped, renderable);
+                                    combo.fColor, mipmapped, renderable);
                 }
             }
         }

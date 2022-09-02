@@ -12,10 +12,11 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/public/common/content_client.h"
+#include "skia/ext/skia_utils_base.h"
+#include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_assistant_structure.h"
@@ -195,36 +196,12 @@ bool BrowserAccessibilityAndroid::IsCollapsed() const {
   return HasState(ax::mojom::State::kCollapsed);
 }
 
-// TODO(dougt) Move to ax_role_properties?
 bool BrowserAccessibilityAndroid::IsCollection() const {
-  return (ui::IsTableLike(GetRole()) || GetRole() == ax::mojom::Role::kList ||
-          GetRole() == ax::mojom::Role::kListBox ||
-          GetRole() == ax::mojom::Role::kDescriptionList ||
-          GetRole() == ax::mojom::Role::kDirectory ||
-          GetRole() == ax::mojom::Role::kTree);
+  return ui::IsTableLike(GetRole());
 }
 
 bool BrowserAccessibilityAndroid::IsCollectionItem() const {
-  return (GetRole() == ax::mojom::Role::kCell ||
-          GetRole() == ax::mojom::Role::kColumnHeader ||
-          GetRole() == ax::mojom::Role::kDescriptionListTerm ||
-          GetRole() == ax::mojom::Role::kListBoxOption ||
-          GetRole() == ax::mojom::Role::kListItem ||
-          GetRole() == ax::mojom::Role::kRowHeader ||
-          GetRole() == ax::mojom::Role::kTreeItem);
-}
-
-bool BrowserAccessibilityAndroid::IsCombobox() const {
-  return (GetRole() == ax::mojom::Role::kComboBoxGrouping ||
-          GetRole() == ax::mojom::Role::kTextFieldWithComboBox ||
-          GetRole() == ax::mojom::Role::kComboBoxMenuButton);
-}
-
-bool BrowserAccessibilityAndroid::IsComboboxControl() const {
-  return (GetRole() == ax::mojom::Role::kTree ||
-          GetRole() == ax::mojom::Role::kGrid ||
-          GetRole() == ax::mojom::Role::kDialog ||
-          GetRole() == ax::mojom::Role::kListBox);
+  return ui::IsTableItem(GetRole());
 }
 
 bool BrowserAccessibilityAndroid::IsContentInvalid() const {
@@ -251,10 +228,6 @@ bool BrowserAccessibilityAndroid::IsDisabledDescendant() const {
   }
 
   return false;
-}
-
-bool BrowserAccessibilityAndroid::IsDismissable() const {
-  return false;  // No concept of "dismissable" on the web currently.
 }
 
 bool BrowserAccessibilityAndroid::IsEnabled() const {
@@ -315,10 +288,6 @@ bool BrowserAccessibilityAndroid::IsHeading() const {
 
 bool BrowserAccessibilityAndroid::IsHierarchical() const {
   return (GetRole() == ax::mojom::Role::kTree || IsHierarchicalList());
-}
-
-bool BrowserAccessibilityAndroid::IsLink() const {
-  return ui::IsLink(GetRole());
 }
 
 bool BrowserAccessibilityAndroid::IsMultiLine() const {
@@ -429,7 +398,7 @@ bool BrowserAccessibilityAndroid::IsHeadingLink() const {
 
   BrowserAccessibilityAndroid* child =
       static_cast<BrowserAccessibilityAndroid*>(InternalChildrenBegin().get());
-  return child->IsLink();
+  return ui::IsLink(child->GetRole());
 }
 
 const BrowserAccessibilityAndroid*
@@ -555,7 +524,7 @@ bool BrowserAccessibilityAndroid::IsLeaf() const {
   }
 
   // Links are never leaves.
-  if (IsLink())
+  if (ui::IsLink(GetRole()))
     return false;
 
   BrowserAccessibilityManagerAndroid* manager_android =
@@ -626,10 +595,6 @@ bool BrowserAccessibilityAndroid::IsLeafConsideringChildren() const {
   return true;
 }
 
-// Note: this is used to compute an object's name on Android, and is exposed as
-// the name field in Android dump tree tests.
-// TODO(accessibility) Should it be called GetName() so that engineers not
-// familiar with Android can find it more easily?
 std::u16string BrowserAccessibilityAndroid::GetTextContentUTF16() const {
   if (ui::IsIframe(GetRole()))
     return std::u16string();
@@ -645,11 +610,7 @@ std::u16string BrowserAccessibilityAndroid::GetTextContentUTF16() const {
   if (GetRole() == ax::mojom::Role::kColorWell) {
     unsigned int color = static_cast<unsigned int>(
         GetIntAttribute(ax::mojom::IntAttribute::kColorValue));
-    unsigned int red = SkColorGetR(color);
-    unsigned int green = SkColorGetG(color);
-    unsigned int blue = SkColorGetB(color);
-    return base::UTF8ToUTF16(
-        base::StringPrintf("#%02X%02X%02X", red, green, blue));
+    return base::UTF8ToUTF16(skia::SkColorToHexString(color));
   }
 
   std::u16string text = GetNameAsString16();
@@ -688,7 +649,7 @@ std::u16string BrowserAccessibilityAndroid::GetTextContentUTF16() const {
   // Append image description strings to the text.
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
-  if (manager->AllowImageDescriptions()) {
+  if (manager->should_allow_image_descriptions()) {
     auto status = GetData().GetImageAnnotationStatus();
     switch (status) {
       case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
@@ -813,6 +774,12 @@ std::u16string BrowserAccessibilityAndroid::GetStateDescription() const {
   } else if (GetRole() == ax::mojom::Role::kToggleButton) {
     // For Toggle buttons, we will append "on"/"off" in the state description.
     state_descs.push_back(GetToggleButtonStateDescription());
+  }
+
+  // For radio buttons, we will communicate how many radio buttons are in the
+  // group and which one is selected/checked (e.g. "in group, option x of y")
+  if (GetRole() == ax::mojom::Role::kRadioButton) {
+    state_descs.push_back(GetRadioButtonStateDescription());
   }
 
   // For list boxes, use state description to communicate child item count. We
@@ -953,6 +920,34 @@ std::u16string BrowserAccessibilityAndroid::GetAriaCurrentStateDescription()
   return content_client->GetLocalizedString(message_id);
 }
 
+std::u16string BrowserAccessibilityAndroid::GetRadioButtonStateDescription()
+    const {
+  content::ContentClient* content_client = content::GetContentClient();
+
+  // The radio button should have an IntListAttribute of kRadioGroupIds, with
+  // a length of the total number of radio buttons in this group. Blink sets
+  // these attributes for all nodes automatically, including for nodes of
+  // <input type="radio"> which share a common name. If the list is empty,
+  // escape with empty string.
+  std::vector<ui::AXNodeID> group_ids =
+      GetIntListAttribute(ax::mojom::IntListAttribute::kRadioGroupIds);
+
+  if (group_ids.empty() || group_ids.size() == 1)
+    return std::u16string();
+
+  // Adding a stateDescription will override the 'checked' utterance in some
+  // downstream services like TalkBack, so add it to state as well.
+  int message_id = IsChecked()
+                       ? IDS_AX_RADIO_BUTTON_STATE_DESCRIPTION_CHECKED
+                       : IDS_AX_RADIO_BUTTON_STATE_DESCRIPTION_UNCHECKED;
+
+  return base::ReplaceStringPlaceholders(
+      content_client->GetLocalizedString(message_id),
+      std::vector<std::u16string>({base::NumberToString16(GetItemIndex() + 1),
+                                   base::NumberToString16(group_ids.size())}),
+      /* offsets */ nullptr);
+}
+
 std::u16string BrowserAccessibilityAndroid::GetComboboxExpandedText() const {
   content::ContentClient* content_client = content::GetContentClient();
 
@@ -996,10 +991,10 @@ std::u16string BrowserAccessibilityAndroid::GetComboboxExpandedText() const {
   if (controls.size() != 1)
     return GetComboboxExpandedTextFallback();
 
-  // |controlled_node| needs to be a combobox control, if not, try fallbacks.
+  // |controlled_node| needs to be a combobox container, if not, try fallbacks.
   BrowserAccessibilityAndroid* controlled_node =
       static_cast<BrowserAccessibilityAndroid*>(controls[0]);
-  if (!controlled_node->IsComboboxControl())
+  if (!ui::IsComboBoxContainer(controlled_node->GetRole()))
     return GetComboboxExpandedTextFallback();
 
   // For dialogs, return special case string.
@@ -1059,6 +1054,10 @@ std::string BrowserAccessibilityAndroid::GetRoleString() const {
 }
 
 std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
+  // If an element has an aria-roledescription set, use that value by default.
+  if (HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription))
+    return GetString16Attribute(ax::mojom::StringAttribute::kRoleDescription);
+
   content::ContentClient* content_client = content::GetContentClient();
 
   // As a special case, if we have a heading level return a string like
@@ -1098,7 +1097,7 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
   // If this node is an image, check status and potentially add unlabeled role.
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
-  if (manager->AllowImageDescriptions()) {
+  if (manager->should_allow_image_descriptions()) {
     auto status = GetData().GetImageAnnotationStatus();
     switch (status) {
       case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
@@ -1137,615 +1136,48 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
     }
   }
 
-  int message_id = -1;
   switch (GetRole()) {
-    case ax::mojom::Role::kAbbr:
-      // No role description.
-      break;
-    case ax::mojom::Role::kAlertDialog:
-      message_id = IDS_AX_ROLE_ALERT_DIALOG;
-      break;
-    case ax::mojom::Role::kAlert:
-      message_id = IDS_AX_ROLE_ALERT;
-      break;
-    case ax::mojom::Role::kApplication:
-      message_id = IDS_AX_ROLE_APPLICATION;
-      break;
-    case ax::mojom::Role::kArticle:
-      message_id = IDS_AX_ROLE_ARTICLE;
-      break;
     case ax::mojom::Role::kAudio:
-      message_id = IDS_AX_MEDIA_AUDIO_ELEMENT;
-      break;
-    case ax::mojom::Role::kBanner:
-      message_id = IDS_AX_ROLE_BANNER;
-      break;
-    case ax::mojom::Role::kBlockquote:
-      message_id = IDS_AX_ROLE_BLOCKQUOTE;
-      break;
-    case ax::mojom::Role::kButton:
-      message_id = IDS_AX_ROLE_BUTTON;
-      break;
-    case ax::mojom::Role::kCanvas:
-      // No role description.
-      break;
-    case ax::mojom::Role::kCaption:
-      // No role description.
-      break;
-    case ax::mojom::Role::kCaret:
-      // No role description.
-      break;
-    case ax::mojom::Role::kCell:
-      // No role description.
-      break;
-    case ax::mojom::Role::kCheckBox:
-      message_id = IDS_AX_ROLE_CHECK_BOX;
-      break;
-    case ax::mojom::Role::kClient:
-      // No role description.
-      break;
     case ax::mojom::Role::kCode:
-      // No role description.
-      break;
-    case ax::mojom::Role::kColorWell:
-      message_id = IDS_AX_ROLE_COLOR_WELL;
-      break;
-    case ax::mojom::Role::kColumnHeader:
-      message_id = IDS_AX_ROLE_COLUMN_HEADER;
-      break;
-    case ax::mojom::Role::kColumn:
-      // No role description.
-      break;
-    case ax::mojom::Role::kComboBoxGrouping:
-      // No role descripotion.
-      break;
-    case ax::mojom::Role::kComboBoxMenuButton:
-      // No role descripotion.
-      break;
-    case ax::mojom::Role::kComment:
-      message_id = IDS_AX_ROLE_COMMENT;
-      break;
-    case ax::mojom::Role::kComplementary:
-      message_id = IDS_AX_ROLE_COMPLEMENTARY;
-      break;
-    case ax::mojom::Role::kContentDeletion:
-      message_id = IDS_AX_ROLE_CONTENT_DELETION;
-      break;
-    case ax::mojom::Role::kContentInsertion:
-      message_id = IDS_AX_ROLE_CONTENT_INSERTION;
-      break;
-    case ax::mojom::Role::kContentInfo:
-      message_id = IDS_AX_ROLE_CONTENT_INFO;
-      break;
-    case ax::mojom::Role::kDate:
-      message_id = IDS_AX_ROLE_DATE;
-      break;
-    case ax::mojom::Role::kDateTime: {
-      std::string type;
-      if (node()->GetStringAttribute(ax::mojom::StringAttribute::kInputType,
-                                     &type)) {
-        // Returns a specific role to better aid users on the control type
-        // they are interacting with. This differs from Android text input type
-        // which has a more granular mapping that determines type of keyboard
-        // to display.
-        if (type == "datetime-local") {
-          message_id = IDS_AX_ROLE_DATE_TIME_LOCAL;
-        } else if (type == "month") {
-          message_id = IDS_AX_ROLE_MONTH;
-        } else if (type == "week") {
-          message_id = IDS_AX_ROLE_WEEK;
-        } else {
-          message_id = IDS_AX_ROLE_DATE_TIME;
-        }
-      } else {
-        message_id = IDS_AX_ROLE_DATE_TIME;
-      }
-      break;
-    }
-    case ax::mojom::Role::kDefinition:
-      message_id = IDS_AX_ROLE_DEFINITION;
-      break;
-    case ax::mojom::Role::kDescriptionListDetail:
-      message_id = IDS_AX_ROLE_DEFINITION;
-      break;
     case ax::mojom::Role::kDescriptionList:
-      // No role description.
-      break;
     case ax::mojom::Role::kDescriptionListTerm:
-      // No role description.
-      break;
-    case ax::mojom::Role::kDesktop:
-      // No role description.
-      break;
     case ax::mojom::Role::kDetails:
-      // No role description.
-      break;
-    case ax::mojom::Role::kDialog:
-      message_id = IDS_AX_ROLE_DIALOG;
-      break;
-    case ax::mojom::Role::kDirectory:
-      message_id = IDS_AX_ROLE_DIRECTORY;
-      break;
-    case ax::mojom::Role::kDisclosureTriangle:
-      message_id = IDS_AX_ROLE_DISCLOSURE_TRIANGLE;
-      break;
-    case ax::mojom::Role::kDocAbstract:
-      message_id = IDS_AX_ROLE_DOC_ABSTRACT;
-      break;
-    case ax::mojom::Role::kDocAcknowledgments:
-      message_id = IDS_AX_ROLE_DOC_ACKNOWLEDGMENTS;
-      break;
-    case ax::mojom::Role::kDocAfterword:
-      message_id = IDS_AX_ROLE_DOC_AFTERWORD;
-      break;
-    case ax::mojom::Role::kDocAppendix:
-      message_id = IDS_AX_ROLE_DOC_APPENDIX;
-      break;
-    case ax::mojom::Role::kDocBackLink:
-      message_id = IDS_AX_ROLE_DOC_BACKLINK;
-      break;
-    case ax::mojom::Role::kDocBiblioEntry:
-      message_id = IDS_AX_ROLE_DOC_BIBLIO_ENTRY;
-      break;
-    case ax::mojom::Role::kDocBibliography:
-      message_id = IDS_AX_ROLE_DOC_BIBLIOGRAPHY;
-      break;
-    case ax::mojom::Role::kDocBiblioRef:
-      message_id = IDS_AX_ROLE_DOC_BIBLIO_REF;
-      break;
-    case ax::mojom::Role::kDocChapter:
-      message_id = IDS_AX_ROLE_DOC_CHAPTER;
-      break;
-    case ax::mojom::Role::kDocColophon:
-      message_id = IDS_AX_ROLE_DOC_COLOPHON;
-      break;
-    case ax::mojom::Role::kDocConclusion:
-      message_id = IDS_AX_ROLE_DOC_CONCLUSION;
-      break;
-    case ax::mojom::Role::kDocCover:
-      message_id = IDS_AX_ROLE_DOC_COVER;
-      break;
-    case ax::mojom::Role::kDocCredit:
-      message_id = IDS_AX_ROLE_DOC_CREDIT;
-      break;
-    case ax::mojom::Role::kDocCredits:
-      message_id = IDS_AX_ROLE_DOC_CREDITS;
-      break;
-    case ax::mojom::Role::kDocDedication:
-      message_id = IDS_AX_ROLE_DOC_DEDICATION;
-      break;
-    case ax::mojom::Role::kDocEndnote:
-      message_id = IDS_AX_ROLE_DOC_ENDNOTE;
-      break;
-    case ax::mojom::Role::kDocEndnotes:
-      message_id = IDS_AX_ROLE_DOC_ENDNOTES;
-      break;
-    case ax::mojom::Role::kDocEpigraph:
-      message_id = IDS_AX_ROLE_DOC_EPIGRAPH;
-      break;
-    case ax::mojom::Role::kDocEpilogue:
-      message_id = IDS_AX_ROLE_DOC_EPILOGUE;
-      break;
-    case ax::mojom::Role::kDocErrata:
-      message_id = IDS_AX_ROLE_DOC_ERRATA;
-      break;
-    case ax::mojom::Role::kDocExample:
-      message_id = IDS_AX_ROLE_DOC_EXAMPLE;
-      break;
-    case ax::mojom::Role::kDocFootnote:
-      message_id = IDS_AX_ROLE_DOC_FOOTNOTE;
-      break;
-    case ax::mojom::Role::kDocForeword:
-      message_id = IDS_AX_ROLE_DOC_FOREWORD;
-      break;
-    case ax::mojom::Role::kDocGlossary:
-      message_id = IDS_AX_ROLE_DOC_GLOSSARY;
-      break;
-    case ax::mojom::Role::kDocGlossRef:
-      message_id = IDS_AX_ROLE_DOC_GLOSS_REF;
-      break;
-    case ax::mojom::Role::kDocIndex:
-      message_id = IDS_AX_ROLE_DOC_INDEX;
-      break;
-    case ax::mojom::Role::kDocIntroduction:
-      message_id = IDS_AX_ROLE_DOC_INTRODUCTION;
-      break;
-    case ax::mojom::Role::kDocNoteRef:
-      message_id = IDS_AX_ROLE_DOC_NOTE_REF;
-      break;
-    case ax::mojom::Role::kDocNotice:
-      message_id = IDS_AX_ROLE_DOC_NOTICE;
-      break;
-    case ax::mojom::Role::kDocPageBreak:
-      message_id = IDS_AX_ROLE_DOC_PAGE_BREAK;
-      break;
-    case ax::mojom::Role::kDocPageFooter:
-      message_id = IDS_AX_ROLE_DOC_PAGE_FOOTER;
-      break;
-    case ax::mojom::Role::kDocPageHeader:
-      message_id = IDS_AX_ROLE_DOC_PAGE_HEADER;
-      break;
-    case ax::mojom::Role::kDocPageList:
-      message_id = IDS_AX_ROLE_DOC_PAGE_LIST;
-      break;
-    case ax::mojom::Role::kDocPart:
-      message_id = IDS_AX_ROLE_DOC_PART;
-      break;
-    case ax::mojom::Role::kDocPreface:
-      message_id = IDS_AX_ROLE_DOC_PREFACE;
-      break;
-    case ax::mojom::Role::kDocPrologue:
-      message_id = IDS_AX_ROLE_DOC_PROLOGUE;
-      break;
-    case ax::mojom::Role::kDocPullquote:
-      message_id = IDS_AX_ROLE_DOC_PULLQUOTE;
-      break;
-    case ax::mojom::Role::kDocQna:
-      message_id = IDS_AX_ROLE_DOC_QNA;
-      break;
-    case ax::mojom::Role::kDocSubtitle:
-      message_id = IDS_AX_ROLE_DOC_SUBTITLE;
-      break;
-    case ax::mojom::Role::kDocTip:
-      message_id = IDS_AX_ROLE_DOC_TIP;
-      break;
-    case ax::mojom::Role::kDocToc:
-      message_id = IDS_AX_ROLE_DOC_TOC;
-      break;
-    case ax::mojom::Role::kDocument:
-      message_id = IDS_AX_ROLE_DOCUMENT;
-      break;
-    case ax::mojom::Role::kEmbeddedObject:
-      message_id = IDS_AX_ROLE_EMBEDDED_OBJECT;
-      break;
     case ax::mojom::Role::kEmphasis:
-      // No role description.
-      break;
-    case ax::mojom::Role::kFeed:
-      message_id = IDS_AX_ROLE_FEED;
-      break;
-    case ax::mojom::Role::kFigcaption:
-      // No role description.
+    case ax::mojom::Role::kFooterAsNonLandmark:
+    case ax::mojom::Role::kForm:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
+    case ax::mojom::Role::kRowGroup:
+    case ax::mojom::Role::kStrong:
+    case ax::mojom::Role::kSubscript:
+    case ax::mojom::Role::kSuperscript:
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kTime:
+      // No role description on Android.
       break;
     case ax::mojom::Role::kFigure:
-      message_id = IDS_AX_ROLE_GRAPHIC;
-      break;
-    case ax::mojom::Role::kFooter:
-      message_id = IDS_AX_ROLE_FOOTER;
-      break;
-    case ax::mojom::Role::kFooterAsNonLandmark:
-      // No role description.
-      break;
-    case ax::mojom::Role::kForm:
-      // No role description.
-      break;
-    case ax::mojom::Role::kGenericContainer:
-      // No role description.
-      break;
-    case ax::mojom::Role::kGraphicsDocument:
-      message_id = IDS_AX_ROLE_GRAPHICS_DOCUMENT;
-      break;
-    case ax::mojom::Role::kGraphicsObject:
-      message_id = IDS_AX_ROLE_GRAPHICS_OBJECT;
-      break;
-    case ax::mojom::Role::kGraphicsSymbol:
-      message_id = IDS_AX_ROLE_GRAPHICS_SYMBOL;
-      break;
-    case ax::mojom::Role::kGrid:
-      message_id = IDS_AX_ROLE_TABLE;
-      break;
-    case ax::mojom::Role::kGroup:
-      // No role description.
-      break;
+      // Default is IDS_AX_ROLE_FIGURE.
+      return content_client->GetLocalizedString(IDS_AX_ROLE_GRAPHIC);
     case ax::mojom::Role::kHeader:
-      message_id = IDS_AX_ROLE_BANNER;
-      break;
-    case ax::mojom::Role::kHeaderAsNonLandmark:
-      // No role description.
-      break;
-    case ax::mojom::Role::kHeading:
-      // Note that code above this switch statement handles headings with
-      // a level, returning a string like "heading level 1", etc.
-      message_id = IDS_AX_ROLE_HEADING;
-      break;
-    case ax::mojom::Role::kIframe:
-      // No role description.
-      break;
-    case ax::mojom::Role::kIframePresentational:
-      // No role description.
-      break;
-    case ax::mojom::Role::kImage:
-      message_id = IDS_AX_ROLE_GRAPHIC;
-      break;
-    case ax::mojom::Role::kImeCandidate:
-      // No role description.
-      break;
-    case ax::mojom::Role::kInlineTextBox:
-      // No role description.
-      break;
-    case ax::mojom::Role::kInputTime:
-      message_id = IDS_AX_ROLE_INPUT_TIME;
-      break;
-    case ax::mojom::Role::kKeyboard:
-      // No role description.
-      break;
-    case ax::mojom::Role::kLabelText:
-      // No role description.
-      break;
-    case ax::mojom::Role::kLayoutTable:
-    case ax::mojom::Role::kLayoutTableCell:
-    case ax::mojom::Role::kLayoutTableRow:
-      // No role description.
-      break;
-    case ax::mojom::Role::kLegend:
-      // No role description.
-      break;
-    case ax::mojom::Role::kLineBreak:
-      // No role description.
-      break;
-    case ax::mojom::Role::kLink:
-      message_id = IDS_AX_ROLE_LINK;
-      break;
-    case ax::mojom::Role::kList:
-      // No role description.
-      break;
-    case ax::mojom::Role::kListBox:
-      message_id = IDS_AX_ROLE_LIST_BOX;
-      break;
-    case ax::mojom::Role::kListBoxOption:
-      // No role description.
-      break;
+      // Default is IDS_AX_ROLE_HEADER.
+      return content_client->GetLocalizedString(IDS_AX_ROLE_BANNER);
     case ax::mojom::Role::kListGrid:
-      message_id = IDS_AX_ROLE_TABLE;
-      break;
-    case ax::mojom::Role::kListItem:
-      // No role description.
-      break;
-    case ax::mojom::Role::kListMarker:
-      // No role description.
-      break;
-    case ax::mojom::Role::kLog:
-      message_id = IDS_AX_ROLE_LOG;
-      break;
-    case ax::mojom::Role::kMain:
-      message_id = IDS_AX_ROLE_MAIN_CONTENT;
-      break;
-    case ax::mojom::Role::kMark:
-      message_id = IDS_AX_ROLE_MARK;
-      break;
-    case ax::mojom::Role::kMarquee:
-      message_id = IDS_AX_ROLE_MARQUEE;
-      break;
-    case ax::mojom::Role::kMath:
-    case ax::mojom::Role::kMathMLMath:
-      message_id = IDS_AX_ROLE_MATH;
-      break;
-    case ax::mojom::Role::kMathMLFraction:
-    case ax::mojom::Role::kMathMLIdentifier:
-    case ax::mojom::Role::kMathMLMultiscripts:
-    case ax::mojom::Role::kMathMLNoneScript:
-    case ax::mojom::Role::kMathMLNumber:
-    case ax::mojom::Role::kMathMLOperator:
-    case ax::mojom::Role::kMathMLOver:
-    case ax::mojom::Role::kMathMLPrescriptDelimiter:
-    case ax::mojom::Role::kMathMLRoot:
-    case ax::mojom::Role::kMathMLRow:
-    case ax::mojom::Role::kMathMLSquareRoot:
-    case ax::mojom::Role::kMathMLStringLiteral:
-    case ax::mojom::Role::kMathMLSub:
-    case ax::mojom::Role::kMathMLSubSup:
-    case ax::mojom::Role::kMathMLSup:
-    case ax::mojom::Role::kMathMLTable:
-    case ax::mojom::Role::kMathMLTableCell:
-    case ax::mojom::Role::kMathMLTableRow:
-    case ax::mojom::Role::kMathMLText:
-    case ax::mojom::Role::kMathMLUnder:
-    case ax::mojom::Role::kMathMLUnderOver:
-      // No role description.
-      break;
-    case ax::mojom::Role::kMenu:
-      message_id = IDS_AX_ROLE_MENU;
-      break;
-    case ax::mojom::Role::kMenuBar:
-      message_id = IDS_AX_ROLE_MENU_BAR;
-      break;
-    case ax::mojom::Role::kMenuItem:
-      message_id = IDS_AX_ROLE_MENU_ITEM;
-      break;
+      // Default is no special role description.
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TABLE);
     case ax::mojom::Role::kMenuItemCheckBox:
-      message_id = IDS_AX_ROLE_CHECK_BOX;
-      break;
+      // Default is no special role description.
+      return content_client->GetLocalizedString(IDS_AX_ROLE_CHECK_BOX);
     case ax::mojom::Role::kMenuItemRadio:
-      message_id = IDS_AX_ROLE_RADIO;
-      break;
-    case ax::mojom::Role::kMenuListOption:
-      // No role description.
-      break;
-    case ax::mojom::Role::kMenuListPopup:
-      // No role description.
-      break;
-    case ax::mojom::Role::kMeter:
-      message_id = IDS_AX_ROLE_METER;
-      break;
-    case ax::mojom::Role::kNavigation:
-      message_id = IDS_AX_ROLE_NAVIGATIONAL_LINK;
-      break;
-    case ax::mojom::Role::kNote:
-      message_id = IDS_AX_ROLE_NOTE;
-      break;
-    case ax::mojom::Role::kPane:
-      // No role description.
-      break;
-    case ax::mojom::Role::kParagraph:
-      // No role description.
-      break;
-    case ax::mojom::Role::kPdfActionableHighlight:
-      message_id = IDS_AX_ROLE_PDF_HIGHLIGHT;
-      break;
-    case ax::mojom::Role::kPdfRoot:
-      // No role description.
-      break;
-    case ax::mojom::Role::kPluginObject:
-      message_id = IDS_AX_ROLE_EMBEDDED_OBJECT;
-      break;
-    case ax::mojom::Role::kPopUpButton:
-      // Note that pop up buttons are handled before this switch
-      NOTREACHED();
-      break;
+      // Default is no special role description.
+      return content_client->GetLocalizedString(IDS_AX_ROLE_RADIO);
     case ax::mojom::Role::kPortal:
-      message_id = IDS_AX_ROLE_BUTTON;
-      break;
-    case ax::mojom::Role::kPre:
-      // No role description.
-      break;
-    case ax::mojom::Role::kProgressIndicator:
-      message_id = IDS_AX_ROLE_PROGRESS_INDICATOR;
-      break;
-    case ax::mojom::Role::kRadioButton:
-      message_id = IDS_AX_ROLE_RADIO;
-      break;
-    case ax::mojom::Role::kRadioGroup:
-      message_id = IDS_AX_ROLE_RADIO_GROUP;
-      break;
-    case ax::mojom::Role::kRegion:
-      message_id = IDS_AX_ROLE_REGION;
-      break;
-    case ax::mojom::Role::kRootWebArea:
-      // No role description.
-      break;
-    case ax::mojom::Role::kRow:
-      // No role description.
-      break;
-    case ax::mojom::Role::kRowGroup:
-      // No role description.
-      break;
-    case ax::mojom::Role::kRowHeader:
-      message_id = IDS_AX_ROLE_ROW_HEADER;
-      break;
-    case ax::mojom::Role::kRuby:
-      // No role description.
-      break;
-    case ax::mojom::Role::kRubyAnnotation:
-      // No role description.
-      break;
-    case ax::mojom::Role::kSection:
-      // No role description.
-      break;
-    case ax::mojom::Role::kSvgRoot:
-      message_id = IDS_AX_ROLE_GRAPHIC;
-      break;
-    case ax::mojom::Role::kScrollBar:
-      message_id = IDS_AX_ROLE_SCROLL_BAR;
-      break;
-    case ax::mojom::Role::kScrollView:
-      // No role description.
-      break;
-    case ax::mojom::Role::kSearch:
-      message_id = IDS_AX_ROLE_SEARCH;
-      break;
-    case ax::mojom::Role::kSearchBox:
-      message_id = IDS_AX_ROLE_SEARCH_BOX;
-      break;
-    case ax::mojom::Role::kSlider:
-      message_id = IDS_AX_ROLE_SLIDER;
-      break;
-    case ax::mojom::Role::kSpinButton:
-      message_id = IDS_AX_ROLE_SPIN_BUTTON;
-      break;
-    case ax::mojom::Role::kSplitter:
-      message_id = IDS_AX_ROLE_SPLITTER;
-      break;
-    case ax::mojom::Role::kStaticText:
-      // No role description.
-      break;
-    case ax::mojom::Role::kStatus:
-      message_id = IDS_AX_ROLE_STATUS;
-      break;
-    case ax::mojom::Role::kStrong:
-      // No role description.
-      break;
-    case ax::mojom::Role::kSubscript:
-      // No role description.
-      break;
-    case ax::mojom::Role::kSuggestion:
-      message_id = IDS_AX_ROLE_SUGGESTION;
-      break;
-    case ax::mojom::Role::kSuperscript:
-      // No role description.
-      break;
-    case ax::mojom::Role::kSwitch:
-      message_id = IDS_AX_ROLE_SWITCH;
-      break;
-    case ax::mojom::Role::kTabList:
-      message_id = IDS_AX_ROLE_TAB_LIST;
-      break;
-    case ax::mojom::Role::kTabPanel:
-      message_id = IDS_AX_ROLE_TAB_PANEL;
-      break;
-    case ax::mojom::Role::kTab:
-      message_id = IDS_AX_ROLE_TAB;
-      break;
-    case ax::mojom::Role::kTableHeaderContainer:
-      // No role description.
-      break;
-    case ax::mojom::Role::kTable:
-      message_id = IDS_AX_ROLE_TABLE;
-      break;
-    case ax::mojom::Role::kTerm:
-      message_id = IDS_AX_ROLE_DESCRIPTION_TERM;
-      break;
-    case ax::mojom::Role::kTextField:
-      // No role description.
-      break;
-    case ax::mojom::Role::kTextFieldWithComboBox:
-      // No role description.
-      break;
-    case ax::mojom::Role::kTime:
-      // No role description.
-      break;
-    case ax::mojom::Role::kTimer:
-      message_id = IDS_AX_ROLE_TIMER;
-      break;
-    case ax::mojom::Role::kTitleBar:
-      // No role description.
-      break;
-    case ax::mojom::Role::kToggleButton:
-      message_id = IDS_AX_ROLE_TOGGLE_BUTTON;
-      break;
-    case ax::mojom::Role::kToolbar:
-      message_id = IDS_AX_ROLE_TOOLBAR;
-      break;
-    case ax::mojom::Role::kTreeGrid:
-      message_id = IDS_AX_ROLE_TREE_GRID;
-      break;
-    case ax::mojom::Role::kTreeItem:
-      message_id = IDS_AX_ROLE_TREE_ITEM;
-      break;
-    case ax::mojom::Role::kTree:
-      message_id = IDS_AX_ROLE_TREE;
-      break;
-    case ax::mojom::Role::kUnknown:
-      // No role description.
-      break;
-    case ax::mojom::Role::kTooltip:
-      message_id = IDS_AX_ROLE_TOOLTIP;
-      break;
+      // Default is no special role description.
+      return content_client->GetLocalizedString(IDS_AX_ROLE_BUTTON);
     case ax::mojom::Role::kVideo:
-      message_id = IDS_AX_MEDIA_VIDEO_ELEMENT;
-      break;
-    case ax::mojom::Role::kWebView:
-      // No role description.
-      break;
-    case ax::mojom::Role::kWindow:
-      // No role description.
-      break;
-    case ax::mojom::Role::kNone:
-      // No role description.
-      break;
+      // Default is no special role description.
+      return content_client->GetLocalizedString(IDS_AX_MEDIA_VIDEO_ELEMENT);
+    default:
+      return GetLocalizedStringForRoleDescription();
   }
-
-  if (message_id != -1)
-    return content_client->GetLocalizedString(message_id);
 
   return std::u16string();
 }
@@ -2465,6 +1897,9 @@ bool BrowserAccessibilityAndroid::ShouldExposeValueAsName() const {
     return false;
 
   if (IsTextField())
+    return true;
+
+  if (ui::IsComboBox(GetRole()))
     return true;
 
   if (GetRole() == ax::mojom::Role::kPopUpButton &&

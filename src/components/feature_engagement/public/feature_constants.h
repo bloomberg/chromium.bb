@@ -29,16 +29,20 @@ extern const base::Feature kUseClientConfigIPH;
 // A feature to ensure all arrays can contain at least one feature.
 extern const base::Feature kIPHDummyFeature;
 
-#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+extern const base::Feature kEnableIPH;
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 extern const base::Feature kIPHDesktopSharedHighlightingFeature;
 extern const base::Feature kIPHDesktopTabGroupsNewGroupFeature;
 extern const base::Feature kIPHFocusHelpBubbleScreenReaderPromoFeature;
 extern const base::Feature kIPHGMCCastStartStopFeature;
 extern const base::Feature kIPHLiveCaptionFeature;
+extern const base::Feature kIPHTabAudioMutingFeature;
 extern const base::Feature kIPHPasswordsAccountStorageFeature;
 extern const base::Feature kIPHReadingListDiscoveryFeature;
 extern const base::Feature kIPHReadingListEntryPointFeature;
+extern const base::Feature kIPHIntentChipFeature;
 extern const base::Feature kIPHReadingListInSidePanelFeature;
 extern const base::Feature kIPHReopenTabFeature;
 extern const base::Feature kIPHSideSearchFeature;
@@ -47,14 +51,13 @@ extern const base::Feature kIPHWebUITabStripFeature;
 extern const base::Feature kIPHDesktopSnoozeFeature;
 extern const base::Feature kIPHDesktopPwaInstallFeature;
 extern const base::Feature kIPHProfileSwitchFeature;
-extern const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature;
-#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 
 // All the features declared for Android below that are also used in Java,
 // should also be declared in:
 // org.chromium.components.feature_engagement.FeatureConstants.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 extern const base::Feature
     kIPHAdaptiveButtonInTopToolbarCustomizationNewTabFeature;
 extern const base::Feature
@@ -66,6 +69,8 @@ extern const base::Feature kIPHAddToHomescreenTextBubbleFeature;
 extern const base::Feature kIPHAutoDarkOptOutFeature;
 extern const base::Feature kIPHAutoDarkUserEducationMessageFeature;
 extern const base::Feature kIPHAutoDarkUserEducationMessageOptInFeature;
+extern const base::Feature kIPHContextualPageActionsPriceTrackingFeature;
+extern const base::Feature kIPHCrowFeature;
 extern const base::Feature kIPHDataSaverDetailFeature;
 extern const base::Feature kIPHDataSaverMilestonePromoFeature;
 extern const base::Feature kIPHDataSaverPreviewFeature;
@@ -96,10 +101,21 @@ extern const base::Feature
     kIPHFeatureNotificationGuideNTPSuggestionCardNotificationShownFeature;
 extern const base::Feature
     kIPHFeatureNotificationGuideVoiceSearchNotificationShownFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideDefaultBrowserPromoFeature;
+extern const base::Feature kIPHFeatureNotificationGuideSignInHelpBubbleFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideIncognitoTabHelpBubbleFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideNTPSuggestionCardHelpBubbleFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideVoiceSearchHelpBubbleFeature;
+extern const base::Feature kIPHFeatureNotificationGuideIncognitoTabUsedFeature;
+extern const base::Feature kIPHFeatureNotificationGuideVoiceSearchUsedFeature;
 extern const base::Feature kIPHFeedCardMenuFeature;
+extern const base::Feature kIPHGenericAlwaysTriggerHelpUiFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
-extern const base::Feature kIPHHomepagePromoCardFeature;
 extern const base::Feature kIPHIdentityDiscFeature;
 extern const base::Feature kIPHInstanceSwitcherFeature;
 extern const base::Feature kIPHKeyboardAccessoryAddressFillingFeature;
@@ -107,7 +123,7 @@ extern const base::Feature kIPHKeyboardAccessoryBarSwipingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentOfferFeature;
-extern const base::Feature kIPHKeyboardAccessoryPaymentVirtualCardFeature;
+extern const base::Feature kIPHLowUserEngagementDetectorFeature;
 extern const base::Feature kIPHMicToolbarFeature;
 extern const base::Feature kIPHNewTabPageHomeButtonFeature;
 extern const base::Feature kIPHPageInfoFeature;
@@ -134,6 +150,7 @@ extern const base::Feature kIPHVideoTutorialNTPSummaryFeature;
 extern const base::Feature kIPHVideoTutorialTryNowFeature;
 extern const base::Feature kIPHExploreSitesTileFeature;
 extern const base::Feature kIPHFeedHeaderMenuFeature;
+extern const base::Feature kIPHWebFeedAwarenessFeature;
 extern const base::Feature kIPHFeedSwipeRefresh;
 extern const base::Feature kIPHChromeReengagementNotification1Feature;
 extern const base::Feature kIPHChromeReengagementNotification2Feature;
@@ -147,9 +164,9 @@ extern const base::Feature kIPHSharedHighlightingBuilder;
 extern const base::Feature kIPHSharedHighlightingReceiverFeature;
 extern const base::Feature kIPHStartSurfaceTabSwitcherHomeButton;
 extern const base::Feature kIPHSharingHubWebnotesStylizeFeature;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 extern const base::Feature kIPHBottomToolbarTipFeature;
 extern const base::Feature kIPHLongPressToolbarTipFeature;
 extern const base::Feature kIPHNewTabTipFeature;
@@ -158,12 +175,17 @@ extern const base::Feature kIPHBadgedReadingListFeature;
 extern const base::Feature kIPHReadingListMessagesFeature;
 extern const base::Feature kIPHBadgedTranslateManualTriggerFeature;
 extern const base::Feature kIPHDiscoverFeedHeaderFeature;
-#endif  // defined(OS_IOS)
+extern const base::Feature kIPHDefaultSiteViewFeature;
+extern const base::Feature kIPHPasswordSuggestionsFeature;
+extern const base::Feature kIPHFollowWhileBrowsingFeature;
+#endif  // BUILDFLAG(IS_IOS)
 
-#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
-extern const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature;
-#endif
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+extern const base::Feature kIPHAutofillVirtualCardSuggestionFeature;
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
+        // BUILDFLAG(IS_FUCHSIA)
 
 }  // namespace feature_engagement
 

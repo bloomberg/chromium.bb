@@ -6,51 +6,43 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
+#include "components/prefs/pref_service.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#include "content/public/browser/navigation_entry.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace send_tab_to_self {
 
-bool ShouldOfferFeature(content::WebContents* web_contents) {
+absl::optional<EntryPointDisplayReason> GetEntryPointDisplayReason(
+    content::WebContents* web_contents) {
+  // TODO(crbug.com/1274173): This can probably be a DCHECK instead.
   if (!web_contents)
-    return false;
-  Profile* profile =
+    return absl::nullopt;
+
+  auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  send_tab_to_self::SendTabToSelfSyncService* service =
-      SendTabToSelfSyncServiceFactory::GetForProfile(profile);
-
-  GURL page_url = web_contents->GetURL();
-  content::NavigationEntry* navigation_entry =
-      web_contents->GetController().GetLastCommittedEntry();
-  bool has_last_entry = (navigation_entry != nullptr);
-
-  return ShouldOfferToShareUrl(service, page_url) && has_last_entry;
+  return GetEntryPointDisplayReason(
+      web_contents->GetLastCommittedURL(),
+      SyncServiceFactory::GetForProfile(profile),
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile),
+      profile->GetPrefs());
 }
 
-bool ShouldOfferToShareUrl(
-    SendTabToSelfSyncService* send_tab_to_self_sync_service,
-    const GURL& url) {
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return false;
-
-  if (!send_tab_to_self_sync_service) {
-    // Can happen in incognito or guest profile.
-    return false;
-  }
-
-  SendTabToSelfModel* model =
-      send_tab_to_self_sync_service->GetSendTabToSelfModel();
-  return model->IsReady() && model->HasValidTargetDevice();
+bool ShouldDisplayEntryPoint(content::WebContents* web_contents) {
+  return GetEntryPointDisplayReason(web_contents).has_value();
 }
 
 bool ShouldOfferOmniboxIcon(content::WebContents* web_contents) {
   if (!web_contents)
     return false;
   return !web_contents->IsWaitingForResponse() &&
-         ShouldOfferFeature(web_contents);
+         ShouldDisplayEntryPoint(web_contents);
 }
 
 }  // namespace send_tab_to_self

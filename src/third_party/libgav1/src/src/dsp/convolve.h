@@ -17,6 +17,8 @@
 #ifndef LIBGAV1_SRC_DSP_CONVOLVE_H_
 #define LIBGAV1_SRC_DSP_CONVOLVE_H_
 
+#include <cassert>
+
 // Pull in LIBGAV1_DspXXX defines representing the implementation status
 // of each function. The resulting value of each can be used by each module to
 // determine whether an implementation is needed at compile time.
@@ -42,6 +44,35 @@ namespace dsp {
 // Initializes Dsp::convolve and Dsp::convolve_scale. This function is not
 // thread-safe.
 void ConvolveInit_C();
+
+inline int GetNumTapsInFilter(const int filter_index) {
+  if (filter_index < 2) {
+    // Despite the names these only use 6 taps.
+    // kInterpolationFilterEightTap
+    // kInterpolationFilterEightTapSmooth
+    return 6;
+  }
+
+  if (filter_index == 2) {
+    // kInterpolationFilterEightTapSharp
+    return 8;
+  }
+
+  if (filter_index == 3) {
+    // kInterpolationFilterBilinear
+    return 2;
+  }
+
+  assert(filter_index > 3);
+  // For small sizes (width/height <= 4) the large filters are replaced with 4
+  // tap options.
+  // If the original filters were |kInterpolationFilterEightTap| or
+  // |kInterpolationFilterEightTapSharp| then it becomes
+  // |kInterpolationFilterSwitchable|.
+  // If it was |kInterpolationFilterEightTapSmooth| then it becomes an unnamed 4
+  // tap filter.
+  return 4;
+}
 
 }  // namespace dsp
 }  // namespace libgav1

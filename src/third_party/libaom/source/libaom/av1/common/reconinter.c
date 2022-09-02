@@ -19,6 +19,7 @@
 
 #include "aom/aom_integer.h"
 #include "aom_dsp/blend.h"
+#include "aom_ports/aom_once.h"
 
 #include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
@@ -105,10 +106,6 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
   if (av1_allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]], 0,
                      inter_pred_params->scale_factors,
                      &inter_pred_params->warp_params)) {
-#if CONFIG_REALTIME_ONLY
-    aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_FEATURE,
-                       "Warped motion is disabled in realtime only build.");
-#endif
     inter_pred_params->mode = WARP_PRED;
   }
 }
@@ -144,7 +141,6 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                     inter_pred_params->interp_filter_params);
 #endif
   }
-#if !CONFIG_REALTIME_ONLY
   // TODO(jingning): av1_warp_plane() can be further cleaned up.
   else if (inter_pred_params->mode == WARP_PRED) {
     av1_warp_plane(
@@ -157,9 +153,7 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
         inter_pred_params->block_width, inter_pred_params->block_height,
         dst_stride, inter_pred_params->subsampling_x,
         inter_pred_params->subsampling_y, &inter_pred_params->conv_params);
-  }
-#endif
-  else {
+  } else {
     assert(0 && "Unsupported inter_pred_params->mode");
   }
 }
@@ -482,7 +476,7 @@ void av1_build_compound_diffwtd_mask_highbd_c(
   }
 }
 
-static AOM_INLINE void init_wedge_master_masks() {
+static AOM_INLINE void init_wedge_master_masks(void) {
   int i, j;
   const int w = MASK_MASTER_SIZE;
   const int h = MASK_MASTER_SIZE;
@@ -527,7 +521,7 @@ static AOM_INLINE void init_wedge_master_masks() {
   }
 }
 
-static AOM_INLINE void init_wedge_masks() {
+static AOM_INLINE void init_wedge_masks(void) {
   uint8_t *dst = wedge_mask_buf;
   BLOCK_SIZE bsize;
   memset(wedge_masks, 0, sizeof(wedge_masks));
@@ -614,7 +608,7 @@ static AOM_INLINE void build_smooth_interintra_mask(uint8_t *mask, int stride,
   }
 }
 
-static AOM_INLINE void init_smooth_interintra_masks() {
+static AOM_INLINE void init_smooth_interintra_masks(void) {
   for (int m = 0; m < INTERINTRA_MODES; ++m) {
     for (int bs = 0; bs < BLOCK_SIZES_ALL; ++bs) {
       const int bw = block_size_wide[bs];
@@ -627,11 +621,13 @@ static AOM_INLINE void init_smooth_interintra_masks() {
 }
 
 // Equation of line: f(x, y) = a[0]*(x - a[2]*w/8) + a[1]*(y - a[3]*h/8) = 0
-void av1_init_wedge_masks() {
+static void init_all_wedge_masks(void) {
   init_wedge_master_masks();
   init_wedge_masks();
   init_smooth_interintra_masks();
 }
+
+void av1_init_wedge_masks(void) { aom_once(init_all_wedge_masks); }
 
 static AOM_INLINE void build_masked_compound_no_round(
     uint8_t *dst, int dst_stride, const CONV_BUF_TYPE *src0, int src0_stride,

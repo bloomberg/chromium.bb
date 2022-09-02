@@ -64,19 +64,17 @@ GdkWindow* GtkUiPlatformX11::GetGdkWindow(gfx::AcceleratedWidget window_id) {
   GdkDisplay* display = GetGdkDisplay();
   GdkWindow* gdk_window = gdk_x11_window_lookup_for_display(
       display, static_cast<uint32_t>(window_id));
-  if (gdk_window)
+  if (gdk_window) {
     g_object_ref(gdk_window);
-  else
+  } else if (base::Environment::Create()->HasVar("XLIB_SKIP_ARGB_VISUALS")) {
+    // gdk_x11_window_foreign_new_for_display calls XVisualIDFromVisual which
+    // will crash when XLIB_SKIP_ARGB_VISUALS is set.
+    return nullptr;
+  } else {
     gdk_window = gdk_x11_window_foreign_new_for_display(
         display, static_cast<uint32_t>(window_id));
+  }
   return gdk_window;
-}
-
-bool GtkUiPlatformX11::ExportWindowHandle(
-    gfx::AcceleratedWidget window_id,
-    base::OnceCallback<void(std::string)> callback) {
-  std::move(callback).Run(base::StringPrintf("x11:%#x", window_id));
-  return true;
 }
 
 bool GtkUiPlatformX11::SetGtkWidgetTransientFor(GtkWidget* widget,

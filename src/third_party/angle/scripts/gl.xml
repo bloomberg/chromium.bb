@@ -208,6 +208,36 @@ typedef unsigned int GLhandleARB;
             <enum name="GL_FUNC_ADD"/>
             <enum name="GL_FUNC_REVERSE_SUBTRACT"/>
             <enum name="GL_FUNC_SUBTRACT"/>
+            <enum name="GL_MULTIPLY"/>
+            <enum name="GL_MULTIPLY_KHR"/>
+            <enum name="GL_SCREEN"/>
+            <enum name="GL_SCREEN_KHR"/>
+            <enum name="GL_OVERLAY"/>
+            <enum name="GL_OVERLAY_KHR"/>
+            <enum name="GL_DARKEN"/>
+            <enum name="GL_DARKEN_KHR"/>
+            <enum name="GL_LIGHTEN"/>
+            <enum name="GL_LIGHTEN_KHR"/>
+            <enum name="GL_COLORDODGE"/>
+            <enum name="GL_COLORDODGE_KHR"/>
+            <enum name="GL_COLORBURN"/>
+            <enum name="GL_COLORBURN_KHR"/>
+            <enum name="GL_HARDLIGHT"/>
+            <enum name="GL_HARDLIGHT_KHR"/>
+            <enum name="GL_SOFTLIGHT"/>
+            <enum name="GL_SOFTLIGHT_KHR"/>
+            <enum name="GL_DIFFERENCE"/>
+            <enum name="GL_DIFFERENCE_KHR"/>
+            <enum name="GL_EXCLUSION"/>
+            <enum name="GL_EXCLUSION_KHR"/>
+            <enum name="GL_HSL_HUE"/>
+            <enum name="GL_HSL_HUE_KHR"/>
+            <enum name="GL_HSL_SATURATION"/>
+            <enum name="GL_HSL_SATURATION_KHR"/>
+            <enum name="GL_HSL_COLOR"/>
+            <enum name="GL_HSL_COLOR_KHR"/>
+            <enum name="GL_HSL_LUMINOSITY"/>
+            <enum name="GL_HSL_LUMINOSITY_KHR"/>
         </group>
 
         <group name="Boolean">
@@ -801,7 +831,6 @@ typedef unsigned int GLhandleARB;
             <enum name="GL_BLEND"/>
             <enum name="GL_BLEND_COLOR_EXT"/>
             <enum name="GL_BLEND_DST"/>
-            <enum name="GL_BLEND_EQUATION_EXT"/>
             <enum name="GL_BLEND_SRC"/>
             <enum name="GL_BLUE_BIAS"/>
             <enum name="GL_BLUE_BITS"/>
@@ -2211,6 +2240,17 @@ typedef unsigned int GLhandleARB;
         <group name="ShadingModel">
             <enum name="GL_FLAT"/>
             <enum name="GL_SMOOTH"/>
+        </group>
+
+        <group name="ShadingRate">
+            <enum name="GL_SHADING_RATE_QCOM"/>
+            <enum name="GL_SHADING_RATE_PRESERVE_ASPECT_RATIO_QCOM"/>
+            <enum name="GL_SHADING_RATE_1X1_PIXELS_QCOM"/>
+            <enum name="GL_SHADING_RATE_1X2_PIXELS_QCOM"/>
+            <enum name="GL_SHADING_RATE_2X1_PIXELS_QCOM"/>
+            <enum name="GL_SHADING_RATE_2X2_PIXELS_QCOM"/>
+            <enum name="GL_SHADING_RATE_4X2_PIXELS_QCOM"/>
+            <enum name="GL_SHADING_RATE_4X4_PIXELS_QCOM"/>
         </group>
 
         <group name="StencilFaceDirection">
@@ -7939,6 +7979,7 @@ typedef unsigned int GLhandleARB;
         <enum value="0x8BB8" name="GL_TILE_RASTER_ORDER_FIXED_MESA"/>
         <enum value="0x8BB9" name="GL_TILE_RASTER_ORDER_INCREASING_X_MESA"/>
         <enum value="0x8BBA" name="GL_TILE_RASTER_ORDER_INCREASING_Y_MESA"/>
+        <enum value="0x8BBB" name="GL_FRAMEBUFFER_FLIP_Y_MESA"/>
     </enums>
 
     <enums namespace="GL" start="0x8BC0" end="0x8BFF" vendor="QCOM" comment="Reassigned from AMD to QCOM">
@@ -10157,7 +10198,17 @@ typedef unsigned int GLhandleARB;
     <enums namespace="GL" start="0x96A0" end="0x96AF" vendor="Qualcomm" comment="contact Maurice Ribble">
             <unused start="0x96A0" end="0x96A1" vendor="Qualcomm"/>
         <enum value="0x96A2" name="GL_FRAMEBUFFER_FETCH_NONCOHERENT_QCOM"/>
-            <unused start="0x96A3" end="0x96AF" vendor="Qualcomm"/>
+            <unused start="0x96A3" end="0x96A3" vendor="Qualcomm"/>
+        <enum value="0x96A4" name="GL_SHADING_RATE_QCOM"/>
+        <enum value="0x96A5" name="GL_SHADING_RATE_PRESERVE_ASPECT_RATIO_QCOM"/>
+        <enum value="0x96A6" name="GL_SHADING_RATE_1X1_PIXELS_QCOM"/>
+        <enum value="0x96A7" name="GL_SHADING_RATE_1X2_PIXELS_QCOM"/>
+        <enum value="0x96A8" name="GL_SHADING_RATE_2X1_PIXELS_QCOM"/>
+        <enum value="0x96A9" name="GL_SHADING_RATE_2X2_PIXELS_QCOM"/>
+        <enum value="0x96AC" name="GL_SHADING_RATE_4X2_PIXELS_QCOM"/>
+            <unused start="0x96AD" end="0x96AD" vendor="Qualcomm"/>
+        <enum value="0x96AE" name="GL_SHADING_RATE_4X4_PIXELS_QCOM"/>
+            <unused start="0x96AF" end="0x96AF" vendor="Qualcomm"/>
     </enums>
 
 <!-- Enums reservable for future use. To reserve a new range, allocate one
@@ -15375,6 +15426,12 @@ typedef unsigned int GLhandleARB;
             <param><ptype>GLint</ptype> <name>param</name></param>
         </command>
         <command>
+            <proto>void <name>glFramebufferParameteriMESA</name></proto>
+            <param group="FramebufferTarget"><ptype>GLenum</ptype> <name>target</name></param>
+            <param group="FramebufferParameterName"><ptype>GLenum</ptype> <name>pname</name></param>
+            <param><ptype>GLint</ptype> <name>param</name></param>
+        </command>
+        <command>
             <proto>void <name>glFramebufferPixelLocalStorageSizeEXT</name></proto>
             <param><ptype>GLuint</ptype> <name>target</name></param>
             <param><ptype>GLsizei</ptype> <name>size</name></param>
@@ -16656,6 +16713,12 @@ typedef unsigned int GLhandleARB;
         </command>
         <command>
             <proto>void <name>glGetFramebufferParameteriv</name></proto>
+            <param group="FramebufferTarget"><ptype>GLenum</ptype> <name>target</name></param>
+            <param group="FramebufferAttachmentParameterName"><ptype>GLenum</ptype> <name>pname</name></param>
+            <param len="COMPSIZE(pname)"><ptype>GLint</ptype> *<name>params</name></param>
+        </command>
+        <command>
+            <proto>void <name>glGetFramebufferParameterivMESA</name></proto>
             <param group="FramebufferTarget"><ptype>GLenum</ptype> <name>target</name></param>
             <param group="FramebufferAttachmentParameterName"><ptype>GLenum</ptype> <name>pname</name></param>
             <param len="COMPSIZE(pname)"><ptype>GLint</ptype> *<name>params</name></param>
@@ -26202,6 +26265,10 @@ typedef unsigned int GLhandleARB;
             <param><ptype>GLuint</ptype> <name>program</name></param>
             <param><ptype>GLuint</ptype> <name>storageBlockIndex</name></param>
             <param><ptype>GLuint</ptype> <name>storageBlockBinding</name></param>
+        </command>
+        <command>
+            <proto>void <name>glShadingRateQCOM</name></proto>
+            <param group="ShadingRate"><ptype>GLenum</ptype> <name>rate</name></param>
         </command>
         <command>
             <proto>void <name>glSharpenTexFuncSGIS</name></proto>
@@ -45908,6 +45975,13 @@ typedef unsigned int GLhandleARB;
                 <enum name="GL_TEXTURE_2D_STACK_BINDING_MESAX"/>
             </require>
         </extension>
+        <extension name="GL_MESA_framebuffer_flip_y" supported="gl|glcore|gles2">
+            <require>
+                <enum name="GL_FRAMEBUFFER_FLIP_Y_MESA"/>
+                <command name="glFramebufferParameteriMESA"/>
+                <command name="glGetFramebufferParameterivMESA"/>
+            </require>
+        </extension>
         <extension name="GL_MESA_pack_invert" supported="gl">
             <require>
                 <enum name="GL_PACK_INVERT_MESA"/>
@@ -49039,6 +49113,19 @@ typedef unsigned int GLhandleARB;
         <extension name="GL_QCOM_writeonly_rendering" supported="gles1|gles2">
             <require>
                 <enum name="GL_WRITEONLY_RENDERING_QCOM"/>
+            </require>
+        </extension>
+        <extension name="GL_QCOM_shading_rate" supported="gles2">
+            <require>
+                <enum name="GL_SHADING_RATE_QCOM"/>
+                <enum name="GL_SHADING_RATE_PRESERVE_ASPECT_RATIO_QCOM"/>
+                <enum name="GL_SHADING_RATE_1X1_PIXELS_QCOM"/>
+                <enum name="GL_SHADING_RATE_1X2_PIXELS_QCOM"/>
+                <enum name="GL_SHADING_RATE_2X1_PIXELS_QCOM"/>
+                <enum name="GL_SHADING_RATE_2X2_PIXELS_QCOM"/>
+                <enum name="GL_SHADING_RATE_4X2_PIXELS_QCOM"/>
+                <enum name="GL_SHADING_RATE_4X4_PIXELS_QCOM"/>
+                <command name="glShadingRateQCOM"/>
             </require>
         </extension>
         <extension name="GL_REND_screen_coordinates" supported="gl">

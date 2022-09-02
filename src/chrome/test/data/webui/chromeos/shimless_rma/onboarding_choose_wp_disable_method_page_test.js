@@ -93,7 +93,7 @@ export function onboardingChooseWpDisableMethodPageTest() {
 
     assertTrue(manualDisableComponent.checked);
 
-    let expectedResult = {foo: 'bar'};
+    const expectedResult = {foo: 'bar'};
     let savedResult;
     component.onNextButtonClick().then((result) => savedResult = result);
     // Resolve to a distinct result to confirm it was not modified.
@@ -119,7 +119,7 @@ export function onboardingChooseWpDisableMethodPageTest() {
     await flushTasks;
     assertTrue(rsuDisableComponent.checked);
 
-    let expectedResult = {foo: 'bar'};
+    const expectedResult = {foo: 'bar'};
     let savedResult;
     component.onNextButtonClick().then((result) => savedResult = result);
     // Resolve to a distinct result to confirm it was not modified.
@@ -128,5 +128,15 @@ export function onboardingChooseWpDisableMethodPageTest() {
 
     assertEquals(callCounter, 1);
     assertDeepEquals(savedResult, expectedResult);
+  });
+
+  test('ChooseWpDisableMethodDisableRadioGroup', async () => {
+    await initializeChooseWpDisableMethodPage();
+
+    const hwwpDisableMethodGroup =
+        component.shadowRoot.querySelector('#hwwpDisableMethod');
+    assertFalse(hwwpDisableMethodGroup.disabled);
+    component.allButtonsDisabled = true;
+    assertTrue(hwwpDisableMethodGroup.disabled);
   });
 }

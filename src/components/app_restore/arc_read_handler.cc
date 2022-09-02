@@ -8,8 +8,8 @@
 
 #include "base/containers/contains.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/app_restore_utils.h"
-#include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/window.h"
@@ -160,15 +160,6 @@ int32_t ArcReadHandler::GetArcRestoreWindowIdForSessionId(int32_t session_id) {
   return it == session_id_to_window_id_.end() ? 0 : it->second;
 }
 
-int32_t ArcReadHandler::GetArcSessionId() {
-  if (session_id_ < kArcSessionIdOffsetForRestoredLaunching) {
-    LOG(WARNING) << "ARC session id is overflow: " << session_id_;
-    session_id_ = kArcSessionIdOffsetForRestoredLaunching;
-  }
-
-  return ++session_id_;
-}
-
 void ArcReadHandler::SetArcSessionIdForWindowId(int32_t session_id,
                                                 int32_t window_id) {
   DCHECK_GT(session_id, kArcSessionIdOffsetForRestoredLaunching);
@@ -214,8 +205,8 @@ void ArcReadHandler::UpdateWindowCandidates(int32_t task_id,
 
   // Remove the window from the hidden container.
   if ((*window_it)->GetProperty(kParentToHiddenContainerKey)) {
-    full_restore::FullRestoreInfo::GetInstance()
-        ->OnARCTaskReadyForUnparentedWindow(*window_it);
+    app_restore::AppRestoreInfo::GetInstance()->OnParentWindowToValidContainer(
+        *window_it);
   }
 
   arc_window_candidates_.erase(*window_it);

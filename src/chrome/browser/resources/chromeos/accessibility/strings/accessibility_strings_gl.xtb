@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">táb <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignorando seguinte pulsación de tecla</translation>
 <translation id="4623097797855662355">Colofón</translation>
+<translation id="4624970070706497034">Os atallos de teclado de TalkBack xa non están personalizados para Chromebooks. Podes seguir usando esta función, pero cos predeterminados. Preme Buscar + A e despois K para ver os atallos de teclado dispoñibles. Se queres usar TalkBack, volve premer o comando.</translation>
 <translation id="463135993322337640">Para obter máis información sobre as novidades, preme ChromeVox seguido da tecla O e, despois, a N</translation>
 <translation id="4649220074413114917">Para deter a voz que estea soando actualmente, podes tocar a pantalla con dous dedos. Resultarache útil cando non queiras que ChromeVox lea algo. Para continuar, toca a pantalla con dous dedos.</translation>
 <translation id="4660783501463101648">Eliminouse a versión clásica. Quitouse a combinación de teclas para volver á versión clásica de ChromeVox.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Subtítulos en braille: activados</translation>
 <translation id="5183440668879371625">Liña anterior en braille</translation>
 <translation id="5189244881767082992">Liña</translation>
-<translation id="5234747236692380506">escribe "<ph name="TEXT" />"</translation>
 <translation id="5263034204789987535">Barba de millo</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Final</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Completouse a orientación rápida</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Gris pálido</translation>
+<translation id="554893713779400387">Activar ou desactivar ditado</translation>
 <translation id="5549179427201066174">Activa/desactiva os comentarios de son (iconas auditivas)</translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="5561345396546889625">Seguinte lista</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Rexistro</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Símbolo gráfico</translation>
+<translation id="5648939288050772726">Parabéns! Xa aprendiches os conceptos básicos para utilizar ChromeVox correctamente. Lembra que podes abrir o menú de comandos de ChromeVox en calquera momento premendo a tecla de busca + punto. Para consultar aínda máis información sobre ChromeVox e Chrome OS, consulta os seguintes artigos.
+    Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e fai clic nel.</translation>
 <translation id="5653397561111110475">Utilizar as funcións de accesibilidade de pantalla táctil de Chromebook</translation>
 <translation id="5655682562155942719">Saltar comandos</translation>
 <translation id="56637627897541303">Área de texto</translation>
@@ -752,7 +755,7 @@
 <translation id="6082768461603900813">Navegación básica</translation>
 <translation id="609281021724813947">Non hai ningún control desprazable anterior</translation>
 <translation id="6100239002225743044">Subir unha liña</translation>
-<translation id="6118126368611144850">Aplicacións Android para Chrome. Se tes Play Store no dispositivo, bota unha ollada a ChromeVox coas aplicacións Android. Descarga Google Chrome Canary desde Play Store e proba a compatibilidade experimental.</translation>
+<translation id="6118126368611144850">Aplicacións para Android para Chrome. Se tes Play Store no dispositivo, bota unha ollada a ChromeVox coas aplicacións para Android. Descarga Google Chrome Canary desde Play Store e proba a compatibilidade experimental.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Unha caixa de lista ou unha caixa de combinación</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{dous puntos}other{# dous puntos}}</translation>
 <translation id="6444046323172968959">Caixa de diálogo de alerta</translation>
 <translation id="6452403590345320472">Índice</translation>
+<translation id="6457542714329819968">escribe</translation>
 <translation id="6468049171101508116">Botón Seguinte</translation>
 <translation id="646954774886932461">Índice</translation>
 <translation id="6475604559827479857">Cor para destacar palabras:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Voz natural</translation>
 <translation id="7714340021005120797">Non hai ningunha caixa de combinación posterior</translation>
-<translation id="772146615414628379">Parabéns! Xa aprendiches os conceptos básicos para utilizar ChromeVox correctamente. Lembra que podes abrir o menú de comandos de ChromeVox en calquera momento premendo a tecla de busca + punto. Para consultar aínda máis información sobre ChromeVox e Chrome OS, consulta os seguintes artigos.
-    Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e fai clic nel.</translation>
 <translation id="7724603315864178912">Cortar</translation>
 <translation id="7731785449856576010">Non hai ningún widget multimedia posterior</translation>
 <translation id="7735498529470878067">A función Exploración táctil pode axudarche a saber rapidamente o que aparece na pantalla.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Vermello escuro</translation>
 <translation id="923331726185079994">Actualizouse ChromeVox</translation>
 <translation id="93384979447910801">Verde mariño escuro</translation>
+<translation id="937605981140327129">Nestes momentos non está instalado TalkBack. Instala Accesibilidade de Android a través de Play Store e téntao de novo.</translation>
 <translation id="948171205378458592">Reduce a velocidade da fala</translation>
 <translation id="957570623732056069">Para desprazarte por esta lección, pasa un dedo cara á esquerda ou cara á dereita</translation>
 <translation id="958854023026327378">Pasa o dedo cara abaixo</translation>

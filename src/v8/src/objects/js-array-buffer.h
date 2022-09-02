@@ -21,7 +21,8 @@ class ArrayBufferExtension;
 #include "torque-generated/src/objects/js-array-buffer-tq.inc"
 
 class JSArrayBuffer
-    : public TorqueGeneratedJSArrayBuffer<JSArrayBuffer, JSObject> {
+    : public TorqueGeneratedJSArrayBuffer<JSArrayBuffer,
+                                          JSObjectWithEmbedderSlots> {
  public:
 // The maximum length for JSArrayBuffer's supported by V8.
 // On 32-bit architectures we limit this to 2GiB, so that
@@ -112,6 +113,11 @@ class JSArrayBuffer
   inline size_t GetByteLength() const;
 
   static size_t GsabByteLength(Isolate* isolate, Address raw_array_buffer);
+
+  static Maybe<bool> GetResizableBackingStorePageConfiguration(
+      Isolate* isolate, size_t byte_length, size_t max_byte_length,
+      ShouldThrow should_throw, size_t* page_size, size_t* initial_pages,
+      size_t* max_pages);
 
   // Allocates an ArrayBufferExtension for this array buffer, unless it is
   // already associated with an extension.
@@ -231,7 +237,8 @@ class ArrayBufferExtension final : public Malloced {
 };
 
 class JSArrayBufferView
-    : public TorqueGeneratedJSArrayBufferView<JSArrayBufferView, JSObject> {
+    : public TorqueGeneratedJSArrayBufferView<JSArrayBufferView,
+                                              JSObjectWithEmbedderSlots> {
  public:
   // [byte_offset]: offset of typed array in bytes.
   DECL_PRIMITIVE_ACCESSORS(byte_offset, size_t)
@@ -252,8 +259,8 @@ class JSArrayBufferView
 
   static constexpr int kEndOfTaggedFieldsOffset = kByteOffsetOffset;
 
-  STATIC_ASSERT(IsAligned(kByteOffsetOffset, kUIntptrSize));
-  STATIC_ASSERT(IsAligned(kByteLengthOffset, kUIntptrSize));
+  static_assert(IsAligned(kByteOffsetOffset, kUIntptrSize));
+  static_assert(IsAligned(kByteLengthOffset, kUIntptrSize));
 
   TQ_OBJECT_CONSTRUCTORS(JSArrayBufferView)
 };
@@ -294,8 +301,14 @@ class JSTypedArray
   inline bool is_on_heap() const;
   inline bool is_on_heap(AcquireLoadTag tag) const;
 
+  // Only valid to call when IsVariableLength() is true.
+  size_t GetVariableLengthOrOutOfBounds(bool& out_of_bounds) const;
+
   inline size_t GetLengthOrOutOfBounds(bool& out_of_bounds) const;
   inline size_t GetLength() const;
+  inline size_t GetByteLength() const;
+  inline bool IsOutOfBounds() const;
+  inline bool IsDetachedOrOutOfBounds() const;
 
   static size_t LengthTrackingGsabBackedTypedArrayLength(Isolate* isolate,
                                                          Address raw_array);
@@ -340,8 +353,8 @@ class JSTypedArray
   DECL_VERIFIER(JSTypedArray)
 
   // TODO(v8:9287): Re-enable when GCMole stops mixing 32/64 bit configs.
-  // STATIC_ASSERT(IsAligned(kLengthOffset, kTaggedSize));
-  // STATIC_ASSERT(IsAligned(kExternalPointerOffset, kTaggedSize));
+  // static_assert(IsAligned(kLengthOffset, kTaggedSize));
+  // static_assert(IsAligned(kExternalPointerOffset, kTaggedSize));
 
   static const int kSizeWithEmbedderFields =
       kHeaderSize +
@@ -387,7 +400,7 @@ class JSDataView
   DECL_VERIFIER(JSDataView)
 
   // TODO(v8:9287): Re-enable when GCMole stops mixing 32/64 bit configs.
-  // STATIC_ASSERT(IsAligned(kDataPointerOffset, kTaggedSize));
+  // static_assert(IsAligned(kDataPointerOffset, kTaggedSize));
 
   static const int kSizeWithEmbedderFields =
       kHeaderSize +

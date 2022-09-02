@@ -139,13 +139,9 @@ class NetworkSettingsServiceAshTest : public InProcessBrowserTest {
 
   void SetupNetworkEnvironment() {
     chromeos::ShillProfileClient::TestInterface* profile_test =
-        chromeos::DBusThreadManager::Get()
-            ->GetShillProfileClient()
-            ->GetTestInterface();
+        chromeos::ShillProfileClient::Get()->GetTestInterface();
     chromeos::ShillServiceClient::TestInterface* service_test =
-        chromeos::DBusThreadManager::Get()
-            ->GetShillServiceClient()
-            ->GetTestInterface();
+        chromeos::ShillServiceClient::Get()->GetTestInterface();
 
     profile_test->AddProfile(kUserProfilePath, "user");
 
@@ -165,9 +161,7 @@ class NetworkSettingsServiceAshTest : public InProcessBrowserTest {
                                  const std::string& guid,
                                  const std::string& ssid) {
     chromeos::ShillServiceClient::TestInterface* service_test =
-        chromeos::DBusThreadManager::Get()
-            ->GetShillServiceClient()
-            ->GetTestInterface();
+        chromeos::ShillServiceClient::Get()->GetTestInterface();
 
     service_test->AddService(service_path, guid, ssid, shill::kTypeWifi,
                              shill::kStateOnline, true /* add_to_visible */);
@@ -196,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(NetworkSettingsServiceAshTest, ProxyConfigUpdate) {
   ASSERT_TRUE(observer_->proxy_config_->proxy_settings->is_manual());
   crosapi::mojom::ProxySettingsManualPtr manual =
       std::move(observer_->proxy_config_->proxy_settings->get_manual());
-  ASSERT_EQ(manual->http_proxies.size(), 1);
+  ASSERT_EQ(manual->http_proxies.size(), 1u);
   EXPECT_EQ(manual->http_proxies[0]->host, "proxyhost");
   EXPECT_EQ(manual->http_proxies[0]->port, 3128);
 }

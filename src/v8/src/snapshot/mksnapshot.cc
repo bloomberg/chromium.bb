@@ -8,7 +8,7 @@
 
 #include <iomanip>
 
-#include "include/v8-default-platform.h"
+#include "include/libplatform/libplatform.h"
 #include "include/v8-initialization.h"
 #include "src/base/platform/platform.h"
 #include "src/base/platform/wrappers.h"
@@ -85,7 +85,13 @@ class SnapshotFileWriter {
   static void WriteSnapshotFileSuffix(FILE* fp) {
     fprintf(fp, "const v8::StartupData* Snapshot::DefaultSnapshotBlob() {\n");
     fprintf(fp, "  return &blob;\n");
-    fprintf(fp, "}\n\n");
+    fprintf(fp, "}\n");
+    fprintf(fp, "\n");
+    fprintf(
+        fp,
+        "bool Snapshot::ShouldVerifyChecksum(const v8::StartupData* data) {\n");
+    fprintf(fp, "  return true;\n");
+    fprintf(fp, "}\n");
     fprintf(fp, "}  // namespace internal\n");
     fprintf(fp, "}  // namespace v8\n");
   }
@@ -241,9 +247,9 @@ int main(int argc, char** argv) {
   std::unique_ptr<v8::Platform> platform = std::unique_ptr<v8::Platform>(
                                       v8::platform::NewDefaultPlatform());
   v8::V8::InitializePlatform(platform.get());
-#ifdef V8_VIRTUAL_MEMORY_CAGE
-  if (!v8::V8::InitializeVirtualMemoryCage()) {
-    FATAL("Could not initialize the virtual memory cage");
+#ifdef V8_ENABLE_SANDBOX
+  if (!v8::V8::InitializeSandbox()) {
+    FATAL("Could not initialize the sandbox");
   }
 #endif
   v8::V8::Initialize();

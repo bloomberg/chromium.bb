@@ -158,7 +158,14 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, IsProcessSandboxed) {
   EXPECT_TRUE(maybe_is_sandboxed.value());
 }
 
-IN_PROC_BROWSER_TEST_F(MojoSandboxTest, NotIsProcessSandboxed) {
+// TODO(https://crbug.com/1071420): There is currently no way to know whether a
+// child process is sandboxed or not on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_NotIsProcessSandboxed DISABLED_NotIsProcessSandboxed
+#else
+#define MAYBE_NotIsProcessSandboxed NotIsProcessSandboxed
+#endif
+IN_PROC_BROWSER_TEST_F(MojoSandboxTest, MAYBE_NotIsProcessSandboxed) {
   StartProcess(base::BindOnce([](UtilityProcessHost* host) {
     host->SetSandboxType(sandbox::mojom::Sandbox::kNoSandbox);
   }));
@@ -177,18 +184,12 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, NotIsProcessSandboxed) {
       }));
   run_loop.Run();
   ASSERT_TRUE(maybe_is_sandboxed.has_value());
-#if defined(OS_ANDROID)
-  // Android does not support unsandboxed utility processes. See
-  // org.chromium.content.browser.ChildProcessLauncherHelperImpl#createAndStart
-  EXPECT_TRUE(maybe_is_sandboxed.value());
-#else
   // If the content_browsertests is launched with --no-sandbox, that will
   // get passed down to the browser and all child processes. In that case,
   // IsProcessSandboxed() will report true, per the API.
   bool no_sandbox = base::CommandLine::ForCurrentProcess()->HasSwitch(
       sandbox::policy::switches::kNoSandbox);
   EXPECT_EQ(no_sandbox, maybe_is_sandboxed.value());
-#endif
 }
 
 }  //  namespace

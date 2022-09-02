@@ -2,15 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(OS_POSIX)
-#include <signal.h>
-#endif
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -137,7 +132,7 @@ class UnloadTest : public InProcessBrowserTest {
       command_line->AppendSwitch(embedder_support::kDisablePopupBlocking);
     } else if (strstr(test_info->name(), "BrowserTerminateBeforeUnload") !=
                nullptr) {
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
       DisableSIGTERMHandling();
 #endif
     }
@@ -636,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, VisibilityChangeOnlyDispatchedOnce) {
   content::WebContents* popup_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_NE(opener_contents, popup_contents);
-  content::RenderFrameHost* popup_rfh = popup_contents->GetMainFrame();
+  content::RenderFrameHost* popup_rfh = popup_contents->GetPrimaryMainFrame();
 
   // In the popup, add a visibilitychange handler that ensures we only see the
   // visibilitychange event fired once on tab close.
@@ -710,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithCrossSiteIframe) {
 
   // Install a dialog-showing beforeunload handler in the iframe.
   content::RenderFrameHost* child =
-      ChildFrameAt(web_contents->GetMainFrame(), 0);
+      ChildFrameAt(web_contents->GetPrimaryMainFrame(), 0);
   EXPECT_TRUE(
       ExecuteScript(child, "window.onbeforeunload = () => { return 'x' };"));
 
@@ -731,9 +726,9 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithSameSiteIframe) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* child =
-      ChildFrameAt(web_contents->GetMainFrame(), 0);
+      ChildFrameAt(web_contents->GetPrimaryMainFrame(), 0);
   EXPECT_EQ(child->GetSiteInstance(),
-            web_contents->GetMainFrame()->GetSiteInstance());
+            web_contents->GetPrimaryMainFrame()->GetSiteInstance());
 
   // Install a dialog-showing beforeunload handler in the iframe.
   EXPECT_TRUE(

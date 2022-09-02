@@ -12,16 +12,19 @@
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/base_export.h"
 #include "base/bits.h"
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/debug/crash_logging.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/template_util.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -105,10 +108,20 @@ class BASE_EXPORT WatchHangsInScope {
 // within a single process. This instance must outlive all monitored threads.
 class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
  public:
+  // Describes the type of a process for logging purposes.
+  enum class ProcessType {
+    kUnknownProcess = 0,
+    kBrowserProcess = 1,
+    kGPUProcess = 2,
+    kRendererProcess = 3,
+    kUtilityProcess = 4,
+    kMax = kUtilityProcess
+  };
+
   // Describes the type of a thread for logging purposes.
   enum class ThreadType {
     kIOThread = 0,
-    kUIThread = 1,
+    kMainThread = 1,
     kThreadPoolThread = 2,
     kMax = kThreadPoolThread
   };
@@ -130,12 +143,14 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   HangWatcher(const HangWatcher&) = delete;
   HangWatcher& operator=(const HangWatcher&) = delete;
 
+  static void CreateHangWatcherInstance();
+
   // Returns a non-owning pointer to the global HangWatcher instance.
   static HangWatcher* GetInstance();
 
   // Initializes HangWatcher. Must be called once on the main thread during
   // startup while single-threaded.
-  static void InitializeOnMainThread();
+  static void InitializeOnMainThread(ProcessType process_type);
 
   // Returns the values that were set through InitializeOnMainThread() to their
   // default value. Used for testing since in prod initialization should happen
@@ -182,8 +197,8 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // called from the registered thread before it's joined. Returns a null
   // closure in the case where there is no HangWatcher instance to register the
   // thread with.
-  static ScopedClosureRunner RegisterThread(ThreadType thread_type)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] static ScopedClosureRunner RegisterThread(
+      ThreadType thread_type);
 
   // Choose a closure to be run at the end of each call to Monitor(). Use only
   // for testing. Reentering the HangWatcher in the closure must be done with
@@ -229,10 +244,14 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // Begin executing the monitoring loop on the HangWatcher thread.
   void Start();
 
+  // Returns the value of the crash key with the time since last system power
+  // resume.
+  std::string GetTimeSinceLastSystemPowerResumeCrashKeyValue() const;
+
  private:
   // See comment of ::RegisterThread() for details.
-  ScopedClosureRunner RegisterThreadInternal(ThreadType thread_type)
-      LOCKS_EXCLUDED(watch_state_lock_) WARN_UNUSED_RESULT;
+  [[nodiscard]] ScopedClosureRunner RegisterThreadInternal(
+      ThreadType thread_type) LOCKS_EXCLUDED(watch_state_lock_);
 
   // Use to assert that functions are called on the monitoring thread.
   THREAD_CHECKER(hang_watcher_thread_checker_);
@@ -244,11 +263,11 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-#if not defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   // Returns a ScopedCrashKeyString that sets the crash key with the time since
   // last critical memory pressure signal.
-  debug::ScopedCrashKeyString GetTimeSinceLastCriticalMemoryPressureCrashKey()
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] debug::ScopedCrashKeyString
+  GetTimeSinceLastCriticalMemoryPressureCrashKey();
 #endif
 
   // Invoke base::debug::DumpWithoutCrashing() insuring that the stack frame
@@ -472,8 +491,8 @@ class BASE_EXPORT HangWatchDeadline {
 
  private:
   using TimeTicksInternalRepresentation =
-      base::invoke_result<decltype(&TimeTicks::ToInternalValue),
-                          TimeTicks>::type;
+      std::invoke_result<decltype(&TimeTicks::ToInternalValue),
+                         TimeTicks>::type;
   static_assert(std::is_same<TimeTicksInternalRepresentation, int64_t>::value,
                 "Bit manipulations made by HangWatchDeadline need to be"
                 "adapted if internal representation of TimeTicks changes.");

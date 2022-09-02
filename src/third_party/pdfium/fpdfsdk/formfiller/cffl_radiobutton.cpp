@@ -24,7 +24,7 @@ CFFL_RadioButton::~CFFL_RadioButton() = default;
 
 std::unique_ptr<CPWL_Wnd> CFFL_RadioButton::NewPWLWindow(
     const CPWL_Wnd::CreateParams& cp,
-    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData) {
+    std::unique_ptr<IPWL_FillerNotify::PerWindowData> pAttachedData) {
   auto pWnd = std::make_unique<CPWL_RadioButton>(cp, std::move(pAttachedData));
   pWnd->Realize();
   pWnd->SetCheck(m_pWidget->IsChecked());
@@ -95,15 +95,6 @@ void CFFL_RadioButton::SaveData(const CPDFSDK_PageView* pPageView) {
     return;
 
   bool bNewChecked = pWnd->IsChecked();
-  if (bNewChecked) {
-    CPDF_FormField* pField = m_pWidget->GetFormField();
-    for (int32_t i = 0, sz = pField->CountControls(); i < sz; i++) {
-      if (CPDF_FormControl* pCtrl = pField->GetControl(i)) {
-        if (pCtrl->IsChecked())
-          break;
-      }
-    }
-  }
   ObservedPtr<CPDFSDK_Widget> observed_widget(m_pWidget.Get());
   ObservedPtr<CFFL_RadioButton> observed_this(this);
   m_pWidget->SetCheck(bNewChecked);

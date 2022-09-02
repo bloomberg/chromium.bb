@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom-blink.h"
@@ -39,12 +40,12 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
-class DedicatedWorker;
 class DedicatedWorkerObjectProxy;
 class DedicatedWorkerThread;
 class PostMessageOptions;
@@ -73,7 +74,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       std::unique_ptr<GlobalScopeCreationParams>,
       DedicatedWorkerThread*,
       base::TimeTicks time_origin,
-      std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+      std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features,
       const BeginFrameProviderParams& begin_frame_provider_params,
       bool parent_cross_origin_isolated_capability,
       bool direct_socket_isolated_capability,
@@ -104,7 +105,6 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   void Initialize(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
-      network::mojom::IPAddressSpace response_address_space,
       Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
       const Vector<String>* response_origin_trial_tokens) override;
   void FetchAndRunClassicScript(
@@ -173,18 +173,11 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
     return parent_token_;
   }
 
-  // Adds a DedicatedWorker. This is called when a DedicatedWorker is created in
-  // this ExecutionContext.
-  void AddDedicatedWorker(DedicatedWorker* dedicated_worker);
-
-  // Removes a DedicatedWorker This is called when a DedicatedWorker is
-  // destroyed in this ExecutionContext.
-  void RemoveDedicatedWorker(DedicatedWorker* dedicated_worker);
-
  private:
   struct ParsedCreationParams {
     std::unique_ptr<GlobalScopeCreationParams> creation_params;
     ExecutionContextToken parent_context_token;
+    bool starter_secure_context = false;
   };
 
   static ParsedCreationParams ParseCreationParams(
@@ -199,7 +192,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       ParsedCreationParams parsed_creation_params,
       DedicatedWorkerThread* thread,
       base::TimeTicks time_origin,
-      std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+      std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features,
       const BeginFrameProviderParams& begin_frame_provider_params,
       bool parent_cross_origin_isolated_capability,
       bool direct_socket_capability,
@@ -228,9 +221,6 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       this};
   HeapMojoRemote<mojom::blink::BackForwardCacheControllerHost>
       back_forward_cache_controller_host_{this};
-
-  // The set of DedicatedWorkers that are created in this ExecutionContext.
-  HeapHashSet<Member<DedicatedWorker>> dedicated_workers_;
 
   // The total bytes buffered by all network requests in this worker while
   // frozen due to back-forward cache. This number gets reset when the worker

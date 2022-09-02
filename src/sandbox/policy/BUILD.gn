@@ -6,7 +6,8 @@ import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/sanitizers/sanitizers.gni")
-import("//chromeos/assistant/assistant.gni")
+import("//chromeos/ash/components/assistant/assistant.gni")
+import("//components/services/screen_ai/buildflags/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
 
@@ -29,12 +30,12 @@ component("policy") {
     ":sanitizer_buildflags",
     "//base",
     "//build:chromeos_buildflags",
+    "//components/services/screen_ai/buildflags",
     "//ppapi/buildflags",
     "//printing/buildflags",
-    "//sandbox:common",
     "//sandbox/policy/mojom",
   ]
-  public_deps = []
+  public_deps = [ "//sandbox:common" ]
   if (is_linux || is_chromeos) {
     sources += [
       "linux/bpf_audio_policy_linux.cc",
@@ -78,6 +79,12 @@ component("policy") {
         "linux/bpf_print_backend_policy_linux.h",
       ]
     }
+    if (enable_screen_ai_service) {
+      sources += [
+        "linux/bpf_screen_ai_policy_linux.cc",
+        "linux/bpf_screen_ai_policy_linux.h",
+      ]
+    }
     configs += [
       "//media:media_config",
       "//media/audio:platform_config",
@@ -97,7 +104,7 @@ component("policy") {
       "linux/bpf_tts_policy_linux.cc",
       "linux/bpf_tts_policy_linux.h",
     ]
-    deps += [ "//chromeos/assistant:buildflags" ]
+    deps += [ "//chromeos/ash/components/assistant:buildflags" ]
 
     if (enable_cros_libassistant) {
       sources += [
@@ -145,11 +152,14 @@ component("policy") {
     ]
 
     deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
+
+      # TODO(crbug.com/1224707): Remove after switching to fuchsia.scheduler API.
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.memorypressure",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net.interfaces",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",

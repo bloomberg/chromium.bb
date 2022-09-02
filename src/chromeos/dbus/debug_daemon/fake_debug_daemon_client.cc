@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -89,12 +90,19 @@ void FakeDebugDaemonClient::StopAgentTracing(
 void FakeDebugDaemonClient::SetStopAgentTracingTaskRunner(
     scoped_refptr<base::TaskRunner> task_runner) {}
 
+void FakeDebugDaemonClient::SetRoutesForTesting(
+    std::vector<std::string> routes) {
+  routes_ = std::move(routes);
+}
+
 void FakeDebugDaemonClient::GetRoutes(
     bool numeric,
     bool ipv6,
+    bool all_tables,
     DBusMethodCallback<std::vector<std::string>> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), absl::make_optional(routes_)));
 }
 
 void FakeDebugDaemonClient::GetNetworkStatus(
@@ -110,8 +118,8 @@ void FakeDebugDaemonClient::GetNetworkInterfaces(
 }
 
 void FakeDebugDaemonClient::GetPerfOutput(
-    base::TimeDelta duration,
-    const std::vector<std::string>& perf_args,
+    const std::vector<std::string>& quipper_args,
+    bool disable_cpu_idle,
     int file_descriptor,
     DBusMethodCallback<uint64_t> error_callback) {}
 
@@ -298,17 +306,6 @@ void FakeDebugDaemonClient::GetU2fFlags(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), absl::make_optional(u2f_flags_)));
-}
-
-void FakeDebugDaemonClient::GetKernelFeatureList(
-    KernelFeatureListCallback callback) {
-  // Defined by test.
-}
-
-void FakeDebugDaemonClient::KernelFeatureEnable(
-    const std::string& name,
-    KernelFeatureListCallback callback) {
-  // Defined by test.
 }
 
 void FakeDebugDaemonClient::AddObserver(Observer* observer) {

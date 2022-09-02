@@ -6,13 +6,15 @@
 
 #include "core/fpdfdoc/cpdf_action.h"
 
+#include <iterator>
+
 #include "constants/stream_dict_common.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
+#include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fpdfdoc/cpdf_filespec.h"
-#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -31,25 +33,18 @@ CPDF_Action::CPDF_Action(const CPDF_Action& that) = default;
 CPDF_Action::~CPDF_Action() = default;
 
 CPDF_Action::Type CPDF_Action::GetType() const {
-  if (!m_pDict)
+  // See ISO 32000-1:2008 spec, table 193.
+  if (!ValidateDictOptionalType(m_pDict.Get(), "Action"))
     return Type::kUnknown;
-
-  // Validate |m_pDict|. Type is optional, but must be valid if present.
-  const CPDF_Object* pType = m_pDict->GetObjectFor("Type");
-  if (pType) {
-    const CPDF_Name* pName = pType->AsName();
-    if (!pName || pName->GetString() != "Action")
-      return Type::kUnknown;
-  }
 
   ByteString csType = m_pDict->GetNameFor("S");
   if (csType.IsEmpty())
     return Type::kUnknown;
 
   static_assert(
-      pdfium::size(kActionTypeStrings) == static_cast<size_t>(Type::kLast),
+      std::size(kActionTypeStrings) == static_cast<size_t>(Type::kLast),
       "Type mismatch");
-  for (size_t i = 0; i < pdfium::size(kActionTypeStrings); ++i) {
+  for (size_t i = 0; i < std::size(kActionTypeStrings); ++i) {
     if (csType == kActionTypeStrings[i])
       return static_cast<Type>(i + 1);
   }

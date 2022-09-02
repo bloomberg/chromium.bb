@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
@@ -64,7 +63,7 @@ static void OnCompleted(int bytes_read,
 }
 
 static const char kTestMessage[] = "$$TESTMESSAGETESTMESSAGETESTMESSAGETEST$$";
-static const int kTestMessageLength = base::size(kTestMessage);
+static const int kTestMessageLength = std::size(kTestMessage);
 
 net::AddressList CreateAddressList(const char* address_string, int port) {
   net::IPAddress ip;
@@ -172,7 +171,7 @@ static void OnMulticastReadCompleted(base::OnceClosure quit_run_loop,
 }
 
 // TODO(https://crbug.com/1210643): Test is flaky on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_TestUDPMulticastRecv DISABLED_TestUDPMulticastRecv
 #else
 #define MAYBE_TestUDPMulticastRecv TestUDPMulticastRecv

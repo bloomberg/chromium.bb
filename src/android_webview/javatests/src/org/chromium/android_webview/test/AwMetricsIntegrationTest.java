@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.contains;
 
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROCESS;
 
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
@@ -150,10 +149,8 @@ public class AwMetricsIntegrationTest {
         Assert.assertTrue(
                 "Should have some application_locale", systemProfile.hasApplicationLocale());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Assert.assertEquals(
-                    ApiHelperForM.isProcess64Bit(), systemProfile.getAppVersion().contains("-64"));
-        }
+        Assert.assertEquals(
+                ApiHelperForM.isProcess64Bit(), systemProfile.getAppVersion().contains("-64"));
         Assert.assertTrue(
                 "Should have some low_entropy_source", systemProfile.hasLowEntropySource());
         Assert.assertTrue(
@@ -559,7 +556,7 @@ public class AwMetricsIntegrationTest {
             // MetricsProvider::ProvideCurrentSessionData().
             mPlatformServiceBridge.waitForNextMetricsLog();
 
-            final String histogramName = "Android.WebView.WebViewOpenWebVisible.ScreenPortion2";
+            final String histogramName = "Android.WebView.VisibleScreenCoverage.Global";
 
             // The histogram records whole seconds that the WebView has been on screen, we need to
             // leave enough time for something to be recorded.
@@ -570,10 +567,8 @@ public class AwMetricsIntegrationTest {
 
             int totalSamples = RecordHistogram.getHistogramTotalCountForTesting(histogramName);
 
-            // Based on VisibilityMetricsLogger::WebViewOpenWebScreenPortion.
-            final int histogramZeroBucket = 11;
-            int zeroBucketSamples = RecordHistogram.getHistogramValueCountForTesting(
-                    histogramName, histogramZeroBucket);
+            int zeroBucketSamples =
+                    RecordHistogram.getHistogramValueCountForTesting(histogramName, 0);
             Assert.assertNotEquals("There should be at least one sample in a non-zero bucket",
                     zeroBucketSamples, totalSamples);
         } finally {

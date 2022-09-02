@@ -7,12 +7,6 @@
  * chains given the current node.
  */
 
-goog.provide('OutputAncestryInfo');
-
-goog.require('constants');
-goog.require('OutputRoleInfo');
-
-goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
 const RoleType = chrome.automation.RoleType;
@@ -24,7 +18,7 @@ const RoleType = chrome.automation.RoleType;
  * so are generally valid for the current call stack, wherein ancestry data is
  * stable.
  */
-OutputAncestryInfo = class {
+export class OutputAncestryInfo {
   /**
    * @param {!AutomationNode} node The primary node to consider for ancestry
    *     computation.
@@ -53,7 +47,7 @@ OutputAncestryInfo = class {
 
     let afterEndNode = AutomationUtil.findNextNode(
         node, Dir.FORWARD, AutomationPredicate.leafOrStaticText,
-        {skipInitialSubtree: true});
+        {root: r => r === node.root, skipInitialSubtree: true});
     if (!afterEndNode) {
       afterEndNode = AutomationUtil.getTopLevelRoot(node) || node.root;
     }
@@ -66,7 +60,7 @@ OutputAncestryInfo = class {
 
     let beforeStartNode = AutomationUtil.findNextNode(
         node, Dir.BACKWARD, AutomationPredicate.leafOrStaticText,
-        {skipInitialAncestry: true});
+        {root: r => r === node.root, skipInitialAncestry: true});
     if (!beforeStartNode) {
       beforeStartNode = AutomationUtil.getTopLevelRoot(node) || node.root;
     }
@@ -156,5 +150,4 @@ OutputAncestryInfo = class {
     }
     return rest.concat(contextFirst.reverse());
   }
-};
-});  // goog.scope
+}

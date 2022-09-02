@@ -22,8 +22,8 @@ class ExternalFunctionCall final : public Expression {
 public:
     inline static constexpr Kind kExpressionKind = Kind::kExternalFunctionCall;
 
-    ExternalFunctionCall(int line, const ExternalFunction* function, ExpressionArray arguments)
-        : INHERITED(line, kExpressionKind, &function->type())
+    ExternalFunctionCall(Position pos, const ExternalFunction* function, ExpressionArray arguments)
+        : INHERITED(pos, kExpressionKind, &function->type())
         , fFunction(*function)
         , fArguments(std::move(arguments)) {}
 
@@ -51,19 +51,14 @@ public:
         return false;
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        ExpressionArray cloned;
-        cloned.reserve_back(this->arguments().size());
-        for (const auto& arg : this->arguments()) {
-            cloned.push_back(arg->clone());
-        }
-        return std::make_unique<ExternalFunctionCall>(fLine, &this->function(),
-                                                      std::move(cloned));
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::make_unique<ExternalFunctionCall>(pos, &this->function(),
+                                                      this->arguments().clone());
     }
 
-    String description() const override {
-        String result = String(this->function().name()) + "(";
-        String separator;
+    std::string description() const override {
+        std::string result = std::string(this->function().name()) + "(";
+        std::string separator;
         for (const std::unique_ptr<Expression>& arg : this->arguments()) {
             result += separator;
             result += arg->description();

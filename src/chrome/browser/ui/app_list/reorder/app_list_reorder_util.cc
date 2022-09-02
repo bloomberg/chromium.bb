@@ -5,7 +5,12 @@
 #include "chrome/browser/ui/app_list/reorder/app_list_reorder_util.h"
 
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "chrome/browser/ui/ash/app_icon_color_cache.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorType.h"
+#include "third_party/skia/include/core/SkScalar.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_analysis.h"
 
 namespace app_list {
@@ -39,23 +44,41 @@ ReorderParam::ReorderParam(const ReorderParam&) = default;
 
 ReorderParam::~ReorderParam() = default;
 
-// SyncItemWrapper<std::string> ------------------------------------------------
+// SyncItemWrapper<std::u16string> ---------------------------------------------
 
 template <>
-SyncItemWrapper<std::string>::SyncItemWrapper(
+SyncItemWrapper<std::u16string>::SyncItemWrapper(
     const AppListSyncableService::SyncItem& sync_item)
     : id(sync_item.item_id),
       item_ordinal(sync_item.item_ordinal),
-      is_folder(sync_item.item_type == sync_pb::AppListSpecifics::TYPE_FOLDER),
-      key_attribute(sync_item.item_name) {}
+      is_folder(sync_item.item_type == sync_pb::AppListSpecifics::TYPE_FOLDER) {
+  // Handle the case when the folder item name is not specified and set the
+  // `key_attribute` to the default placeholder.
+  if (is_folder && sync_item.item_name.empty()) {
+    key_attribute =
+        l10n_util::GetStringUTF16(IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER);
+    return;
+  }
+
+  key_attribute = base::UTF8ToUTF16(sync_item.item_name);
+}
 
 template <>
-SyncItemWrapper<std::string>::SyncItemWrapper(
-    const ChromeAppListItem& app_list_item)
-    : id(app_list_item.id()),
-      item_ordinal(app_list_item.position()),
-      is_folder(app_list_item.is_folder()),
-      key_attribute(app_list_item.name()) {}
+SyncItemWrapper<std::u16string>::SyncItemWrapper(
+    const ash::AppListItemMetadata& metadata)
+    : id(metadata.id),
+      item_ordinal(metadata.position),
+      is_folder(metadata.is_folder) {
+  // Handle the case when the folder item name is not specified and set the
+  // `key_attribute` to the default placeholder.
+  if (is_folder && metadata.name.empty()) {
+    key_attribute =
+        l10n_util::GetStringUTF16(IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER);
+    return;
+  }
+
+  key_attribute = base::UTF8ToUTF16(metadata.name);
+}
 
 // SyncItemWrapper<ash::IconColor> ---------------------------------------------
 
@@ -69,11 +92,62 @@ SyncItemWrapper<ash::IconColor>::SyncItemWrapper(
 
 template <>
 SyncItemWrapper<ash::IconColor>::SyncItemWrapper(
-    const ChromeAppListItem& app_list_item)
-    : id(app_list_item.id()),
-      item_ordinal(app_list_item.position()),
-      is_folder(app_list_item.is_folder()),
-      key_attribute(app_list_item.icon_color()) {}
+    const ash::AppListItemMetadata& metadata)
+    : id(metadata.id),
+      item_ordinal(metadata.position),
+      is_folder(metadata.is_folder),
+      key_attribute(metadata.icon_color) {}
+
+// IconColorWrapperComparator -------------------------------------------------
+
+IconColorWrapperComparator::IconColorWrapperComparator() = default;
+
+bool IconColorWrapperComparator::operator()(
+    const reorder::SyncItemWrapper<ash::IconColor>& lhs,
+    const reorder::SyncItemWrapper<ash::IconColor>& rhs) const {
+  // Folders are placed at the bottom of the app list in color sort.
+  if (lhs.is_folder != rhs.is_folder)
+    return rhs.is_folder;
+
+  if (lhs.key_attribute != rhs.key_attribute)
+    return lhs.key_attribute < rhs.key_attribute;
+
+  const syncer::StringOrdinal& lhs_ordinal = lhs.item_ordinal;
+  const syncer::StringOrdinal& rhs_ordinal = rhs.item_ordinal;
+  if (lhs_ordinal.IsValid() && rhs_ordinal.IsValid() &&
+      !lhs_ordinal.Equals(rhs_ordinal)) {
+    lhs.item_ordinal.LessThan(rhs.item_ordinal);
+  }
+
+  // Compare ids so that sorting with this comparator is stable.
+  return lhs.id < rhs.id;
+}
+
+// StringWrapperComparator ----------------------------------------------------
+
+StringWrapperComparator::StringWrapperComparator(bool increasing,
+                                                 icu::Collator* collator)
+    : increasing_(increasing), collator_(collator) {}
+
+bool StringWrapperComparator::operator()(
+    const reorder::SyncItemWrapper<std::u16string>& lhs,
+    const reorder::SyncItemWrapper<std::u16string>& rhs) const {
+  // If the collator is not created successfully, compare the string values
+  // using operators.
+  if (!collator_) {
+    if (increasing_)
+      return lhs.key_attribute < rhs.key_attribute;
+
+    return lhs.key_attribute > rhs.key_attribute;
+  }
+
+  UCollationResult result = base::i18n::CompareString16WithCollator(
+      *collator_, lhs.key_attribute, rhs.key_attribute);
+  if (increasing_)
+    return result == UCOL_LESS;
+
+  return result == UCOL_GREATER;
+}
 
 // Color Sort Utilities -------------------------------------------------------
 
@@ -130,8 +204,7 @@ sync_pb::AppListSpecifics::ColorGroup CalculateBackgroundColorGroup(
   sync_pb::AppListSpecifics::ColorGroup top_group = sync_pb::AppListSpecifics::
       ColorGroup::AppListSpecifics_ColorGroup_COLOR_BLACK;
   current = reinterpret_cast<SkColor*>(source.getAddr32(width / 2, 0));
-  const int row_bytes = source.rowBytes();
-  for (int y = 0; y < height; ++y, current += row_bytes) {
+  for (int y = 0; y < height; ++y, current += width) {
     if (SkColorGetA(*current) < SK_AlphaOPAQUE) {
       continue;
     } else {

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
+#include "base/containers/adapters.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
@@ -21,9 +21,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/l10n_file_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/message_bundle.h"
@@ -42,7 +42,7 @@ CastExtensionMessageFilter::CastExtensionMessageFilter(
     int render_process_id,
     content::BrowserContext* context)
     : BrowserMessageFilter(kExtensionFilteredMessageClasses,
-                           base::size(kExtensionFilteredMessageClasses)),
+                           std::size(kExtensionFilteredMessageClasses)),
       render_process_id_(render_process_id),
       context_(context),
       extension_info_map_(
@@ -95,8 +95,8 @@ void CastExtensionMessageFilter::OnGetExtMessageBundle(
   if (default_locale.empty()) {
     // A little optimization: send the answer here to avoid an extra thread hop.
     std::unique_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
-        extensions::file_util::LoadNonLocalizedMessageBundleSubstitutionMap(
-            extension_id));
+        extensions::l10n_file_util::
+            LoadNonLocalizedMessageBundleSubstitutionMap(extension_id));
     ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,
                                                         *dictionary_map);
     Send(reply_msg);
@@ -110,11 +110,11 @@ void CastExtensionMessageFilter::OnGetExtMessageBundle(
   // Iterate through the imports in reverse.  This will allow later imported
   // modules to override earlier imported modules, as the list order is
   // maintained from the definition in manifest.json of the imports.
-  for (auto it = imports.rbegin(); it != imports.rend(); ++it) {
+  for (const auto& import_info : base::Reversed(imports)) {
     const extensions::Extension* imported_extension =
-        extension_set.GetByID(it->extension_id);
+        extension_set.GetByID(import_info.extension_id);
     if (!imported_extension) {
-      NOTREACHED() << "Missing shared module " << it->extension_id;
+      NOTREACHED() << "Missing shared module " << import_info.extension_id;
       continue;
     }
     paths_to_load.push_back(imported_extension->path());
@@ -138,7 +138,7 @@ void CastExtensionMessageFilter::OnGetExtMessageBundleAsync(
     extension_l10n_util::GzippedMessagesPermission gzip_permission,
     IPC::Message* reply_msg) {
   std::unique_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
-      extensions::file_util::LoadMessageBundleSubstitutionMapFromPaths(
+      extensions::l10n_file_util::LoadMessageBundleSubstitutionMapFromPaths(
           extension_paths, main_extension_id, default_locale, gzip_permission));
 
   ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,

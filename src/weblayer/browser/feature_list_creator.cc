@@ -5,6 +5,7 @@
 #include "weblayer/browser/feature_list_creator.h"
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/prefs/pref_service.h"
@@ -16,11 +17,11 @@
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/weblayer_variations_service_client.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 namespace switches {
 const char kDisableBackgroundNetworking[] = "disable-background-networking";
 }  // namespace switches
@@ -55,50 +56,15 @@ void FeatureListCreator::SetSystemNetworkContextManager(
   system_network_context_manager_ = system_network_context_manager;
 }
 
-void FeatureListCreator::SetUpFieldTrials() {
-#if defined(OS_ANDROID)
-  // The FieldTrialList should have been instantiated in
-  // AndroidMetricsServiceClient::Initialize().
-  DCHECK(base::FieldTrialList::GetInstance());
-  DCHECK(system_network_context_manager_);
-
-  auto* metrics_client = WebLayerMetricsServiceClient::GetInstance();
-  variations_service_ = variations::VariationsService::Create(
-      std::make_unique<WebLayerVariationsServiceClient>(
-          system_network_context_manager_),
-      local_state_, metrics_client->metrics_state_manager(),
-      switches::kDisableBackgroundNetworking, variations::UIStringOverrider(),
-      base::BindOnce(&content::GetNetworkConnectionTracker));
-  variations_service_->OverridePlatform(
-      variations::Study::PLATFORM_ANDROID_WEBLAYER, "android_weblayer");
-
-  std::vector<std::string> variation_ids;
-  auto feature_list = std::make_unique<base::FeatureList>();
-
-  // Pass false for |extend_variations_safe_mode| to temporarily opt out of the
-  // Extended Variations Safe Mode experiment.
-  // TODO(crbug/1245347): Enable the experiment on Android WebLayer.
-  variations_service_->SetUpFieldTrials(
-      variation_ids,
-      content::GetSwitchDependentFeatureOverrides(
-          *base::CommandLine::ForCurrentProcess()),
-      std::move(feature_list), &weblayer_field_trials_,
-      /*extend_variations_safe_mode=*/false);
-  variations::InitCrashKeys();
-#else
-  // TODO(weblayer-dev): Support variations on desktop.
-#endif
-}
-
 void FeatureListCreator::CreateFeatureListAndFieldTrials() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   WebLayerMetricsServiceClient::GetInstance()->Initialize(local_state_);
 #endif
   SetUpFieldTrials();
 }
 
 void FeatureListCreator::PerformPreMainMessageLoopStartup() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // It is expected this is called after SetUpFieldTrials().
   DCHECK(variations_service_);
   variations_service_->PerformPreMainMessageLoopStartup();
@@ -118,6 +84,37 @@ void FeatureListCreator::OnBrowserFragmentStarted() {
   // notion of a fragment doesn't really map to the Application as a whole,
   // call this function once.
   variations_service_->OnAppEnterForeground();
+}
+
+void FeatureListCreator::SetUpFieldTrials() {
+#if BUILDFLAG(IS_ANDROID)
+  // The FieldTrialList should have been instantiated in
+  // AndroidMetricsServiceClient::Initialize().
+  DCHECK(base::FieldTrialList::GetInstance());
+  DCHECK(system_network_context_manager_);
+
+  auto* metrics_client = WebLayerMetricsServiceClient::GetInstance();
+  variations_service_ = variations::VariationsService::Create(
+      std::make_unique<WebLayerVariationsServiceClient>(
+          system_network_context_manager_),
+      local_state_, metrics_client->metrics_state_manager(),
+      switches::kDisableBackgroundNetworking, variations::UIStringOverrider(),
+      base::BindOnce(&content::GetNetworkConnectionTracker));
+  variations_service_->OverridePlatform(
+      variations::Study::PLATFORM_ANDROID_WEBLAYER, "android_weblayer");
+
+  std::vector<std::string> variation_ids;
+  auto feature_list = std::make_unique<base::FeatureList>();
+
+  variations_service_->SetUpFieldTrials(
+      variation_ids,
+      content::GetSwitchDependentFeatureOverrides(
+          *base::CommandLine::ForCurrentProcess()),
+      std::move(feature_list), &weblayer_field_trials_);
+  variations::InitCrashKeys();
+#else
+  // TODO(weblayer-dev): Support variations on desktop.
+#endif
 }
 
 }  // namespace weblayer

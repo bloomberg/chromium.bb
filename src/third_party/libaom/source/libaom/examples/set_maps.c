@@ -69,6 +69,7 @@ static void set_active_map(const aom_codec_enc_cfg_t *cfg,
   map.cols = (cfg->g_w + 15) / 16;
 
   map.active_map = (uint8_t *)malloc(map.rows * map.cols);
+  if (!map.active_map) die("Failed to allocate active map");
   for (i = 0; i < map.rows * map.cols; ++i) map.active_map[i] = i % 2;
 
   if (aom_codec_control(codec, AOME_SET_ACTIVEMAP, &map))

@@ -14,17 +14,18 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/proto/autofill_sync.pb.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/sync/engine/entity_data.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_metadata_store_change_list.h"
-#include "net/base/escape.h"
+#include "components/sync/protocol/entity_data.h"
 
 using absl::optional;
 using base::Time;
@@ -60,9 +61,9 @@ void* AutocompleteSyncBridgeUserDataKey() {
 }
 
 std::string EscapeIdentifiers(const AutofillSpecifics& specifics) {
-  return net::EscapePath(specifics.name()) +
+  return base::EscapePath(specifics.name()) +
          std::string(kAutocompleteTagDelimiter) +
-         net::EscapePath(specifics.value());
+         base::EscapePath(specifics.value());
 }
 
 std::unique_ptr<EntityData> CreateEntityData(const AutofillEntry& entry) {
@@ -111,15 +112,16 @@ bool ParseStorageKey(const std::string& storage_key, AutofillKey* out_key) {
 AutofillEntry CreateAutofillEntry(const AutofillSpecifics& autofill_specifics) {
   AutofillKey key(base::UTF8ToUTF16(autofill_specifics.name()),
                   base::UTF8ToUTF16(autofill_specifics.value()));
-  Time date_created, date_last_used;
   const google::protobuf::RepeatedField<int64_t>& timestamps =
       autofill_specifics.usage_timestamp();
-  if (!timestamps.empty()) {
-    auto iter_pair = std::minmax_element(timestamps.begin(), timestamps.end());
-    date_created = Time::FromInternalValue(*iter_pair.first);
-    date_last_used = Time::FromInternalValue(*iter_pair.second);
+  if (timestamps.empty()) {
+    return AutofillEntry(key, base::Time(), base::Time());
   }
-  return AutofillEntry(key, date_created, date_last_used);
+
+  auto [date_created_iter, date_last_used_iter] =
+      std::minmax_element(timestamps.begin(), timestamps.end());
+  return AutofillEntry(key, Time::FromInternalValue(*date_created_iter),
+                       Time::FromInternalValue(*date_last_used_iter));
 }
 
 // This is used to respond to ApplySyncChanges() and MergeSyncData(). Attempts

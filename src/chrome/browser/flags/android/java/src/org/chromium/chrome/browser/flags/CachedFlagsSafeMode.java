@@ -19,11 +19,12 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.version.ChromeVersionInfo;
+import org.chromium.components.version_info.VersionInfo;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -31,9 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * Safe Mode is a mechanism that allows Chrome to prevent crashes gated behind flags used before
  * native from becoming a crash loop that cannot be recovered from by disabling the experiment.
- *
- * TODO(crbug.com/1217708): Safe mode at the moment does not engage. Validate the crash streak logic
- * in Canary before turning it on.
  */
 class CachedFlagsSafeMode {
     private static final String TAG = "Flags";
@@ -63,6 +61,9 @@ class CachedFlagsSafeMode {
 
     private AtomicInteger mBehavior = new AtomicInteger(Behavior.UNKNOWN);
 
+    private AtomicBoolean mStartCheckpointWritten = new AtomicBoolean(false);
+    private AtomicBoolean mEndCheckpointWritten = new AtomicBoolean(false);
+
     CachedFlagsSafeMode() {}
 
     /**
@@ -79,7 +80,7 @@ class CachedFlagsSafeMode {
                 int behavior;
                 if (cachedVersion.isEmpty()) {
                     behavior = Behavior.ENGAGED_WITHOUT_SAFE_VALUES;
-                } else if (!cachedVersion.equals(ChromeVersionInfo.getProductVersion())) {
+                } else if (!cachedVersion.equals(VersionInfo.getProductVersion())) {
                     behavior = Behavior.ENGAGED_IGNORING_OUTDATED_SAFE_VALUES;
                 } else {
                     behavior = Behavior.ENGAGED_WITH_SAFE_VALUES;
@@ -87,8 +88,6 @@ class CachedFlagsSafeMode {
                 mBehavior.set(behavior);
                 RecordHistogram.recordEnumeratedHistogram(
                         "Variations.SafeModeCachedFlags.Engaged", behavior, Behavior.NUM_ENTRIES);
-                engageSafeModeInNative();
-                restoreSafeValues();
             } else {
                 mBehavior.set(Behavior.NOT_ENGAGED_BELOW_THRESHOLD);
                 RecordHistogram.recordEnumeratedHistogram("Variations.SafeModeCachedFlags.Engaged",
@@ -98,11 +97,20 @@ class CachedFlagsSafeMode {
     }
 
     /**
-     * Call at an early point in the path that leads to caching flags. If onFinishedCachingFlags()
+     * Call at an early point in the path that leads to caching flags. If onEndCheckpoint()
      * does not get called before the next run, this run will be considered a crash for purposes of
      * counting the crash streak and entering Safe Mode.
      */
     public void onStartOrResumeCheckpoint() {
+        if (mEndCheckpointWritten.get()) {
+            // Do not increment the streak if it was already reset.
+            return;
+        }
+        if (mStartCheckpointWritten.getAndSet(true)) {
+            // Limit to one increment per run.
+            return;
+        }
+
         SharedPreferencesManager.getInstance().incrementInt(
                 ChromePreferenceKeys.FLAGS_CRASH_STREAK_BEFORE_CACHE);
         RecordHistogram.recordEnumeratedHistogram(
@@ -114,13 +122,29 @@ class CachedFlagsSafeMode {
      * incremented in {@link #onStartOrResumeCheckpoint} but does not reset it.
      */
     public void onPauseCheckpoint() {
+        if (mEndCheckpointWritten.get()) {
+            // Do not change the streak if it was already reset.
+            return;
+        }
+        if (!mStartCheckpointWritten.getAndSet(false)) {
+            // Do not change the streak if it hasn't been incremented yet.
+            return;
+        }
+
+        decreaseCrashStreak(1);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Variations.SafeModeCachedFlags.Pause", mBehavior.get(), Behavior.NUM_ENTRIES);
+    }
+
+    private void decreaseCrashStreak(int decrement) {
         int currentStreak = SharedPreferencesManager.getInstance().readInt(
                 ChromePreferenceKeys.FLAGS_CRASH_STREAK_BEFORE_CACHE);
         assert currentStreak >= 0;
+
+        int newStreak = currentStreak - decrement;
+        if (newStreak < 0) newStreak = 0;
         SharedPreferencesManager.getInstance().writeInt(
-                ChromePreferenceKeys.FLAGS_CRASH_STREAK_BEFORE_CACHE, currentStreak - 1);
-        RecordHistogram.recordEnumeratedHistogram(
-                "Variations.SafeModeCachedFlags.Pause", mBehavior.get(), Behavior.NUM_ENTRIES);
+                ChromePreferenceKeys.FLAGS_CRASH_STREAK_BEFORE_CACHE, newStreak);
     }
 
     /**
@@ -128,8 +152,18 @@ class CachedFlagsSafeMode {
      * be saved to be used in Safe Mode.
      */
     void onEndCheckpoint(ValuesReturned safeValuesReturned) {
-        SharedPreferencesManager.getInstance().writeInt(
-                ChromePreferenceKeys.FLAGS_CRASH_STREAK_BEFORE_CACHE, 0);
+        if (mEndCheckpointWritten.getAndSet(true)) {
+            // Limit to one reset per run.
+            return;
+        }
+
+        if (isInSafeMode()) {
+            SharedPreferencesManager.getInstance().writeInt(
+                    ChromePreferenceKeys.FLAGS_CRASH_STREAK_BEFORE_CACHE,
+                    CRASH_STREAK_TO_ENTER_SAFE_MODE - 1);
+        } else {
+            decreaseCrashStreak(2);
+        }
 
         new AsyncTask<Void>() {
             @Override
@@ -151,23 +185,37 @@ class CachedFlagsSafeMode {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private void engageSafeModeInNative() {
-        // TODO(crbug.com/1217708): Notify native that a safe seed should be used.
-    }
-
-    private void restoreSafeValues() {
-        // TODO(crbug.com/1217708): Overwrite cached values with safe values.
-        // TODO(crbug.com/1217708): Ignore safe values from previous versions.
-        // TODO(crbug.com/1217708): Fallback to default values.
+    private boolean isInSafeMode() {
+        int behavior = mBehavior.get();
+        return behavior == Behavior.ENGAGED_WITH_SAFE_VALUES
+                || behavior == Behavior.ENGAGED_WITHOUT_SAFE_VALUES
+                || behavior == Behavior.ENGAGED_IGNORING_OUTDATED_SAFE_VALUES;
     }
 
     private boolean shouldEnterSafeMode() {
+        int safeModeRunsLeft = SharedPreferencesManager.getInstance().readInt(
+                ChromePreferenceKeys.FLAGS_SAFE_MODE_RUNS_LEFT, 0);
+        assert safeModeRunsLeft <= 2;
+
+        if (safeModeRunsLeft > 0) {
+            SharedPreferencesManager.getInstance().writeInt(
+                    ChromePreferenceKeys.FLAGS_SAFE_MODE_RUNS_LEFT, safeModeRunsLeft - 1);
+
+            Log.e(TAG, "Enter Safe Mode for CachedFlags, %d runs left.", safeModeRunsLeft);
+            return true;
+        }
+
         int crashStreak = SharedPreferencesManager.getInstance().readInt(
                 ChromePreferenceKeys.FLAGS_CRASH_STREAK_BEFORE_CACHE, 0);
         RecordHistogram.recordExactLinearHistogram(
                 "Variations.SafeModeCachedFlags.Streak.Crashes", crashStreak, 50);
 
         if (crashStreak >= CRASH_STREAK_TO_ENTER_SAFE_MODE) {
+            // Run safe mode twice. This run will enter Safe Mode by returning true here. The next
+            // run will enter Safe Mode by looking at the FLAGS_SAFE_MODE_RUNS_LEFT SharedPref.
+            SharedPreferencesManager.getInstance().writeInt(
+                    ChromePreferenceKeys.FLAGS_SAFE_MODE_RUNS_LEFT, 1);
+
             Log.e(TAG, "Enter Safe Mode for CachedFlags, crash streak is %d.", crashStreak);
             return true;
         } else {
@@ -184,6 +232,11 @@ class CachedFlagsSafeMode {
     private void writeSafeValues(ValuesReturned safeValuesReturned) {
         TraceEvent.begin("writeSafeValues");
         SharedPreferences.Editor editor = getSafeValuePreferences().edit();
+
+        // Remove values from other versions, since leftover values from previous version are not
+        // safe for the current one. Most will get overwritten, but there is no guarantee that all
+        // will.
+        editor.clear();
 
         synchronized (safeValuesReturned.boolValues) {
             for (Entry<String, Boolean> pair : safeValuesReturned.boolValues.entrySet()) {
@@ -206,9 +259,34 @@ class CachedFlagsSafeMode {
                 editor.putString(pair.getKey(), pair.getValue());
             }
         }
-        editor.putString(PREF_SAFE_VALUES_VERSION, ChromeVersionInfo.getProductVersion());
+        editor.putString(PREF_SAFE_VALUES_VERSION, VersionInfo.getProductVersion());
         editor.apply();
         TraceEvent.end("writeSafeValues");
+    }
+
+    Boolean isEnabled(String featureName, String preferenceName) {
+        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
+        return null;
+    }
+
+    Boolean getBooleanFieldTrialParam(String preferenceName, boolean defaultValue) {
+        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
+        return null;
+    }
+
+    Integer getIntFieldTrialParam(String preferenceName, int defaultValue) {
+        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
+        return null;
+    }
+
+    Double getDoubleFieldTrialParam(String preferenceName, double defaultValue) {
+        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
+        return null;
+    }
+
+    String getStringFieldTrialParam(String preferenceName, String defaultValue) {
+        // TODO(crbug.com/1199069): Return safe values if safe mode is engaged.
+        return null;
     }
 
     @Behavior
@@ -218,6 +296,8 @@ class CachedFlagsSafeMode {
 
     void clearMemoryForTesting() {
         mBehavior.set(Behavior.UNKNOWN);
+        mStartCheckpointWritten.set(false);
+        mEndCheckpointWritten.set(false);
     }
 
     @SuppressLint({"ApplySharedPref"})

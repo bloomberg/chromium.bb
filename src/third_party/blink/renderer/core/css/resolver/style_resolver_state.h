@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
 #include "third_party/blink/renderer/core/css/resolver/element_style_resources.h"
 #include "third_party/blink/renderer/core/css/resolver/font_builder.h"
+#include "third_party/blink/renderer/core/css/style_recalc_context.h"
 #include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -42,7 +43,6 @@ namespace blink {
 class ComputedStyle;
 class FontDescription;
 class PseudoElement;
-class StyleRecalcContext;
 
 // A per-element object which wraps an ElementResolveContext. It collects state
 // throughout the process of computing the style. It also gives convenient
@@ -55,7 +55,7 @@ class CORE_EXPORT StyleResolverState {
  public:
   StyleResolverState(Document&,
                      Element&,
-                     const StyleRecalcContext& = StyleRecalcContext(),
+                     const StyleRecalcContext* = nullptr,
                      const StyleRequest& = StyleRequest());
   StyleResolverState(const StyleResolverState&) = delete;
   StyleResolverState& operator=(const StyleResolverState&) = delete;
@@ -118,6 +118,10 @@ class CORE_EXPORT StyleResolverState {
 
   Element* GetAnimatingElement() const;
 
+  // Returns the pseudo element if the style resolution is targeting a pseudo
+  // element, null otherwise.
+  PseudoElement* GetPseudoElement() const;
+
   void SetParentStyle(scoped_refptr<const ComputedStyle>);
   const ComputedStyle* ParentStyle() const { return parent_style_.get(); }
 
@@ -160,6 +164,12 @@ class CORE_EXPORT StyleResolverState {
   // reference to the passed value.
   const CSSValue& ResolveLightDarkPair(const CSSValue&);
 
+  const ComputedStyle* OriginatingElementStyle() const {
+    return originating_element_style_.get();
+  }
+  bool IsForHighlight() const { return is_for_highlight_; }
+  bool IsForCustomHighlight() const { return is_for_custom_highlight_; }
+
   bool CanCacheBaseStyle() const { return can_cache_base_style_; }
 
   bool HadNoMatchedProperties() const { return had_no_matched_properties_; }
@@ -179,7 +189,13 @@ class CORE_EXPORT StyleResolverState {
   }
   void SetAffectsCompositorSnapshots() { affects_compositor_snapshots_ = true; }
 
+  bool RejectedLegacyOverlapping() const {
+    return rejected_legacy_overlapping_;
+  }
+  void SetRejectedLegacyOverlapping() { rejected_legacy_overlapping_ = true; }
+
  private:
+  void UpdateLengthConversionData();
   CSSToLengthConversionData UnzoomedLengthConversionData(
       const ComputedStyle* font_style) const;
 
@@ -207,10 +223,13 @@ class CORE_EXPORT StyleResolverState {
   PseudoElement* pseudo_element_;
   ElementStyleResources element_style_resources_;
   ElementType element_type_;
-  Element* nearest_container_;
+  Element* container_unit_context_;
 
+  scoped_refptr<const ComputedStyle> originating_element_style_;
   // True if we are resolving styles for a highlight pseudo-element.
   const bool is_for_highlight_;
+  // True if we are resolving styles for a custom highlight pseudo-element.
+  const bool is_for_custom_highlight_;
 
   // True if the base style can be cached to optimize style recalculations for
   // animation updates or transition retargeting.
@@ -226,6 +245,10 @@ class CORE_EXPORT StyleResolverState {
 
   // True if snapshots of composited keyframes require re-validation.
   bool affects_compositor_snapshots_ = false;
+
+  // True if the cascade rejected any properties with the kLegacyOverlapping
+  // flag.
+  bool rejected_legacy_overlapping_ = false;
 };
 
 }  // namespace blink

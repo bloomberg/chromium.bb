@@ -13,6 +13,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/span.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
@@ -104,12 +105,13 @@ base::Value ConvertBinaryToBase64(const base::Value& binary) {
 // Parses through |args| replacing any BinaryValues with base64 encoded
 // StringValues. Recurses over any nested ListValues, and calls
 // ConvertBinaryDictionaryValuesToBase64 for any nested DictionaryValues.
-void ConvertBinaryListElementsToBase64(base::Value::ListView args) {
+void ConvertBinaryListElementsToBase64(base::span<base::Value> args) {
   for (auto& value : args) {
     if (value.is_blob()) {
       value = ConvertBinaryToBase64(value);
-    } else if (value.is_list()) {
-      ConvertBinaryListElementsToBase64(value.GetList());
+    } else if (value.is_list() && !value.GetList().empty()) {
+      ConvertBinaryListElementsToBase64(
+          base::make_span(value.GetList().begin(), value.GetList().size()));
     } else if (value.is_dict()) {
       ConvertBinaryDictionaryValuesToBase64(value);
     }
@@ -124,8 +126,9 @@ void ConvertBinaryDictionaryValuesToBase64(base::Value& dict) {
     auto& value = it.second;
     if (value.is_blob()) {
       value = ConvertBinaryToBase64(value);
-    } else if (value.is_list()) {
-      ConvertBinaryListElementsToBase64(value.GetList());
+    } else if (value.is_list() && !value.GetList().empty()) {
+      ConvertBinaryListElementsToBase64(
+          base::make_span(value.GetList().begin(), value.GetList().size()));
     } else if (value.is_dict()) {
       ConvertBinaryDictionaryValuesToBase64(value);
     }
@@ -218,10 +221,11 @@ EventsEventAddRulesFunction::RunAsyncOnCorrectThread() {
   if (!error.empty())
     return Error(error);
 
-  auto rules_value = std::make_unique<base::ListValue>();
+  base::Value::List rules_value;
+  rules_value.reserve(rules_out.size());
   for (const auto* rule : rules_out)
-    rules_value->Append(rule->ToValue());
-  return OneArgument(base::Value::FromUniquePtrValue(std::move(rules_value)));
+    rules_value.Append(base::Value::FromUniquePtrValue(rule->ToValue()));
+  return OneArgument(base::Value(std::move(rules_value)));
 }
 
 void EventsEventAddRulesFunction::RecordUMA(
@@ -305,10 +309,11 @@ EventsEventGetRulesFunction::RunAsyncOnCorrectThread() {
     rules_registry_->GetAllRules(extension_id(), &rules);
   }
 
-  auto rules_value = std::make_unique<base::ListValue>();
+  base::Value::List rules_value;
+  rules_value.reserve(rules.size());
   for (const auto* rule : rules)
-    rules_value->Append(rule->ToValue());
-  return OneArgument(base::Value::FromUniquePtrValue(std::move(rules_value)));
+    rules_value.Append(base::Value::FromUniquePtrValue(rule->ToValue()));
+  return OneArgument(base::Value(std::move(rules_value)));
 }
 
 void EventsEventGetRulesFunction::RecordUMA(

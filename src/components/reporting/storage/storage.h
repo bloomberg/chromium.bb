@@ -7,10 +7,12 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
@@ -67,6 +69,8 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
   // If the server attached signed encryption key to the response, it needs to
   // be paased here.
   void UpdateEncryptionKey(SignedEncryptionInfo signed_encryption_key);
+
+  const StorageOptions& options() const { return options_; }
 
   Storage(const Storage& other) = delete;
   Storage& operator=(const Storage& other) = delete;

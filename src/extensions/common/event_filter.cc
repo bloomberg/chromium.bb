@@ -92,24 +92,24 @@ bool EventFilter::CreateConditionSets(
   if (url_filter_count == 0) {
     // If there are no URL filters then we want to match all events, so create a
     // URLFilter from an empty dictionary.
-    base::DictionaryValue empty_dict;
-    return AddDictionaryAsConditionSet(&empty_dict, condition_sets);
+    base::Value::Dict empty_dict;
+    return AddDictionaryAsConditionSet(empty_dict, condition_sets);
   }
   for (int i = 0; i < url_filter_count; i++) {
-    base::DictionaryValue* url_filter;
-    if (!matcher->GetURLFilter(i, &url_filter))
+    const base::Value::Dict* url_filter = matcher->GetURLFilter(i);
+    if (!url_filter)
       return false;
-    if (!AddDictionaryAsConditionSet(url_filter, condition_sets))
+    if (!AddDictionaryAsConditionSet(*url_filter, condition_sets))
       return false;
   }
   return true;
 }
 
 bool EventFilter::AddDictionaryAsConditionSet(
-    base::DictionaryValue* url_filter,
+    const base::Value::Dict& url_filter,
     URLMatcherConditionSet::Vector* condition_sets) {
   std::string error;
-  URLMatcherConditionSet::ID condition_set_id = next_condition_set_id_++;
+  base::MatcherStringPattern::ID condition_set_id = next_condition_set_id_++;
   condition_sets->push_back(URLMatcherFactory::CreateFromURLFilterDictionary(
       url_matcher_.condition_factory(),
       url_filter,
@@ -147,7 +147,7 @@ std::set<EventFilter::MatcherID> EventFilter::MatchEvent(
   const EventMatcherMap& matcher_map = it->second;
   const GURL& url_to_match_against =
       event_info.url ? *event_info.url : GURL::EmptyGURL();
-  std::set<URLMatcherConditionSet::ID> matching_condition_set_ids =
+  std::set<base::MatcherStringPattern::ID> matching_condition_set_ids =
       url_matcher_.MatchURL(url_to_match_against);
   for (const auto& id_key : matching_condition_set_ids) {
     auto matcher_id = condition_set_id_to_event_matcher_id_.find(id_key);

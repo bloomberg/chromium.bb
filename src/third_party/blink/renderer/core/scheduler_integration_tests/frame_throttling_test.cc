@@ -7,11 +7,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "cc/base/features.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/paint/paint_record.h"
+#include "cc/paint/paint_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/test/test_web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
+#include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_init.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -25,8 +29,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
@@ -38,6 +40,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
+#include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
@@ -398,7 +401,7 @@ TEST_P(FrameThrottlingTest, ForAllThrottledLocalFrameViews) {
   EXPECT_EQ(1u, throttled_count);
 }
 
-TEST_P(FrameThrottlingTest, HiddenCrossOriginZeroByZeroFramesAreThrottled) {
+TEST_P(FrameThrottlingTest, HiddenCrossOriginDisplayNoneFramesAreThrottled) {
   // Create a document with doubly nested iframes.
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -406,7 +409,8 @@ TEST_P(FrameThrottlingTest, HiddenCrossOriginZeroByZeroFramesAreThrottled) {
   LoadURL("https://example.com/");
   main_resource.Complete("<iframe id=frame src=iframe.html></iframe>");
   frame_resource.Complete(
-      "<iframe id=innerFrame width=0 height=0 sandbox></iframe>");
+      "<iframe id=innerFrame style='display: none; width: 0; height: 0' "
+      "sandbox></iframe>");
 
   auto* frame_element =
       To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
@@ -521,8 +525,6 @@ TEST_P(FrameThrottlingTest, ThrottledFrameCompositing) {
       To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
   auto* frame_view = frame_element->contentDocument()->View();
   EXPECT_FALSE(frame_view->CanThrottleRendering());
-  auto* frame_layout_view = frame_view->GetLayoutView();
-  EXPECT_TRUE(frame_layout_view->Layer()->CanBeComposited());
   auto* root_layer = WebView().MainFrameImpl()->GetFrameView()->RootCcLayer();
   EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "container").size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "inner_frame").size());
@@ -543,7 +545,6 @@ TEST_P(FrameThrottlingTest, ThrottledFrameCompositing) {
   ASSERT_TRUE(Compositor().NeedsBeginFrame());
   CompositeFrame();
   EXPECT_FALSE(frame_view->CanThrottleRendering());
-  EXPECT_TRUE(frame_layout_view->Layer()->CanBeComposited());
   EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "container").size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "inner_frame").size());
 }
@@ -1275,7 +1276,8 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
   v8::Local<v8::Value> result =
       ClassicScript::CreateUnspecifiedScript("window.didRaf;")
           ->RunScriptAndReturnValue(
-              To<LocalDOMWindow>(frame_element->contentWindow()));
+              To<LocalDOMWindow>(frame_element->contentWindow()))
+          .GetSuccessValueOrEmpty();
   EXPECT_TRUE(result->IsTrue());
 }
 
@@ -1838,15 +1840,15 @@ TEST_P(FrameThrottlingTest, ForceUnthrottled) {
   // through the lifecycle loop, the style change will cause the ResizeObserver
   // callback to run. The ResizeObserver will dirty the iframe element by
   // setting its width to 100px. At this point, the lifecycle state of the
-  // iframe will be kCompositingAssignmentsClean, which will cause
-  // ShouldThrottleRendering() to return true.
+  // iframe will be kPrePaintClean, which will cause ShouldThrottleRendering()
+  // to return true.
   //
   // Because ResizeObserver dirtied layout, there will be a second pass through
-  // the main lifecycle loop. When the iframe element runs layout again, setting
-  // its width to 100px, it will cause the iframe's contents to overflow, so the
-  // iframe will add a horizontal scrollbar and mark its LayoutView as needing
-  // paint property update. If the iframe's lifecycle state is still
-  // kCompositingAssignmentsClean, then it will skip pre-paint on the second
+  // the main lifecycle loop. When the iframe element runs layout again,
+  // setting its width to 100px, it will cause the iframe's contents to
+  // overflow, so the iframe will add a horizontal scrollbar and mark its
+  // LayoutView as needing paint property update. If the iframe's lifecycle
+  // state is still kPrePaintClean, then it will skip pre-paint on the second
   // pass through the lifecycle loop, leaving its paint properties in a dirty
   // state (bad). If, however, the iframe's lifecycle state is reset to
   // kVisualUpdatePending prior to the second pass through the loop, then it
@@ -1859,9 +1861,6 @@ TEST_P(FrameThrottlingTest, ForceUnthrottled) {
 }
 
 TEST_P(FrameThrottlingTest, CullRectUpdate) {
-  if (!RuntimeEnabledFeatures::CullRectUpdateEnabled())
-    return;
-
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 
@@ -1943,6 +1942,34 @@ TEST_P(FrameThrottlingTest, ClearPaintArtifactOnThrottlingLocalRoot) {
   // results.
   EXPECT_TRUE(
       view->GetPaintControllerForTesting().GetPaintArtifact().IsEmpty());
+}
+
+TEST_P(FrameThrottlingTest, PrintThrottledFrame) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  // The frame is initially throttled.
+  main_resource.Complete(R"HTML(
+    <div style="height: 2000px"></div>
+    <iframe id="frame" sandbox src="iframe.html"></iframe>
+  )HTML");
+  frame_resource.Complete("ABC");
+  CompositeFrame();
+
+  auto* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* sub_frame = To<LocalFrame>(frame_element->ContentFrame());
+  EXPECT_TRUE(sub_frame->View()->ShouldThrottleRenderingForTest());
+  auto* web_frame = WebLocalFrameImpl::FromFrame(sub_frame);
+  WebPrintParams print_params(gfx::Size(500, 500));
+  web_frame->PrintBegin(print_params, blink::WebNode());
+  cc::PaintRecorder recorder;
+  web_frame->PrintPage(0, recorder.beginRecording(500, 500));
+  auto record = recorder.finishRecordingAsPicture();
+  String record_string = RecordAsDebugString(*record);
+  EXPECT_TRUE(record_string.Contains("drawTextBlob")) << record_string.Utf8();
+  web_frame->PrintEnd();
 }
 
 }  // namespace blink

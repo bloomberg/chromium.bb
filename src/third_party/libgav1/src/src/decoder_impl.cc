@@ -1602,7 +1602,7 @@ StatusCode DecoderImpl::ApplyFilmGrain(
          (*film_grain_frame)->buffer()->stride(kPlaneV));
   const int output_stride_uv = (*film_grain_frame)->buffer()->stride(kPlaneU);
 #if LIBGAV1_MAX_BITDEPTH >= 10
-  if (displayable_frame->buffer()->bitdepth() > 8) {
+  if (displayable_frame->buffer()->bitdepth() == 10) {
     FilmGrain<10> film_grain(displayable_frame->film_grain_params(),
                              displayable_frame->buffer()->is_monochrome(),
                              color_matrix_is_identity,
@@ -1625,6 +1625,30 @@ StatusCode DecoderImpl::ApplyFilmGrain(
     return kStatusOk;
   }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+#if LIBGAV1_MAX_BITDEPTH == 12
+  if (displayable_frame->buffer()->bitdepth() == 12) {
+    FilmGrain<12> film_grain(displayable_frame->film_grain_params(),
+                             displayable_frame->buffer()->is_monochrome(),
+                             color_matrix_is_identity,
+                             displayable_frame->buffer()->subsampling_x(),
+                             displayable_frame->buffer()->subsampling_y(),
+                             displayable_frame->upscaled_width(),
+                             displayable_frame->frame_height(), thread_pool);
+    if (!film_grain.AddNoise(
+            displayable_frame->buffer()->data(kPlaneY),
+            displayable_frame->buffer()->stride(kPlaneY),
+            displayable_frame->buffer()->data(kPlaneU),
+            displayable_frame->buffer()->data(kPlaneV), input_stride_uv,
+            (*film_grain_frame)->buffer()->data(kPlaneY),
+            (*film_grain_frame)->buffer()->stride(kPlaneY),
+            (*film_grain_frame)->buffer()->data(kPlaneU),
+            (*film_grain_frame)->buffer()->data(kPlaneV), output_stride_uv)) {
+      LIBGAV1_DLOG(ERROR, "film_grain.AddNoise() failed.");
+      return kStatusOutOfMemory;
+    }
+    return kStatusOk;
+  }
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
   FilmGrain<8> film_grain(displayable_frame->film_grain_params(),
                           displayable_frame->buffer()->is_monochrome(),
                           color_matrix_is_identity,

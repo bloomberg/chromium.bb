@@ -28,7 +28,7 @@ class FormEventLoggerBase {
  public:
   FormEventLoggerBase(
       const std::string& form_type_name,
-      bool is_in_main_frame,
+      bool is_in_any_main_frame,
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       LogManager* log_manager);
 
@@ -76,10 +76,10 @@ class FormEventLoggerBase {
   void SetTimeFromInteractionToSubmission(
       base::TimeDelta time_from_interaction_to_submission);
 
+  void Log(FormEvent event, const FormStructure& form) const;
+
  protected:
   virtual ~FormEventLoggerBase();
-
-  void Log(FormEvent event, const FormStructure& form) const;
 
   virtual void RecordPollSuggestions() = 0;
   virtual void RecordParseForm() = 0;
@@ -115,7 +115,7 @@ class FormEventLoggerBase {
 
   // Constructor parameters.
   std::string form_type_name_;
-  bool is_in_main_frame_;
+  bool is_in_any_main_frame_;
 
   // State variables.
   size_t server_record_type_count_ = 0;

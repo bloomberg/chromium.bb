@@ -10,10 +10,7 @@
 #include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/supports_user_data.h"
-
-namespace base {
-class DictionaryValue;
-}
+#include "base/values.h"
 
 namespace webui {
 struct LocalizedString;
@@ -45,7 +42,7 @@ class WebUIIOSDataSource : public base::SupportsUserData {
   virtual void AddLocalizedString(const std::string& name, int ids) = 0;
 
   virtual void AddLocalizedStrings(
-      const base::DictionaryValue& localized_strings) = 0;
+      const base::Value::Dict& localized_strings) = 0;
 
   virtual void AddLocalizedStrings(
       base::span<const webui::LocalizedString> strings) = 0;
@@ -56,6 +53,10 @@ class WebUIIOSDataSource : public base::SupportsUserData {
   // Call this to enable a virtual "strings.js" (or "strings.m.js" for modules)
   // URL that provides translations and dynamic data when requested.
   virtual void UseStringsJs() = 0;
+
+  // Call this to enable i18n replacements in JS files (needed by Web UIs that
+  // use Web Components).
+  virtual void EnableReplaceI18nInJS() = 0;
 
   // Adds a mapping between a path name and a resource to return.
   virtual void AddResourcePath(const std::string& path, int resource_id) = 0;

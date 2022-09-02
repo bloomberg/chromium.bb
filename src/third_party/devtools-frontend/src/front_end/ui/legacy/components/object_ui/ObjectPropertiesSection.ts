@@ -123,6 +123,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/object_ui/ObjectPropertiesSection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const EXPANDABLE_MAX_LENGTH = 50;
+const EXPANDABLE_MAX_DEPTH = 100;
 
 const parentMap = new WeakMap<SDK.RemoteObject.RemoteObjectProperty, SDK.RemoteObject.RemoteObject|null>();
 
@@ -260,7 +261,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     return UI.Fragment.html`<span class="name">${name}</span>`;
   }
 
-  static valueElementForFunctionDescription(description?: string|null, includePreview?: boolean, defaultName?: string):
+  static valueElementForFunctionDescription(description?: string, includePreview?: boolean, defaultName?: string):
       Element {
     const valueElement = document.createElement('span');
     valueElement.classList.add('object-value-function');
@@ -370,7 +371,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     };
     memoryIcon.onclick = (event: MouseEvent): void => {
       Host.userMetrics.linearMemoryInspectorRevealedFrom(Host.UserMetrics.LinearMemoryInspectorRevealedFrom.MemoryIcon);
-      LinearMemoryInspector.LinearMemoryInspectorController.LinearMemoryInspectorController.instance()
+      void LinearMemoryInspector.LinearMemoryInspectorController.LinearMemoryInspectorController.instance()
           .openInspectorView(obj);
       event.stopPropagation();
     };
@@ -391,7 +392,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       const rawLocation = value.debuggerModel().createRawLocationByScriptId(
           value.value.scriptId, value.value.lineNumber, value.value.columnNumber);
       if (rawLocation && linkifier) {
-        return new ObjectPropertyValue(linkifier.linkifyRawLocation(rawLocation, ''));
+        return new ObjectPropertyValue(linkifier.linkifyRawLocation(rawLocation, Platform.DevToolsPath.EmptyUrlString));
       }
       propertyValue = new ObjectPropertyValue(createUnknownInternalLocationElement());
     } else if (type === 'string' && typeof description === 'string') {
@@ -476,7 +477,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       valueElement.classList.add('object-value-node');
       createSpansForNodeTitle(valueElement, (description as string));
       valueElement.addEventListener('click', event => {
-        Common.Revealer.reveal(value);
+        void Common.Revealer.reveal(value);
         event.consume(true);
       }, false);
       valueElement.addEventListener(
@@ -495,7 +496,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       if (linkify && response && response.location) {
         element.classList.add('linkified');
         element.addEventListener('click', () => {
-          Common.Revealer.reveal(response.location);
+          void Common.Revealer.reveal(response.location);
           return false;
         });
       }
@@ -548,12 +549,12 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     if (this.object instanceof SDK.RemoteObject.LocalJSONObject) {
       contextMenu.viewSection().appendItem(
           i18nString(UIStrings.expandRecursively),
-          this.objectTreeElementInternal.expandRecursively.bind(this.objectTreeElementInternal, Number.MAX_VALUE));
+          this.objectTreeElementInternal.expandRecursively.bind(this.objectTreeElementInternal, EXPANDABLE_MAX_DEPTH));
       contextMenu.viewSection().appendItem(
           i18nString(UIStrings.collapseChildren),
           this.objectTreeElementInternal.collapseChildren.bind(this.objectTreeElementInternal));
     }
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   titleLessMode(): void {
@@ -653,9 +654,9 @@ export class RootElement extends UI.TreeOutline.TreeElement {
     }
 
     contextMenu.viewSection().appendItem(
-        i18nString(UIStrings.expandRecursively), this.expandRecursively.bind(this, Number.MAX_VALUE));
+        i18nString(UIStrings.expandRecursively), this.expandRecursively.bind(this, EXPANDABLE_MAX_DEPTH));
     contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.collapseChildren.bind(this));
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   async onpopulate(): Promise<void> {
@@ -696,6 +697,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     this.maxNumPropertiesToShow = InitialVisibleChildrenLimit;
     this.listItemElement.addEventListener('contextmenu', this.contextMenuFired.bind(this), false);
     this.listItemElement.dataset.objectPropertyNameForTest = property.name;
+    this.setExpandRecursively(property.name !== '[[Prototype]]');
   }
 
   static async populate(
@@ -706,7 +708,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       targetValue?: SDK.RemoteObject.RemoteObject): Promise<void> {
     if (value.arrayLength() > ARRAY_LOAD_THRESHOLD) {
       treeElement.removeChildren();
-      ArrayGroupingTreeElement.populateArray(treeElement, value, 0, value.arrayLength() - 1, linkifier);
+      void ArrayGroupingTreeElement.populateArray(treeElement, value, 0, value.arrayLength() - 1, linkifier);
       return;
     }
 
@@ -838,7 +840,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         // The definition of callFunction expects an unknown, and setting to `any` causes Closure to fail.
         // However, leaving this as unknown also causes TypeScript to fail, so for now we leave this as unchecked.
         // @ts-ignore  TODO(crbug.com/1011811): Fix after Closure is removed.
-        object.callFunction(invokeGetter, [{value: JSON.stringify(propertyPath)}]).then(callback);
+        void object.callFunction(invokeGetter, [{value: JSON.stringify(propertyPath)}]).then(callback);
       }
     }
 
@@ -1018,9 +1020,24 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
           this.property.value, this.property.wasThrown, showPreview, this.listItemElement, this.linkifier);
       this.valueElement = (this.propertyValue.element as HTMLElement);
     } else if (this.property.getter) {
-      this.valueElement = ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(
-          (parentMap.get(this.property) as SDK.RemoteObject.RemoteObject), [this.property.name],
-          this.onInvokeGetterClick.bind(this));
+      this.valueElement = document.createElement('span');
+      const element = this.valueElement.createChild('span');
+      element.textContent = i18nString(UIStrings.dots);
+      element.classList.add('object-value-calculate-value-button');
+      UI.Tooltip.Tooltip.install(element, i18nString(UIStrings.invokePropertyGetter));
+      const object = parentMap.get(this.property) as SDK.RemoteObject.RemoteObject;
+      const getter = this.property.getter;
+      element.addEventListener('click', (event: Event) => {
+        event.consume();
+        const invokeGetter = `
+          function invokeGetter(getter) {
+            return Reflect.apply(getter, this, []);
+          }`;
+        // @ts-ignore No way to teach TypeScript to preserve the Function-ness of `getter`.
+        // Also passing a string instead of a Function to avoid coverage implementation messing with it.
+        void object.callFunction(invokeGetter, [SDK.RemoteObject.RemoteObject.toCallArgument(getter)])
+            .then(this.onInvokeGetterClick.bind(this));
+      }, false);
     } else {
       this.valueElement = document.createElement('span');
       this.valueElement.classList.add('object-value-undefined');
@@ -1099,13 +1116,13 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     }
     if (parentMap.get(this.property) instanceof SDK.RemoteObject.LocalJSONObject) {
       contextMenu.viewSection().appendItem(
-          i18nString(UIStrings.expandRecursively), this.expandRecursively.bind(this, Number.MAX_VALUE));
+          i18nString(UIStrings.expandRecursively), this.expandRecursively.bind(this, EXPANDABLE_MAX_DEPTH));
       contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.collapseChildren.bind(this));
     }
     if (this.propertyValue) {
       this.propertyValue.appendApplicableItems(event, contextMenu, {});
     }
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private startEditing(): void {
@@ -1177,7 +1194,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     const keyboardEvent = (event as KeyboardEvent);
     if (keyboardEvent.key === 'Enter') {
       keyboardEvent.consume();
-      this.editingCommitted(originalContent);
+      void this.editingCommitted(originalContent);
       return;
     }
     if (keyboardEvent.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
@@ -1200,7 +1217,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         const parent = this.parent;
         if (parent) {
           parent.invalidateChildren();
-          parent.onpopulate();
+          void parent.onpopulate();
         }
       } else {
         this.update();
@@ -1225,7 +1242,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       const parent = this.parent;
       if (parent) {
         parent.invalidateChildren();
-        parent.onpopulate();
+        void parent.onpopulate();
       }
     }
   }
@@ -1612,12 +1629,12 @@ export class Renderer implements UI.UIUtils.Renderer {
     return rendererInstance;
   }
 
-  render(object: Object, options?: UI.UIUtils.Options): Promise<{
+  async render(object: Object, options?: UI.UIUtils.Options): Promise<{
     node: Node,
     tree: UI.TreeOutline.TreeOutline|null,
   }|null> {
     if (!(object instanceof SDK.RemoteObject.RemoteObject)) {
-      return Promise.reject(new Error('Can\'t render ' + object));
+      throw new Error('Can\'t render ' + object);
     }
     options = options || {title: undefined, editable: undefined};
     const title = options.title;
@@ -1626,10 +1643,10 @@ export class Renderer implements UI.UIUtils.Renderer {
       section.titleLessMode();
     }
     section.editable = Boolean(options.editable);
-    return Promise.resolve(({node: section.element, tree: section} as {
+    return {node: section.element, tree: section} as {
       node: Node,
       tree: UI.TreeOutline.TreeOutline | null,
-    } | null));
+    } | null;
   }
 }
 

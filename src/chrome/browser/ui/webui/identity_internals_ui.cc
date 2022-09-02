@@ -16,8 +16,9 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/identity_internals_resources.h"
+#include "chrome/grit/identity_internals_resources_map.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -56,9 +57,8 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
       const extensions::IdentityTokenCache::AccessTokensKey& access_tokens_key);
 
   // Gets a list of scopes specified in |token_cache_value| and returns a
-  // pointer to a ListValue containing the scopes. The caller gets ownership of
-  // the returned object.
-  std::unique_ptr<base::ListValue> GetScopes(
+  // base::Value::List containing the scopes.
+  base::Value::List GetScopes(
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
   // Gets a status of the access token in |token_cache_value|.
@@ -71,8 +71,8 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
   // Converts a pair of |access_tokens_key| and |token_cache_value| to a
-  // DictionaryValue object with corresponding information.
-  std::unique_ptr<base::DictionaryValue> GetInfoForToken(
+  // base::Value::Dict object with corresponding information.
+  base::Value::Dict GetInfoForToken(
       const extensions::IdentityTokenCache::AccessTokensKey& access_tokens_key,
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
@@ -178,11 +178,11 @@ const std::string IdentityInternalsUIMessageHandler::GetExtensionName(
   return extension->name();
 }
 
-std::unique_ptr<base::ListValue> IdentityInternalsUIMessageHandler::GetScopes(
+base::Value::List IdentityInternalsUIMessageHandler::GetScopes(
     const extensions::IdentityTokenCacheValue& token_cache_value) {
-  auto scopes_value = std::make_unique<base::ListValue>();
+  base::Value::List scopes_value;
   for (const auto& scope : token_cache_value.granted_scopes()) {
-    scopes_value->Append(scope);
+    scopes_value.Append(scope);
   }
   return scopes_value;
 }
@@ -210,29 +210,27 @@ std::u16string IdentityInternalsUIMessageHandler::GetExpirationTime(
       token_cache_value.expiration_time());
 }
 
-std::unique_ptr<base::DictionaryValue>
-IdentityInternalsUIMessageHandler::GetInfoForToken(
+base::Value::Dict IdentityInternalsUIMessageHandler::GetInfoForToken(
     const extensions::IdentityTokenCache::AccessTokensKey& access_tokens_key,
     const extensions::IdentityTokenCacheValue& token_cache_value) {
-  auto token_data = std::make_unique<base::DictionaryValue>();
-  token_data->SetString("extensionId", access_tokens_key.extension_id);
-  token_data->SetString("accountId", access_tokens_key.account_id.ToString());
-  token_data->SetString("extensionName", GetExtensionName(access_tokens_key));
-  token_data->SetKey(
-      "scopes", base::Value::FromUniquePtrValue(GetScopes(token_cache_value)));
-  token_data->SetString("status", GetStatus(token_cache_value));
-  token_data->SetString("accessToken", token_cache_value.token());
-  token_data->SetString("expirationTime", GetExpirationTime(token_cache_value));
+  base::Value::Dict token_data;
+  token_data.Set("extensionId", access_tokens_key.extension_id);
+  token_data.Set("accountId", access_tokens_key.account_id.ToString());
+  token_data.Set("extensionName", GetExtensionName(access_tokens_key));
+  token_data.Set("scopes", GetScopes(token_cache_value));
+  token_data.Set("status", GetStatus(token_cache_value));
+  token_data.Set("accessToken", token_cache_value.token());
+  token_data.Set("expirationTime", GetExpirationTime(token_cache_value));
   return token_data;
 }
 
 void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
     const base::ListValue* args) {
-  const std::string& callback_id = args->GetList()[0].GetString();
+  const std::string& callback_id = args->GetListDeprecated()[0].GetString();
   CHECK(!callback_id.empty());
 
   AllowJavascript();
-  base::ListValue results;
+  base::Value::List results;
   extensions::IdentityTokenCache::AccessTokensCache tokens;
   // The API can be null in incognito.
   extensions::IdentityAPI* api =
@@ -245,7 +243,8 @@ void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
       results.Append(GetInfoForToken(key_tokens.first, token));
     }
   }
-  ResolveJavascriptCallback(base::Value(callback_id), results);
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(std::move(results)));
 }
 
 void IdentityInternalsUIMessageHandler::RegisterMessages() {
@@ -262,17 +261,19 @@ void IdentityInternalsUIMessageHandler::RegisterMessages() {
 
 void IdentityInternalsUIMessageHandler::RevokeToken(
     const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   const std::string& callback_id = list[0].GetString();
   CHECK(!callback_id.empty());
   std::string extension_id;
   std::string access_token;
   if (!list.empty() && list[kRevokeTokenExtensionOffset].is_string()) {
-    extension_id = args->GetList()[kRevokeTokenExtensionOffset].GetString();
+    extension_id =
+        args->GetListDeprecated()[kRevokeTokenExtensionOffset].GetString();
   }
   if (list.size() > kRevokeTokenTokenOffset &&
       list[kRevokeTokenTokenOffset].is_string()) {
-    access_token = args->GetList()[kRevokeTokenTokenOffset].GetString();
+    access_token =
+        args->GetListDeprecated()[kRevokeTokenTokenOffset].GetString();
   }
 
   token_revokers_.push_back(std::make_unique<IdentityInternalsTokenRevoker>(
@@ -311,12 +312,14 @@ IdentityInternalsUI::IdentityInternalsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIIdentityInternalsHost);
 
   // Required resources
-  html_source->AddResourcePath("identity_internals.css",
-      IDR_IDENTITY_INTERNALS_CSS);
-  html_source->AddResourcePath("identity_internals.js",
-      IDR_IDENTITY_INTERNALS_JS);
-  html_source->SetDefaultResource(IDR_IDENTITY_INTERNALS_HTML);
+  html_source->AddResourcePaths(base::make_span(
+      kIdentityInternalsResources, kIdentityInternalsResourcesSize));
+  html_source->SetDefaultResource(
+      IDR_IDENTITY_INTERNALS_IDENTITY_INTERNALS_HTML);
 
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types static-types;");
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 
   web_ui->AddMessageHandler(
