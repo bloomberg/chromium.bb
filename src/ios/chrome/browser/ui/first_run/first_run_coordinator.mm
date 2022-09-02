@@ -15,6 +15,9 @@
 #import "ios/chrome/browser/ui/first_run/default_browser/default_browser_screen_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
+#import "ios/chrome/browser/ui/first_run/legacy_signin/legacy_signin_screen_coordinator.h"
+#import "ios/chrome/browser/ui/first_run/signin/signin_screen_coordinator.h"
+#import "ios/chrome/browser/ui/first_run/sync/sync_screen_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/welcome/welcome_screen_coordinator.h"
 #import "ios/chrome/browser/ui/screen/screen_provider.h"
 #import "ios/chrome/browser/ui/screen/screen_type.h"
@@ -117,15 +120,27 @@
           initWithBaseNavigationController:self.navigationController
                                    browser:self.browser
                                   delegate:self];
+    case kSignIn:
+      return [[SigninScreenCoordinator alloc]
+          initWithBaseNavigationController:self.navigationController
+                                   browser:self.browser
+                            showFREConsent:YES
+                                  delegate:self];
+    case kSync:
+      return [[SyncScreenCoordinator alloc]
+          initWithBaseNavigationController:self.navigationController
+                                   browser:self.browser
+                                  delegate:self];
     case kSignInAndSync:
       return [[SigninSyncCoordinator alloc]
           initWithBaseNavigationController:self.navigationController
                                    browser:self.browser
                                   delegate:self];
-    case kSignIn:
-    case kSync:
-      NOTREACHED() << "Reached SignIn/Sync state unexpectedly.";
-      break;
+    case kLegacySignIn:
+      return [[LegacySigninScreenCoordinator alloc]
+          initWithBaseNavigationController:self.navigationController
+                                   browser:self.browser
+                                  delegate:self];
     case kDefaultBrowserPromo:
       return [[DefaultBrowserScreenCoordinator alloc]
           initWithBaseNavigationController:self.navigationController

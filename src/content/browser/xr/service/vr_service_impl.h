@@ -25,6 +25,10 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-forward.h"
 
+namespace blink {
+enum class PermissionType;
+}
+
 namespace content {
 class RenderFrameHost;
 class WebContents;
@@ -147,6 +151,7 @@ class CONTENT_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   void OnPermissionResults(
       SessionRequestData request,
+      const std::vector<blink::PermissionType>& permissions,
       const std::vector<blink::mojom::PermissionStatus>& permission_statuses);
 
   void EnsureRuntimeInstalled(SessionRequestData request,

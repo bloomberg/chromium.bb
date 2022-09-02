@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
@@ -22,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
@@ -93,9 +93,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
     std::unique_ptr<NetworkQualityEstimatorParams> params,
     NetLog* net_log)
     : params_(std::move(params)),
-      end_to_end_rtt_observation_count_at_last_ect_computation_(0),
-      use_localhost_requests_(false),
-      disable_offline_check_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       last_connection_change_(tick_clock_->NowTicks()),
       current_network_id_(nqe::internal::NetworkID(
@@ -123,22 +120,12 @@ NetworkQualityEstimator::NetworkQualityEstimator(
               tick_clock_,
               params_->weight_multiplier_per_second(),
               1.0 /*params_->weight_multiplier_per_signal_strength_level()*/)},
-      effective_connection_type_at_last_main_frame_(
-          EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      effective_connection_type_recomputation_interval_(base::Seconds(10)),
-      rtt_observations_size_at_last_ect_computation_(0),
-      throughput_observations_size_at_last_ect_computation_(0),
-      transport_rtt_observation_count_last_ect_computation_(0),
-      new_rtt_observations_since_last_ect_computation_(0),
-      new_throughput_observations_since_last_ect_computation_(0),
-      effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      cached_estimate_applied_(false),
       net_log_(NetLogWithSource::Make(
           net_log,
           net::NetLogSourceType::NETWORK_QUALITY_ESTIMATOR)),
       event_creator_(net_log_) {
   DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
-            base::size(rtt_ms_observations_));
+            std::size(rtt_ms_observations_));
 
   network_quality_store_ =
       std::make_unique<nqe::internal::NetworkQualityStore>();
@@ -473,7 +460,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   // This can happen if the device switches from one WiFi SSID to another.
 
   DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
-            base::size(rtt_ms_observations_));
+            std::size(rtt_ms_observations_));
 
   // Write the estimates of the previous network to the cache.
   network_quality_store_->Add(
@@ -842,6 +829,11 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
   }
 
+  if (force_report_wifi_as_slow_2g_for_testing_ &&
+      current_network_id_.type == NetworkChangeNotifier::CONNECTION_WIFI) {
+    return EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+  }
+
   if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP, base::TimeTicks(),
                     http_rtt, nullptr)) {
     *http_rtt = nqe::internal::InvalidRTT();
@@ -988,7 +980,7 @@ base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
     size_t* observations_count) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
-            base::size(rtt_ms_observations_));
+            std::size(rtt_ms_observations_));
 
   // RTT observations are sorted by duration from shortest to longest, thus
   // a higher percentile RTT will have a longer RTT than a lower percentile.
@@ -1234,7 +1226,7 @@ void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
 bool NetworkQualityEstimator::ShouldComputeEffectiveConnectionType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
-            base::size(rtt_ms_observations_));
+            std::size(rtt_ms_observations_));
 
   const base::TimeTicks now = tick_clock_->NowTicks();
   // Recompute effective connection type only if
@@ -1484,6 +1476,11 @@ void NetworkQualityEstimator::SimulateNetworkQualityChangeForTesting(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   params_->SetForcedEffectiveConnectionTypeForTesting(type);
   ComputeEffectiveConnectionType();
+}
+
+void NetworkQualityEstimator::ForceReportWifiAsSlow2GForTesting() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  force_report_wifi_as_slow_2g_for_testing_ = true;
 }
 
 void NetworkQualityEstimator::RecordSpdyPingLatency(

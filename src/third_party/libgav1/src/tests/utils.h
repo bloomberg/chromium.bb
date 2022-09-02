@@ -25,6 +25,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/time.h"
 #include "src/gav1/decoder_buffer.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/memory.h"
 #include "tests/third_party/libvpx/acm_random.h"
 
@@ -42,9 +43,22 @@ static_assert(kAlternateDeterministicSeed !=
 
 // Similar to libgav1::MaxAlignedAllocable, but retains the throwing versions
 // of new to support googletest allocations.
+// Note when building the source as C++17 or greater, gcc 11.2.0 may issue a
+// warning of the form:
+//   warning: 'void operator delete [](void*, std::align_val_t)' called on
+//     pointer returned from a mismatched allocation function
+//   note: returned from 'static void*
+//     libgav1::test_utils::MaxAlignedAllocable::operator new [](size_t)'
+// This is a false positive as this function calls
+// libgav1::MaxAlignedAllocable::operator new[](size, std::nothrow) which in
+// turn calls
+// void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&).
+// This is due to unbalanced inlining of the functions, so we force them to be
+// inlined.
+// See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=103993
 struct MaxAlignedAllocable {
   // Class-specific allocation functions.
-  static void* operator new(size_t size) {
+  static LIBGAV1_ALWAYS_INLINE void* operator new(size_t size) {
     void* const p =
         libgav1::MaxAlignedAllocable::operator new(size, std::nothrow);
 #ifdef ABSL_HAVE_EXCEPTIONS
@@ -52,7 +66,7 @@ struct MaxAlignedAllocable {
 #endif
     return p;
   }
-  static void* operator new[](size_t size) {
+  static LIBGAV1_ALWAYS_INLINE void* operator new[](size_t size) {
     void* const p =
         libgav1::MaxAlignedAllocable::operator new[](size, std::nothrow);
 #ifdef ABSL_HAVE_EXCEPTIONS
@@ -62,29 +76,33 @@ struct MaxAlignedAllocable {
   }
 
   // Class-specific non-throwing allocation functions
-  static void* operator new(size_t size, const std::nothrow_t& tag) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void* operator new(
+      size_t size, const std::nothrow_t& tag) noexcept {
     return libgav1::MaxAlignedAllocable::operator new(size, tag);
   }
-  static void* operator new[](size_t size, const std::nothrow_t& tag) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void* operator new[](
+      size_t size, const std::nothrow_t& tag) noexcept {
     return libgav1::MaxAlignedAllocable::operator new[](size, tag);
   }
 
   // Class-specific deallocation functions.
-  static void operator delete(void* ptr) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void operator delete(void* ptr) noexcept {
     libgav1::MaxAlignedAllocable::operator delete(ptr);
   }
-  static void operator delete[](void* ptr) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void operator delete[](void* ptr) noexcept {
     libgav1::MaxAlignedAllocable::operator delete[](ptr);
   }
 
   // Only called if new (std::nothrow) is used and the constructor throws an
   // exception.
-  static void operator delete(void* ptr, const std::nothrow_t& tag) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void operator delete(
+      void* ptr, const std::nothrow_t& tag) noexcept {
     libgav1::MaxAlignedAllocable::operator delete(ptr, tag);
   }
   // Only called if new[] (std::nothrow) is used and the constructor throws an
   // exception.
-  static void operator delete[](void* ptr, const std::nothrow_t& tag) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void operator delete[](
+      void* ptr, const std::nothrow_t& tag) noexcept {
     libgav1::MaxAlignedAllocable::operator delete[](ptr, tag);
   }
 };

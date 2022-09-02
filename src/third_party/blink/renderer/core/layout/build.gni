@@ -2,6 +2,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This target always builds with -O3. Hot path functions that are sensitive
+# to the difference between optimization profiles should be placed here.
+#
+# Some functions are extremely sensitive to the optimizer profile setting on
+# architectures like ARM32. For example, in ARM32 using -Oz instead of -O2
+# results in different choices for inlining, loop vectorization, and register
+# spilling that can yield 10%-15% regressions in blink_perf benchmarks.
+#
+# If adding more translations units, the convention is, for a given foo.cc
+# file, create a foo-hot.cc file which can hold any functions that require
+# -O2 optimization. If there is common inlined implementations, put this in
+# foo-inl.h and include that in both foo.cc and foo-hot.cc.
+
+blink_core_hot_sources_layout = [
+  "layout_block_flow_hot.cc",
+  "layout_box_hot.cc",
+  "layout_object_hot.cc",
+  "layout_object_inl.h",
+  "ng/layout_ng_block_flow.cc",
+  "ng/layout_ng_block_flow.h",
+  "text_autosizer.cc",
+  "text_autosizer.h",
+]
+
 blink_core_sources_layout = [
   "api/hit_test_action.h",
   "api/line_layout_api_shim.h",
@@ -40,6 +64,8 @@ blink_core_sources_layout = [
   "custom_scrollbar.h",
   "depth_ordered_layout_object_list.cc",
   "depth_ordered_layout_object_list.h",
+  "deferred_shaping.cc",
+  "deferred_shaping.h",
   "flexible_box_algorithm.cc",
   "flexible_box_algorithm.h",
   "floating_objects.cc",
@@ -74,6 +100,7 @@ blink_core_sources_layout = [
   "grid_baseline_alignment.h",
   "grid_layout_utils.cc",
   "grid_layout_utils.h",
+  "grid_linked_list.h",
   "grid_track_sizing_algorithm.cc",
   "grid_track_sizing_algorithm.h",
   "hit_test_cache.cc",
@@ -310,6 +337,7 @@ blink_core_sources_layout = [
   "ng/flex/ng_flex_break_token_data.h",
   "ng/flex/ng_flex_child_iterator.cc",
   "ng/flex/ng_flex_child_iterator.h",
+  "ng/flex/ng_flex_data.h",
   "ng/flex/ng_flex_item_iterator.cc",
   "ng/flex/ng_flex_item_iterator.h",
   "ng/flex/ng_flex_layout_algorithm.cc",
@@ -329,7 +357,8 @@ blink_core_sources_layout = [
   "ng/grid/layout_ng_grid_interface.h",
   "ng/grid/ng_grid_break_token_data.h",
   "ng/grid/ng_grid_data.h",
-  "ng/grid/ng_grid_geometry.h",
+  "ng/grid/ng_grid_item.cc",
+  "ng/grid/ng_grid_item.h",
   "ng/grid/ng_grid_layout_algorithm.cc",
   "ng/grid/ng_grid_layout_algorithm.h",
   "ng/grid/ng_grid_node.cc",
@@ -415,8 +444,6 @@ blink_core_sources_layout = [
   "ng/layout_box_utils.cc",
   "ng/layout_box_utils.h",
   "ng/layout_ng_block.h",
-  "ng/layout_ng_block_flow.cc",
-  "ng/layout_ng_block_flow.h",
   "ng/layout_ng_block_flow_mixin.cc",
   "ng/layout_ng_block_flow_mixin.h",
   "ng/layout_ng_button.cc",
@@ -440,6 +467,8 @@ blink_core_sources_layout = [
   "ng/layout_ng_text_control_multi_line.h",
   "ng/layout_ng_text_control_single_line.cc",
   "ng/layout_ng_text_control_single_line.h",
+  "ng/layout_ng_view.cc",
+  "ng/layout_ng_view.h",
   "ng/legacy_layout_tree_walking.h",
   "ng/list/layout_ng_inside_list_marker.cc",
   "ng/list/layout_ng_inside_list_marker.h",
@@ -455,6 +484,8 @@ blink_core_sources_layout = [
   "ng/mathml/layout_ng_mathml_block_flow.h",
   "ng/mathml/layout_ng_mathml_block_with_anonymous_mrow.cc",
   "ng/mathml/layout_ng_mathml_block_with_anonymous_mrow.h",
+  "ng/mathml/layout_ng_table_cell_with_anonymous_mrow.cc",
+  "ng/mathml/layout_ng_table_cell_with_anonymous_mrow.h",
   "ng/mathml/ng_math_fraction_layout_algorithm.cc",
   "ng/mathml/ng_math_fraction_layout_algorithm.h",
   "ng/mathml/ng_math_layout_utils.cc",
@@ -471,6 +502,8 @@ blink_core_sources_layout = [
   "ng/mathml/ng_math_scripts_layout_algorithm.h",
   "ng/mathml/ng_math_space_layout_algorithm.cc",
   "ng/mathml/ng_math_space_layout_algorithm.h",
+  "ng/mathml/ng_math_token_layout_algorithm.cc",
+  "ng/mathml/ng_math_token_layout_algorithm.h",
   "ng/mathml/ng_math_under_over_layout_algorithm.cc",
   "ng/mathml/ng_math_under_over_layout_algorithm.h",
   "ng/mathml/ng_mathml_paint_info.h",
@@ -478,6 +511,7 @@ blink_core_sources_layout = [
   "ng/ng_absolute_utils.h",
   "ng/ng_block_break_token.cc",
   "ng/ng_block_break_token.h",
+  "ng/ng_block_break_token_data.h",
   "ng/ng_block_child_iterator.cc",
   "ng/ng_block_child_iterator.h",
   "ng/ng_block_layout_algorithm.cc",
@@ -495,6 +529,7 @@ blink_core_sources_layout = [
   "ng/ng_break_token.h",
   "ng/ng_column_layout_algorithm.cc",
   "ng/ng_column_layout_algorithm.h",
+  "ng/ng_column_spanner_path.h",
   "ng/ng_constraint_space.cc",
   "ng/ng_constraint_space.h",
   "ng/ng_constraint_space_builder.cc",
@@ -504,12 +539,15 @@ blink_core_sources_layout = [
   "ng/ng_disable_side_effects_scope.cc",
   "ng/ng_disable_side_effects_scope.h",
   "ng/ng_early_break.h",
+  "ng/ng_fieldset_break_token_data.h",
   "ng/ng_fieldset_layout_algorithm.cc",
   "ng/ng_fieldset_layout_algorithm.h",
   "ng/ng_floats_utils.cc",
   "ng/ng_floats_utils.h",
   "ng/ng_fragment.h",
   "ng/ng_fragment_builder.h",
+  "ng/ng_fragment_repeater.cc",
+  "ng/ng_fragment_repeater.h",
   "ng/ng_fragmentation_utils.cc",
   "ng/ng_fragmentation_utils.h",
   "ng/ng_ink_overflow.cc",
@@ -528,6 +566,7 @@ blink_core_sources_layout = [
   "ng/ng_link.h",
   "ng/ng_out_of_flow_layout_part.cc",
   "ng/ng_out_of_flow_layout_part.h",
+  "ng/ng_out_of_flow_positioned_node.cc",
   "ng/ng_out_of_flow_positioned_node.h",
   "ng/ng_outline_type.h",
   "ng/ng_outline_utils.cc",
@@ -538,6 +577,7 @@ blink_core_sources_layout = [
   "ng/ng_physical_box_fragment.h",
   "ng/ng_physical_fragment.cc",
   "ng/ng_physical_fragment.h",
+  "ng/ng_positioned_float.cc",
   "ng/ng_positioned_float.h",
   "ng/ng_relative_utils.cc",
   "ng/ng_relative_utils.h",
@@ -552,6 +592,8 @@ blink_core_sources_layout = [
   "ng/ng_text_decoration_offset.cc",
   "ng/ng_text_decoration_offset.h",
   "ng/ng_unpositioned_float.h",
+  "ng/svg/layout_ng_svg_foreign_object.cc",
+  "ng/svg/layout_ng_svg_foreign_object.h",
   "ng/svg/layout_ng_svg_text.cc",
   "ng/svg/layout_ng_svg_text.h",
   "ng/svg/ng_svg_character_data.cc",
@@ -584,6 +626,9 @@ blink_core_sources_layout = [
   "ng/table/layout_ng_table_section_interface.h",
   "ng/table/ng_table_borders.cc",
   "ng/table/ng_table_borders.h",
+  "ng/table/ng_table_child_iterator.cc",
+  "ng/table/ng_table_child_iterator.h",
+  "ng/table/ng_table_column_location.h",
   "ng/table/ng_table_constraint_space_data.h",
   "ng/table/ng_table_fragment_data.h",
   "ng/table/ng_table_layout_algorithm.cc",
@@ -596,6 +641,7 @@ blink_core_sources_layout = [
   "ng/table/ng_table_layout_algorithm_utils.h",
   "ng/table/ng_table_node.cc",
   "ng/table/ng_table_node.h",
+  "ng/table/ng_table_row_break_token_data.h",
   "ng/table/ng_table_row_layout_algorithm.cc",
   "ng/table/ng_table_row_layout_algorithm.h",
   "ng/table/ng_table_section_layout_algorithm.cc",
@@ -724,8 +770,6 @@ blink_core_sources_layout = [
   "table_layout_algorithm_auto.h",
   "table_layout_algorithm_fixed.cc",
   "table_layout_algorithm_fixed.h",
-  "text_autosizer.cc",
-  "text_autosizer.h",
   "text_decoration_offset.cc",
   "text_decoration_offset.h",
   "text_decoration_offset_base.cc",
@@ -752,6 +796,8 @@ if (is_win) {
     "layout_theme_win.cc",
     "layout_theme_win.h",
     "web_font_rendering_win.cc",
+    "layout_font_accessor_win.h",
+    "layout_font_accessor_win.cc",
   ]
 } else {  # Not Windows.
   blink_core_sources_layout += [ "layout_theme_font_provider_default.cc" ]
@@ -778,21 +824,24 @@ if (is_fuchsia) {
 blink_core_tests_layout = [
   "api/selection_state_test.cc",
   "collapsed_border_value_test.cc",
+  "deferred_shaping_test.cc",
   "force_legacy_layout_test.cc",
   "geometry/axis_test.cc",
   "geometry/logical_rect_test.cc",
-  "geometry/logical_size_test.cc",
   "geometry/physical_rect_test.cc",
   "geometry/physical_size_test.cc",
   "geometry/writing_mode_converter_test.cc",
   "grid_test.cc",
+  "grid_linked_list_test.cc",
   "hit_testing_test.cc",
   "layout_block_flow_test.cc",
   "layout_block_test.cc",
   "layout_box_model_object_test.cc",
   "layout_box_test.cc",
+  "layout_embedded_content_test.cc",
   "layout_flexible_box_test.cc",
   "layout_image_test.cc",
+  "layout_image_resource_test.cc",
   "layout_inline_test.cc",
   "layout_list_marker_test.cc",
   "layout_media_test.cc",
@@ -857,7 +906,6 @@ blink_core_tests_layout = [
   "ng/ng_fragmentation_test.cc",
   "ng/ng_ink_overflow_test.cc",
   "ng/ng_inline_layout_test.cc",
-  "ng/ng_layout_overflow_calculator_test.cc",
   "ng/ng_layout_result_caching_test.cc",
   "ng/ng_layout_test.h",
   "ng/ng_length_utils_test.cc",

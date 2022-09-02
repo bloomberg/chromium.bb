@@ -16,6 +16,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_renderer_host.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "components/messages/android/mock_message_dispatcher_bridge.h"
+#endif
+
 class GURL;
 
 namespace content {
@@ -79,8 +83,8 @@ class SubresourceFilterTestHarness : public content::RenderViewHostTestHarness,
     return database_manager_.get();
   }
 
-  void SetIsAdSubframe(content::RenderFrameHost* render_frame_host,
-                       bool is_ad_subframe);
+  void SetIsAdFrame(content::RenderFrameHost* render_frame_host,
+                    bool is_ad_frame);
 
   content::WebContents* web_contents() {
     return content::RenderViewHostTestHarness::web_contents();
@@ -108,6 +112,9 @@ class SubresourceFilterTestHarness : public content::RenderViewHostTestHarness,
   std::unique_ptr<ThrottleManagerTestSupport> throttle_manager_test_support_;
   std::unique_ptr<infobars::ContentInfoBarManager> infobar_manager_;
   std::unique_ptr<RulesetService> ruleset_service_;
+#if BUILDFLAG(IS_ANDROID)
+  messages::MockMessageDispatcherBridge message_dispatcher_bridge_;
+#endif
 };
 
 }  // namespace subresource_filter

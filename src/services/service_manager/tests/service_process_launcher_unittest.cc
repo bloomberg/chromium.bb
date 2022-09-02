@@ -24,7 +24,7 @@ namespace {
 
 const char kTestServiceName[] = "service_process_launcher_test_service";
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const base::FilePath::CharType kServiceExtension[] =
     FILE_PATH_LITERAL(".service.exe");
 #else
@@ -68,13 +68,9 @@ class ServiceProcessLauncherDelegateImpl
   size_t adjust_count_ = 0;
 };
 
-#if defined(OS_ANDROID)
 // TODO(qsr): Multiprocess service manager tests are not supported on android.
-#define MAYBE_StartJoin DISABLED_StartJoin
-#else
-#define MAYBE_StartJoin StartJoin
-#endif  // defined(OS_ANDROID)
-TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
+// TODO(crbug.com/1288830): Flakes on all platforms.
+TEST(ServiceProcessLauncherTest, DISABLED_StartJoin) {
   base::test::TaskEnvironment task_environment;
 
   // The test executable is a data_deps and thus generated test data.
@@ -99,7 +95,7 @@ TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
   EXPECT_EQ(1u, service_process_launcher_delegate.get_and_clear_adjust_count());
 }
 
-#if !defined(OS_POSIX) || defined(OS_MAC)
+#if !BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_MAC)
 // Verify that if ServiceProcessLauncher cannot launch a process running the
 // service from the specified path, then we are able to clean up without e.g.
 // double-freeing the platform-channel handle reserved for the peer.
@@ -125,7 +121,7 @@ TEST(ServiceProcessLauncherTest, FailToLaunchProcess) {
   launcher.reset();
   task_environment.RunUntilIdle();
 }
-#endif  //  !defined(OS_POSIX) || defined(OS_MAC)
+#endif  //  !BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_MAC)
 
 }  // namespace
 }  // namespace service_manager

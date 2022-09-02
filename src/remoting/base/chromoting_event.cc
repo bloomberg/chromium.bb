@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/system/sys_info.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "remoting/base/name_value_map.h"
 
@@ -159,19 +160,19 @@ ChromotingEvent& ChromotingEvent::operator=(ChromotingEvent&& other) {
 
 void ChromotingEvent::SetString(const std::string& key,
                                 const std::string& value) {
-  values_map_->SetString(key, value);
+  values_map_->SetStringKey(key, value);
 }
 
 void ChromotingEvent::SetInteger(const std::string& key, int value) {
-  values_map_->SetInteger(key, value);
+  values_map_->SetIntKey(key, value);
 }
 
 void ChromotingEvent::SetBoolean(const std::string& key, bool value) {
-  values_map_->SetBoolean(key, value);
+  values_map_->SetBoolKey(key, value);
 }
 
 void ChromotingEvent::SetDouble(const std::string& key, double value) {
-  values_map_->SetDouble(key, value);
+  values_map_->SetDoubleKey(key, value);
 }
 
 bool ChromotingEvent::IsDataValid() {
@@ -189,17 +190,17 @@ void ChromotingEvent::AddSystemInfo() {
   SetString(kCpuKey, base::SysInfo::OperatingSystemArchitecture());
   SetString(kOsVersionKey, base::SysInfo::OperatingSystemVersion());
   SetString(kWebAppVersionKey, STRINGIZE(VERSION));
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   Os os = Os::CHROMOTING_LINUX;
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   Os os = Os::CHROMOTING_CHROMEOS;
-#elif defined(OS_IOS)
+#elif BUILDFLAG(IS_IOS)
   Os os = Os::CHROMOTING_IOS;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   Os os = Os::CHROMOTING_MAC;
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   Os os = Os::CHROMOTING_WINDOWS;
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   Os os = Os::CHROMOTING_ANDROID;
 #else
   Os os = Os::OTHER;

@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
@@ -38,7 +40,6 @@ using BubbleFrameViewTest = ViewsTestBase;
 namespace {
 
 constexpr BubbleBorder::Arrow kArrow = BubbleBorder::TOP_LEFT;
-constexpr SkColor kColor = SK_ColorRED;
 constexpr int kMargin = 6;
 constexpr gfx::Size kMinimumClientSize = gfx::Size(100, 200);
 constexpr gfx::Size kPreferredClientSize = gfx::Size(150, 250);
@@ -87,8 +88,8 @@ class TestBubbleFrameView : public BubbleFrameView {
  public:
   explicit TestBubbleFrameView(ViewsTestBase* test_base)
       : BubbleFrameView(gfx::Insets(), gfx::Insets(kMargin)) {
-    SetBubbleBorder(std::make_unique<BubbleBorder>(
-        kArrow, BubbleBorder::STANDARD_SHADOW, kColor));
+    SetBubbleBorder(
+        std::make_unique<BubbleBorder>(kArrow, BubbleBorder::STANDARD_SHADOW));
     widget_ = std::make_unique<Widget>();
     widget_delegate_ =
         std::make_unique<TestBubbleFrameViewWidgetDelegate>(widget_.get());
@@ -109,16 +110,10 @@ class TestBubbleFrameView : public BubbleFrameView {
   }
 
   BubbleBorder::Arrow GetBorderArrow() const {
-    return bubble_border_for_testing()->arrow();
+    return bubble_border()->arrow();
   }
 
-  SkColor GetBorderBackgroundColor() const {
-    return bubble_border_for_testing()->background_color();
-  }
-
-  gfx::Insets GetBorderInsets() const {
-    return bubble_border_for_testing()->GetInsets();
-  }
+  gfx::Insets GetBorderInsets() const { return bubble_border()->GetInsets(); }
 
   // BubbleFrameView:
   Widget* GetWidget() override { return widget_.get(); }
@@ -150,7 +145,6 @@ class TestBubbleFrameView : public BubbleFrameView {
 TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
   TestBubbleFrameView frame(this);
   EXPECT_EQ(kArrow, frame.GetBorderArrow());
-  EXPECT_EQ(kColor, frame.GetBorderBackgroundColor());
 
   const gfx::Insets content_margins = frame.GetContentMargins();
   const gfx::Insets insets = frame.GetBorderInsets();
@@ -164,7 +158,6 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
   frame.widget_delegate()->SetShouldShowCloseButton(true);
   frame.ResetWindowControls();
   EXPECT_EQ(kArrow, frame.GetBorderArrow());
-  EXPECT_EQ(kColor, frame.GetBorderBackgroundColor());
 
   const gfx::Insets content_margins = frame.GetContentMargins();
   const gfx::Insets insets = frame.GetBorderInsets();
@@ -209,8 +202,8 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBounds) {
   TestBubbleFrameView frame(this);
   gfx::Rect window_bounds;
 
-  frame.SetBubbleBorder(std::make_unique<BubbleBorder>(
-      kArrow, BubbleBorder::NO_SHADOW_LEGACY, kColor));
+  frame.SetBubbleBorder(
+      std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW_LEGACY));
 
   // Test that the info bubble displays normally when it fits.
   frame.SetArrow(BubbleBorder::TOP_LEFT);
@@ -372,7 +365,7 @@ TEST_F(BubbleFrameViewTest, TestMirroringForCenteredArrow) {
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsDontTryMirror) {
   TestBubbleFrameView frame(this);
   frame.SetBubbleBorder(std::make_unique<BubbleBorder>(
-      BubbleBorder::TOP_RIGHT, BubbleBorder::NO_SHADOW_LEGACY, kColor));
+      BubbleBorder::TOP_RIGHT, BubbleBorder::NO_SHADOW_LEGACY));
   gfx::Rect window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 900, 0, 0),       // |anchor_rect|
       BubbleBorder::Arrow::TOP_RIGHT,  // |delegate_arrow|
@@ -389,8 +382,8 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
   TestBubbleFrameView frame(this);
   gfx::Rect window_bounds;
 
-  frame.SetBubbleBorder(std::make_unique<BubbleBorder>(
-      kArrow, BubbleBorder::NO_SHADOW_LEGACY, kColor));
+  frame.SetBubbleBorder(
+      std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW_LEGACY));
 
   // Some of these tests may go away once --secondary-ui-md becomes the
   // default. Under Material Design mode, the BubbleBorder doesn't support all
@@ -453,8 +446,8 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsForBubbleWithAnchorWindow) {
   frame.SetAvailableAnchorWindowBounds(gfx::Rect(100, 100, 500, 500));
   gfx::Rect window_bounds;
 
-  frame.SetBubbleBorder(std::make_unique<BubbleBorder>(
-      kArrow, BubbleBorder::NO_SHADOW_LEGACY, kColor));
+  frame.SetBubbleBorder(
+      std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW_LEGACY));
 
   // Test that the bubble displays normally when it fits.
   frame.SetArrow(BubbleBorder::TOP_LEFT);
@@ -571,8 +564,8 @@ TEST_F(BubbleFrameViewTest,
   TestBubbleFrameView frame(this);
   gfx::Rect window_bounds;
 
-  frame.SetBubbleBorder(std::make_unique<BubbleBorder>(
-      kArrow, BubbleBorder::NO_SHADOW_LEGACY, kColor));
+  frame.SetBubbleBorder(
+      std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW_LEGACY));
 
   // Test bubble fitting anchor window and not fitting screen on right.
   //     ________________________
@@ -643,8 +636,8 @@ TEST_F(BubbleFrameViewTest, MirroringNotStickyForGetUpdatedWindowBounds) {
   TestBubbleFrameView frame(this);
   gfx::Rect window_bounds;
 
-  frame.SetBubbleBorder(std::make_unique<BubbleBorder>(
-      kArrow, BubbleBorder::NO_SHADOW_LEGACY, kColor));
+  frame.SetBubbleBorder(
+      std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW_LEGACY));
 
   // Test bubble fitting anchor window and not fitting screen on right.
   frame.SetAvailableAnchorWindowBounds(gfx::Rect(700, 200, 400, 400));
@@ -680,8 +673,8 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsForBubbleSetToOffset) {
       BubbleFrameView::PreferredArrowAdjustment::kOffset);
   gfx::Rect window_bounds;
 
-  frame.SetBubbleBorder(std::make_unique<BubbleBorder>(
-      kArrow, BubbleBorder::NO_SHADOW_LEGACY, kColor));
+  frame.SetBubbleBorder(
+      std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW_LEGACY));
 
   // Test that the bubble displays normally when it fits.
   frame.SetArrow(BubbleBorder::TOP_LEFT);
@@ -738,8 +731,8 @@ TEST_F(BubbleFrameViewTest,
       BubbleFrameView::PreferredArrowAdjustment::kOffset);
   gfx::Rect window_bounds;
 
-  frame.SetBubbleBorder(std::make_unique<BubbleBorder>(
-      kArrow, BubbleBorder::NO_SHADOW_LEGACY, kColor));
+  frame.SetBubbleBorder(
+      std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW_LEGACY));
 
   // Test that the bubble exiting right side of anchor window displays against
   // left edge of anchor window bounds if larger than anchor window.
@@ -837,7 +830,7 @@ TEST_F(BubbleFrameViewTest, GetMinimumSize) {
 TEST_F(BubbleFrameViewTest, GetMaximumSize) {
   TestBubbleFrameView frame(this);
   gfx::Rect maximum_rect(frame.GetMaximumSize());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, GetMaximumSize causes problems with DWM, so it should just be 0
   // (unlimited). See http://crbug.com/506206.
   EXPECT_EQ(gfx::Size(), maximum_rect.size());

@@ -9,9 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -50,8 +50,6 @@ class TestStoragePartition : public StoragePartition {
   void set_path(base::FilePath file_path) { file_path_ = file_path; }
   base::FilePath GetPath() override;
 
-  base::FilePath GetBucketBasePath() override;
-
   void set_network_context(network::mojom::NetworkContext* context) {
     network_context_ = context;
   }
@@ -82,7 +80,7 @@ class TestStoragePartition : public StoragePartition {
 
   mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
   CreateURLLoaderNetworkObserverForNavigationRequest(
-      int frame_tree_id) override;
+      NavigationRequest& navigation_request) override;
 
   void set_quota_manager(storage::QuotaManager* manager) {
     quota_manager_ = manager;
@@ -93,8 +91,6 @@ class TestStoragePartition : public StoragePartition {
     file_system_context_ = context;
   }
   storage::FileSystemContext* GetFileSystemContext() override;
-
-  FontAccessContext* GetFontAccessContext() override;
 
   void set_background_sync_context(BackgroundSyncContext* context) {
     background_sync_context_ = context;
@@ -140,6 +136,14 @@ class TestStoragePartition : public StoragePartition {
     platform_notification_context_ = context;
   }
   PlatformNotificationContext* GetPlatformNotificationContext() override;
+
+  InterestGroupManager* GetInterestGroupManager() override;
+
+  void set_browsing_topics_site_data_manager(
+      BrowsingTopicsSiteDataManager* manager) {
+    browsing_topics_site_data_manager_ = manager;
+  }
+  BrowsingTopicsSiteDataManager* GetBrowsingTopicsSiteDataManager() override;
 
   void set_devtools_background_services_context(
       DevToolsBackgroundServicesContext* context) {
@@ -239,6 +243,8 @@ class TestStoragePartition : public StoragePartition {
   raw_ptr<SharedWorkerService> shared_worker_service_ = nullptr;
   mojo::Remote<storage::mojom::CacheStorageControl> cache_storage_control_;
   raw_ptr<GeneratedCodeCacheContext> generated_code_cache_context_ = nullptr;
+  raw_ptr<BrowsingTopicsSiteDataManager> browsing_topics_site_data_manager_ =
+      nullptr;
   raw_ptr<PlatformNotificationContext> platform_notification_context_ = nullptr;
   raw_ptr<DevToolsBackgroundServicesContext>
       devtools_background_services_context_ = nullptr;

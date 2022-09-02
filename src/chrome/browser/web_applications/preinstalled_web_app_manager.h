@@ -20,10 +20,6 @@
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "url/gurl.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -51,6 +47,7 @@ class PreinstalledWebAppManager {
   using ConsumeInstallOptions =
       base::OnceCallback<void(std::vector<ExternalInstallOptions>)>;
   using SynchronizeCallback = ExternallyManagedAppManager::SynchronizeCallback;
+  using InstallUrl = GURL;
 
   // Observes whether default chrome app migration has completed and
   // triggers MostVisitedHandler to refresh the NTP tiles.
@@ -78,7 +75,10 @@ class PreinstalledWebAppManager {
 
   static void SkipStartupForTesting();
   static void BypassOfflineManifestRequirementForTesting();
+
+  static void OverridePreviousUserUninstallConfigForTesting();
   static void SetConfigDirForTesting(const base::FilePath* config_dir);
+
   static void SetConfigsForTesting(const std::vector<base::Value>* configs);
   static void SetFileUtilsForTesting(FileUtilsWrapper* file_utils);
 
@@ -116,8 +116,9 @@ class PreinstalledWebAppManager {
     using DisabledConfigWithReason =
         std::pair<ExternalInstallOptions, std::string>;
     std::vector<DisabledConfigWithReason> disabled_configs;
-    std::map<GURL, ExternallyManagedAppManager::InstallResult> install_results;
-    std::map<GURL, bool> uninstall_results;
+    std::map<InstallUrl, ExternallyManagedAppManager::InstallResult>
+        install_results;
+    std::map<InstallUrl, bool> uninstall_results;
   };
   const DebugInfo* debug_info() const { return debug_info_.get(); }
 
@@ -135,18 +136,14 @@ class PreinstalledWebAppManager {
                    std::vector<ExternalInstallOptions>);
   void OnExternalWebAppsSynchronized(
       ExternallyManagedAppManager::SynchronizeCallback callback,
-      std::map<GURL, std::vector<AppId>> desired_uninstall_and_replaces,
-      std::map<GURL, ExternallyManagedAppManager::InstallResult>
+      std::map<InstallUrl, std::vector<AppId>> desired_uninstall_and_replaces,
+      std::map<InstallUrl, ExternallyManagedAppManager::InstallResult>
           install_results,
-      std::map<GURL, bool> uninstall_results);
+      std::map<InstallUrl, bool> uninstall_results);
   void OnStartUpTaskCompleted(
-      std::map<GURL, ExternallyManagedAppManager::InstallResult>
+      std::map<InstallUrl, ExternallyManagedAppManager::InstallResult>
           install_results,
-      std::map<GURL, bool> uninstall_results);
-
-  // The directory where default web app configs are stored.
-  // Empty if not applicable.
-  base::FilePath GetConfigDir();
+      std::map<InstallUrl, bool> uninstall_results);
 
   // Returns whether this is the first time we've deployed default apps on this
   // profile.

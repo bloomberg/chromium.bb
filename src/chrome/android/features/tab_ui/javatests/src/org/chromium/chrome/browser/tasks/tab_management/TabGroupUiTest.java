@@ -61,8 +61,9 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
-import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
+import org.chromium.chrome.features.start_surface.TabSwitcherAndStartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -97,13 +98,15 @@ public class TabGroupUiTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_TAB_GROUPS)
+                    .build();
 
     @Before
     public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
-        assertTrue(layout instanceof StartSurfaceLayout);
+        assertTrue(layout instanceof TabSwitcherAndStartSurfaceLayout);
         CriteriaHelper.pollUiThread(
                 mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
     }
@@ -121,7 +124,7 @@ public class TabGroupUiTest {
         // Select the 1st tab in group.
         clickFirstCardFromTabSwitcher(cta);
         clickFirstTabInDialog(cta);
-        assertFalse(cta.getLayoutManager().overviewVisible());
+        assertFalse(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
         onView(withId(R.id.bottom_controls)).check(matches(isDisplayed()));
         verifyTabStripFaviconCount(cta, 2);
     }
@@ -249,7 +252,7 @@ public class TabGroupUiTest {
                     "event_used/" +
                     "name%3Aiph_tabgroups_strip;comparator%3A==0;window%3A365;storage%3A365/" +
                     "session_rate/<1"})
-    @DisabledTest(message = "https://crbug.com/1135926")
+    @DisabledTest(message = "https://crbug.com/1145060")
     public void testIphSuppressedByBottomSheet() throws Exception {
         // clang-format on
 

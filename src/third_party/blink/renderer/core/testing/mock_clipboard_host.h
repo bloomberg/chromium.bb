@@ -64,9 +64,10 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
       ReadUnsanitizedCustomFormatCallback callback) override;
   void WriteUnsanitizedCustomFormat(const String& format,
                                     mojo_base::BigBuffer data) override;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void WriteStringToFindPboard(const String& text) override;
 #endif
+  Vector<String> ReadStandardFormatNames();
 
   mojo::ReceiverSet<mojom::blink::ClipboardHost> receivers_;
   ClipboardSequenceNumberToken sequence_number_;

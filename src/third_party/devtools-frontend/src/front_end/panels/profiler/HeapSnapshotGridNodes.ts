@@ -38,7 +38,9 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import type {ChildrenProvider} from './ChildrenProvider.js';
-import type {AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotSortableDataGrid} from './HeapSnapshotDataGrids.js';
+import type {
+  AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotSortableDataGrid} from
+  './HeapSnapshotDataGrids.js';
 import {HeapSnapshotSortableDataGridEvents} from './HeapSnapshotDataGrids.js';
 import type {HeapSnapshotProviderProxy, HeapSnapshotProxy} from './HeapSnapshotProxy.js';
 import type {DataDisplayDelegate} from './ProfileHeader.js';
@@ -262,7 +264,7 @@ export class HeapSnapshotGridNode extends
       return;
     }
     this.populated = true;
-    this.provider().sortAndRewind(this.comparator()).then(() => this.populateChildren());
+    void this.provider().sortAndRewind(this.comparator()).then(() => this.populateChildren());
   }
 
   expandWithoutPopulate(): Promise<void> {
@@ -292,7 +294,7 @@ export class HeapSnapshotGridNode extends
           return;
         }
         const end = Math.min(firstNotSerializedPosition + this.dataGridInternal.defaultPopulateCount(), toPosition);
-        this.provider()
+        void this.provider()
             .serializeItemsRange(firstNotSerializedPosition, end)
             .then(itemsRange => childrenRetrieved.call(this, itemsRange, toPosition));
         firstNotSerializedPosition = end;
@@ -460,7 +462,7 @@ export class HeapSnapshotGridNode extends
 
     for (const child of this.allChildren()) {
       if (child.expanded) {
-        child.sort();
+        void child.sort();
       }
     }
     this.dataGridInternal.recursiveSortingLeave();
@@ -572,6 +574,7 @@ export abstract class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode
         valueStyle = 'number';
         break;
       case 'hidden':
+      case 'object shape':
         valueStyle = 'null';
         break;
       case 'array':
@@ -599,7 +602,7 @@ export abstract class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode
       div.appendChild(UI.Fragment.html`<span class="heap-object-tag" title="${
           i18nString(UIStrings.detachedFromDomTree)}">✀</span>`);
     }
-    this.appendSourceLocation(div);
+    void this.appendSourceLocation(div);
     const cell = (fragment.element() as HTMLElement);
     if (this.depth) {
       cell.style.setProperty(
@@ -714,7 +717,7 @@ export class HeapSnapshotObjectNode extends HeapSnapshotGenericObjectNode {
     this.parentObjectNode = parentObjectNode;
     this.cycledWithAncestorGridNode = this.findAncestorWithSameSnapshotNodeId();
     if (!this.cycledWithAncestorGridNode) {
-      this.updateHasChildren();
+      void this.updateHasChildren();
     }
 
     const data = this.data;
@@ -843,7 +846,8 @@ export class HeapSnapshotRetainingObjectNode extends HeapSnapshotObjectNode {
 
   expandRetainersChain(maxExpandLevels: number): void {
     if (!this.populated) {
-      this.once(HeapSnapshotGridNode.Events.PopulateComplete).then(() => this.expandRetainersChain(maxExpandLevels));
+      void this.once(HeapSnapshotGridNode.Events.PopulateComplete)
+          .then(() => this.expandRetainersChain(maxExpandLevels));
       this.populate();
       return;
     }
@@ -868,7 +872,7 @@ export class HeapSnapshotInstanceNode extends HeapSnapshotGenericObjectNode {
     super(dataGrid, node);
     this.baseSnapshotOrSnapshot = snapshot;
     this.isDeletedNode = isDeletedNode;
-    this.updateHasChildren();
+    void this.updateHasChildren();
 
     const data = this.data;
     data['count'] = '';
@@ -1246,7 +1250,7 @@ export class AllocationGridNode extends HeapSnapshotGridNode {
     if (this.populated) {
       return;
     }
-    this.doPopulate();
+    void this.doPopulate();
   }
 
   async doPopulate(): Promise<void> {
@@ -1295,12 +1299,11 @@ export class AllocationGridNode extends HeapSnapshotGridNode {
       const linkifier = (this.dataGridInternal as AllocationDataGrid).linkifier;
       const urlElement = linkifier.linkifyScriptLocation(
           heapProfilerModel ? heapProfilerModel.target() : null,
-          String(allocationNode.scriptId) as Protocol.Runtime.ScriptId, allocationNode.scriptName,
-          allocationNode.line - 1, {
+          String(allocationNode.scriptId) as Protocol.Runtime.ScriptId,
+          allocationNode.scriptName as Platform.DevToolsPath.UrlString, allocationNode.line - 1, {
             columnNumber: allocationNode.column - 1,
             inlineFrameIndex: 0,
             className: 'profile-node-file',
-            tabStop: undefined,
           });
       urlElement.style.maxWidth = '75%';
       cell.insertBefore(urlElement, cell.firstChild);

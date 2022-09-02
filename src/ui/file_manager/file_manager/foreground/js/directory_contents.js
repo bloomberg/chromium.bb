@@ -5,6 +5,7 @@
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {mountGuest} from '../../common/js/api.js';
 
 import {AsyncUtil} from '../../common/js/async_util.js';
 import {metrics} from '../../common/js/metrics.js';
@@ -36,8 +37,13 @@ export class ContentScanner {
    * @param {function()} successCallback Called when the scan is completed
    *     successfully.
    * @param {function(DOMError)} errorCallback Called an error occurs.
+   * @param {boolean=} invalidateCache True to invalidate the backend scanning
+   *     result cache. This param only works if the corresponding backend
+   *     scanning supports cache.
    */
-  scan(entriesCallback, successCallback, errorCallback) {}
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {}
 
   /**
    * Request cancelling of the running scan. When the cancelling is done,
@@ -64,7 +70,9 @@ export class DirectoryContentScanner extends ContentScanner {
    * Starts to read the entries in the directory.
    * @override
    */
-  scan(entriesCallback, successCallback, errorCallback) {
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
     if (!this.entry_ || !this.entry_.createReader) {
       // If entry is not specified or if entry doesn't implement createReader,
       // we cannot read it.
@@ -94,6 +102,7 @@ export class DirectoryContentScanner extends ContentScanner {
       }, errorCallback);
     };
     readEntries();
+    return;
   }
 }
 
@@ -111,7 +120,9 @@ export class DriveSearchContentScanner extends ContentScanner {
    * Starts to search on Drive File System.
    * @override
    */
-  scan(entriesCallback, successCallback, errorCallback) {
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
     // Let's give another search a chance to cancel us before we begin.
     setTimeout(() => {
       // Check cancelled state before read the entries.
@@ -132,7 +143,7 @@ export class DriveSearchContentScanner extends ContentScanner {
 
             // TODO(tbarzic): Improve error handling.
             if (!entries) {
-              console.error('Drive search encountered an error.');
+              console.warn('Drive search encountered an error.');
               errorCallback(
                   util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
               return;
@@ -151,6 +162,7 @@ export class DriveSearchContentScanner extends ContentScanner {
             successCallback();
           });
     }, DriveSearchContentScanner.SCAN_DELAY_);
+    return;
   }
 }
 
@@ -190,7 +202,9 @@ export class LocalSearchContentScanner extends ContentScanner {
    * Starts the file name search.
    * @override
    */
-  scan(entriesCallback, successCallback, errorCallback) {
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
     util.readEntriesRecursively(assert(this.entry_), (entries) => {
       const matchEntries = entries.filter(
           entry => entry.name.toLowerCase().indexOf(this.query_) >= 0);
@@ -198,6 +212,7 @@ export class LocalSearchContentScanner extends ContentScanner {
         entriesCallback(matchEntries);
       }
     }, successCallback, errorCallback, () => this.cancelled_);
+    return;
   }
 }
 
@@ -218,7 +233,9 @@ export class DriveMetadataSearchContentScanner extends ContentScanner {
    * Starts to metadata-search on Drive File System.
    * @override
    */
-  scan(entriesCallback, successCallback, errorCallback) {
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
     chrome.fileManagerPrivate.searchDriveMetadata(
         {query: '', types: this.searchType_, maxResults: 100}, results => {
           if (chrome.runtime.lastError) {
@@ -230,7 +247,7 @@ export class DriveMetadataSearchContentScanner extends ContentScanner {
           }
 
           if (!results) {
-            console.error('Drive search encountered an error.');
+            console.warn('Drive search encountered an error.');
             errorCallback(
                 util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
             return;
@@ -244,6 +261,7 @@ export class DriveMetadataSearchContentScanner extends ContentScanner {
           }
           successCallback();
         });
+    return;
   }
 }
 
@@ -277,9 +295,12 @@ export class RecentContentScanner extends ContentScanner {
   /**
    * @override
    */
-  scan(entriesCallback, successCallback, errorCallback) {
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
     chrome.fileManagerPrivate.getRecentFiles(
-        this.sourceRestriction_, this.recentFileType_, entries => {
+        this.sourceRestriction_, this.recentFileType_, invalidateCache,
+        entries => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);
             errorCallback(
@@ -292,6 +313,7 @@ export class RecentContentScanner extends ContentScanner {
           }
           successCallback();
         });
+    return;
   }
 }
 
@@ -314,11 +336,13 @@ export class MediaViewContentScanner extends ContentScanner {
    * hierarchy. We need to list files under the root directory to provide
    * flatten view. A file will not be shown in multiple directories in
    * media-view hierarchy since no folders will be added in media documents
-   * provider. We can list all files without duplication by just retrieveing
+   * provider. We can list all files without duplication by just retrieving
    * files in directories recursively.
    * @override
    */
-  scan(entriesCallback, successCallback, errorCallback) {
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
     // To provide flatten view of files, this media-view scanner retrieves files
     // in directories inside the media's root entry recursively.
     util.readEntriesRecursively(
@@ -345,7 +369,9 @@ export class CrostiniMounter extends ContentScanner {
   /**
    * @override
    */
-  scan(entriesCallback, successCallback, errorCallback) {
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
     chrome.fileManagerPrivate.mountCrostini(() => {
       if (chrome.runtime.lastError) {
         console.error(
@@ -356,6 +382,46 @@ export class CrostiniMounter extends ContentScanner {
       }
       successCallback();
     });
+    return;
+  }
+}
+
+/**
+ * Shows an empty list and spinner whilst starting and mounting a Guest OS's
+ * shared files.
+ *
+ * When FilesApp starts, the related placeholder root entry is shown which uses
+ * this GuestOsMounter as its ContentScanner. When the mount succeeds it will
+ * show up as a disk volume. NavigationListModel.reorderNavigationItems_ will
+ * detect thew new volume and hide the placeholder root item while the disk
+ * volume exists.
+ */
+export class GuestOsMounter extends ContentScanner {
+  /**
+   * @param {number} guest_id The id of the GuestOsMountProvider to use
+   */
+  constructor(guest_id) {
+    super();
+
+    /** @private @const {number} */
+    this.guest_id_ = guest_id;
+  }
+
+  /**
+   * @override
+   */
+  async scan(
+      entriesCallback, successCallback, errorCallback,
+      invalidateCache = false) {
+    try {
+      await mountGuest(this.guest_id_);
+      successCallback();
+    } catch (error) {
+      errorCallback(util.createDOMError(
+          // TODO(crbug/1293229): Strings
+          constants.CROSTINI_CONNECT_ERR, error));
+    }
+    return;
   }
 }
 
@@ -373,8 +439,6 @@ export class FileFilter extends EventTarget {
      * @private
      */
     this.filters_ = {};
-    this.setHiddenFilesVisible(false);
-    this.setAllAndroidFoldersVisible(false);
 
     /**
      * @type {!VolumeManager}
@@ -383,6 +447,22 @@ export class FileFilter extends EventTarget {
      */
     this.volumeManager_ = volumeManager;
 
+    /**
+     * Setup initial filters.
+     */
+    this.setupInitialFilters_();
+  }
+
+  /**
+   * @private
+   */
+  setupInitialFilters_() {
+    if (this.volumeManager_.getMediaStoreFilesOnlyFilterEnabled()) {
+      this.setMediaStoreRecentsFilter();
+    }
+
+    this.setHiddenFilesVisible(false);
+    this.setAllAndroidFoldersVisible(false);
     this.hideAndroidDownload();
   }
 
@@ -402,6 +482,16 @@ export class FileFilter extends EventTarget {
   removeFilter(name) {
     delete this.filters_[name];
     dispatchSimpleEvent(this, 'changed');
+  }
+
+  /**
+   * When Android MediaStore volume manager filter is enabled, filter RECENTS
+   * volume entries by allowed volume type: crbug.com/1333385/#c17
+   */
+  setMediaStoreRecentsFilter() {
+    this.addFilter('media-store-recents', entry => {
+      return entry && this.volumeManager_.getLocationInfo(entry) !== null;
+    });
   }
 
   /**
@@ -746,8 +836,11 @@ export class DirectoryContents extends EventTarget {
    *
    * @param {boolean} refresh True to refresh metadata, or false to use cached
    *     one.
+   * @param {boolean} invalidateCache True to invalidate the backend scanning
+   *     result cache. This param only works if the corresponding backend
+   *     scanning supports cache.
    */
-  scan(refresh) {
+  scan(refresh, invalidateCache) {
     /**
      * Invoked when the scanning is completed successfully.
      * @this {DirectoryContents}
@@ -767,12 +860,14 @@ export class DirectoryContents extends EventTarget {
       this.onScanError_(error);
     }
 
+    metrics.startInterval('DirectoryListLoad');
+
     // TODO(hidehiko,mtomasz): this scan method must be called at most once.
     // Remove such a limitation.
     this.scanner_ = this.scannerFactory_();
     this.scanner_.scan(
         this.onNewEntries_.bind(this, refresh), completionCallback.bind(this),
-        errorCallback.bind(this));
+        errorCallback.bind(this), invalidateCache);
   }
 
   /**
@@ -878,7 +973,21 @@ export class DirectoryContents extends EventTarget {
       // Call callback first, so isScanning() returns false in the event
       // handlers.
       callback();
-
+      // TODO(crbug.com/1290197): Currently we only care about the load time for
+      // local files, filter out all the other root types.
+      if (this.getDirectoryEntry()) {
+        const locationInfo = this.context_.volumeManager.getLocationInfo(
+            /** @type {!Entry} */ (this.getDirectoryEntry()));
+        if (locationInfo &&
+            (locationInfo.rootType === VolumeManagerCommon.RootType.MY_FILES ||
+             locationInfo.rootType ===
+                 VolumeManagerCommon.RootType.DOWNLOADS)) {
+          metrics.recordDirectoryListLoadWithTolerance(
+              'DirectoryListLoad', this.getFileListLength(),
+              VolumeManagerCommon.RootType.MY_FILES, [10, 100, 1000],
+              /*tolerance=*/ 0.2);
+        }
+      }
       dispatchSimpleEvent(this, 'scan-completed');
     });
   }

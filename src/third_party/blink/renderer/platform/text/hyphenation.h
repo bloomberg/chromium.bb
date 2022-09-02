@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -37,6 +36,8 @@ class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
   static const unsigned kMinimumSuffixLength = 2;
 
  protected:
+  void Initialize(const AtomicString& locale);
+
   bool ShouldHyphenateWord(const StringView& word) const {
     if (word.IsEmpty())
       return false;

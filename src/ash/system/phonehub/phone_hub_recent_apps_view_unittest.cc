@@ -6,6 +6,7 @@
 
 #include "ash/components/phonehub/fake_recent_apps_interaction_handler.h"
 #include "ash/components/phonehub/notification.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "ash/system/phonehub/phone_hub_recent_app_button.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/gfx/image/image.h"
@@ -18,6 +19,8 @@ const char kPackageName[] = "com.google.testapp";
 const int64_t kUserId = 0;
 
 namespace {
+
+using FeatureState = multidevice_setup::mojom::FeatureState;
 
 class FakeEvent : public ui::Event {
  public:
@@ -51,14 +54,20 @@ class RecentAppButtonsViewTest : public AshTestBase {
 
   void NotifyRecentAppAddedOrUpdated() {
     fake_recent_apps_interaction_handler_.NotifyRecentAppAddedOrUpdated(
-        phonehub::Notification::AppMetadata(kAppName, kPackageName,
-                                            /*icon=*/gfx::Image(), kUserId),
+        phonehub::Notification::AppMetadata(
+            kAppName, kPackageName,
+            /*icon=*/gfx::Image(), /*icon_color =*/absl::nullopt,
+            /*icon_is_monochrome =*/true, kUserId),
         base::Time::Now());
   }
 
   size_t PackageNameToClickCount(const std::string& package_name) {
     return fake_recent_apps_interaction_handler_.HandledRecentAppsCount(
         package_name);
+  }
+
+  void FeatureStateChanged(FeatureState feature_state) {
+    fake_recent_apps_interaction_handler_.OnFeatureStateChanged(feature_state);
   }
 
  private:
@@ -70,19 +79,30 @@ class RecentAppButtonsViewTest : public AshTestBase {
 TEST_F(RecentAppButtonsViewTest, TaskViewVisibility) {
   // The recent app view is not visible if the NotifyRecentAppAddedOrUpdated
   // function never be called, e.g. device boot.
-  EXPECT_FALSE(recent_apps_view()->recent_app_buttons_view_->GetVisible());
+  EXPECT_FALSE(recent_apps_view()->GetVisible());
 
-  NotifyRecentAppAddedOrUpdated();
+  // The feature state is enabled but no recent app has been added yet, we
+  // should not show the recent app buttons view.
+  FeatureStateChanged(FeatureState::kEnabledByUser);
   recent_apps_view()->Update();
 
   EXPECT_TRUE(recent_apps_view()->GetVisible());
+  EXPECT_FALSE(recent_apps_view()->recent_app_buttons_view_->GetVisible());
+
+  // The feature state is disabled so we should not show all recent apps view.
+  FeatureStateChanged(FeatureState::kDisabledByUser);
+  recent_apps_view()->Update();
+
+  EXPECT_FALSE(recent_apps_view()->GetVisible());
 }
 
 TEST_F(RecentAppButtonsViewTest, SingleRecentAppButtonsView) {
   NotifyRecentAppAddedOrUpdated();
+  FeatureStateChanged(FeatureState::kEnabledByUser);
   recent_apps_view()->Update();
 
   size_t expected_recent_app_button = 1;
+  EXPECT_TRUE(recent_apps_view()->GetVisible());
   EXPECT_EQ(expected_recent_app_button,
             recent_apps_view()->recent_app_buttons_view_->children().size());
 }
@@ -91,6 +111,7 @@ TEST_F(RecentAppButtonsViewTest, MultipleRecentAppButtonsView) {
   NotifyRecentAppAddedOrUpdated();
   NotifyRecentAppAddedOrUpdated();
   NotifyRecentAppAddedOrUpdated();
+  FeatureStateChanged(FeatureState::kEnabledByUser);
   recent_apps_view()->Update();
 
   size_t expected_recent_app_button = 3;

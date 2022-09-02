@@ -9,13 +9,13 @@
 #include "base/memory/raw_ptr.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/web/element.h"
-#include "components/autofill_assistant/browser/web/element_finder.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
 
 namespace autofill_assistant {
+class ElementFinderResult;
 
 // Temporary store for elements resolved from a |Selector| by the
 // |ElementFinder|. This store only holds a shallow copy of the element,
@@ -37,12 +37,12 @@ class ElementStore {
   // Get an element from the store. If the element does not exist or cannot be
   // reconstructed this returns an error status.
   virtual ClientStatus GetElement(const std::string& client_id,
-                                  ElementFinder::Result* out_element) const;
+                                  ElementFinderResult* out_element) const;
 
   // Restore an element. If the element cannot be reconstructed, this returns
   // an error status.
   ClientStatus RestoreElement(const DomObjectFrameStack& object,
-                              ElementFinder::Result* out_element) const;
+                              ElementFinderResult* out_element) const;
 
   // Removes an element. Returns true if the element was removed.
   bool RemoveElement(const std::string& client_id);

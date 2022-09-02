@@ -2,10 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-try: # Python3
-  from itertools import zip_longest
-except ImportError: # Python2
-  from itertools import izip_longest as zip_longest
+from itertools import zip_longest
 
 from ..testproc.base import (
     DROP_RESULT, DROP_OUTPUT, DROP_PASS_OUTPUT, DROP_PASS_STDOUT)
@@ -143,9 +140,9 @@ class ExpectedOutProc(OutProc):
 
   def _is_failure_output(self, output):
     if output.exit_code != 0:
-        return True
+      return True
 
-    with open(self._expected_filename, 'r') as f:
+    with open(self._expected_filename, 'r', encoding='utf-8') as f:
       expected_lines = f.readlines()
 
     for act_iterator in self._act_block_iterator(output):

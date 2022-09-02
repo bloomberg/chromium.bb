@@ -52,7 +52,7 @@
 <translation id="1251750620252348585">Következő 6. szintű fejléc</translation>
 <translation id="1268366246392928616">Nincs előző matematikai kifejezés</translation>
 <translation id="1273314450961659276">A szövegfelolvasó beállításai</translation>
-<translation id="1275718070701477396">Kijelölt</translation>
+<translation id="1275718070701477396">Kijelölve</translation>
 <translation id="1284576163386164372">Az útmutatókat bármikor megtekintheti. Ehhez nyissa meg a menüket négyujjas koppintással, majd aktiválja az útmutatót a „ChromeVox” szakaszban.</translation>
 <translation id="1291286136605998134">Váltógomb</translation>
 <translation id="1299774449519412690">Világos égkék</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522"><ph name="TABLENAME" /> táblázat – <ph name="TABLEROWS" /> × <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">A következő gombnyomás figyelmen kívül hagyása</translation>
 <translation id="4623097797855662355">Kolofon</translation>
+<translation id="4624970070706497034">A TalkBack már nem biztosít testreszabást a Chromebookok esetében. A funkciót továbbra is használhatja az alapértelmezett billentyűparancsokkal. A rendelkezésre álló billentyűparancsok megtekintéséhez nyomja le a Search + A billentyűkombinációt, majd pedig a K billentyűt. Ha továbbra is szeretné használni a TalkBack szolgáltatást, nyomja meg újra a parancsot.</translation>
 <translation id="463135993322337640">Nyomja meg a ChromeVox o, n billentyűket, ha többet szeretne megtudni az újdonságokról</translation>
 <translation id="4649220074413114917">Ha két ujjal koppint a képernyőre, bármilyen folyamatban lévő beszédet leállíthat. Ez akkor hasznos, ha nem szeretné, hogy a ChromeVox felolvasson valamit. A folytatáshoz koppintson két ujjal a képernyőre.</translation>
 <translation id="4660783501463101648">A hagyományos verzió eltávolítva. A ChromeVox hagyományos verziójára való váltásra alkalmas billentyűzetkapcsolót eltávolítottuk.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Braille-feliratok engedélyezve</translation>
 <translation id="5183440668879371625">Előző sor Braille-írása</translation>
 <translation id="5189244881767082992">Sor</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> gépelése</translation>
 <translation id="5263034204789987535">Kukoricahaj</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Befejezés</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">A rövid útmutató végére ért.</translation>
 <translation id="5534303576632885660">fejl</translation>
 <translation id="5539820223028224601">Gainsborói szürke</translation>
+<translation id="554893713779400387">Diktálás váltása</translation>
 <translation id="5549179427201066174">Hangjelzések be- és kikapcsolása</translation>
 <translation id="556042886152191864">Gomb</translation>
 <translation id="5561345396546889625">Következő lista</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Napló</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Grafikus szimbólum</translation>
+<translation id="5648939288050772726">Gratulálunk! Megtanulta a ChromeVox használatának alapjait. Ne feledje, hogy bármikor megnyithatja a ChromeVox parancsmenüjét a Keresés + pont billentyűkombinációval. Az alábbi cikkekből még többet megtudhat a ChromeVoxról és a ChromeOS-ről.
+    Ha végzett az oktatással, kattintson a Bezárás gombra a ChromeVox segítségével.</translation>
 <translation id="5653397561111110475">A Chromebook-érintőképernyő kisegítő lehetőségeinek használata</translation>
 <translation id="5655682562155942719">Ugrás parancsai</translation>
 <translation id="56637627897541303">Szövegterület</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{kettőspont}other{# kettőspont}}</translation>
 <translation id="6444046323172968959">Értesítő párbeszédpanel</translation>
 <translation id="6452403590345320472">Tartalomjegyzék</translation>
+<translation id="6457542714329819968">írd be azt, hogy</translation>
 <translation id="6468049171101508116">Tovább gomb</translation>
 <translation id="646954774886932461">Tárgymutató</translation>
 <translation id="6475604559827479857">Szókiemeléshez tartozó szín:</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">automatikus kiegészítés lista</translation>
 <translation id="7713139339518499741">Természetes hang</translation>
 <translation id="7714340021005120797">Nincs következő kombinált mező</translation>
-<translation id="772146615414628379">Gratulálunk! Megtanulta a ChromeVox használatának alapjait. Ne feledje, hogy bármikor megnyithatja a ChromeVox parancsmenüjét a Keresés + pont billentyűkombinációval. Az alábbi cikkekből még többet megtudhat a ChromeVoxról és a Chrome OS-ről.
-    Ha végzett az oktatással, kattintson a Bezárás gombra a ChromeVox segítségével.</translation>
 <translation id="7724603315864178912">Kivágás</translation>
 <translation id="7731785449856576010">Nincs következő médiamodul</translation>
 <translation id="7735498529470878067">A Felfedezés érintéssel funkcióval gyorsan megtudhatja, mi található a képernyőn.</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">Sötétpiros</translation>
 <translation id="923331726185079994">ChromeVox frissítve</translation>
 <translation id="93384979447910801">Sötét tengerzöld</translation>
+<translation id="937605981140327129">A TalkBack jelenleg nincs telepítve. Telepítse a „Kisegítő csomag Androidhoz” szolgáltatást a Play Áruházból, és próbálkozzon újra.</translation>
 <translation id="948171205378458592">Beszédsebesség csökkentése</translation>
 <translation id="957570623732056069">Ebben a leckében egy ujjal balra vagy jobbra csúsztatva navigálhat</translation>
 <translation id="958854023026327378">Csúsztassa egy ujját lefelé</translation>

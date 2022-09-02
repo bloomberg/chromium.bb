@@ -35,7 +35,6 @@ struct functor_traits<scalar_mod_op<Scalar> >
  */
 template <typename Scalar>
 struct scalar_mod2_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_mod2_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Scalar operator() (const Scalar& a, const Scalar& b) const { return a % b; }
 };
 template <typename Scalar>
@@ -44,7 +43,6 @@ struct functor_traits<scalar_mod2_op<Scalar> >
 
 template <typename Scalar>
 struct scalar_fmod_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_fmod_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Scalar
   operator()(const Scalar& a, const Scalar& b) const {
     return numext::fmod(a, b);
@@ -428,7 +426,7 @@ struct reducer_traits<ArgMinPairReducer<T>, Device> {
 template <typename T, typename Index, size_t NumDims>
 class GaussianGenerator {
  public:
-  static const bool PacketAccess = false;
+  static constexpr bool PacketAccess = false;
 
   EIGEN_DEVICE_FUNC GaussianGenerator(const array<T, NumDims>& means,
                                       const array<T, NumDims>& std_devs)

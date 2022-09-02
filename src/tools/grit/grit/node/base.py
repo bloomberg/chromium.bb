@@ -248,6 +248,13 @@ class Node(object):
       if not defattr in self.attrs:
         self.attrs[defattr] = self.DefaultAttributes()[defattr]
 
+    # Check that |file| does not point to a TypeScript (.ts) file, as those
+    # files should not be included in the final build.
+    if self.attrs.get('file'):
+      assert not self.attrs.get('file').endswith('.ts'), (
+          'TypeScript files should not be added to Grit: Found \'%s\'' %
+          self.attrs.get('file'))
+
   def GetCdata(self):
     '''Returns all CDATA of this element, concatenated into a single
     string.  Note that this ignores any elements embedded in CDATA.'''
@@ -472,6 +479,17 @@ class Node(object):
   @classmethod
   def EvaluateExpression(cls, expr, defs, target_platform, extra_variables={}):
     '''Worker for EvaluateCondition (below) and conditions in XTB files.'''
+
+    def IsChromeOS(defs):
+      '''Returns whether the target is Chrome OS based on specified definitions.
+
+      Unlike other platforms, the target platform for Chrome OS is Linux and not
+      the target OS, which is instead specified by one of two defines.
+
+      TODO(crbug.com/1316150): Remove once GRIT natively supports `is_chromeos`.
+      '''
+      return defs.get('chromeos_ash') or defs.get('chromeos_lacros')
+
     if expr in cls.eval_expr_cache:
       code, variables_in_expr = cls.eval_expr_cache[expr]
     else:
@@ -491,7 +509,9 @@ class Node(object):
         value = defs
 
       elif name == 'is_linux':
-        value = target_platform.startswith('linux')
+        # Although the `target_platform` for Chrome OS is 'linux', do not
+        # consider `is_linux` to be true, consistent with the GN arg.
+        value = target_platform == 'linux' and not IsChromeOS(defs)
       elif name == 'is_macosx':
         value = target_platform == 'darwin'
       elif name == 'is_win':
@@ -505,9 +525,8 @@ class Node(object):
       elif name == 'is_bsd':
         value = 'bsd' in target_platform
       elif name == 'is_posix':
-        value = (target_platform.startswith('linux')
-                 or target_platform in ('darwin', 'sunos5', 'android', 'ios')
-                 or 'bsd' in target_platform)
+        value = (target_platform in ('linux', 'darwin', 'sunos5', 'android',
+                                     'ios') or 'bsd' in target_platform)
 
       elif name == 'pp_ifdef':
         def pp_ifdef(symbol):
@@ -523,8 +542,9 @@ class Node(object):
       elif name in extra_variables:
         value = extra_variables[name]
       else:
-        # Undefined variables default to False.
-        value = False
+        # Undefined variables are disallowed. All variables appearing in
+        # <if expr> conditions need to be defined.
+        assert False, 'undefined Grit variable found: ' + name
 
       variable_map[name] = value
 
@@ -542,7 +562,7 @@ class Node(object):
       - 'context' is the current output context
            (the 'context' attribute of the <output> element).
       - 'defs' is a map of C preprocessor-style symbol names to their values.
-      - 'os' is the current platform (likely 'linux2', 'win32' or 'darwin').
+      - 'os' is the current platform (likely 'linux', 'win32' or 'darwin').
       - 'pp_ifdef(symbol)' is a shorthand for "symbol in defs".
       - 'pp_if(symbol)' is a shorthand for "symbol in defs and defs[symbol]".
       - 'is_linux', 'is_macosx', 'is_win', 'is_posix' are true if 'os'
@@ -648,9 +668,7 @@ class Node(object):
 
     if compress == 'gzip' or compress_by_default:
       # We only use rsyncable compression on Linux.
-      # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
-      # the --rsyncable option built in for gzip. See crbug.com/617950.
-      if sys.platform == 'linux2' and 'chromeos' not in self.GetRoot().defines:
+      if sys.platform == 'linux':
         return grit.format.gzip_string.GzipStringRsyncable(data)
       return grit.format.gzip_string.GzipString(data)
 

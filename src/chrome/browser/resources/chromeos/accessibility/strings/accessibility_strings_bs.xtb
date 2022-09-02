@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Zanemarivanje pritiska sljedeće tipke</translation>
 <translation id="4623097797855662355">Kolofon</translation>
+<translation id="4624970070706497034">TalkBack više ne pruža prilagođavanje za Chromebook uređaje. I dalje ga možete koristiti, ali koristite zadane prečice tastature za TalkBack. Pritisnite Search+A, zatim K da vidite dostupne prečice. Ako i dalje želite koristiti TalkBack, ponovo pritisnite naredbu.</translation>
 <translation id="463135993322337640">Pritisnite ChromeVox + O + N da saznate šta je novo</translation>
 <translation id="4649220074413114917">Dodir ekrana s dva prsta se može koristiti da zaustavite govor koji je u toku. Ovo je korisno ako ne želite da ChromeVox nešto pročita. Da nastavite, dodirnite ekran s dva prsta.</translation>
 <translation id="4660783501463101648">Uklonjena je verzija Classic. Uklonjeno je uključivanje/isključivanje na tastaturi za povratak na verziju ChromeVox Classic.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Titlovi na Braillevom pismu su omogućeni</translation>
 <translation id="5183440668879371625">Prethodni redak brajice</translation>
 <translation id="5189244881767082992">Red</translation>
-<translation id="5234747236692380506">napiši <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Boja kukuruzne svile</translation>
 <translation id="5263344797180442561">n2</translation>
 <translation id="528468243742722775">Prekid</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Brza orijentacija je završena!</translation>
 <translation id="5534303576632885660">zglvlj</translation>
 <translation id="5539820223028224601">Svijetlosiva</translation>
+<translation id="554893713779400387">Uključi/isključi diktiranje</translation>
 <translation id="5549179427201066174">Uključivanje ili isključivanje zvučnih povratnih informacija (zvučni signal)</translation>
 <translation id="556042886152191864">Dugme</translation>
 <translation id="5561345396546889625">Sljedeća lista</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Zapis</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Grafički simbol</translation>
+<translation id="5648939288050772726">Čestitamo! Uspješno ste naučili osnove korištenja ChromeVoxa. Upamtite da u bilo kojem trenutku možete otvoriti komandni meni na ChromeVoxu pritiskom na tipku za pretraživanje + tačka. Posjetite sljedeće članke da saznate više o ChromeVoxu i ChromeOS-u.
+    Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i kliknite na njega.</translation>
 <translation id="5653397561111110475">Korištenje funkcija pristupačnosti dodirnog ekrana Chromebook računara</translation>
 <translation id="5655682562155942719">Komande za skakanje</translation>
 <translation id="56637627897541303">Prostor za tekst</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{dvotočka}one{# dvotočka}few{# dvotočke}other{# dvotočaka}}</translation>
 <translation id="6444046323172968959">Dijaloški okvir upozorenja</translation>
 <translation id="6452403590345320472">Sadržaj</translation>
+<translation id="6457542714329819968">napiši</translation>
 <translation id="6468049171101508116">Dugme Naprijed</translation>
 <translation id="646954774886932461">Indeks</translation>
 <translation id="6475604559827479857">Boja za isticanja riječi:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Prirodni glas</translation>
 <translation id="7714340021005120797">Nema sljedećeg kombiniranog okvira</translation>
-<translation id="772146615414628379">Čestitamo! Uspješno ste naučili osnove korištenja ChromeVoxa. Upamtite da u bilo kojem trenutku možete otvoriti komandni meni na ChromeVoxu pritiskom na tipku za pretraživanje + tačka. Posjetite sljedeće članke da saznate više o ChromeVoxu i Chrome OS-u.
-    Ako ste pregledali vodič, pomoću ChromeVoxa idite do dugmeta Zatvori i kliknite na njega.</translation>
 <translation id="7724603315864178912">Izreži</translation>
 <translation id="7731785449856576010">Nema sljedećeg vidžeta za medije</translation>
 <translation id="7735498529470878067">Istraživanje dodirom vam može pomoći da brzo steknete uvid u ono što se nalazi na ekranu.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Tamnocrvena</translation>
 <translation id="923331726185079994">ChromeVox je ažuriran</translation>
 <translation id="93384979447910801">Tamna more-zelena</translation>
+<translation id="937605981140327129">TalkBack trenutno nije instaliran. Instalirajte Android paket za pristupačnost putem Play trgovine i pokušajte ponovo.</translation>
 <translation id="948171205378458592">Smanjivanje brzine govora</translation>
 <translation id="957570623732056069">Prevucite ulijevo ili udesno jednim prstom da navigirate ovom lekcijom</translation>
 <translation id="958854023026327378">Prevlačenje jednim prstom prema dolje</translation>

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/components/login/auth/user_context.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -19,9 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
-#include "chrome/browser/ash/certificate_provider/pin_dialog_manager.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/mojo_system_info_dispatcher.h"
@@ -34,7 +33,11 @@
 #include "chrome/browser/ash/login/user_board_view_mojo.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
@@ -45,7 +48,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/channel_info.h"
-#include "chromeos/login/auth/user_context.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -61,9 +63,9 @@
 namespace ash {
 namespace {
 
-CertificateProviderService* GetLoginScreenCertProviderService() {
+chromeos::CertificateProviderService* GetLoginScreenCertProviderService() {
   DCHECK(ProfileHelper::IsSigninProfileInitialized());
-  return CertificateProviderServiceFactory::GetForBrowserContext(
+  return chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
       ProfileHelper::GetSigninProfile());
 }
 
@@ -76,13 +78,6 @@ bool AllAllowlistedUsersPresent() {
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   if (allow_new_user)
     return false;
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  const user_manager::UserList& users = user_manager->GetUsers();
-
-  // Max number of users to show.
-  const size_t kMaxUsers = 18;
-  if (users.size() > kMaxUsers)
-    return false;
 
   bool allow_family_link = false;
   cros_settings->GetBoolean(kAccountsPrefFamilyLinkAccountsAllowed,
@@ -93,10 +88,10 @@ bool AllAllowlistedUsersPresent() {
   const base::ListValue* allowlist = nullptr;
   if (!cros_settings->GetList(kAccountsPrefUsers, &allowlist) || !allowlist)
     return false;
-  for (const base::Value& i : allowlist->GetList()) {
+  for (const base::Value& i : allowlist->GetListDeprecated()) {
     const std::string* allowlisted_user = i.GetIfString();
     // NB: Wildcards in the allowlist are also detected as not present here.
-    if (!allowlisted_user || !user_manager->IsKnownUser(
+    if (!allowlisted_user || !user_manager::UserManager::Get()->IsKnownUser(
                                  AccountId::FromUserEmail(*allowlisted_user))) {
       return false;
     }
@@ -106,7 +101,7 @@ bool AllAllowlistedUsersPresent() {
 
 bool IsLazyWebUILoadingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::chromeos::switches::kEnableOobeTestAPI)) {
+          switches::kEnableOobeTestAPI)) {
     // Load WebUI for the test API explicitly because it's Web API.
     return false;
   }
@@ -151,6 +146,11 @@ LoginDisplayHostMojo::LoginDisplayHostMojo(DisplayedScreen displayed_screen)
       system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
 
+  allow_new_user_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      kAccountsPrefAllowNewUser,
+      base::BindRepeating(&LoginDisplayHostMojo::OnDeviceSettingsChanged,
+                          base::Unretained(this)));
+
   // Do not load WebUI before it is needed if policy and feature permit.
   // Force load WebUI if feature is not enabled.
   if (!IsLazyWebUILoadingEnabled() &&
@@ -160,6 +160,7 @@ LoginDisplayHostMojo::LoginDisplayHostMojo(DisplayedScreen displayed_screen)
 }
 
 LoginDisplayHostMojo::~LoginDisplayHostMojo() {
+  scoped_activity_observation_.Reset();
   LoginScreenClientImpl::Get()->SetDelegate(nullptr);
   if (!dialog_)
     return;
@@ -174,6 +175,7 @@ LoginDisplayHostMojo::~LoginDisplayHostMojo() {
 
 void LoginDisplayHostMojo::OnDialogDestroyed(
     const OobeUIDialogDelegate* dialog) {
+  LOG(WARNING) << "OnDialogDestroyed";
   if (dialog == dialog_) {
     StopObservingOobeUI();
     dialog_ = nullptr;
@@ -182,14 +184,12 @@ void LoginDisplayHostMojo::OnDialogDestroyed(
 }
 
 void LoginDisplayHostMojo::SetUserCount(int user_count) {
-  const bool was_zero_users = (user_count_ == 0);
-  user_count_ = user_count;
-  if (GetOobeUI())
-    GetOobeUI()->SetLoginUserCount(user_count_);
+  const bool was_zero_users = !has_user_pods_;
+  has_user_pods_ = user_count > 0;
 
   // Hide Gaia dialog in case empty list of users switched to a non-empty one.
   // And if the dialog shows login screen.
-  if (was_zero_users && user_count_ != 0 && dialog_ && dialog_->IsVisible() &&
+  if (was_zero_users && has_user_pods_ && dialog_ && dialog_->IsVisible() &&
       (!wizard_controller_->is_initialized() ||
        (wizard_controller_->current_screen() &&
         WizardController::IsSigninScreen(
@@ -213,13 +213,6 @@ void LoginDisplayHostMojo::StartBrowserDataMigration() {
   wizard_controller_->AdvanceToScreen(LacrosDataMigrationScreenView::kScreenId);
 }
 
-void LoginDisplayHostMojo::ShowAllowlistCheckFailedError() {
-  EnsureOobeDialogLoaded();
-  DCHECK(GetOobeUI());
-  GetOobeUI()->signin_screen_handler()->ShowAllowlistCheckFailedError();
-  ShowDialog();
-}
-
 void LoginDisplayHostMojo::HandleDisplayCaptivePortal() {
   EnsureOobeDialogLoaded();
   if (dialog_->IsVisible())
@@ -233,6 +226,10 @@ LoginDisplay* LoginDisplayHostMojo::GetLoginDisplay() {
 }
 
 ExistingUserController* LoginDisplayHostMojo::GetExistingUserController() {
+  if (!existing_user_controller_) {
+    LOG(WARNING) << "Triggered crbug/1307919 in Mojo host";
+    CreateExistingUserController();
+  }
   return existing_user_controller_.get();
 }
 
@@ -242,6 +239,10 @@ gfx::NativeWindow LoginDisplayHostMojo::GetNativeWindow() const {
   if (!dialog_)
     return nullptr;
   return dialog_->GetNativeWindow();
+}
+
+views::Widget* LoginDisplayHostMojo::GetLoginWindowWidget() const {
+  return dialog_ ? dialog_->GetWebDialogWidget() : nullptr;
 }
 
 OobeUI* LoginDisplayHostMojo::GetOobeUI() const {
@@ -363,10 +364,6 @@ void LoginDisplayHostMojo::OnStartSignInScreen() {
   login::SecurityTokenSessionController::MaybeDisplayLoginScreenNotification();
 }
 
-void LoginDisplayHostMojo::OnPreferencesChanged() {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayHostMojo::OnStartAppLaunch() {
   EnsureOobeDialogLoaded();
 
@@ -398,6 +395,7 @@ void LoginDisplayHostMojo::ShowGaiaDialog(const AccountId& prefilled_account) {
 
 void LoginDisplayHostMojo::ShowOsInstallScreen() {
   StartWizard(OsInstallScreenView::kScreenId);
+  ShowDialog();
 }
 
 void LoginDisplayHostMojo::ShowGuestTosScreen() {
@@ -405,27 +403,30 @@ void LoginDisplayHostMojo::ShowGuestTosScreen() {
   ShowDialog();
 }
 
-void LoginDisplayHostMojo::HideOobeDialog() {
+void LoginDisplayHostMojo::HideOobeDialog(bool saml_video_timeout) {
   DCHECK(dialog_);
 
-  // The dialog can not be hidden if there are no users on the login screen.
-  // Reload it instead.
+  // The dialog can be hidden if there are no users on the login screen only
+  // on camera timeout during SAML login.
+  // TODO(crbug.com/1283052): simplify the logic here.
 
-  // As ShowDialogCommon will not reload GAIA upon show for performance reasons,
-  // reload it to ensure that no state is persisted between hide and
-  // subsequent show.
   const bool no_users =
-      !login_display_->IsSigninInProgress() && user_count_ == 0;
-  if (no_users || GetOobeUI()->current_screen() == GaiaView::kScreenId) {
-    GaiaScreen* gaia_screen = GetWizardController()->GetScreen<GaiaScreen>();
-    gaia_screen->LoadOnline(EmptyAccountId());
-    if (no_users)
-      return;
+      !login_display_->IsSigninInProgress() && !has_user_pods_;
+  if (no_users && !saml_video_timeout) {
+    return;
   }
 
   user_selection_screen_->OnBeforeShow();
   LoadWallpaper(focused_pod_account_id_);
   HideDialog();
+
+  // If the OOBE dialog was hidden due to camera timeout and user isn't using
+  // ChromeVox let user go back to login flow with any action. Otherwise user
+  // can go back to login pressing arrow button.
+  if (saml_video_timeout && !scoped_activity_observation_.IsObserving() &&
+      !AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+    scoped_activity_observation_.Observe(ui::UserActivityDetector::Get());
+  }
 }
 
 void LoginDisplayHostMojo::SetShelfButtonsEnabled(bool enabled) {
@@ -447,7 +448,7 @@ void LoginDisplayHostMojo::RequestSystemInfoUpdate() {
 }
 
 bool LoginDisplayHostMojo::HasUserPods() {
-  return user_count_ > 0;
+  return has_user_pods_;
 }
 
 void LoginDisplayHostMojo::VerifyOwnerForKiosk(base::OnceClosure on_success) {
@@ -492,9 +493,14 @@ void LoginDisplayHostMojo::ShowEnableConsumerKioskScreen() {
 bool LoginDisplayHostMojo::GetKeyboardRemappedPrefValue(
     const std::string& pref_name,
     int* value) const {
+  if (!focused_pod_account_id_.is_valid())
+    return false;
   user_manager::KnownUser known_user(g_browser_process->local_state());
-  return focused_pod_account_id_.is_valid() &&
-         known_user.GetIntegerPref(focused_pod_account_id_, pref_name, value);
+  absl::optional<int> opt_val =
+      known_user.FindIntPath(focused_pod_account_id_, pref_name);
+  if (value && opt_val.has_value())
+    *value = opt_val.value();
+  return opt_val.has_value();
 }
 
 bool LoginDisplayHostMojo::IsWebUIStarted() const {
@@ -518,8 +524,7 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
   DCHECK(user);
   UserContext user_context(*user);
   user_context.SetIsUsingPin(authenticated_by_pin);
-  user_context.SetKey(
-      Key(chromeos::Key::KEY_TYPE_PASSWORD_PLAIN, "" /*salt*/, password));
+  user_context.SetKey(Key(Key::KEY_TYPE_PASSWORD_PLAIN, "" /*salt*/, password));
   user_context.SetPasswordKey(Key(password));
   user_context.SetLoginInputMethodIdUsed(input_method::InputMethodManager::Get()
                                              ->GetActiveIMEState()
@@ -801,13 +806,14 @@ void LoginDisplayHostMojo::MaybeUpdateOfflineLoginLinkVisibility(
     const AccountId& account_id) {
   bool offline_limit_expired = false;
 
+  user_manager::KnownUser known_user(g_browser_process->local_state());
   const absl::optional<base::TimeDelta> offline_signin_interval =
-      user_manager::known_user::GetOfflineSigninLimit(account_id);
+      known_user.GetOfflineSigninLimit(account_id);
 
   // Check if the limit is set only.
   if (offline_signin_interval) {
     const base::Time last_online_signin =
-        user_manager::known_user::GetLastOnlineSignin(account_id);
+        known_user.GetLastOnlineSignin(account_id);
     offline_limit_expired =
         login::TimeToOnlineSignIn(last_online_signin,
                                   offline_signin_interval.value()) <=
@@ -815,6 +821,23 @@ void LoginDisplayHostMojo::MaybeUpdateOfflineLoginLinkVisibility(
   }
 
   ErrorScreen::AllowOfflineLoginPerUser(!offline_limit_expired);
+}
+
+void LoginDisplayHostMojo::OnUserActivity(const ui::Event* event) {
+  scoped_activity_observation_.Reset();
+  ShowGaiaDialog(EmptyAccountId());
+}
+
+void LoginDisplayHostMojo::OnDeviceSettingsChanged() {
+  // Update status of add user button in the shelf.
+  UpdateAddUserButtonStatus();
+
+  if (!dialog_)
+    return;
+
+  // Reload Gaia.
+  GaiaScreen* gaia_screen = GetWizardController()->GetScreen<GaiaScreen>();
+  gaia_screen->LoadOnline(EmptyAccountId());
 }
 
 }  // namespace ash

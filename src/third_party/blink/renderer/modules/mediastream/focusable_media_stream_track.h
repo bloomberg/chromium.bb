@@ -7,12 +7,12 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_start_focus_behavior.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_impl.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
-class MODULES_EXPORT FocusableMediaStreamTrack : public MediaStreamTrack {
+class MODULES_EXPORT FocusableMediaStreamTrack : public MediaStreamTrackImpl {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -29,7 +29,7 @@ class MODULES_EXPORT FocusableMediaStreamTrack : public MediaStreamTrack {
                             const String& descriptor_id,
                             bool is_clone = false);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   void CloseFocusWindowOfOpportunity() override;
 #endif
 
@@ -50,7 +50,7 @@ class MODULES_EXPORT FocusableMediaStreamTrack : public MediaStreamTrack {
   const String& descriptor_id() const { return descriptor_id_; }
 
  private:
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Clones may not be focus()-ed.
   const bool is_clone_;
 

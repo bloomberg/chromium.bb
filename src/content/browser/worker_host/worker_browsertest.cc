@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/path_service.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -37,7 +39,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "net/base/escape.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
@@ -50,7 +52,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -69,7 +70,7 @@ const char kSameSiteCookie[] = "same-site-cookie=same-site-cookie-value";
 const char kNoCookie[] = "None";
 
 bool SupportsSharedWorker() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // SharedWorkers are not enabled on Android. https://crbug.com/154571
   //
   // TODO(davidben): Move other SharedWorker exclusions from
@@ -85,41 +86,34 @@ bool SupportsSharedWorker() {
 // These tests are parameterized on following options:
 // 0 => Base
 // 1 => kPlzDedicatedWorker enabled
-// 2 => kCOEPForSharedWorker enabled
+// 2 => kPrivateNetworkAccessForWorkers enabled
 class WorkerTest : public ContentBrowserTest,
                    public testing::WithParamInterface<int> {
  public:
   WorkerTest() : select_certificate_count_(0) {
     switch (GetParam()) {
       case 0:  // Base case.
-        feature_list_.InitWithFeatures(
-            {
-                network::features::kCrossOriginEmbedderPolicyCredentialless,
-            },
-            {
-                blink::features::kPlzDedicatedWorker,
-                blink::features::kCOEPForSharedWorker,
-            });
+        feature_list_.InitWithFeatures({},
+                                       {
+                                           blink::features::kPlzDedicatedWorker,
+                                       });
         break;
       case 1:  // PlzDedicatedWorker
         feature_list_.InitWithFeatures(
             {
-                network::features::kCrossOriginEmbedderPolicyCredentialless,
                 blink::features::kPlzDedicatedWorker,
             },
             {
-                blink::features::kCOEPForSharedWorker,
+                features::kPrivateNetworkAccessForWorkers,
             });
         break;
-      case 2:  // CoepForSharedWorker
+      case 2:  // PrivateNetworkAccessForWorkers
         feature_list_.InitWithFeatures(
             {
-                network::features::kCrossOriginEmbedderPolicyCredentialless,
-                blink::features::kCOEPForSharedWorker,
-            },
-            {
                 blink::features::kPlzDedicatedWorker,
-            });
+                features::kPrivateNetworkAccessForWorkers,
+            },
+            {});
         break;
       default:
         NOTREACHED();
@@ -355,7 +349,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTestWithAllowFileAccessFromFiles,
 IN_PROC_BROWSER_TEST_P(WorkerTest, HttpPageCantCreateFileWorker) {
   GURL url = GetTestURL(
       "single_worker.html",
-      "workerUrl=" + net::EscapeQueryParamValue(
+      "workerUrl=" + base::EscapeQueryParamValue(
                          GetTestFileURL("worker_common.js").spec(), true));
   RunTest(url, /*expect_failure=*/true);
 }
@@ -586,7 +580,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, WorkerTlsClientAuthImportScripts) {
   RunTest(GetTestURL(
       "worker_tls_client_auth.html",
       "test=import&url=" +
-          net::EscapeQueryParamValue(https_server.GetURL("/").spec(), true)));
+          base::EscapeQueryParamValue(https_server.GetURL("/").spec(), true)));
   EXPECT_EQ(1, select_certificate_count());
 }
 
@@ -604,7 +598,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, WorkerTlsClientAuthFetch) {
   RunTest(GetTestURL(
       "worker_tls_client_auth.html",
       "test=fetch&url=" +
-          net::EscapeQueryParamValue(https_server.GetURL("/").spec(), true)));
+          base::EscapeQueryParamValue(https_server.GetURL("/").spec(), true)));
   EXPECT_EQ(1, select_certificate_count());
 }
 
@@ -626,7 +620,7 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SharedWorkerTlsClientAuthImportScripts) {
   RunTest(GetTestURL(
       "worker_tls_client_auth.html",
       "test=import&shared=true&url=" +
-          net::EscapeQueryParamValue(https_server.GetURL("/").spec(), true)));
+          base::EscapeQueryParamValue(https_server.GetURL("/").spec(), true)));
   EXPECT_EQ(0, select_certificate_count());
 }
 
@@ -953,7 +947,7 @@ IN_PROC_BROWSER_TEST_P(WorkerFromAnonymousIframeNikBrowserTest,
     EXPECT_EQ(1U, main_rfh->child_count());
     RenderFrameHostImpl* iframe = main_rfh->child_at(0)->current_frame_host();
     EXPECT_EQ(anonymous, iframe->anonymous());
-
+    EXPECT_EQ(anonymous, EvalJs(iframe, "window.isAnonymouslyFramed"));
     ResetNetworkState();
 
     GURL worker_url = embedded_test_server()->GetURL("/workers/worker.js");

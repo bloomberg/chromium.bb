@@ -620,11 +620,17 @@ class _LogcatProcessor:
                package_name,
                stack_script_context,
                deobfuscate=None,
-               verbose=False):
+               verbose=False,
+               exit_on_match=None):
     self._device = device
     self._package_name = package_name
     self._verbose = verbose
     self._deobfuscator = deobfuscate
+    if exit_on_match is not None:
+      self._exit_on_match = re.compile(exit_on_match)
+    else:
+      self._exit_on_match = None
+    self._found_exit_match = False
     self._native_stack_symbolizer = _LogcatProcessor.NativeStackSymbolizer(
         stack_script_context, self._PrintParsedLine)
     # Process ID for the app's main process (with no :name suffix).
@@ -731,6 +737,9 @@ class _LogcatProcessor:
         date, invokation_time, pid, tid, priority, tag, original_message)
 
   def _PrintParsedLine(self, parsed_line, dim=False):
+    if self._exit_on_match and self._exit_on_match.search(parsed_line.message):
+      self._found_exit_match = True
+
     tid_style = colorama.Style.NORMAL
     user_match = self._user_defined_highlight and (
         re.search(self._user_defined_highlight, parsed_line.tag)
@@ -766,6 +775,9 @@ class _LogcatProcessor:
         self._native_stack_symbolizer.AddLine(*args)
     self._initial_buffered_lines = None
     self.nonce = None
+
+  def FoundExitMatch(self):
+    return self._found_exit_match
 
   def ProcessLine(self, line):
     if not line or line.startswith('------'):
@@ -815,14 +827,24 @@ class _LogcatProcessor:
         self._initial_buffered_lines.append((log, not owned_pid))
 
 
-def _RunLogcat(device, package_name, stack_script_context, deobfuscate,
-               verbose):
-  logcat_processor = _LogcatProcessor(
-      device, package_name, stack_script_context, deobfuscate, verbose)
+def _RunLogcat(device,
+               package_name,
+               stack_script_context,
+               deobfuscate,
+               verbose,
+               exit_on_match=None):
+  logcat_processor = _LogcatProcessor(device,
+                                      package_name,
+                                      stack_script_context,
+                                      deobfuscate,
+                                      verbose,
+                                      exit_on_match=exit_on_match)
   device.RunShellCommand(['log', logcat_processor.nonce])
   for line in device.adb.Logcat(logcat_format='threadtime'):
     try:
       logcat_processor.ProcessLine(line)
+      if logcat_processor.FoundExitMatch():
+        return
     except:
       sys.stderr.write('Failed to process line: ' + line + '\n')
       # Skip stack trace for the common case of the adb server being
@@ -1484,8 +1506,9 @@ To disable filtering, (but keep coloring), use --verbose.
         self.bundle_generation_info,
         quiet=True)
     try:
-      _RunLogcat(self.devices[0], self.args.package_name, stack_script_context,
-                 deobfuscate, bool(self.args.verbose_count))
+      _RunLogcat(self.devices[0],
+                 self.args.package_name, stack_script_context, deobfuscate,
+                 bool(self.args.verbose_count), self.args.exit_on_match)
     except KeyboardInterrupt:
       pass  # Don't show stack trace upon Ctrl-C
     finally:
@@ -1501,6 +1524,8 @@ To disable filtering, (but keep coloring), use --verbose.
       group.set_defaults(no_deobfuscate=False)
       group.add_argument('--proguard-mapping-path',
           help='Path to ProGuard map (enables deobfuscation)')
+    group.add_argument('--exit-on-match',
+                       help='Exits logcat when a message matches this regex.')
 
 
 class _PsCommand(_Command):
@@ -1622,16 +1647,52 @@ class _PrintCertsCommand(_Command):
           full_output = subprocess.check_output(
               cmd + ['-rfc'], stderr=subprocess.STDOUT)
     else:
-      cmd = [
-          build_tools.GetPath('apksigner'), 'verify', '--print-certs',
-          '--verbose', self.apk_helper.path
+
+      def run_apksigner(min_sdk_version):
+        cmd = [
+            build_tools.GetPath('apksigner'), 'verify', '--min-sdk-version',
+            str(min_sdk_version), '--print-certs', '--verbose',
+            self.apk_helper.path
+        ]
+        logging.warning('Running: %s', ' '.join(cmd))
+        env = os.environ.copy()
+        env['PATH'] = os.path.pathsep.join(
+            [os.path.join(_JAVA_HOME, 'bin'),
+             env.get('PATH')])
+        # Redirect stderr to hide verification failures (see explanation below).
+        return subprocess.check_output(cmd,
+                                       env=env,
+                                       universal_newlines=True,
+                                       stderr=subprocess.STDOUT)
+
+      # apksigner's default behavior is nonintuitive: it will print "Verified
+      # using <scheme number>...: false" for any scheme which is obsolete for
+      # the APK's minSdkVersion even if it actually was signed with that scheme
+      # (ex. it prints "Verified using v1 scheme: false" for Monochrome because
+      # v1 was obsolete by N). To workaround this, we force apksigner to use the
+      # lowest possible minSdkVersion. We need to fallback to higher
+      # minSdkVersions in case the APK fails to verify for that minSdkVersion
+      # (which means the APK is genuinely not signed with that scheme). These
+      # SDK values are the highest SDK version before the next scheme is
+      # available:
+      versions = [
+          version_codes.MARSHMALLOW,  # before v2 launched in N
+          version_codes.OREO_MR1,  # before v3 launched in P
+          version_codes.Q,  # before v4 launched in R
+          version_codes.R,
       ]
-      logging.warning('Running: %s', ' '.join(cmd))
-      env = os.environ.copy()
-      env['PATH'] = os.path.pathsep.join(
-          [os.path.join(_JAVA_HOME, 'bin'),
-           env.get('PATH')])
-      stdout = subprocess.check_output(cmd, env=env)
+      stdout = None
+      for min_sdk_version in versions:
+        try:
+          stdout = run_apksigner(min_sdk_version)
+          break
+        except subprocess.CalledProcessError:
+          # Doesn't verify with this min-sdk-version, so try again with a higher
+          # one
+          continue
+      if not stdout:
+        raise RuntimeError('apksigner was not able to verify APK')
+
       print(stdout)
       if self.args.full_cert:
         if 'v1 scheme (JAR signing): true' not in stdout:
@@ -1641,7 +1702,9 @@ class _PrintCertsCommand(_Command):
         cmd = [keytool, '-printcert', '-jarfile', self.apk_helper.path, '-rfc']
         # Redirect stderr to hide a keytool warning about using non-standard
         # keystore format.
-        full_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        full_output = subprocess.check_output(cmd,
+                                              stderr=subprocess.STDOUT,
+                                              universal_newlines=True)
 
     if self.args.full_cert:
       m = re.search(

@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -216,13 +217,6 @@ void HostFrameSinkManager::OnFrameTokenChanged(
     data.client->OnFrameTokenChanged(frame_token, activation_time);
 }
 
-void HostFrameSinkManager::SetHitTestAsyncQueriedDebugRegions(
-    const FrameSinkId& root_frame_sink_id,
-    const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue) {
-  frame_sink_manager_->SetHitTestAsyncQueriedDebugRegions(
-      root_frame_sink_id, hit_test_async_queried_debug_queue);
-}
-
 bool HostFrameSinkManager::RegisterFrameSinkHierarchy(
     const FrameSinkId& parent_frame_sink_id,
     const FrameSinkId& child_frame_sink_id) {
@@ -292,6 +286,15 @@ void HostFrameSinkManager::RequestCopyOfOutput(
 void HostFrameSinkManager::Throttle(const std::vector<FrameSinkId>& ids,
                                     base::TimeDelta interval) {
   frame_sink_manager_->Throttle(ids, interval);
+}
+
+void HostFrameSinkManager::StartThrottlingAllFrameSinks(
+    base::TimeDelta interval) {
+  frame_sink_manager_->StartThrottlingAllFrameSinks(interval);
+}
+
+void HostFrameSinkManager::StopThrottlingAllFrameSinks() {
+  frame_sink_manager_->StopThrottlingAllFrameSinks();
 }
 
 void HostFrameSinkManager::AddHitTestRegionObserver(

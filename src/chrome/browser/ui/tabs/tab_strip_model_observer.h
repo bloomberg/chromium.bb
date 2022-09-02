@@ -269,15 +269,19 @@ struct TabGroupChange {
     const tab_groups::TabGroupVisualData* new_visuals;
   };
 
-  TabGroupChange(tab_groups::TabGroupId group,
+  TabGroupChange(TabStripModel* model,
+                 tab_groups::TabGroupId group,
                  Type type,
                  std::unique_ptr<Delta> deltap = nullptr);
-  explicit TabGroupChange(tab_groups::TabGroupId group, VisualsChange deltap);
+  TabGroupChange(TabStripModel* model,
+                 tab_groups::TabGroupId group,
+                 VisualsChange deltap);
   ~TabGroupChange();
 
   const VisualsChange* GetVisualsChange() const;
 
   tab_groups::TabGroupId group;
+  raw_ptr<TabStripModel> model;
   Type type;
 
  private:
@@ -330,6 +334,12 @@ class TabStripModelObserver {
   virtual void OnTabStripModelChanged(TabStripModel* tab_strip_model,
                                       const TabStripModelChange& change,
                                       const TabStripSelectionChange& selection);
+
+  // Notification that a tab will be added to the TabStripModel, which allows
+  // an observer to react to an impending change to the TabStripModel. The only
+  // use case of this signal that is currently supported is the drag controller
+  // cancelling/completing a the drag before a tab is added during header drag.
+  virtual void OnTabWillBeAdded();
 
   // |change| is a change in the Tab Group model or metadata. These
   // changes may cause repainting of some Tab Group UI. They are

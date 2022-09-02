@@ -4,11 +4,11 @@
 
 #include "ash/components/tether/hotspot_usage_duration_tracker.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -97,4 +97,4 @@ void HotspotUsageDurationTracker::HandleUnexpectedCurrentSession(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

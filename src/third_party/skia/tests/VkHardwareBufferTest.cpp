@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-// This is a GPU-backend specific test. It relies on static intializers to work
+// This is a GPU-backend specific test. It relies on static initializers to work
 
 #include "include/core/SkTypes.h"
 
@@ -13,6 +13,7 @@
 
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrBackendSemaphore.h"
@@ -20,12 +21,12 @@
 #include "include/gpu/vk/GrVkBackendContext.h"
 #include "include/gpu/vk/GrVkExtensions.h"
 #include "src/core/SkAutoMalloc.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/gl/GrGLDefines.h"
-#include "src/gpu/gl/GrGLUtil.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/gl/GrGLDefines_impl.h"
+#include "src/gpu/ganesh/gl/GrGLUtil.h"
 #include "tests/Test.h"
 #include "tools/gpu/GrContextFactory.h"
 #include "tools/gpu/vk/VkTestUtils.h"
@@ -508,17 +509,9 @@ private:
 
 bool VulkanTestHelper::init(skiatest::Reporter* reporter) {
     PFN_vkGetInstanceProcAddr instProc;
-    PFN_vkGetDeviceProcAddr devProc;
-    if (!sk_gpu_test::LoadVkLibraryAndGetProcAddrFuncs(&instProc, &devProc)) {
+    if (!sk_gpu_test::LoadVkLibraryAndGetProcAddrFuncs(&instProc)) {
         return false;
     }
-    auto getProc = [&instProc, &devProc](const char* proc_name,
-                                         VkInstance instance, VkDevice device) {
-        if (device != VK_NULL_HANDLE) {
-            return devProc(device, proc_name);
-        }
-        return instProc(instance, proc_name);
-    };
 
     fExtensions = new GrVkExtensions();
     fFeatures = new VkPhysicalDeviceFeatures2;
@@ -529,11 +522,12 @@ bool VulkanTestHelper::init(skiatest::Reporter* reporter) {
     fBackendContext.fInstance = VK_NULL_HANDLE;
     fBackendContext.fDevice = VK_NULL_HANDLE;
 
-    if (!sk_gpu_test::CreateVkBackendContext(getProc, &fBackendContext, fExtensions,
+    if (!sk_gpu_test::CreateVkBackendContext(instProc, &fBackendContext, fExtensions,
                                              fFeatures, &fDebugCallback)) {
         return false;
     }
     fDevice = fBackendContext.fDevice;
+    auto getProc = fBackendContext.fGetProc;
 
     if (fDebugCallback != VK_NULL_HANDLE) {
         fDestroyDebugCallback = (PFN_vkDestroyDebugReportCallbackEXT) instProc(

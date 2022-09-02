@@ -16,10 +16,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/task/sequenced_task_runner_helpers.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "remoting/host/action_executor.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/base/screen_resolution.h"
@@ -28,10 +28,12 @@
 #include "remoting/host/mojom/desktop_session.mojom.h"
 #include "remoting/host/mojom/remoting_mojom_traits.h"
 #include "remoting/host/remote_open_url/url_forwarder_configurator.h"
+#include "remoting/host/webauthn/remote_webauthn_state_change_notifier.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/url_forwarder_control.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/desktop_capturer.h"
 #include "remoting/protocol/errors.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -82,7 +84,8 @@ class DesktopSessionProxy
                                         DesktopSessionProxyTraits>,
       public IPC::Listener,
       public IpcFileOperations::RequestHandler,
-      public mojom::DesktopSessionEventHandler {
+      public mojom::DesktopSessionEventHandler,
+      public mojom::DesktopSessionStateHandler {
  public:
   DesktopSessionProxy(
       scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
@@ -101,12 +104,14 @@ class DesktopSessionProxy
   std::unique_ptr<AudioCapturer> CreateAudioCapturer();
   std::unique_ptr<InputInjector> CreateInputInjector();
   std::unique_ptr<ScreenControls> CreateScreenControls();
-  std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer();
+  std::unique_ptr<DesktopCapturer> CreateVideoCapturer();
   std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor();
   std::unique_ptr<KeyboardLayoutMonitor> CreateKeyboardLayoutMonitor(
       base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback);
   std::unique_ptr<FileOperations> CreateFileOperations();
   std::unique_ptr<UrlForwarderConfigurator> CreateUrlForwarderConfigurator();
+  std::unique_ptr<RemoteWebAuthnStateChangeNotifier>
+  CreateRemoteWebAuthnStateChangeNotifier();
   std::string GetCapabilities() const;
   void SetCapabilities(const std::string& capabilities);
 
@@ -119,14 +124,12 @@ class DesktopSessionProxy
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // Connects to the desktop session agent.
-  bool AttachToDesktop(const IPC::ChannelHandle& desktop_pipe, int session_id);
+  bool AttachToDesktop(mojo::ScopedMessagePipeHandle desktop_pipe,
+                       int session_id);
 
   // Closes the connection to the desktop session agent and cleans up
   // the associated resources.
   void DetachFromDesktop();
-
-  // Disconnects the client session that owns |this|.
-  void DisconnectSession(protocol::ErrorCode error);
 
   // Stores |audio_capturer| to be used to post captured audio packets. Called
   // on the |audio_capture_task_runner_| thread.
@@ -182,6 +185,18 @@ class DesktopSessionProxy
   // mojom::DesktopSessionEventHandler implementation.
   void OnClipboardEvent(const protocol::ClipboardEvent& event) override;
   void OnUrlForwarderStateChange(mojom::UrlForwarderState state) override;
+  void OnAudioPacket(std::unique_ptr<AudioPacket> audio_packet) override;
+  void OnSharedMemoryRegionCreated(int id,
+                                   base::ReadOnlySharedMemoryRegion region,
+                                   uint32_t size) override;
+  void OnSharedMemoryRegionReleased(int id) override;
+  void OnCaptureResult(mojom::CaptureResultPtr capture_result) override;
+  void OnDesktopDisplayChanged(const protocol::VideoLayout& layout) override;
+  void OnMouseCursorChanged(const webrtc::MouseCursor& mouse_cursor) override;
+  void OnKeyboardLayoutChanged(const protocol::KeyboardLayout& layout) override;
+
+  // mojom::DesktopSessionStateHandler implementation.
+  void DisconnectSession(protocol::ErrorCode error) override;
 
   // API used to implement the UrlForwarderConfigurator interface.
   void IsUrlForwarderSetUp(
@@ -204,29 +219,17 @@ class DesktopSessionProxy
   // Returns a shared buffer from the list of known buffers.
   scoped_refptr<IpcSharedBufferCore> GetSharedBufferCore(int id);
 
-  // Handles AudioPacket notification from the desktop session agent.
-  void OnAudioPacket(const std::string& serialized_packet);
-
-  // Registers a new shared buffer created by the desktop process.
-  void OnCreateSharedBuffer(int id,
-                            base::ReadOnlySharedMemoryRegion region,
-                            uint32_t size);
-
-  // Drops a cached reference to the shared buffer.
-  void OnReleaseSharedBuffer(int id);
-
-  // Handles DesktopDisplayChange notification from the desktop session agent.
-  void OnDesktopDisplayChanged(const protocol::VideoLayout& layout);
+  // Called when the desktop agent has started and provides the remote used to
+  // inject input events and control A/V capture.
+  void OnDesktopSessionAgentStarted(
+      mojo::PendingAssociatedRemote<mojom::DesktopSessionControl>
+          pending_remote);
 
   // Handles CaptureResult notification from the desktop session agent.
   void OnCaptureResult(webrtc::DesktopCapturer::Result result,
                        const SerializedDesktopFrame& serialized_frame);
 
-  // Handles MouseCursor notification from the desktop session agent.
-  void OnMouseCursor(const webrtc::MouseCursor& mouse_cursor);
-
-  // Handles KeyboardChanged notification from the desktop session agent.
-  void OnKeyboardChanged(const protocol::KeyboardLayout& layout);
+  void SignalWebAuthnExtension();
 
   // Sends a message to the desktop session agent. The message is silently
   // deleted if the channel is broken.
@@ -295,14 +298,21 @@ class DesktopSessionProxy
   // is called on IpcKeyboardLayoutMonitor.
   absl::optional<protocol::KeyboardLayout> keyboard_layout_;
 
+  // |desktop_session_agent_| is only valid when |desktop_channel_| is
+  // connected.
+  mojo::AssociatedRemote<mojom::DesktopSessionAgent> desktop_session_agent_;
+
   // |desktop_session_control_| is only valid when |desktop_channel_| is
   // connected. The desktop process can be detached and reattached several times
   // during a session (e.g. transitioning between the login screen and user
   // desktop) so the validity of this remote must be checked before calling a
   // method on it.
   mojo::AssociatedRemote<mojom::DesktopSessionControl> desktop_session_control_;
+
   mojo::AssociatedReceiver<mojom::DesktopSessionEventHandler>
       desktop_session_event_handler_{this};
+  mojo::AssociatedReceiver<mojom::DesktopSessionStateHandler>
+      desktop_session_state_handler_{this};
 
   UrlForwarderConfigurator::IsUrlForwarderSetUpCallback
       is_url_forwarder_set_up_callback_;

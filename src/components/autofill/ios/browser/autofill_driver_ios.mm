@@ -28,8 +28,7 @@ void AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
     AutofillClient* client,
     id<AutofillDriverIOSBridge> bridge,
     const std::string& app_locale,
-    BrowserAutofillManager::AutofillDownloadManagerState
-        enable_download_manager) {
+    AutofillManager::EnableDownloadManager enable_download_manager) {
   // By the time this method is called, no web_frame is available. This method
   // only prepares the factory and the AutofillDriverIOS will be created in the
   // first call to FromWebStateAndWebFrame.
@@ -52,8 +51,7 @@ AutofillDriverIOS::AutofillDriverIOS(
     AutofillClient* client,
     id<AutofillDriverIOSBridge> bridge,
     const std::string& app_locale,
-    BrowserAutofillManager::AutofillDownloadManagerState
-        enable_download_manager)
+    AutofillManager::EnableDownloadManager enable_download_manager)
     : web_state_(web_state),
       bridge_(bridge),
       browser_autofill_manager_(this,
@@ -63,13 +61,13 @@ AutofillDriverIOS::AutofillDriverIOS(
   web_frame_id_ = web::GetWebFrameId(web_frame);
 }
 
-AutofillDriverIOS::~AutofillDriverIOS() {}
+AutofillDriverIOS::~AutofillDriverIOS() = default;
 
 bool AutofillDriverIOS::IsIncognito() const {
   return web_state_->GetBrowserState()->IsOffTheRecord();
 }
 
-bool AutofillDriverIOS::IsInMainFrame() const {
+bool AutofillDriverIOS::IsInAnyMainFrame() const {
   web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
   return web_frame ? web_frame->IsMainFrame() : true;
 }
@@ -97,8 +95,7 @@ bool AutofillDriverIOS::RendererIsAvailable() {
   return true;
 }
 
-base::flat_map<FieldGlobalId, ServerFieldType>
-AutofillDriverIOS::FillOrPreviewForm(
+std::vector<FieldGlobalId> AutofillDriverIOS::FillOrPreviewForm(
     int query_id,
     mojom::RendererFormDataAction action,
     const FormData& data,
@@ -108,13 +105,10 @@ AutofillDriverIOS::FillOrPreviewForm(
   if (web_frame) {
     [bridge_ fillFormData:data inFrame:web_frame];
   }
-  return field_type_map;
-}
-
-void AutofillDriverIOS::PropagateAutofillPredictions(
-    const std::vector<autofill::FormStructure*>& forms) {
-  browser_autofill_manager_.client()->PropagateAutofillPredictions(nullptr,
-                                                                   forms);
+  std::vector<FieldGlobalId> safe_fields;
+  for (const auto& field : data.fields)
+    safe_fields.push_back(field.global_id());
+  return safe_fields;
 }
 
 void AutofillDriverIOS::HandleParsedForms(

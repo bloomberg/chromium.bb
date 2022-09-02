@@ -20,15 +20,10 @@ class WebUIBrowserTest;
 class MojoWebUIBrowserTest;
 class CertificateHandlerTest;
 
-namespace base {
-class ListValue;
-}
-
 namespace content {
 
 class TestWebUI;
 class WebUI;
-class WebUIImpl;
 
 // Messages sent from the DOM are forwarded via the WebUI to handler
 // classes. These objects are owned by WebUI and destroyed when the
@@ -48,10 +43,6 @@ class CONTENT_EXPORT WebUIMessageHandler {
   bool IsJavascriptAllowed();
 
  protected:
-  FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractIntegerValue);
-  FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractDoubleValue);
-  FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractStringValue);
-
   // This method must be called once the handler's corresponding JavaScript
   // component is initialized. In practice, it should be called from a WebUI
   // message handler similar to: 'initializeFooPage' or 'getInitialState'.
@@ -64,18 +55,6 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // This should never be called from a C++ callback used as a reply for a
   // posted task or asynchronous operation.
   void AllowJavascript();
-
-  // Helper methods:
-
-  // Extract an integer value from a list Value.
-  static bool ExtractIntegerValue(const base::ListValue* value, int* out_int);
-
-  // Extract a floating point (double) value from a list Value.
-  static bool ExtractDoubleValue(const base::ListValue* value,
-                                 double* out_value);
-
-  // Extract a string value from a list Value.
-  static std::u16string ExtractStringValue(const base::ListValue* value);
 
   // This is where subclasses specify which messages they'd like to handle and
   // perform any additional initialization.. At this point web_ui() will return

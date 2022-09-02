@@ -324,9 +324,15 @@ class MultipartUploadDataPipeRequestTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(, MultipartUploadDataPipeRequestTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, MultipartUploadDataPipeRequestTest, testing::Bool());
 
-TEST_P(MultipartUploadDataPipeRequestTest, Retries) {
+// Disabled due to flakiness on Windows https://crbug.com/1286638
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_Retries DISABLED_Retries
+#else
+#define MAYBE_Retries Retries
+#endif
+TEST_P(MultipartUploadDataPipeRequestTest, MAYBE_Retries) {
   std::string expected_body =
       "--boundary\r\n"
       "Content-Type: application/octet-stream\r\n"

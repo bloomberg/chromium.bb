@@ -9,6 +9,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/observer_list.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/devices/touch_device_transform.h"
@@ -27,7 +28,8 @@ namespace ui {
 namespace {
 
 bool InputDeviceEquals(const ui::InputDevice& a, const ui::InputDevice& b) {
-  return a.id == b.id && a.enabled == b.enabled;
+  return a.id == b.id && a.enabled == b.enabled &&
+         a.suspected_imposter == b.suspected_imposter;
 }
 
 }  // namespace

@@ -85,6 +85,16 @@ class ShellSurfaceBase : public SurfaceTreeHost,
     surface_destroyed_callback_ = std::move(surface_destroyed_callback);
   }
 
+  // Whether the connected client supports setting window bounds and is
+  // expecting to receive window origin in configure updates.
+  bool client_supports_window_bounds() const {
+    return client_supports_window_bounds_;
+  }
+
+  void set_client_supports_window_bounds(bool enable) {
+    client_supports_window_bounds_ = enable;
+  }
+
   // Activates the shell surface.
   void Activate();
 
@@ -93,9 +103,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Set icon for the surface.
   void SetIcon(const gfx::ImageSkia& icon);
-
-  // Sets the system modality.
-  void SetSystemModal(bool system_modal);
 
   // Set the application ID for the surface.
   void SetApplicationId(const char* application_id);
@@ -146,6 +153,20 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void RebindRootSurface(Surface* root_surface,
                          bool can_minimize,
                          int container);
+
+  // Set the window bounds. The bounds specify 'visible bounds' of the
+  // shell surface.
+  void SetWindowBounds(const gfx::Rect& bounds_in_screen);
+
+  // Set `restore_session_id_` and `restore_window_id_` to be the browser
+  // session id and restore id, respectively.
+  void SetRestoreInfo(int32_t restore_id, int32_t restore_window_id);
+
+  // Set `restore_window_id_source` to be the app id for Restore to fetch window
+  // id for.
+  void SetRestoreInfoWithWindowIdSource(
+      int32_t restore_id,
+      const std::string& restore_window_id_source);
 
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
@@ -207,6 +228,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void SetInitialWorkspace(const char* initial_workspace) override;
   void Pin(bool trusted) override;
   void Unpin() override;
+  void SetSystemModal(bool system_modal) override;
 
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -226,6 +248,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   views::View* GetContentsView() override;
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
+  bool ShouldSaveWindowPlacement() const override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(SkPath* mask) const override;
 
@@ -272,6 +295,13 @@ class ShellSurfaceBase : public SurfaceTreeHost,
     return overlay_widget_.get();
   }
 
+  // Returns true if surface is currently being dragged.
+  bool IsDragged() const;
+
+  void set_in_extended_drag(bool in_extended_drag) {
+    in_extended_drag_ = in_extended_drag;
+  }
+
  protected:
   // Creates the |widget_| for |surface_|. |show_state| is the initial state
   // of the widget (e.g. maximized).
@@ -309,8 +339,11 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Returns the "visible bounds" for the surface from the user's perspective.
   gfx::Rect GetVisibleBounds() const;
 
-  // Returns the bounds of the client area.nnn
+  // Returns the bounds of the client area.
   gfx::Rect GetClientViewBounds() const;
+
+  // Computes the widget bounds using visible bounds.
+  gfx::Rect GetWidgetBoundsFromVisibleBounds() const;
 
   // In the local coordinate system of the window.
   virtual gfx::Rect GetShadowBounds() const;
@@ -333,9 +366,13 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void SetParentInternal(aura::Window* window);
   void SetContainerInternal(int container);
 
-  // Returns the resizability of the window. Useful to get the resizability
-  // without actually updating it.
-  bool CalculateCanResize() const;
+  // Converts min/max sizes to resizeability. This needs to be overridden as
+  // different clients have different default min/max values.
+  virtual bool GetCanResizeFromSizeConstraints() const = 0;
+
+  // Returns true if this surface will exit fullscreen from a restore or
+  // maximize request. Currently only true for Lacros.
+  bool ShouldExitFullscreenFromRestoreOrMaximized();
 
   views::Widget* widget_ = nullptr;
   bool movement_disabled_ = false;
@@ -345,7 +382,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   int container_;
   gfx::Rect geometry_;
   gfx::Rect pending_geometry_;
-  gfx::Size initial_size_;
+  absl::optional<gfx::Rect> initial_bounds_;
+
   int64_t display_id_ = display::kInvalidDisplayId;
   int64_t pending_display_id_ = display::kInvalidDisplayId;
   absl::optional<gfx::Rect> shadow_bounds_;
@@ -354,6 +392,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool is_popup_ = false;
   bool has_grab_ = false;
   bool server_side_resize_ = false;
+  bool needs_layout_on_show_ = false;
+  bool client_supports_window_bounds_ = false;
+  gfx::Size minimum_size_;
+  gfx::Size maximum_size_;
 
   // The orientation to be applied when widget is being created. Only set when
   // widget is not created yet orientation lock is being set. This is currently
@@ -386,6 +428,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   void UpdatePinned();
 
+  // Returns the resizability of the window. Useful to get the resizability
+  // without actually updating it.
+  bool CalculateCanResize() const;
+
   aura::Window* parent_ = nullptr;
   bool activatable_ = true;
   bool can_minimize_ = true;
@@ -401,13 +447,19 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   base::OnceClosure surface_destroyed_callback_;
   bool system_modal_ = false;
   bool non_system_modal_window_was_active_ = false;
-  gfx::Size minimum_size_;
   gfx::Size pending_minimum_size_;
-  gfx::Size maximum_size_;
   gfx::Size pending_maximum_size_;
   gfx::SizeF pending_aspect_ratio_;
   bool pending_pip_ = false;
+  bool in_extended_drag_ = false;
   absl::optional<std::string> initial_workspace_;
+
+  // Restore members. These pass window restore related ids from exo clients,
+  // e.g. Lacros, so that the window can be created with the correct restore
+  // info looked up using the ids.
+  absl::optional<int32_t> restore_session_id_;
+  absl::optional<int32_t> restore_window_id_;
+  absl::optional<std::string> restore_window_id_source_;
 
   // Overlay members.
   std::unique_ptr<views::Widget> overlay_widget_;

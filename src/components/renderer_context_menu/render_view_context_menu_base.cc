@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/global_routing_id.h"
@@ -254,7 +255,7 @@ void RenderViewContextMenuBase::UpdateMenuItem(int command_id,
   menu_model_.SetEnabledAt(index, enabled);
   menu_model_.SetVisibleAt(index, !hidden);
   if (toolkit_delegate_) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     toolkit_delegate_->UpdateMenuItem(command_id, enabled, hidden, label);
 #else
     toolkit_delegate_->RebuildMenu();
@@ -321,7 +322,7 @@ void RenderViewContextMenuBase::RemoveSeparatorBeforeMenuItem(int command_id) {
 }
 
 RenderViewHost* RenderViewContextMenuBase::GetRenderViewHost() const {
-  return source_web_contents_->GetMainFrame()->GetRenderViewHost();
+  return source_web_contents_->GetPrimaryMainFrame()->GetRenderViewHost();
 }
 
 WebContents* RenderViewContextMenuBase::GetWebContents() const {
@@ -409,9 +410,9 @@ void RenderViewContextMenuBase::ExecuteCommand(int id, int event_flags) {
 void RenderViewContextMenuBase::OnMenuWillShow(ui::SimpleMenuModel* source) {
   for (int i = 0; i < source->GetItemCount(); ++i) {
     if (source->IsVisibleAt(i) &&
-        source->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR &&
-        source->GetTypeAt(i) != ui::MenuModel::TYPE_SUBMENU) {
-      RecordShownItem(source->GetCommandIdAt(i));
+        source->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR) {
+      RecordShownItem(source->GetCommandIdAt(i),
+                      source->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU);
     }
   }
 

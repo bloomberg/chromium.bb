@@ -15,7 +15,7 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxcrt/widestring.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
-#include "fpdfsdk/pwl/ipwl_systemhandler.h"
+#include "fpdfsdk/pwl/ipwl_fillernotify.h"
 
 class CPDF_Font;
 class CPWL_Caret;
@@ -29,7 +29,7 @@ enum PWL_EDIT_ALIGNFORMAT_V { PEAV_TOP = 0, PEAV_CENTER, PEAV_BOTTOM };
 class CPWL_Edit final : public CPWL_Wnd {
  public:
   CPWL_Edit(const CreateParams& cp,
-            std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData);
+            std::unique_ptr<IPWL_FillerNotify::PerWindowData> pAttachedData);
   ~CPWL_Edit() override;
 
   // CPWL_Wnd:
@@ -95,10 +95,6 @@ class CPWL_Edit final : public CPWL_Wnd {
                                         const CFX_FloatRect& rcPlate,
                                         int32_t nCharArray);
 
-  void SetFillerNotify(IPWL_FillerNotify* pNotify) {
-    m_pFillerNotify = pNotify;
-  }
-
   bool SetCaret(bool bVisible,
                 const CFX_PointF& ptHead,
                 const CFX_PointF& ptFoot);
@@ -135,7 +131,6 @@ class CPWL_Edit final : public CPWL_Wnd {
   CFX_FloatRect m_rcOldWindow;
   std::unique_ptr<CPWL_EditImpl> const m_pEditImpl;
   UnownedPtr<CPWL_Caret> m_pCaret;
-  UnownedPtr<IPWL_FillerNotify> m_pFillerNotify;
 };
 
 #endif  // FPDFSDK_PWL_CPWL_EDIT_H_

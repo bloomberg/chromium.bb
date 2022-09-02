@@ -393,6 +393,8 @@ crashpad_static_library("util") {
       "ios/ios_system_data_collector.mm",
       "ios/raw_logging.cc",
       "ios/raw_logging.h",
+      "ios/scoped_background_task.h",
+      "ios/scoped_background_task.mm",
       "ios/scoped_vm_read.cc",
       "ios/scoped_vm_read.h",
     ]
@@ -474,6 +476,7 @@ crashpad_static_library("util") {
       "win/context_wrappers.h",
       "win/critical_section_with_debug_info.cc",
       "win/critical_section_with_debug_info.h",
+      "win/exception_codes.h",
       "win/exception_handler_server.cc",
       "win/exception_handler_server.h",
       "win/get_function.cc",
@@ -586,8 +589,12 @@ crashpad_static_library("util") {
   ]
 
   if (crashpad_is_mac || crashpad_is_ios) {
-    include_dirs += [ "$root_build_dir/gen" ]
+    include_dirs += [ "$root_gen_dir" ]
     deps += [ ":mig_output" ]
+  }
+
+  if (crashpad_is_ios) {
+    deps += [ "../build:ios_enable_arc" ]
   }
 
   if (crashpad_is_mac && !crashpad_is_in_fuchsia) {
@@ -663,7 +670,7 @@ crashpad_static_library("net") {
   if (crashpad_http_transport_impl == "socket") {
     sources += [ "net/http_transport_socket.cc" ]
     if (crashpad_use_boringssl_for_http_transport_socket) {
-      defines += [ "CRASHPAD_USE_BORINGSSL" ]
+      defines = [ "CRASHPAD_USE_BORINGSSL" ]
 
       if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
         deps += [ "//third_party/boringssl" ]

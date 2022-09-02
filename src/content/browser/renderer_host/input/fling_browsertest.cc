@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/bind.h"
-#include "base/ignore_result.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -104,7 +105,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
 
     std::u16string ready_title(u"ready");
     TitleWatcher watcher(shell()->web_contents(), ready_title);
-    ignore_result(watcher.WaitAndGetTitle());
+    std::ignore = watcher.WaitAndGetTitle();
     SynchronizeThreads();
   }
 
@@ -308,7 +309,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
 // On Mac we don't have any touchscreen/touchpad fling events (GFS/GFC).
 // Instead, the OS keeps sending wheel events when the user lifts their fingers
 // from touchpad.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchscreenFling) {
   LoadURL(kBrowserFlingDataURL);
   SimulateTouchscreenFling(GetWidgetHost());
@@ -350,10 +351,18 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(GetWidgetHost()->GetView()->view_stopped_flinging_for_test());
 }
 
+// Flaky on Linux ASAN and TSAN. https://crbug.com/1269960
+#if BUILDFLAG(IS_LINUX) && \
+    (defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER))
+#define MAYBE_FlingingStopsAfterNavigation DISABLED_FlingingStopsAfterNavigation
+#else
+#define MAYBE_FlingingStopsAfterNavigation FlingingStopsAfterNavigation
+#endif
+
 // Tests that flinging does not continue after navigating to a page that uses
 // the same renderer.
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
-                       FlingingStopsAfterNavigation) {
+                       MAYBE_FlingingStopsAfterNavigation) {
   GURL first_url(embedded_test_server()->GetURL(
       "b.a.com", "/scrollable_page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), first_url));
@@ -544,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   EXPECT_EQ(
       0, EvalJs(root->current_frame_host(), "window.scrollY").ExtractDouble());
 }
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 class PhysicsBasedFlingCurveBrowserTest : public BrowserSideFlingBrowserTest {
  public:

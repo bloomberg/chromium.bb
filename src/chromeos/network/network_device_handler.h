@@ -45,6 +45,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   static const char kErrorPinRequired[];
   static const char kErrorTimeout[];
   static const char kErrorUnknown[];
+  static const char kErrorBlockedByPolicy[];
 
   NetworkDeviceHandler();
 
@@ -167,10 +168,20 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   // USB Ethernet device.
   virtual void SetUsbEthernetMacAddressSource(const std::string& source) = 0;
 
+  // Sets whether PIN locking SIMs is allowed by policy for all cellular
+  // devices, i.e whether users can require a PIN for a SIM or change the PIN of
+  // an already locked SIM on the device.
+  virtual void SetAllowCellularSimLock(bool allow_cellular_sim_lock) = 0;
+
   static std::unique_ptr<NetworkDeviceHandler> InitializeForTesting(
       NetworkStateHandler* network_state_handler);
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace ash {
+using ::chromeos::NetworkDeviceHandler;
+}
 
 #endif  // CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_H_

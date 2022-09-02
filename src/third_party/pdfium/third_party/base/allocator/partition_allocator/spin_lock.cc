@@ -7,9 +7,9 @@
 #include "build/build_config.h"
 #include "third_party/base/notreached.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include <sched.h>
 #endif
 
@@ -23,12 +23,12 @@
 // basically a worst-case fallback, and if you're hitting it with any frequency
 // you really should be using a proper lock (such as |base::Lock|)rather than
 // these spinlocks.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 #define YIELD_PROCESSOR YieldProcessor()
 #define YIELD_THREAD SwitchToThread()
 
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 #if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_X86)
 #define YIELD_PROCESSOR __asm__ __volatile__("pause")

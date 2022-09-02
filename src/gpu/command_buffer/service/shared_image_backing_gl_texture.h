@@ -7,11 +7,15 @@
 
 #include "gpu/command_buffer/service/shared_image_backing_gl_common.h"
 
+namespace gl {
+class GLImageEGL;
+}
+
 namespace gpu {
 
 // Implementation of SharedImageBacking that creates a GL Texture that is not
 // backed by a GLImage.
-class SharedImageBackingGLTexture : public SharedImageBacking {
+class SharedImageBackingGLTexture : public ClearTrackingSharedImageBacking {
  public:
   SharedImageBackingGLTexture(const Mailbox& mailbox,
                               viz::ResourceFormat format,
@@ -34,6 +38,7 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
 
   GLenum GetGLTarget() const;
   GLuint GetGLServiceId() const;
+  void CreateEGLImage();
 
  private:
   // SharedImageBacking:
@@ -68,6 +73,7 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
   scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
 
   sk_sp<SkPromiseImageTexture> cached_promise_texture_;
+  scoped_refptr<gl::GLImageEGL> image_egl_;
 };
 
 }  // namespace gpu

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -25,6 +27,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -59,6 +62,10 @@ class StyleResolverTest : public PageTestBase {
                      ElementRuleCollector& collector) {
     GetDocument().GetStyleEngine().GetStyleResolver().MatchAllRules(
         state, collector, false /* include_smil_properties */);
+  }
+
+  bool IsUseCounted(mojom::WebFeature feature) {
+    return GetDocument().IsUseCounted(feature);
   }
 };
 
@@ -542,8 +549,6 @@ TEST_F(StyleResolverTest, NoFetchForAtPage) {
 }
 
 TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
-  ScopedCSSTargetTextPseudoElementForTest scoped_feature(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body::target-text, body::selection {
@@ -813,7 +818,7 @@ TEST_F(StyleResolverTestCQ, CascadedValuesForElementInContainer) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size; }
-      @container size(min-width: 1px) {
+      @container (min-width: 1px) {
         #inner {
           top: 1em;
         }
@@ -843,7 +848,7 @@ TEST_F(StyleResolverTestCQ, CascadedValuesForPseudoElementInContainer) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size; }
-      @container size(min-width: 1px) {
+      @container (min-width: 1px) {
         #inner::before {
           top: 1em;
         }
@@ -918,8 +923,8 @@ TEST_F(StyleResolverTest, ComputeValueStandardProperty) {
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   MutableCSSPropertyValueSet::SetResult result = set->SetProperty(
       property_id, "var(--color)", false, SecureContextMode::kInsecureContext,
-      /*style_sheet_contents=*/nullptr);
-  ASSERT_TRUE(result.did_parse);
+      /*context_style_sheet=*/nullptr);
+  ASSERT_NE(MutableCSSPropertyValueSet::kParseError, result);
   const CSSValue* parsed_value = set->GetPropertyCSSValue(property_id);
   ASSERT_TRUE(parsed_value);
   const CSSValue* computed_value = StyleResolver::ComputeValue(
@@ -1306,7 +1311,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueries) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       #a { color: red; }
-      @container size(min-width: 0px) {
+      @container (min-width: 0px) {
         #b { color: blue; }
         span { color: green; }
         #d { color: coral; }
@@ -1345,7 +1350,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
     <style>
       main { container-type: size; width: 100px; }
       #a::before { content: "before"; }
-      @container size(min-width: 0px) {
+      @container (min-width: 0px) {
         #a::after { content: "after"; }
       }
     </style>
@@ -1364,7 +1369,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
   ASSERT_TRUE(before);
   ASSERT_TRUE(after);
 
-  EXPECT_FALSE(a->ComputedStyleRef().DependsOnContainerQueries());
+  EXPECT_TRUE(a->ComputedStyleRef().DependsOnContainerQueries());
   EXPECT_FALSE(before->ComputedStyleRef().DependsOnContainerQueries());
   EXPECT_TRUE(after->ComputedStyleRef().DependsOnContainerQueries());
 }
@@ -1374,7 +1379,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
 TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesMPC) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
-      @container size(min-width: 9999999px) {
+      @container (min-width: 9999999px) {
         #a { color: green; }
       }
     </style>
@@ -1405,8 +1410,6 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesMPC) {
 }
 
 TEST_F(StyleResolverTest, NoCascadeLayers) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       #a { color: green; }
@@ -1447,8 +1450,6 @@ TEST_F(StyleResolverTest, NoCascadeLayers) {
 }
 
 TEST_F(StyleResolverTest, CascadeLayersInDifferentSheets) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       @layer foo, bar;
@@ -1503,8 +1504,6 @@ TEST_F(StyleResolverTest, CascadeLayersInDifferentSheets) {
 }
 
 TEST_F(StyleResolverTest, CascadeLayersInDifferentTreeScopes) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument()
       .documentElement()
       ->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
@@ -1559,11 +1558,103 @@ TEST_F(StyleResolverTest, CascadeLayersInDifferentTreeScopes) {
             &GetDocument());
 }
 
+// https://crbug.com/1313357
+TEST_F(StyleResolverTest, CascadeLayersAfterModifyingAnotherSheet) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      @layer {
+        target { color: red; }
+      }
+    </style>
+    <style id="addrule"></style>
+    <target></target>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().getElementById("addrule")->appendChild(
+      GetDocument().createTextNode("target { font-size: 10px; }"));
+
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(GetDocument().GetScopedStyleResolver()->GetCascadeLayerMap());
+
+  StyleResolverState state(GetDocument(),
+                           *GetDocument().QuerySelector("target"));
+  SelectorFilter filter;
+  MatchResult match_result;
+  ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
+                                 filter, match_result, state.Style(),
+                                 EInsideLink::kNotInsideLink);
+  MatchAllRules(state, collector);
+  const auto& properties = match_result.GetMatchedProperties();
+  ASSERT_EQ(properties.size(), 2u);
+
+  const uint16_t kImplicitOuterLayerOrder =
+      CascadeLayerMap::kImplicitOuterLayerOrder;
+
+  // @layer { target { color: red } }"
+  EXPECT_TRUE(properties[0].properties->HasProperty(CSSPropertyID::kColor));
+  EXPECT_EQ(0u, properties[0].types_.layer_order);
+  EXPECT_EQ(properties[0].types_.origin, CascadeOrigin::kAuthor);
+
+  // target { font-size: 10px }
+  EXPECT_TRUE(properties[1].properties->HasProperty(CSSPropertyID::kFontSize));
+  EXPECT_EQ(kImplicitOuterLayerOrder, properties[1].types_.layer_order);
+  EXPECT_EQ(properties[1].types_.origin, CascadeOrigin::kAuthor);
+}
+
+// https://crbug.com/1326791
+TEST_F(StyleResolverTest, CascadeLayersAddLayersWithImportantDeclarations) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style id="addrule"></style>
+    <target></target>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().getElementById("addrule")->appendChild(
+      GetDocument().createTextNode(
+          "@layer { target { font-size: 20px !important; } }"
+          "@layer { target { font-size: 10px !important; } }"));
+
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(GetDocument().GetScopedStyleResolver()->GetCascadeLayerMap());
+
+  StyleResolverState state(GetDocument(),
+                           *GetDocument().QuerySelector("target"));
+  SelectorFilter filter;
+  MatchResult match_result;
+  ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
+                                 filter, match_result, state.Style(),
+                                 EInsideLink::kNotInsideLink);
+  MatchAllRules(state, collector);
+  const auto& properties = match_result.GetMatchedProperties();
+  ASSERT_EQ(properties.size(), 2u);
+
+  // @layer { target { font-size: 20px !important } }
+  EXPECT_TRUE(properties[0].properties->HasProperty(CSSPropertyID::kFontSize));
+  EXPECT_TRUE(
+      properties[0].properties->PropertyIsImportant(CSSPropertyID::kFontSize));
+  EXPECT_EQ("20px", properties[0].properties->GetPropertyValue(
+                        CSSPropertyID::kFontSize));
+  EXPECT_EQ(0u, properties[0].types_.layer_order);
+  EXPECT_EQ(properties[0].types_.origin, CascadeOrigin::kAuthor);
+
+  // @layer { target { font-size: 10px !important } }
+  EXPECT_TRUE(properties[1].properties->HasProperty(CSSPropertyID::kFontSize));
+  EXPECT_TRUE(
+      properties[1].properties->PropertyIsImportant(CSSPropertyID::kFontSize));
+  EXPECT_EQ("10px", properties[1].properties->GetPropertyValue(
+                        CSSPropertyID::kFontSize));
+  EXPECT_EQ(1u, properties[1].types_.layer_order);
+  EXPECT_EQ(properties[1].types_.origin, CascadeOrigin::kAuthor);
+}
+
 // TODO(crbug.com/1095765): We should have a WPT for this test case, but
 // currently Blink web test runner can't test @page rules in WPT.
 TEST_F(StyleResolverTest, CascadeLayersAndPageRules) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
     @page { margin-top: 100px; }
@@ -1586,7 +1677,6 @@ TEST_F(StyleResolverTest, CascadeLayersAndPageRules) {
 }
 
 TEST_F(StyleResolverTest, BodyPropagationLayoutImageContain) {
-  ScopedCSSContainedBodyPropagationForTest enable_scope(true);
   GetDocument().documentElement()->setAttribute(
       html_names::kStyleAttr,
       "contain:size; display:inline-table; content:url(img);");
@@ -1658,8 +1748,8 @@ TEST_F(StyleResolverTest, IsInertWithAttributeAndDialog) {
   EXPECT_TRUE(body->GetComputedStyle()->IsInert());
   EXPECT_TRUE(div->GetComputedStyle()->IsInert());
   EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(dialog->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(dialog_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(dialog->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(dialog_text->GetComputedStyle()->IsInert());
 
   dialog->close();
   UpdateAllLifecyclePhasesForTest();
@@ -1872,8 +1962,6 @@ TEST_F(StyleResolverTest, IsInertWithFullscreen) {
 
 TEST_F(StyleResolverTest, IsInertWithFrameAndFullscreen) {
   Document& document = GetDocument();
-  LocalFrame& frame = GetFrame();
-
   document.body()->setInnerHTML(R"HTML(
     <div>div_text</div>
   )HTML");
@@ -1898,25 +1986,7 @@ TEST_F(StyleResolverTest, IsInertWithFrameAndFullscreen) {
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
 
-  frame.SetIsInert(true);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
-  EXPECT_TRUE(html->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(body->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
-
   EnterFullscreen(document, *body);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
-  EXPECT_TRUE(html->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(body->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
-
-  frame.SetIsInert(false);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(document.GetComputedStyle()->IsInert());
@@ -1933,20 +2003,10 @@ TEST_F(StyleResolverTest, IsInertWithFrameAndFullscreen) {
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
-
-  frame.SetIsInert(true);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
-  EXPECT_TRUE(html->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(body->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
 }
 
 TEST_F(StyleResolverTest, IsInertWithBackdrop) {
   Document& document = GetDocument();
-  LocalFrame& frame = GetFrame();
   NonThrowableExceptionState exception_state;
 
   document.documentElement()->setInnerHTML(R"HTML(
@@ -1977,35 +2037,21 @@ TEST_F(StyleResolverTest, IsInertWithBackdrop) {
   EXPECT_FALSE(IsBackdropInert(body));
   EXPECT_FALSE(IsBackdropInert(dialog));
 
-  frame.SetIsInert(true);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(html->GetPseudoElement(kPseudoIdBackdrop), nullptr);
-  EXPECT_TRUE(IsBackdropInert(body));
-  EXPECT_TRUE(IsBackdropInert(dialog));
-
   dialog->close();
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(html->GetPseudoElement(kPseudoIdBackdrop), nullptr);
-  EXPECT_TRUE(IsBackdropInert(body));
+  EXPECT_FALSE(IsBackdropInert(body));
   EXPECT_EQ(dialog->GetPseudoElement(kPseudoIdBackdrop), nullptr);
 
   EnterFullscreen(document, *html);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_TRUE(IsBackdropInert(html));
+  EXPECT_FALSE(IsBackdropInert(html));
   EXPECT_EQ(body->GetPseudoElement(kPseudoIdBackdrop), nullptr);
   EXPECT_EQ(dialog->GetPseudoElement(kPseudoIdBackdrop), nullptr);
 
   dialog->showModal(exception_state);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_TRUE(IsBackdropInert(html));
-  EXPECT_EQ(body->GetPseudoElement(kPseudoIdBackdrop), nullptr);
-  EXPECT_TRUE(IsBackdropInert(dialog));
-
-  frame.SetIsInert(false);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(IsBackdropInert(html));
@@ -2101,10 +2147,10 @@ TEST_F(StyleResolverTestCQ, StyleRulesForElementContainerQuery) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size }
-      @container size(min-width: 1px) {
+      @container (min-width: 1px) {
         #target { }
       }
-      @container size(min-width: 99999px) {
+      @container (min-width: 99999px) {
         #target { color: red }
       }
     </style>
@@ -2121,17 +2167,350 @@ TEST_F(StyleResolverTestCQ, StyleRulesForElementContainerQuery) {
   auto* rule_list = resolver.StyleRulesForElement(
       target,
       StyleResolver::kAuthorCSSRules | StyleResolver::kCrossOriginCSSRules);
-  ASSERT_FALSE(rule_list) << "A nullptr is returned if no rules were collected";
-
-  rule_list = resolver.StyleRulesForElement(
-      target, StyleResolver::kAuthorCSSRules |
-                  StyleResolver::kCrossOriginCSSRules |
-                  StyleResolver::kEmptyCSSRules);
   ASSERT_TRUE(rule_list);
   ASSERT_EQ(rule_list->size(), 1u)
       << "The empty #target rule in the container query should be collected";
   EXPECT_TRUE(rule_list->at(0)->Properties().IsEmpty())
       << "Check that it is in fact the empty rule";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapPerspectiveOrigin_Single) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          perspective-origin: 1px 2px;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyPerspectiveOrigin))
+      << "Not counted when only perspective-origin is used";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapPerspectiveOrigin_Order) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          -webkit-perspective-origin-x: 1px;
+          -webkit-perspective-origin-y: 2px;
+          perspective-origin: 3px 4px;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyPerspectiveOrigin))
+      << "Not counted when perspective-origin is last";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapPerspectiveOrigin_Values) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          perspective-origin: 1px 2px;
+          -webkit-perspective-origin-x: 1px;
+          -webkit-perspective-origin-y: 2px;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyPerspectiveOrigin))
+      << "Not counted when values are the same";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapPerspectiveOrigin_Last) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          perspective-origin: 1px 2px;
+          -webkit-perspective-origin-x: 3px;
+          -webkit-perspective-origin-y: 4px;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyPerspectiveOrigin))
+      << "Counted when -webkit-perspective-* is last with different values";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapTransformOrigin_Single) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          transform-origin: 1px 2px 3px;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyTransformOrigin))
+      << "Not counted when only transform-origin is used";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapTransformOrigin_Order) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          -webkit-transform-origin-x: 1px;
+          -webkit-transform-origin-y: 2px;
+          -webkit-transform-origin-z: 3px;
+          transform-origin: 4px 5px 6px;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyTransformOrigin))
+      << "Not counted when transform-origin is last";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapTransformOrigin_Values) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          transform-origin: 1px 2px 3px;
+          -webkit-transform-origin-x: 1px;
+          -webkit-transform-origin-y: 2px;
+          -webkit-transform-origin-z: 3px;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyTransformOrigin))
+      << "Not counted when values are the same";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapTransformOrigin_Last) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          transform-origin: 1px 2px 3px;
+          -webkit-transform-origin-x: 4px;
+          -webkit-transform-origin-y: 5px;
+          -webkit-transform-origin-z: 6px;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyTransformOrigin))
+      << "Counted when -webkit-transform-origin-* is last with different "
+         "values";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Single) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 fill / 2 / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Not counted when only border-image is used";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Order) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          -webkit-border-image: url("#b") 2 fill / 3 / 4 round;
+          border-image: url("#a") 1 fill / 2 / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Not counted when border-image is last";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Values) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 fill / 2 / 3 round;
+          -webkit-border-image: url("#a") 1 fill / 2 / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Not counted when values are the same";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Last_Source) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 fill / 2 / 3 round;
+          -webkit-border-image: url("#b") 1 fill / 2 / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Counted when border-image-source differs";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Last_Slice) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 fill / 2 / 3 round;
+          -webkit-border-image: url("#a") 2 fill / 2 / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Counted when border-image-slice differs";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Last_SliceFill) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 / 2 / 3 round;
+          -webkit-border-image: url("#a") 1 fill / 2 / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Counted when the fill keyword of border-image-slice differs";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_SliceFillImplicit) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 / 2 / 3 round;
+          -webkit-border-image: url("#a") 1 / 2 / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  // Note that -webkit-border-image implicitly adds "fill", but
+  // border-image does not.
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Counted when fill-less values are the same";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Last_Width) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 fill / 2 / 3 round;
+          -webkit-border-image: url("#a") 1 fill / 5 / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Counted when border-image-slice differs";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Last_Outset) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 fill / 2 / 3 round;
+          -webkit-border-image: url("#a") 1 fill / 2 / 5 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Counted when border-image-outset differs";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImage_Last_Repeat) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-image: url("#a") 1 fill / 2 / 3 round;
+          -webkit-border-image: url("#a") 1 fill / 2 / 3 space;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImage))
+      << "Counted when border-image-repeat differs";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImageWidth_Single) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        border: 1px solid black;
+      }
+    </style>
+    <div>target</div>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyBorderImageWidth))
+      << "Not counted when only border is used";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImageWidth_Order) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        -webkit-border-image: url("#b") 2 fill / 3px / 4 round;
+        border: 1px solid black;
+      }
+    </style>
+    <div>target</div>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyBorderImageWidth))
+      << "Not counted when border is last";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImageWidth_Values) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        border: 1px solid black;
+        -webkit-border-image: url("#b") 2 fill / 1px / 4 round;
+      }
+    </style>
+    <div>target</div>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyBorderImageWidth))
+      << "Not counted when values are the same";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImageWidth_Last_Border) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border: 1px solid black;
+          -webkit-border-image: url("#a") 1 fill / 2px / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  // Since -webkit-border-image also sets border-width, we would normally
+  // expect TRUE here. However, StyleCascade always applies
+  // -webkit-border-image *first*, and does not do anything to prevent
+  // border-width properties from also being applied. Hence border-width
+  // always wins.
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSLegacyBorderImageWidth))
+      << "Not even counted when -webkit-border-image is last";
+}
+
+TEST_F(StyleResolverTest, LegacyOverlapBorderImageWidth_Last_Style) {
+  // Note that border-style is relevant here because the used border-width
+  // is 0px if we don'y have any border-style. See e.g.
+  // ComputedStyle::BorderLeftWidth.
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        div {
+          border-style: solid;
+          -webkit-border-image: url("#b") 1 fill / 2px / 3 round;
+        }
+      </style>
+      <div>target</div>
+    )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSLegacyBorderImageWidth))
+      << "Counted when -webkit-border-image is last and there's no "
+         "border-width";
 }
 
 }  // namespace blink

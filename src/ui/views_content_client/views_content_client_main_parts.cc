@@ -17,14 +17,13 @@
 namespace ui {
 
 ViewsContentClientMainParts::ViewsContentClientMainParts(
-    content::MainFunctionParams content_params,
     ViewsContentClient* views_content_client)
     : views_content_client_(views_content_client) {}
 
 ViewsContentClientMainParts::~ViewsContentClientMainParts() {
 }
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 void ViewsContentClientMainParts::PreBrowserMain() {}
 #endif
 

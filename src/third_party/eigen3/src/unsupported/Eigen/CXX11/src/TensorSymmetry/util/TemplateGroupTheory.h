@@ -128,11 +128,11 @@ template<
 >
 struct strip_identities<Equality, id, type_list<t, ts...>>
 {
-  typedef typename conditional<
+  typedef std::conditional_t<
     Equality<id, t>::value,
     typename strip_identities<Equality, id, type_list<ts...>>::type,
     typename concat<type_list<t>, typename strip_identities<Equality, id, type_list<ts...>>::type>::type
-  >::type type;
+  > type;
   constexpr static int global_flags = Equality<id, t>::global_flags | strip_identities<Equality, id, type_list<ts...>>::global_flags;
 };
 

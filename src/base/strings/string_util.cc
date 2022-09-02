@@ -21,9 +21,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/cfi_buildflags.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util_internal.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -34,14 +32,6 @@
 namespace base {
 
 bool IsWprintfFormatPortable(const wchar_t* format) {
-  // This snippet of code checks that we can build C++17 code.
-  // TODO(thakis): Enable this on all platforms, and then remove it again.
-#if !defined(OS_LINUX) && !BUILDFLAG(CFI_ICALL_CHECK) && \
-    !BUILDFLAG(CFI_CAST_CHECK)
-  if constexpr (constexpr int i = 0; i > 0) {
-  }
-#endif
-
   for (const wchar_t* position = format; *position != '\0'; ++position) {
     if (*position == '%') {
       bool in_specification = true;
@@ -98,16 +88,6 @@ int CompareCaseInsensitiveASCII(StringPiece a, StringPiece b) {
 
 int CompareCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b) {
   return internal::CompareCaseInsensitiveASCIIT(a, b);
-}
-
-bool EqualsCaseInsensitiveASCII(StringPiece a, StringPiece b) {
-  return a.size() == b.size() &&
-         internal::CompareCaseInsensitiveASCIIT(a, b) == 0;
-}
-
-bool EqualsCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b) {
-  return a.size() == b.size() &&
-         internal::CompareCaseInsensitiveASCIIT(a, b) == 0;
 }
 
 const std::string& EmptyString() {
@@ -195,8 +175,7 @@ void TruncateUTF8ToByteSize(const std::string& input,
     int32_t prev = char_index;
     base_icu::UChar32 code_point = 0;
     CBU8_NEXT(data, char_index, truncation_length, code_point);
-    if (!IsValidCharacter(code_point) ||
-        !IsValidCodepoint(code_point)) {
+    if (!IsValidCharacter(code_point)) {
       char_index = prev - 1;
     } else {
       break;
@@ -275,14 +254,6 @@ bool IsStringUTF8AllowingNoncharacters(StringPiece str) {
   return internal::DoIsStringUTF8<IsValidCodepoint>(str);
 }
 
-bool LowerCaseEqualsASCII(StringPiece str, StringPiece lowercase_ascii) {
-  return internal::DoLowerCaseEqualsASCII(str, lowercase_ascii);
-}
-
-bool LowerCaseEqualsASCII(StringPiece16 str, StringPiece lowercase_ascii) {
-  return internal::DoLowerCaseEqualsASCII(str, lowercase_ascii);
-}
-
 bool EqualsASCII(StringPiece16 str, StringPiece ascii) {
   return std::equal(ascii.begin(), ascii.end(), str.begin(), str.end());
 }
@@ -311,24 +282,12 @@ bool EndsWith(StringPiece16 str,
   return internal::EndsWithT(str, search_for, case_sensitivity);
 }
 
-char HexDigitToInt(wchar_t c) {
+char HexDigitToInt(char c) {
   DCHECK(IsHexDigit(c));
   if (c >= '0' && c <= '9')
     return static_cast<char>(c - '0');
-  if (c >= 'A' && c <= 'F')
-    return static_cast<char>(c - 'A' + 10);
-  if (c >= 'a' && c <= 'f')
-    return static_cast<char>(c - 'a' + 10);
-  return 0;
-}
-
-bool IsUnicodeWhitespace(wchar_t c) {
-  // kWhitespaceWide is a NULL-terminated string
-  for (const wchar_t* cur = kWhitespaceWide; *cur; ++cur) {
-    if (*cur == c)
-      return true;
-  }
-  return false;
+  return (c >= 'A' && c <= 'F') ? static_cast<char>(c - 'A' + 10)
+                                : static_cast<char>(c - 'a' + 10);
 }
 
 static const char* const kByteStringsUnlocalized[] = {
@@ -345,17 +304,17 @@ std::u16string FormatBytesUnlocalized(int64_t bytes) {
   size_t dimension = 0;
   const int kKilo = 1024;
   while (unit_amount >= kKilo &&
-         dimension < base::size(kByteStringsUnlocalized) - 1) {
+         dimension < std::size(kByteStringsUnlocalized) - 1) {
     unit_amount /= kKilo;
     dimension++;
   }
 
   char buf[64];
   if (bytes != 0 && dimension > 0 && unit_amount < 100) {
-    base::snprintf(buf, base::size(buf), "%.1lf%s", unit_amount,
+    base::snprintf(buf, std::size(buf), "%.1lf%s", unit_amount,
                    kByteStringsUnlocalized[dimension]);
   } else {
-    base::snprintf(buf, base::size(buf), "%.0lf%s", unit_amount,
+    base::snprintf(buf, std::size(buf), "%.0lf%s", unit_amount,
                    kByteStringsUnlocalized[dimension]);
   }
 

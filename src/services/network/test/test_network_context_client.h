@@ -41,7 +41,7 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
   void OnCanSendDomainReliabilityUpload(
       const GURL& origin,
       OnCanSendDomainReliabilityUploadCallback callback) override {}
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void OnGenerateHttpNegotiateAuthToken(
       const std::string& server_auth_token,
       bool can_delegate,
@@ -49,10 +49,13 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override {}
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void OnTrustAnchorUsed() override {}
 #endif
 #if BUILDFLAG(IS_CT_SUPPORTED)
+  void OnCanSendSCTAuditingReport(
+      OnCanSendSCTAuditingReportCallback callback) override;
+  void OnNewSCTAuditingReportSent() override {}
 #endif
   void OnTrustTokenIssuanceDivertedToSystem(
       mojom::FulfillTrustTokenIssuanceRequestPtr request,

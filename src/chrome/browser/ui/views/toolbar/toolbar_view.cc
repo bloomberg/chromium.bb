@@ -19,7 +19,9 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -35,11 +37,13 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+#include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
@@ -48,11 +52,13 @@
 #include "chrome/browser/ui/views/frame/top_container_background.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_contextual_menu.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_toolbar_icon_view.h"
+#include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/back_forward_button.h"
@@ -75,7 +81,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
-#include "components/reading_list/features/reading_list_switches.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/strings/grit/components_strings.h"
@@ -103,16 +109,15 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #include "chrome/browser/recovery/recovery_install_global_error_factory.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/dialogs/outdated_upgrade_bubble.h"
 #endif
@@ -124,10 +129,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/window_occlusion_tracker.h"
 #endif
-
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
-#include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -263,11 +264,15 @@ void ToolbarView::Init() {
         browser_view_, MediaToolbarButtonContextualMenu::Create(browser_));
   }
 
+  std::unique_ptr<DownloadToolbarButtonView> download_button;
+  if (download::IsDownloadBubbleEnabled(browser_->profile())) {
+    download_button =
+        std::make_unique<DownloadToolbarButtonView>(browser_view_);
+  }
+
   std::unique_ptr<send_tab_to_self::SendTabToSelfToolbarIconView>
       send_tab_to_self_button;
-  if ((base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2) ||
-       share::AreUpcomingSharingFeaturesEnabled()) &&
-      !browser_->profile()->IsOffTheRecord()) {
+  if (!browser_->profile()->IsOffTheRecord()) {
     send_tab_to_self_button =
         std::make_unique<send_tab_to_self::SendTabToSelfToolbarIconView>(
             browser_view_);
@@ -293,8 +298,7 @@ void ToolbarView::Init() {
   }
 
   std::unique_ptr<SidePanelToolbarButton> side_panel_button;
-  if (browser_view_->right_aligned_side_panel() &&
-      reading_list::switches::IsReadingListEnabled()) {
+  if (browser_view_->right_aligned_side_panel()) {
     side_panel_button = std::make_unique<SidePanelToolbarButton>(browser_);
   }
 
@@ -304,14 +308,13 @@ void ToolbarView::Init() {
   reload_ = AddChildView(std::move(reload));
   home_ = AddChildView(std::move(home));
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
   // The side search button (if enabled) should sit between the location bar and
   // the other navigation buttons.
-  if (browser_view_->side_search_controller()) {
+  if (browser_view_->side_search_controller() &&
+      !side_search::IsDSESupportEnabled(browser_->profile())) {
     left_side_panel_button_ = AddChildView(
         browser_view_->side_search_controller()->CreateToolbarButton());
   }
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   location_bar_ = AddChildView(std::move(location_bar));
 
@@ -345,6 +348,9 @@ void ToolbarView::Init() {
   if (media_button)
     media_button_ = AddChildView(std::move(media_button));
 
+  if (download_button)
+    download_button_ = AddChildView(std::move(download_button));
+
   if (send_tab_to_self_button)
     send_tab_to_self_button_ = AddChildView(std::move(send_tab_to_self_button));
 
@@ -375,12 +381,9 @@ void ToolbarView::Init() {
   LoadImages();
 
   // Start global error services now so we set the icon on the menu correctly.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  SigninGlobalErrorFactory::GetForProfile(browser_->profile());
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   RecoveryInstallGlobalErrorFactory::GetForProfile(browser_->profile());
-#endif
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   // Set the button icon based on the system state. Do this after
   // |app_menu_button_| has been added as a bubble may be shown that needs
@@ -489,19 +492,28 @@ void ToolbarView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
     bool show_stay_in_chrome,
     bool show_remember_selection,
-    PageActionIconType icon_type,
+    IntentPickerBubbleView::BubbleType bubble_type,
     const absl::optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
-  PageActionIconView* const intent_picker_view =
-      GetPageActionIconView(icon_type);
-  if (!intent_picker_view)
+  views::Button* highlighted_button = nullptr;
+  if (bubble_type == IntentPickerBubbleView::BubbleType::kClickToCall) {
+    highlighted_button =
+
+        GetPageActionIconView(PageActionIconType::kClickToCall);
+  } else if (apps::features::LinkCapturingUiUpdateEnabled()) {
+    highlighted_button = GetIntentChipButton();
+  } else {
+    highlighted_button =
+        GetPageActionIconView(PageActionIconType::kIntentPicker);
+  }
+
+  if (!highlighted_button)
     return;
 
   IntentPickerBubbleView::ShowBubble(
-      location_bar(), intent_picker_view, icon_type, GetWebContents(),
+      location_bar(), highlighted_button, bubble_type, GetWebContents(),
       std::move(app_info), show_stay_in_chrome, show_remember_selection,
       initiating_origin, std::move(callback));
-  intent_picker_view->Update();
 }
 
 void ToolbarView::ShowBookmarkBubble(
@@ -513,12 +525,12 @@ void ToolbarView::ShowBookmarkBubble(
       GetPageActionIconView(PageActionIconType::kBookmarkStar);
 
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // BookmarkBubbleSignInDelegate requires DICE.
-  delegate = std::make_unique<BookmarkBubbleSignInDelegate>(browser_);
+  Profile* profile = browser_->profile();
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  delegate = std::make_unique<BookmarkBubbleSignInDelegate>(profile);
 #endif
   BookmarkBubbleView::ShowBubble(anchor_view, bookmark_star_icon, observer,
-                                 std::move(delegate), browser_->profile(), url,
+                                 std::move(delegate), profile, url,
                                  already_bookmarked);
 }
 
@@ -724,11 +736,11 @@ void ToolbarView::InitLayout() {
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCollapseMargins(true)
-      .SetDefault(views::kMarginsKey, gfx::Insets(0, default_margin));
+      .SetDefault(views::kMarginsKey, gfx::Insets::VH(0, default_margin));
 
   location_bar_->SetProperty(views::kFlexBehaviorKey, location_bar_flex_rule);
   location_bar_->SetProperty(views::kMarginsKey,
-                             gfx::Insets(0, location_bar_margin));
+                             gfx::Insets::VH(0, location_bar_margin));
 
   if (extensions_container_) {
     const views::FlexSpecification extensions_flex_rule =
@@ -753,7 +765,9 @@ void ToolbarView::LayoutCommon() {
   DCHECK(display_mode_ == DisplayMode::NORMAL);
 
   const gfx::Insets interior_margin =
-      GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN);
+      GetLayoutInsets(browser_view_->webui_tab_strip()
+                          ? LayoutInset::WEBUI_TAB_STRIP_TOOLBAR_INTERIOR_MARGIN
+                          : LayoutInset::TOOLBAR_INTERIOR_MARGIN);
   layout_manager_->SetInteriorMargin(interior_margin);
 
   // Extend buttons to the window edge if we're either in a maximized or
@@ -903,9 +917,18 @@ ReloadButton* ToolbarView::GetReloadButton() {
   return reload_;
 }
 
+IntentChipButton* ToolbarView::GetIntentChipButton() {
+  return location_bar()->intent_chip();
+}
+
 BrowserRootView::DropIndex ToolbarView::GetDropIndex(
     const ui::DropTargetEvent& event) {
   return {browser_->tab_strip_model()->active_index(), false};
+}
+
+BrowserRootView::DropTarget* ToolbarView::GetDropTarget(
+    gfx::Point loc_in_local_coords) {
+  return HitTestPoint(loc_in_local_coords) ? this : nullptr;
 }
 
 views::View* ToolbarView::GetViewForDrop() {
@@ -931,7 +954,7 @@ void ToolbarView::LoadImages() {
 }
 
 void ToolbarView::ShowCriticalNotification() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   views::BubbleDialogDelegateView::CreateBubble(
       new CriticalNotificationBubbleView(app_menu_button_))
       ->Show();
@@ -959,9 +982,9 @@ void ToolbarView::OnTouchUiChanged() {
     const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
     layout_manager_->SetDefault(views::kMarginsKey,
-                                gfx::Insets(0, default_margin));
+                                gfx::Insets::VH(0, default_margin));
     location_bar_->SetProperty(views::kMarginsKey,
-                               gfx::Insets(0, location_bar_margin));
+                               gfx::Insets::VH(0, location_bar_margin));
 
     LoadImages();
     PreferredSizeChanged();

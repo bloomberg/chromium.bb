@@ -9,13 +9,13 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/google/core/common/google_util.h"
-#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -34,7 +34,7 @@ const char kDataFormat[] = "key=%s&urls=%s";
 
 // Builds the POST data for SafeSearch API requests.
 std::string BuildRequestData(const std::string& api_key, const GURL& url) {
-  std::string query = net::EscapeQueryParamValue(url.spec(), true);
+  std::string query = base::EscapeQueryParamValue(url.spec(), true);
   return base::StringPrintf(kDataFormat, api_key.c_str(), query.c_str());
 }
 
@@ -52,11 +52,12 @@ bool ParseResponse(const std::string& response, bool* is_porn) {
     DLOG(WARNING) << "ParseResponse failed to parse classifications list";
     return false;
   }
-  if (classifications_list->GetList().size() != 1) {
+  if (classifications_list->GetListDeprecated().size() != 1) {
     DLOG(WARNING) << "ParseResponse expected exactly one result";
     return false;
   }
-  const base::Value& classification_value = classifications_list->GetList()[0];
+  const base::Value& classification_value =
+      classifications_list->GetListDeprecated()[0];
   if (!classification_value.is_dict()) {
     DLOG(WARNING) << "ParseResponse failed to parse classification dict";
     return false;

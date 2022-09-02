@@ -27,7 +27,7 @@ const VideoEncoder::Capabilities kCapabilities(false);
 // An encoder factory with a single underlying VideoEncoder object,
 // intended for test purposes. Each call to CreateVideoEncoder returns
 // a proxy for the same encoder, typically an instance of FakeEncoder.
-class VideoEncoderProxyFactory final : public VideoEncoderFactory {
+class VideoEncoderProxyFactory : public VideoEncoderFactory {
  public:
   explicit VideoEncoderProxyFactory(VideoEncoder* encoder)
       : VideoEncoderProxyFactory(encoder, nullptr) {}
@@ -68,7 +68,7 @@ class VideoEncoderProxyFactory final : public VideoEncoderFactory {
     return max_num_simultaneous_encoder_instances_;
   }
 
- private:
+ protected:
   void OnDestroyVideoEncoder() {
     RTC_CHECK_GT(num_simultaneous_encoder_instances_, 0);
     --num_simultaneous_encoder_instances_;
@@ -130,6 +130,11 @@ class VideoEncoderProxyFactory final : public VideoEncoderFactory {
     absl::optional<SdpVideoFormat> OnAvailableBitrate(
         const DataRate& rate) override {
       return encoder_selector_->OnAvailableBitrate(rate);
+    }
+
+    absl::optional<SdpVideoFormat> OnResolutionChange(
+        const RenderResolution& resolution) override {
+      return encoder_selector_->OnResolutionChange(resolution);
     }
 
     absl::optional<SdpVideoFormat> OnEncoderBroken() override {

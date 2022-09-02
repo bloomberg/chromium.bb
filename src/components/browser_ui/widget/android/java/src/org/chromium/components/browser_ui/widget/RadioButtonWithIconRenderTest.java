@@ -24,7 +24,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.browser_ui.widget.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.RenderTestRule;
 
@@ -35,7 +35,7 @@ import java.util.List;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(BaseJUnit4RunnerDelegate.class)
-public class RadioButtonWithIconRenderTest extends DummyUiActivityTestCase {
+public class RadioButtonWithIconRenderTest extends BlankUiTestActivityTestCase {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
             new NightModeTestUtils.NightModeParams().getParameters();
@@ -45,10 +45,12 @@ public class RadioButtonWithIconRenderTest extends DummyUiActivityTestCase {
             "Test rendering of the icon in a disabled state.";
 
     @Rule
-    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus()
-                                                    .setRevision(REVISION)
-                                                    .setDescription(REVISION_DESCRIPTION)
-                                                    .build();
+    public RenderTestRule mRenderTestRule =
+            RenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(REVISION)
+                    .setDescription(REVISION_DESCRIPTION)
+                    .setBugComponent(RenderTestRule.Component.UI_BROWSER_MOBILE)
+                    .build();
 
     private RadioButtonWithDescriptionLayout mLayout;
 
@@ -61,7 +63,7 @@ public class RadioButtonWithIconRenderTest extends DummyUiActivityTestCase {
 
     public RadioButtonWithIconRenderTest(boolean nightModeEnabled) {
         mFakeBgColor = nightModeEnabled ? Color.BLACK : Color.WHITE;
-        NightModeTestUtils.setUpNightModeForDummyUiActivity(nightModeEnabled);
+        NightModeTestUtils.setUpNightModeForBlankUiTestActivity(nightModeEnabled);
         mRenderTestRule.setNightModeEnabled(nightModeEnabled);
     }
 

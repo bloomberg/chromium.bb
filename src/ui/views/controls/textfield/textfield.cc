@@ -59,7 +59,6 @@
 #include "ui/views/controls/views_text_services_context_menu.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/views_delegate.h"
@@ -67,13 +66,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/win_util.h"
 #endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
@@ -83,7 +82,7 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "ui/base/cocoa/defaults_utils.h"
 #include "ui/base/cocoa/secure_password_input.h"
 #endif
@@ -166,7 +165,7 @@ bool IsControlKeyModifier(int flags) {
 // Control-modified key combination, but we cannot extend it to other platforms
 // as Control has different meanings and behaviors.
 // https://crrev.com/2580483002/#msg46
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   return flags & ui::EF_CONTROL_DOWN;
 #else
   return false;
@@ -190,20 +189,28 @@ bool CanUseTransparentBackgroundForDragImage() {
 #endif
 }
 
+#if BUILDFLAG(IS_MAC)
+const float kAlmostTransparent = 1.0 / 255.0;
+const float kOpaque = 1.0;
+#endif
+
 }  // namespace
 
 // static
 base::TimeDelta Textfield::GetCaretBlinkInterval() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   static const size_t system_value = ::GetCaretBlinkTime();
   if (system_value != 0) {
     return (system_value == INFINITE) ? base::TimeDelta()
                                       : base::Milliseconds(system_value);
   }
-#elif defined(OS_MAC)
-  base::TimeDelta system_value;
-  if (ui::TextInsertionCaretBlinkPeriod(&system_value))
-    return system_value;
+#elif BUILDFLAG(IS_MAC)
+  // If there's insertion point flash rate info in NSUserDefaults, use the
+  // blink period derived from that.
+  absl::optional<base::TimeDelta> system_value(
+      ui::TextInsertionCaretBlinkPeriodFromDefaults());
+  if (system_value)
+    return *system_value;
 #endif
   return base::Milliseconds(500);
 }
@@ -230,7 +237,7 @@ Textfield::Textfield()
 
   FocusRing::Install(this);
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // Do not map accelerators on Mac. E.g. They might not reflect custom
   // keybindings that a user has set. But also on Mac, these commands dispatch
   // via the "responder chain" when the OS searches through menu items in the
@@ -305,7 +312,6 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
   text_input_type_ = type;
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
-  UpdateCursorViewPosition();
   OnCaretBoundsChanged();
   OnPropertyChanged(&text_input_type_, kPropertyEffectsPaint);
 }
@@ -485,7 +491,7 @@ void Textfield::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
 void Textfield::ShowVirtualKeyboardIfEnabled() {
   // GetInputMethod() may return nullptr in tests.
   if (GetEnabled() && !GetReadOnly() && GetInputMethod())
-    GetInputMethod()->ShowVirtualKeyboardIfEnabled();
+    GetInputMethod()->SetVirtualKeyboardVisibilityIfEnabled(true);
 }
 
 bool Textfield::IsIMEComposing() const {
@@ -597,7 +603,7 @@ void Textfield::FitToLocalBounds() {
   } else {
     // The text will draw with the correct vertical alignment if we don't apply
     // the vertical insets.
-    bounds.Inset(insets.left(), 0, insets.right(), 0);
+    bounds.Inset(gfx::Insets::TLBR(0, insets.left(), 0, insets.right()));
   }
 
   bounds.set_x(GetMirroredXForRect(bounds));
@@ -633,13 +639,13 @@ void Textfield::SetBorder(std::unique_ptr<Border> b) {
   View::SetBorder(std::move(b));
 }
 
-gfx::NativeCursor Textfield::GetCursor(const ui::MouseEvent& event) {
+ui::Cursor Textfield::GetCursor(const ui::MouseEvent& event) {
   bool platform_arrow = PlatformStyle::kTextfieldUsesDragCursorWhenDraggable;
   bool in_selection = GetRenderText()->IsPointInSelection(event.location());
   bool drag_event = event.type() == ui::ET_MOUSE_DRAGGED;
   bool text_cursor =
       !initiating_drag_ && (drag_event || !in_selection || !platform_arrow);
-  return text_cursor ? GetNativeIBeamCursor() : gfx::kNullCursor;
+  return text_cursor ? ui::mojom::CursorType::kIBeam : ui::Cursor();
 }
 
 bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
@@ -655,7 +661,7 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton())) {
     if (!had_focus)
       RequestFocusWithPointer(ui::EventPointerType::kMouse);
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     ShowVirtualKeyboardIfEnabled();
 #endif
   }
@@ -713,7 +719,7 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   ui::TextEditKeyBindingsDelegateAuraLinux* delegate =
       ui::GetTextEditKeyBindingsDelegate();
   std::vector<ui::TextEditCommandAuraLinux> commands;
@@ -859,7 +865,7 @@ void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
 bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Skip any accelerator handling that conflicts with custom keybindings.
   ui::TextEditKeyBindingsDelegateAuraLinux* delegate =
       ui::GetTextEditKeyBindingsDelegate();
@@ -930,13 +936,6 @@ void Textfield::OnDragExited() {
   SchedulePaint();
 }
 
-DragOperation Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
-  auto cb = Textfield::GetDropCallback(event);
-  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(cb).Run(event, output_drag_op);
-  return output_drag_op;
-}
-
 views::View::DropCallback Textfield::GetDropCallback(
     const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
@@ -965,6 +964,8 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTextField;
 
   node_data->SetName(accessible_name_);
+  node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
+
   // Editable state indicates support of editable interface, and is always set
   // for a textfield, even if disabled or readonly.
   node_data->AddState(ax::mojom::State::kEditable);
@@ -1038,11 +1039,11 @@ void Textfield::OnFocus() {
   if (focus_reason_ == ui::TextInputClient::FOCUS_REASON_NONE)
     focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
     password_input_enabler_ =
         std::make_unique<ui::ScopedPasswordInputEnabler>();
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
   GetRenderText()->set_focused(true);
   if (GetInputMethod())
@@ -1072,9 +1073,9 @@ void Textfield::OnBlur() {
   SchedulePaint();
   View::OnBlur();
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   password_input_enabler_.reset();
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 gfx::Point Textfield::GetKeyboardContextMenuLocation() {
@@ -1457,6 +1458,10 @@ bool Textfield::CanComposeInline() const {
   return true;
 }
 
+// TODO(mbid): GetCaretBounds is const but calls
+// RenderText::GetUpdatedCursorBounds, which is not const and in fact mutates
+// internal state. (Is it at least logically const?) Violation of const
+// correctness?
 gfx::Rect Textfield::GetCaretBounds() const {
   gfx::Rect rect = GetRenderText()->GetUpdatedCursorBounds();
   ConvertRectToScreen(this, &rect);
@@ -1687,7 +1692,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
     case ui::TextEditCommand::SCROLL_PAGE_UP:
 // On Mac, the textfield should respond to Up/Down arrows keys and
 // PageUp/PageDown.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       return true;
 #else
       return GetRenderText()->multiline();
@@ -1722,7 +1727,7 @@ bool Textfield::ShouldDoLearning() {
   return false;
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // TODO(https://crbug.com/952355): Implement this method to support Korean IME
 // reconversion feature on native text fields (e.g. find bar).
 bool Textfield::SetCompositionFromExistingText(
@@ -1738,7 +1743,7 @@ bool Textfield::SetCompositionFromExistingText(
 }
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 gfx::Range Textfield::GetAutocorrectRange() const {
   return model_->autocorrect_range();
 }
@@ -1779,7 +1784,7 @@ bool Textfield::SetAutocorrectRange(const gfx::Range& range) {
 }
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
 void Textfield::GetActiveTextInputControlLayoutBounds(
     absl::optional<gfx::Rect>* control_bounds,
     absl::optional<gfx::Rect>* selection_bounds) {
@@ -1789,7 +1794,7 @@ void Textfield::GetActiveTextInputControlLayoutBounds(
 }
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // TODO(https://crbug.com/952355): Implement this method once TSF supports
 // reconversion features on native text fields.
 void Textfield::SetActiveCompositionForAccessibility(
@@ -1838,8 +1843,7 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   OnBeforeUserAction();
 
   gfx::SelectionModel selection_model = GetSelectionModel();
-  bool text_changed, cursor_changed;
-  std::tie(text_changed, cursor_changed) = DoExecuteTextEditCommand(command);
+  auto [text_changed, cursor_changed] = DoExecuteTextEditCommand(command);
 
   cursor_changed |= (GetSelectionModel() != selection_model);
   if (cursor_changed && HasSelection())
@@ -1866,7 +1870,7 @@ Textfield::EditCommandResult Textfield::DoExecuteTextEditCommand(
     case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
     case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
       add_to_kill_buffer = text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD;
-      FALLTHROUGH;
+      [[fallthrough]];
     case ui::TextEditCommand::DELETE_WORD_BACKWARD:
     case ui::TextEditCommand::DELETE_WORD_FORWARD:
       if (HasSelection())
@@ -2092,7 +2096,7 @@ void Textfield::RequestFocusWithPointer(ui::EventPointerType pointer_type) {
 
 void Textfield::RequestFocusForGesture(const ui::GestureEventDetails& details) {
   bool show_virtual_keyboard = true;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   show_virtual_keyboard =
       details.primary_pointer_type() == ui::EventPointerType::kTouch ||
       details.primary_pointer_type() == ui::EventPointerType::kPen;
@@ -2119,7 +2123,7 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
     return ui::TextEditCommand::INVALID_COMMAND;
 
   const bool shift = event.IsShiftDown();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   const bool command = event.IsCommandDown();
 #endif
   const bool control = event.IsControlDown() || event.IsCommandDown();
@@ -2170,7 +2174,7 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
         return ui::TextEditCommand::
             MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION;
       }
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       return ui::TextEditCommand::SCROLL_TO_BEGINNING_OF_DOCUMENT;
 #else
       return ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE;
@@ -2178,13 +2182,13 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
     case ui::VKEY_END:
       if (shift)
         return ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       return ui::TextEditCommand::SCROLL_TO_END_OF_DOCUMENT;
 #else
       return ui::TextEditCommand::MOVE_TO_END_OF_LINE;
 #endif
     case ui::VKEY_UP:
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       if (control && shift) {
         return ui::TextEditCommand::
             MOVE_PARAGRAPH_BACKWARD_AND_MODIFY_SELECTION;
@@ -2200,7 +2204,7 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
                    : ui::TextEditCommand::INVALID_COMMAND;
 #endif
     case ui::VKEY_DOWN:
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       if (control && shift) {
         return ui::TextEditCommand::MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION;
       }
@@ -2216,20 +2220,20 @@ ui::TextEditCommand Textfield::GetCommandForKeyEvent(
 #endif
     case ui::VKEY_BACK:
       if (!control) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
         if (alt)
           return shift ? ui::TextEditCommand::REDO : ui::TextEditCommand::UNDO;
 #endif
         return ui::TextEditCommand::DELETE_BACKWARD;
       }
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
       // Only erase by line break on Linux and ChromeOS.
       if (shift)
         return ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE;
 #endif
       return ui::TextEditCommand::DELETE_WORD_BACKWARD;
     case ui::VKEY_DELETE:
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
       // Only erase by line break on Linux and ChromeOS.
       if (shift && control)
         return ui::TextEditCommand::DELETE_TO_END_OF_LINE;
@@ -2346,7 +2350,7 @@ void Textfield::UpdateBackgroundColor() {
 void Textfield::UpdateBorder() {
   auto border = std::make_unique<views::FocusableBorder>();
   const LayoutProvider* provider = LayoutProvider::Get();
-  border->SetInsets(
+  border->SetInsets(gfx::Insets::TLBR(
       extra_insets_.top() +
           provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
       extra_insets_.left() + provider->GetDistanceMetric(
@@ -2354,7 +2358,7 @@ void Textfield::UpdateBorder() {
       extra_insets_.bottom() +
           provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
       extra_insets_.right() + provider->GetDistanceMetric(
-                                  DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
+                                  DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
   if (invalid_)
     border->SetColorId(ui::kColorAlertHighSeverity);
   View::SetBorder(std::move(border));
@@ -2396,19 +2400,29 @@ void Textfield::UpdateAfterChange(
 
 void Textfield::UpdateCursorVisibility() {
   cursor_view_->SetVisible(ShouldShowCursor());
+#if BUILDFLAG(IS_MAC)
+  // If we called SetVisible(true) above we want the cursor layer to be opaque.
+  // If we called SetVisible(false), making the layer opaque has no effect on
+  // its visibility.
+  cursor_view_->layer()->SetOpacity(kOpaque);
+#endif
   if (ShouldBlinkCursor())
     StartBlinkingCursor();
   else
     StopBlinkingCursor();
 }
 
-void Textfield::UpdateCursorViewPosition() {
+gfx::Rect Textfield::CalculateCursorViewBounds() const {
   gfx::Rect location(GetRenderText()->GetUpdatedCursorBounds());
   location.set_x(GetMirroredXForRect(location));
   location.set_height(
       std::min(location.height(),
                GetLocalBounds().height() - location.y() - location.y()));
-  cursor_view_->SetBoundsRect(location);
+  return location;
+}
+
+void Textfield::UpdateCursorViewPosition() {
+  cursor_view_->SetBoundsRect(CalculateCursorViewBounds());
 }
 
 int Textfield::GetTextStyle() const {
@@ -2466,6 +2480,8 @@ void Textfield::OnCaretBoundsChanged() {
   // Screen reader users don't expect notifications about unfocused textfields.
   if (HasFocus())
     NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
+
+  UpdateCursorViewPosition();
 }
 
 void Textfield::OnBeforeUserAction() {
@@ -2540,12 +2556,6 @@ void Textfield::UpdateContextMenu() {
       MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU);
 }
 
-void Textfield::InvalidateContextMenu() {
-  // Ensure that the Runner doesn't outlive the Model.
-  context_menu_runner_.reset();
-  context_menu_contents_.reset();
-}
-
 bool Textfield::ImeEditingAllowed() const {
   // Disallow input method editing of password fields.
   ui::TextInputType t = GetTextInputType();
@@ -2556,6 +2566,7 @@ void Textfield::RevealPasswordChar(int index, base::TimeDelta duration) {
   GetRenderText()->SetObscuredRevealIndex(index);
   SchedulePaint();
   password_char_reveal_index_ = index;
+  UpdateCursorViewPosition();
 
   if (index != -1) {
     password_reveal_timer_.Start(
@@ -2614,8 +2625,35 @@ void Textfield::StopBlinkingCursor() {
 
 void Textfield::OnCursorBlinkTimerFired() {
   DCHECK(ShouldBlinkCursor());
+  // TODO(crbug.com/1294712): The cursor position is not updated appropriately
+  // when locale changes from a left-to-right script to a right-to-left script.
+  // Thus the cursor is displayed at a wrong position immediately after the
+  // locale change. As a band-aid solution, we update the cursor here, so that
+  // the cursor can be at the wrong position only up until the next blink. It
+  // would be better to detect locale change explicitly (how?) and update
+  // there.
   UpdateCursorViewPosition();
+
+#if BUILDFLAG(IS_MAC)
+  // https://crbug.com/1311416 . The cursor is a solid color Layer which we make
+  // flash by toggling the Layer's visibility. A bug in the CARendererLayerTree
+  // causes all Layers that come after the cursor in the Layer tree (the
+  // bookmarks bar, for example) to be pushed to the screen with each
+  // appearance and disappearance of the cursor, consuming unnecessary CPU in
+  // the window server. The same also happens if we leave the cursor visible
+  // but make its color or layer 100% transparent (there's an optimization
+  // somewhere that removes completely transparent layers from the hierarchy).
+  // Until this bug is fixed, flash the cursor by alternating the cursor
+  // layer's opacity between opaque and "almost" transparent. Once
+  // https://crbug.com/1313999 is fixed, this Mac-specific code and its tests
+  // can be removed.
+  float new_opacity = cursor_view_->layer()->opacity() != kOpaque
+                          ? kOpaque
+                          : kAlmostTransparent;
+  cursor_view_->layer()->SetOpacity(new_opacity);
+#else
   cursor_view_->SetVisible(!cursor_view_->GetVisible());
+#endif
 }
 
 void Textfield::OnEnabledChanged() {

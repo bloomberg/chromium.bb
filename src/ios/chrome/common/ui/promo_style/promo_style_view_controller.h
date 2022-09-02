@@ -11,10 +11,10 @@
 
 // A base view controller for the common UI controls in the new Promo
 // Style screens.
-@interface PromoStyleViewController : UIViewController
+@interface PromoStyleViewController : UIViewController <UITextViewDelegate>
 
-// The banner image. Must be set before the view is loaded.
-@property(nonatomic, strong) UIImage* bannerImage;
+// The name of the banner image. Must be set before the view is loaded.
+@property(nonatomic, strong) NSString* bannerName;
 
 // When set to YES, the banner will be tall (35% of view height). When set to
 // NO, the banner will be of normal height (25% of view height). Defaults to NO.
@@ -30,15 +30,18 @@
 // The subtitle below the title. Must be set before the view is loaded.
 @property(nonatomic, copy) NSString* subtitleText;
 
+// The disclaimer that shows at the bottom of the view, above the action items.
+// The disclaimer does not move on scroll.
+@property(nonatomic, copy) NSString* disclaimerText;
+
+// URLs for links in disclaimer text, in order of appearance. If this property
+// is set, the delegate method `didTapURLInDisclaimer:(NSURL*)` must be
+// implemented.
+@property(nonatomic, copy) NSArray<NSURL*>* disclaimerURLs;
+
 // The container view for the screen-specific content. Derived view controllers
 // should add their UI elements to it.
 @property(nonatomic, strong) UIView* specificContentView;
-
-// The container view for the specific content at the top of the screen that
-// sits between the title and the subtitle. The view is lazily instantiated and
-// added to the view tree when read for the first time. Derived view
-// controllers can add their UI elements to it.
-@property(nonatomic, strong, readonly) UIView* topSpecificContentView;
 
 // The text for the primary action. Must be set before the view is loaded.
 @property(nonatomic, copy) NSString* primaryActionString;
@@ -71,6 +74,10 @@
 
 // The help button item in the top left of the view. Nil if not available.
 @property(nonatomic, readonly) UIButton* learnMoreButton;
+
+// Whether the bottom of the view controller is reached. This value will always
+// be YES when `self.scrollToEndMandatory` is NO.
+@property(nonatomic, assign, readonly) BOOL didReachBottom;
 
 @end
 

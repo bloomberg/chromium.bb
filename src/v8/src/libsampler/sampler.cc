@@ -19,7 +19,7 @@
 #include <sys/syscall.h>
 #endif
 
-#if V8_OS_MACOSX
+#if V8_OS_DARWIN
 #include <mach/mach.h>
 // OpenBSD doesn't have <ucontext.h>. ucontext_t lives in <signal.h>
 // and is a typedef for struct sigcontext. There is no uc_mcontext.
@@ -310,19 +310,22 @@ class Sampler::PlatformData {
 class SignalHandler {
  public:
   static void IncreaseSamplerCount() {
-    base::MutexGuard lock_guard(mutex_.Pointer());
+    base::RecursiveMutexGuard lock_guard(mutex_.Pointer());
     if (++client_count_ == 1) Install();
   }
 
   static void DecreaseSamplerCount() {
-    base::MutexGuard lock_guard(mutex_.Pointer());
+    base::RecursiveMutexGuard lock_guard(mutex_.Pointer());
     if (--client_count_ == 0) Restore();
   }
 
   static bool Installed() {
-    base::MutexGuard lock_guard(mutex_.Pointer());
+    // mutex_ will also be used in Sampler::DoSample to guard the state below.
+    base::RecursiveMutexGuard lock_guard(mutex_.Pointer());
     return signal_handler_installed_;
   }
+
+  static v8::base::RecursiveMutex* mutex() { return mutex_.Pointer(); }
 
  private:
   static void Install() {
@@ -349,13 +352,15 @@ class SignalHandler {
   static void HandleProfilerSignal(int signal, siginfo_t* info, void* context);
 
   // Protects the process wide state below.
-  static base::LazyMutex mutex_;
+  static base::LazyRecursiveMutex mutex_;
   static int client_count_;
   static bool signal_handler_installed_;
   static struct sigaction old_signal_handler_;
 };
 
-base::LazyMutex SignalHandler::mutex_ = LAZY_MUTEX_INITIALIZER;
+base::LazyRecursiveMutex SignalHandler::mutex_ =
+    LAZY_RECURSIVE_MUTEX_INITIALIZER;
+
 int SignalHandler::client_count_ = 0;
 struct sigaction SignalHandler::old_signal_handler_;
 bool SignalHandler::signal_handler_installed_ = false;
@@ -467,7 +472,7 @@ void SignalHandler::FillRegisterState(void* context, RegisterState* state) {
 #error Unexpected iOS target architecture.
 #endif  // V8_TARGET_ARCH_ARM64
 
-#elif V8_OS_MACOSX
+#elif V8_OS_DARWIN
 #if V8_HOST_ARCH_X64
   state->pc = reinterpret_cast<void*>(mcontext->__ss.__rip);
   state->sp = reinterpret_cast<void*>(mcontext->__ss.__rsp);
@@ -568,6 +573,7 @@ void Sampler::Stop() {
 #if defined(USE_SIGNALS)
 
 void Sampler::DoSample() {
+  base::RecursiveMutexGuard lock_guard(SignalHandler::mutex());
   if (!SignalHandler::Installed()) return;
   DCHECK(IsActive());
   SetShouldRecordSample();

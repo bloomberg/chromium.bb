@@ -50,3 +50,12 @@ NSString* const kSettingsClearBrowsingDataCellId =
     @"kSettingsClearBrowsingDataCellId";
 NSString* const kSettingsHandoffCellId = @"kSettingsHandoffCellId";
 NSString* const kSettingsCookiesCellId = @"kSettingsCookiesCellId";
+NSString* const kSettingsDefaultSiteModeCellId =
+    @"kSettingsDefaultSiteModeCellId";
+NSString* const kDefaultBrowserSettingsTableViewId =
+    @"kDefaultBrowserSettingsTableViewId";
+NSString* const kSettingsHttpsOnlyModeCellId = @"kSettingsHttpsOnlyModeCellId";
+NSString* const kSettingsIncognitoInterstitialId =
+    @"kSettingsIncognitoInterstitialId";
+NSString* const kSettingsIncognitoInterstitialDisabledId =
+    @"kSettingsIncognitoInterstitialDisabledId";

@@ -109,7 +109,7 @@ BOOL forceMagicMouse = NO;
 }
 
 - (BOOL)handleEvent:(NSEvent*)event {
-  if ([event type] != NSScrollWheel)
+  if ([event type] != NSEventTypeScrollWheel)
     return NO;
 
   return [self handleScrollWheelEvent:event];
@@ -117,7 +117,7 @@ BOOL forceMagicMouse = NO;
 
 - (void)rendererHandledWheelEvent:(const blink::WebMouseWheelEvent&)event
                          consumed:(BOOL)consumed {
-  if (event.phase != NSEventPhaseBegan)
+  if (event.phase != blink::WebMouseWheelEvent::kPhaseBegan)
     return;
   _firstScrollUnconsumed = !consumed;
 }

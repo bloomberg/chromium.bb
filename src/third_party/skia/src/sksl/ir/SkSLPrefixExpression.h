@@ -8,13 +8,17 @@
 #ifndef SKSL_PREFIXEXPRESSION
 #define SKSL_PREFIXEXPRESSION
 
-#include "src/sksl/SkSLLexer.h"
-#include "src/sksl/SkSLOperators.h"
+#include "include/sksl/SkSLOperator.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLExpression.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 namespace SkSL {
+
+class Context;
 
 /**
  * An expression modified by a unary operator appearing before it, such as '!flag'.
@@ -24,17 +28,17 @@ public:
     inline static constexpr Kind kExpressionKind = Kind::kPrefix;
 
     // Use PrefixExpression::Make to automatically simplify various prefix expression types.
-    PrefixExpression(Operator op, std::unique_ptr<Expression> operand)
-        : INHERITED(operand->fLine, kExpressionKind, &operand->type())
+    PrefixExpression(Position pos, Operator op, std::unique_ptr<Expression> operand)
+        : INHERITED(pos, kExpressionKind, &operand->type())
         , fOperator(op)
         , fOperand(std::move(operand)) {}
 
     // Creates an SkSL prefix expression; uses the ErrorReporter to report errors.
-    static std::unique_ptr<Expression> Convert(const Context& context, Operator op,
+    static std::unique_ptr<Expression> Convert(const Context& context, Position pos, Operator op,
                                                std::unique_ptr<Expression> base);
 
     // Creates an SkSL prefix expression; reports errors via ASSERT.
-    static std::unique_ptr<Expression> Make(const Context& context, Operator op,
+    static std::unique_ptr<Expression> Make(const Context& context, Position pos, Operator op,
                                             std::unique_ptr<Expression> base);
 
     Operator getOperator() const {
@@ -51,18 +55,19 @@ public:
 
     bool hasProperty(Property property) const override {
         if (property == Property::kSideEffects &&
-            (this->getOperator().kind() == Token::Kind::TK_PLUSPLUS ||
-             this->getOperator().kind() == Token::Kind::TK_MINUSMINUS)) {
+            (this->getOperator().kind() == Operator::Kind::PLUSPLUS ||
+             this->getOperator().kind() == Operator::Kind::MINUSMINUS)) {
             return true;
         }
         return this->operand()->hasProperty(property);
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::make_unique<PrefixExpression>(this->getOperator(), this->operand()->clone());
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::make_unique<PrefixExpression>(pos, this->getOperator(),
+                                                  this->operand()->clone());
     }
 
-    String description() const override {
+    std::string description() const override {
         return this->getOperator().operatorName() + this->operand()->description();
     }
 

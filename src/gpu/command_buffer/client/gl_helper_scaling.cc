@@ -37,8 +37,6 @@ namespace {
 const GLfloat kRGBtoGrayscaleColorWeights[4] = {0.213f, 0.715f, 0.072f, 0.0f};
 
 // Linear translation from RGB to YUV color space.
-// TODO(miu): This needs to stop being hardcoded...and need to identify to&from
-// color spaces.
 const GLfloat kRGBtoYColorWeights[4] = {0.257f, 0.504f, 0.098f, 0.0625f};
 const GLfloat kRGBtoUColorWeights[4] = {-0.148f, -0.291f, 0.439f, 0.5f};
 const GLfloat kRGBtoVColorWeights[4] = {0.439f, -0.368f, -0.071f, 0.5f};
@@ -365,7 +363,8 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     }
     // Because the texture sampler sometimes reads between pixels, an extra one
     // must be accounted for.
-    sampling_rect->Inset(-(overscan_x + 1.0f), -(overscan_y + 1.0f));
+    sampling_rect->Inset(
+        -gfx::InsetsF::VH(overscan_y + 1.0f, overscan_x + 1.0f));
   }
 
   // Returns the given |rect| in source coordinates.

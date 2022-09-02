@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/containers/span.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -55,7 +54,7 @@ namespace net {
 namespace {
 
 const char kBodyData[] = "Body data";
-const size_t kBodyDataSize = base::size(kBodyData);
+const size_t kBodyDataSize = std::size(kBodyData);
 const std::string kBodyDataString(kBodyData, kBodyDataSize);
 // Size of the buffer to be allocated for each read.
 const size_t kReadBufferSize = 4096;
@@ -105,16 +104,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
                    std::unique_ptr<base::OneShotTimer> timer)
       : read_buf_(read_buf),
         read_buf_len_(read_buf_len),
-        timer_(std::move(timer)),
-        loop_(nullptr),
-        received_bytes_(0),
-        sent_bytes_(0),
-        error_(OK),
-        on_data_read_count_(0),
-        on_data_sent_count_(0),
-        do_not_start_read_(false),
-        run_until_completion_(false),
-        not_expect_callback_(false) {}
+        timer_(std::move(timer)) {}
 
   TestDelegateBase(const TestDelegateBase&) = delete;
   TestDelegateBase& operator=(const TestDelegateBase&) = delete;
@@ -299,17 +289,17 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   spdy::Http2HeaderBlock response_headers_;
   spdy::Http2HeaderBlock trailers_;
   NextProto next_proto_;
-  int64_t received_bytes_;
-  int64_t sent_bytes_;
+  int64_t received_bytes_ = 0;
+  int64_t sent_bytes_ = 0;
   LoadTimingInfo load_timing_info_;
-  int error_;
-  int on_data_read_count_;
-  int on_data_sent_count_;
-  bool do_not_start_read_;
-  bool run_until_completion_;
+  int error_ = OK;
+  int on_data_read_count_ = 0;
+  int on_data_sent_count_ = 0;
+  bool do_not_start_read_ = false;
+  bool run_until_completion_ = false;
   // This is to ensure that delegate callback is not invoked synchronously when
   // calling into |stream_|.
-  bool not_expect_callback_;
+  bool not_expect_callback_ = false;
 
   CompletionOnceCallback callback_;
 };
@@ -1351,7 +1341,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamAfterSendData) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
   EXPECT_EQ(
-      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      CountWriteBytes(base::make_span(writes).first(std::size(writes) - 1)),
       delegate->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
@@ -1411,11 +1401,11 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringReadData) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
   EXPECT_EQ(
-      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      CountWriteBytes(base::make_span(writes).first(std::size(writes) - 1)),
       delegate->GetTotalSentBytes());
   // Response body frame isn't read becase stream is deleted once read returns
   // ERR_IO_PENDING.
-  EXPECT_EQ(CountReadBytes(base::make_span(reads).first(base::size(reads) - 2)),
+  EXPECT_EQ(CountReadBytes(base::make_span(reads).first(std::size(reads) - 2)),
             delegate->GetTotalReceivedBytes());
 }
 
@@ -1530,7 +1520,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnHeadersReceived) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
   EXPECT_EQ(
-      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      CountWriteBytes(base::make_span(writes).first(std::size(writes) - 1)),
       delegate->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
@@ -1585,7 +1575,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnDataRead) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
   EXPECT_EQ(
-      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      CountWriteBytes(base::make_span(writes).first(std::size(writes) - 1)),
       delegate->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
@@ -1645,7 +1635,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnTrailersReceived) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
   EXPECT_EQ(
-      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      CountWriteBytes(base::make_span(writes).first(std::size(writes) - 1)),
       delegate->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
@@ -1696,7 +1686,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnFailed) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
   EXPECT_EQ(
-      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      CountWriteBytes(base::make_span(writes).first(std::size(writes) - 1)),
       delegate->GetTotalSentBytes());
   EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
 }
@@ -1706,7 +1696,8 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
       spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  std::string alt_svc_header_value = NextProtoToString(kProtoQUIC);
+  std::string alt_svc_header_value =
+      quic::AlpnForVersion(DefaultSupportedQuicVersions().front());
   alt_svc_header_value.append("=\"www.example.org:443\"");
   const char* const kExtraResponseHeaders[] = {"alt-svc",
                                                alt_svc_header_value.c_str()};
@@ -1776,7 +1767,7 @@ TEST_F(BidirectionalStreamTest, Tagging) {
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause.
       CreateMockRead(response_body_frame, 4), MockRead(ASYNC, 0, 5),
   };
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SocketTag tag(0x12345678, 0x87654321);
 #else
   SocketTag tag;

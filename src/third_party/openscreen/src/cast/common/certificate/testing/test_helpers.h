@@ -11,8 +11,7 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "cast/common/certificate/cast_cert_validator_internal.h"
-#include "cast/common/certificate/types.h"
+#include "cast/common/public/certificate_types.h"
 
 namespace openscreen {
 namespace cast {

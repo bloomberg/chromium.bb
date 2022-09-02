@@ -179,29 +179,29 @@ void evalSolverSugarFunction( const POLYNOMIAL& pols, const ROOTS& roots, const 
 }
 
 
-template<typename Scalar_, int _Deg>
+template<typename Scalar_, int Deg_>
 void polynomialsolver(int deg)
 {
   typedef typename NumTraits<Scalar_>::Real RealScalar;
-  typedef internal::increment_if_fixed_size<_Deg>     Dim;
+  typedef internal::increment_if_fixed_size<Deg_>     Dim;
   typedef Matrix<Scalar_,Dim::ret,1>                  PolynomialType;
-  typedef Matrix<Scalar_,_Deg,1>                      EvalRootsType;
-  typedef Matrix<RealScalar,_Deg,1>                   RealRootsType;
+  typedef Matrix<Scalar_,Deg_,1>                      EvalRootsType;
+  typedef Matrix<RealScalar,Deg_,1>                   RealRootsType;
 
   cout << "Standard cases" << endl;
   PolynomialType pols = PolynomialType::Random(deg+1);
-  evalSolver<_Deg,PolynomialType>( pols );
+  evalSolver<Deg_,PolynomialType>( pols );
 
   cout << "Hard cases" << endl;
   Scalar_ multipleRoot = internal::random<Scalar_>();
   EvalRootsType allRoots = EvalRootsType::Constant(deg,multipleRoot);
   roots_to_monicPolynomial( allRoots, pols );
-  evalSolver<_Deg,PolynomialType>( pols );
+  evalSolver<Deg_,PolynomialType>( pols );
 
   cout << "Test sugar" << endl;
   RealRootsType realRoots = RealRootsType::Random(deg);
   roots_to_monicPolynomial( realRoots, pols );
-  evalSolverSugarFunction<_Deg>(
+  evalSolverSugarFunction<Deg_>(
       pols,
       realRoots.template cast <std::complex<RealScalar> >().eval(),
       realRoots );

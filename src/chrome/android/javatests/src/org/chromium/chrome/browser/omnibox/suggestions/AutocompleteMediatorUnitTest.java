@@ -35,23 +35,26 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.jank_tracker.DummyJankTracker;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteMediator.EditSessionState;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
@@ -59,6 +62,7 @@ import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -189,11 +193,27 @@ public class AutocompleteMediatorUnitTest {
     @Mock
     Profile mProfile;
 
+    @Mock
+    Tab mTab;
+
+    @Mock
+    TabModel mTabModel;
+
+    @Mock
+    TabWindowManager mTabManager;
+
+    @Mock
+    WindowAndroid mMockWindowAndroid;
+
+    @Mock
+    OmniboxPedalDelegate mPedalDelegate;
+
     private ImmediatePostingHandler mHandler;
     private PropertyModel mListModel;
     private AutocompleteMediator mMediator;
     private List<AutocompleteMatch> mSuggestionsList;
     private ModelList mSuggestionModels;
+    private ObservableSupplierImpl<TabWindowManager> mTabWindowManagerSupplier;
 
     @Before
     public void setUp() {
@@ -211,11 +231,13 @@ public class AutocompleteMediatorUnitTest {
             mListModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
             mListModel.set(SuggestionListProperties.SUGGESTION_MODELS, mSuggestionModels);
 
+            mTabWindowManagerSupplier = new ObservableSupplierImpl<>();
+
             mMediator = new AutocompleteMediator(ContextUtils.getApplicationContext(),
                     mAutocompleteDelegate, mTextStateProvider, mListModel,
                     mHandler, () -> mModalDialogManager, null, null,
-                    mLocationBarDataProvider, tab -> {}, null, url -> false, new DummyJankTracker(),
-                    (pixelSize, callback) -> {});
+                    mLocationBarDataProvider, tab -> {}, mTabWindowManagerSupplier, url -> false, new DummyJankTracker(),
+                    (pixelSize, callback) -> {}, mPedalDelegate);
             mMediator.setAutocompleteProfile(mProfile);
         });
         // clang-format on
@@ -241,6 +263,8 @@ public class AutocompleteMediatorUnitTest {
 
         mSuggestionsList = buildDummySuggestionsList(10, "Suggestion");
         doReturn(true).when(mAutocompleteDelegate).isKeyboardActive();
+        setUpLocationBarDataProvider(
+                "chrome-native://newtab", "New Tab Page", PageClassification.NTP_VALUE);
     }
 
     /**
@@ -296,30 +320,13 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
-    public void updateSuggestionsList_notEffectiveWhenDisabled() {
-        mMediator.onNativeInitialized();
-
-        final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 2;
-
-        mMediator.onSuggestionDropdownHeightChanged(maximumListHeight);
-        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(mSuggestionsList, null), "");
-
-        Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
-        Assert.assertTrue(mListModel.get(SuggestionListProperties.VISIBLE));
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void updateSuggestionsList_worksWithNullList() {
         mMediator.onNativeInitialized();
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 7;
 
         mMediator.onSuggestionDropdownHeightChanged(maximumListHeight);
-        mMediator.onSuggestionsReceived(AutocompleteResult.EMPTY_RESULT, "");
+        mMediator.onSuggestionsReceived(AutocompleteResult.EMPTY_RESULT, "", true);
 
         Assert.assertEquals(0, mSuggestionModels.size());
         Assert.assertFalse(mListModel.get(SuggestionListProperties.VISIBLE));
@@ -328,14 +335,13 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void updateSuggestionsList_worksWithEmptyList() {
         mMediator.onNativeInitialized();
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 7;
 
         mMediator.onSuggestionDropdownHeightChanged(maximumListHeight);
-        mMediator.onSuggestionsReceived(AutocompleteResult.EMPTY_RESULT, "");
+        mMediator.onSuggestionsReceived(AutocompleteResult.EMPTY_RESULT, "", true);
 
         Assert.assertEquals(0, mSuggestionModels.size());
         Assert.assertFalse(mListModel.get(SuggestionListProperties.VISIBLE));
@@ -344,7 +350,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void updateSuggestionsList_scrolEventsWithConcealedItemsTogglesKeyboardVisibility() {
         mMediator.onNativeInitialized();
 
@@ -352,7 +357,8 @@ public class AutocompleteMediatorUnitTest {
                 (mSuggestionsList.size() - 2) * SUGGESTION_MIN_HEIGHT;
 
         mMediator.onSuggestionDropdownHeightChanged(heightWithOneConcealedItem);
-        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(mSuggestionsList, null), "");
+        mMediator.onSuggestionsReceived(
+                AutocompleteResult.fromCache(mSuggestionsList, null), "", true);
         Assert.assertTrue(
                 mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
 
@@ -373,7 +379,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void updateSuggestionsList_updateHeightWhenHardwareKeyboardIsConnected() {
         // Simulates behavior of physical keyboard being attached to the device.
         // In this scenario, requesting keyboard to come up will not result with an actual
@@ -397,7 +402,8 @@ public class AutocompleteMediatorUnitTest {
         // In both cases, the updated suggestions list height should be used to estimate presence of
         // fully concealed items on the suggestions list.
         mMediator.onSuggestionDropdownHeightChanged(heightOfOAllSuggestions);
-        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(mSuggestionsList, null), "");
+        mMediator.onSuggestionsReceived(
+                AutocompleteResult.fromCache(mSuggestionsList, null), "", true);
         Assert.assertFalse(
                 mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
 
@@ -408,7 +414,7 @@ public class AutocompleteMediatorUnitTest {
         List<AutocompleteMatch> newList =
                 buildDummySuggestionsList(mSuggestionsList.size(), "SuggestionB");
         mMediator.onSuggestionDropdownHeightChanged(heightWithOneConcealedItem);
-        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(newList, null), "");
+        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(newList, null), "", true);
         Assert.assertTrue(
                 mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
     }
@@ -416,7 +422,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void updateSuggestionsList_rejectsHeightUpdatesWhenKeyboardIsHidden() {
         // Simulates scenario where we receive dropdown height update after software keyboard is
         // explicitly hidden. In this scenario the updates should be rejected when estimating
@@ -429,7 +434,8 @@ public class AutocompleteMediatorUnitTest {
 
         // Report height change with keyboard visible
         mMediator.onSuggestionDropdownHeightChanged(heightWithOneConcealedItem);
-        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(mSuggestionsList, null), "");
+        mMediator.onSuggestionsReceived(
+                AutocompleteResult.fromCache(mSuggestionsList, null), "", true);
         Assert.assertTrue(
                 mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
 
@@ -438,7 +444,8 @@ public class AutocompleteMediatorUnitTest {
         // is active.
         when(mAutocompleteDelegate.isKeyboardActive()).thenReturn(false);
         mMediator.onSuggestionDropdownHeightChanged(heightOfOAllSuggestions);
-        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(mSuggestionsList, null), "");
+        mMediator.onSuggestionsReceived(
+                AutocompleteResult.fromCache(mSuggestionsList, null), "", true);
         Assert.assertTrue(
                 mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
     }
@@ -446,7 +453,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onTextChanged_emptyTextTriggersZeroSuggest() {
         when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
         when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
@@ -466,7 +472,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onTextChanged_nonEmptyTextTriggersSuggestions() {
         String url = "http://www.example.com";
         int pageClassification = PageClassification.BLANK_VALUE;
@@ -485,7 +490,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onTextChanged_cancelsPendingRequests() {
         String url = "http://www.example.com";
         int pageClassification = PageClassification.BLANK_VALUE;
@@ -508,7 +512,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onUrlFocusChange_onlyOneZeroSuggestRequestIsInvoked() {
         when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
         when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
@@ -537,7 +540,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onUrlFocusChange_preventsZeroSuggestRequestOnFocusLost() {
         when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
         when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
@@ -564,7 +566,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onUrlFocusChange_textChangeCancelsOustandingZeroSuggestRequest() {
         when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
         when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
@@ -598,7 +599,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onUrlFocusChange_textChangeCancelsIntermediateZeroSuggestRequests() {
         when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
         when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
@@ -629,28 +629,27 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onSuggestionsReceived_sendsOnSuggestionsChanged() {
         mMediator.onNativeInitialized();
         mMediator.onSuggestionsReceived(
-                AutocompleteResult.fromCache(mSuggestionsList, null), "inline_autocomplete");
+                AutocompleteResult.fromCache(mSuggestionsList, null), "inline_autocomplete", true);
         verify(mAutocompleteDelegate).onSuggestionsChanged("inline_autocomplete", true);
 
         // Ensure duplicate requests are suppressed.
         mMediator.onSuggestionsReceived(
-                AutocompleteResult.fromCache(mSuggestionsList, null), "inline_autocomplete2");
+                AutocompleteResult.fromCache(mSuggestionsList, null), "inline_autocomplete2", true);
         verifyNoMoreInteractions(mAutocompleteDelegate);
     }
 
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void setLayoutDirection_beforeInitialization() {
         mMediator.onNativeInitialized();
         mMediator.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         mMediator.onSuggestionDropdownHeightChanged(Integer.MAX_VALUE);
-        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(mSuggestionsList, null), "");
+        mMediator.onSuggestionsReceived(
+                AutocompleteResult.fromCache(mSuggestionsList, null), "", true);
         Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
         for (int i = 0; i < mSuggestionModels.size(); i++) {
             Assert.assertEquals(i + "th model does not have the expected layout direction.",
@@ -663,11 +662,11 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void setLayoutDirection_afterInitialization() {
         mMediator.onNativeInitialized();
         mMediator.onSuggestionDropdownHeightChanged(Integer.MAX_VALUE);
-        mMediator.onSuggestionsReceived(AutocompleteResult.fromCache(mSuggestionsList, null), "");
+        mMediator.onSuggestionsReceived(
+                AutocompleteResult.fromCache(mSuggestionsList, null), "", true);
         Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
 
         mMediator.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
@@ -690,7 +689,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onUrlFocusChange_triggersZeroSuggest_nativeInitialized() {
         when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
         when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
@@ -711,7 +709,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onUrlFocusChange_triggersZeroSuggest_nativeNotInitialized() {
         when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
         when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
@@ -737,7 +734,6 @@ public class AutocompleteMediatorUnitTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     public void onTextChanged_editSessionActivatedByUserInput() {
         mMediator.onNativeInitialized();
         mMediator.onUrlFocusChange(true);
@@ -748,5 +744,85 @@ public class AutocompleteMediatorUnitTest {
 
         mMediator.onUrlFocusChange(false);
         Assert.assertEquals(mMediator.getEditSessionStateForTest(), EditSessionState.INACTIVE);
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void switchToTab_noTargetTab() {
+        // There is no Tab to switch to.
+        doReturn(null).when(mAutocompleteController).getMatchingTabForSuggestion(anyInt());
+        Assert.assertFalse(mMediator.maybeSwitchToTab(0));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void switchToTab_noTabManager() {
+        // We have a tab, but no tab manager.
+        doReturn(mTab).when(mAutocompleteController).getMatchingTabForSuggestion(anyInt());
+        Assert.assertFalse(mMediator.maybeSwitchToTab(0));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void switchToTab_tabAttachedToStoppedActivity() {
+        // We have a tab, and tab manager. The tab is part of the stopped activity.
+        doReturn(mTab).when(mAutocompleteController).getMatchingTabForSuggestion(anyInt());
+        mTabWindowManagerSupplier.set(mTabManager);
+        doReturn(mMockWindowAndroid).when(mTab).getWindowAndroid();
+        doReturn(ActivityState.STOPPED).when(mMockWindowAndroid).getActivityState();
+        Assert.assertTrue(mMediator.maybeSwitchToTab(0));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void switchToTab_noTabModelForTab() {
+        // We have a tab, and tab manager. The tab is part of the running activity.
+        // The tab is not a part of the model though (eg. it has just been closed).
+        // https://crbug.com/1300447
+        doReturn(mTab).when(mAutocompleteController).getMatchingTabForSuggestion(anyInt());
+        mTabWindowManagerSupplier.set(mTabManager);
+        doReturn(mMockWindowAndroid).when(mTab).getWindowAndroid();
+        doReturn(ActivityState.RESUMED).when(mMockWindowAndroid).getActivityState();
+        doReturn(null).when(mTabManager).getTabModelForTab(any());
+        Assert.assertFalse(mMediator.maybeSwitchToTab(0));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void switchToTab_invalidTabModelAssociation() {
+        // We have a tab, and tab manager. The tab is part of the running activity.
+        // The tab reports association with an existing model, but the model thinks otherwise.
+        // https://crbug.com/1300447
+        doReturn(mTab).when(mAutocompleteController).getMatchingTabForSuggestion(anyInt());
+        mTabWindowManagerSupplier.set(mTabManager);
+        doReturn(mMockWindowAndroid).when(mTab).getWindowAndroid();
+        doReturn(ActivityState.RESUMED).when(mMockWindowAndroid).getActivityState();
+        doReturn(mTabModel).when(mTabManager).getTabModelForTab(any());
+
+        // Make sure that this indeed returns no association.
+        Assert.assertEquals(
+                TabModel.INVALID_TAB_INDEX, TabModelUtils.getTabIndexById(mTabModel, mTab.getId()));
+        Assert.assertFalse(mMediator.maybeSwitchToTab(0));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void switchToTab_validTabModelAssociation() {
+        // We have a tab, and tab manager. The tab is part of the running activity.
+        // The tab reports association with an existing model; the model confirms this.
+        doReturn(mTab).when(mAutocompleteController).getMatchingTabForSuggestion(anyInt());
+        mTabWindowManagerSupplier.set(mTabManager);
+        doReturn(mMockWindowAndroid).when(mTab).getWindowAndroid();
+        doReturn(ActivityState.RESUMED).when(mMockWindowAndroid).getActivityState();
+        doReturn(mTabModel).when(mTabManager).getTabModelForTab(any());
+        doReturn(1).when(mTabModel).getCount();
+        doReturn(mTab).when(mTabModel).getTabAt(anyInt());
+        Assert.assertTrue(mMediator.maybeSwitchToTab(0));
     }
 }

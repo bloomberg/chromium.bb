@@ -7,13 +7,14 @@
  * it into a Macro.
  */
 
-import {InputController} from './../input_controller.js';
-import {InputTextViewMacro, NewLineMacro} from './../macros/input_text_view_macro.js';
-import {ListCommandsMacro} from './../macros/list_commands_macro.js';
-import {Macro} from './../macros/macro.js';
-import {MacroName} from './../macros/macro_names.js';
-import * as RepeatableKeyPressMacro from './../macros/repeatable_key_press_macro.js';
-import {ParseStrategy} from './parse_strategy.js';
+import {InputController} from '/accessibility_common/dictation/input_controller.js';
+import {HiddenMacroManager} from '/accessibility_common/dictation/macros/hidden_macro_manager.js';
+import {InputTextViewMacro, NewLineMacro} from '/accessibility_common/dictation/macros/input_text_view_macro.js';
+import {ListCommandsMacro} from '/accessibility_common/dictation/macros/list_commands_macro.js';
+import {Macro} from '/accessibility_common/dictation/macros/macro.js';
+import {MacroName} from '/accessibility_common/dictation/macros/macro_names.js';
+import * as RepeatableKeyPressMacro from '/accessibility_common/dictation/macros/repeatable_key_press_macro.js';
+import {ParseStrategy} from '/accessibility_common/dictation/parse/parse_strategy.js';
 
 /**
  * @typedef {{
@@ -76,26 +77,6 @@ class SimpleMacroFactory {
    */
   matchesMacro(text) {
     return text.trim().toLowerCase() === this.commandString_;
-  }
-
-  // TODO(crbug.com/1216111): Create a factory for InputTextViewMacro and remove
-  // this method.
-  /**
-   * Checks whether a string matches a request to type a command, i.e. for the
-   * command 'delete', it would match 'type delete', ignoring case and
-   * whitespace.
-   * @param {string} text
-   * @return {boolean}
-   */
-  matchesInputTextViewMacro(text) {
-    const expected = chrome.i18n.getMessage(
-        'dictation_command_input_text_view', this.commandString_);
-    return text.trim().toLowerCase() === expected;
-  }
-
-  /** @return {string} */
-  getCommandString() {
-    return this.commandString_;
   }
 
   /**
@@ -184,7 +165,9 @@ export class SimpleParseStrategy extends ParseStrategy {
   initialize_() {
     for (const key in MacroName) {
       const name = MacroName[key];
-      if (name === MacroName.INPUT_TEXT_VIEW || name === MacroName.UNSPECIFID) {
+      if (HiddenMacroManager.isHiddenMacro(name) ||
+          name === MacroName.INPUT_TEXT_VIEW ||
+          name === MacroName.UNSPECIFIED) {
         continue;
       }
 
@@ -200,13 +183,18 @@ export class SimpleParseStrategy extends ParseStrategy {
     for (const [name, factory] of this.macroFactoryMap_) {
       if (factory.matchesMacro(text)) {
         return factory.createMacro();
-      } else if (factory.matchesInputTextViewMacro(text)) {
-        text = factory.getCommandString();
-        break;
       }
     }
 
     // The command is simply to input the given text.
+    // If `text` starts with `type`, then automatically remove it e.g. convert
+    // 'Type testing 123' to 'testing 123'.
+    const typePrefix =
+        chrome.i18n.getMessage('dictation_command_input_text_view');
+    if (text.trim().toLowerCase().startsWith(typePrefix)) {
+      text = text.toLowerCase().replace(typePrefix, '').trimStart();
+    }
+
     return new InputTextViewMacro(text, this.getInputController());
   }
 }

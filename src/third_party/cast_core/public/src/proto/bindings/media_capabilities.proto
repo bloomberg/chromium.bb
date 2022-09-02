@@ -29,35 +29,80 @@ message MediaCapabilitiesMessage {
   // The maximum frame rate, per second, supported by the screen.
   int32 max_frame_rate = 3;
 
+  // Unused.
   string supported_cryptoblock_format = 4;
 
   // The maximum number of audio channels supported by the platform. For
   // example, stereo is 2 channels and 5.1 surround is 6 channels.
   int32 max_channels = 5;
 
-  // The maximum fillrate, which is the product of width, height, and frame
-  // rate, supported by the system.
+  // The maximum fill rate supported by the system. Fill rate is the product of
+  // width, height, and framerate resulting in pixels/s.
   int32 max_fill_rate = 6;
 
   // Whether PCM surround sound is supported by the platform.
   bool is_pcm_surround_sound_supported = 7;
 
+  // Unused.
   bool is_platform_dolby_vision_enabled = 8;
+
+  // Whether Dolby Vision is supported by the current HDMI interface,
+  // independent of HDMI mode.
   bool is_dolby_vision_supported = 9;
+
+  // Whether Dolby Vision at 4k60 is supported by the current HDMI interface,
+  // independent of HDMI mode.
   bool is_dolby_vision4k_p60_supported = 10;
+
+  // Whether Dolby Vision is supported by the current HDMI mode.
   bool is_dolby_vision_supported_by_current_hdmi_mode = 11;
+
+  // Whether the current HDMI mode is output.
   bool is_hdmi_video_mode_switch_enabled = 12;
+
+  // Whether HEVC is enabled on the platform.
   bool is_platform_hevc_enabled = 13;
+
+  // Whether HDR validation is enforced by the current HDMI mode.
   bool is_hdmi_mode_hdr_check_enforced = 14;
+
+  // Whether HDR is supported by the current HDMI mode.
   bool is_hdr_supported_by_current_hdmi_mode = 15;
+
+  // Whether SMPTE ST 2084 EOTF is supported by the current HDMI interface,
+  // independent of HDMI mode.
   bool is_smpte_st2084_supported = 16;
+
+  // Whether HLG EOTF is supported by the current HDMI interface, independent of
+  // HDMI mode.
   bool is_hlg_supported = 17;
+
+  // Unused.
   bool is_hdr_feature_enabled = 18;
+
+  // The VP9 versions supported by the platform. Values are multiplied by 10,
+  // e.g. version 1.1 is encoded as 11.
   repeated int32 supported_legacy_vp9_levels = 19;
+
+  // The HDCP version supported by the platform. The value is multiplied by 10,
+  // e.g. version 2.2. is encoded as 22.
   int32 hdcp_version = 20;
+
+  // Mask indicating which audio codecs support spatial rendering:
+  //
+  // Supported bits:
+  // Ac3         = 1 << 0;
+  // Dts         = 1 << 1;
+  // DtsHd       = 1 << 2;
+  // Eac3        = 1 << 3;
+  // PcmSurround = 1 << 4;
+  // MpegHAudio  = 1 << 5;
   int32 spatial_rendering_support_mask = 21;
 
+  // Audio configurations supported by the platform.
   repeated AudioCodecInfo supported_audio_codecs = 22;
+
+  // Video configurations supported by the platform.
   repeated VideoCodecInfo supported_video_codecs = 23;
 }
 
@@ -93,7 +138,15 @@ message AudioCodecInfo {
   }
   SampleFormat sample_format = 2;
 
+  // The maximum number of samples per second supported by the codec.
   int32 max_samples_per_second = 3;
+
+  // The maximum number of audio channels supported by the codec.
+  //
+  // Supported values:
+  // Mono     = 1;
+  // Stereo   = 2;
+  // Surround = 6;
   int32 max_audio_channels = 4;
 }
 

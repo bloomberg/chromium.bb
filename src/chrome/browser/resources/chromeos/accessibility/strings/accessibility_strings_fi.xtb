@@ -54,7 +54,7 @@
 <translation id="1273314450961659276">Tekstistä puheeksi ‑asetukset</translation>
 <translation id="1275718070701477396">Valittu</translation>
 <translation id="1284576163386164372">Voit katsoa ohjeet milloin tahansa avaamalla valikot nelisormisella napautuksella. Aktivoi sitten ohje ChromeVox-osiosta.</translation>
-<translation id="1291286136605998134">Päälle/pois-painike</translation>
+<translation id="1291286136605998134">Päälle tai pois -painike</translation>
 <translation id="1299774449519412690">Vaalea taivaansininen</translation>
 <translation id="1303806948938513162">Avaa ChromeVox-valikot napauttamalla neljällä sormella</translation>
 <translation id="1313373992684326101">Siirry edelliseen osioon. Näitä ovat esimerkiksi tila-alue ja Käynnistysohjelma.</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">taul <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Seuraava näppäimen painallus ohitetaan</translation>
 <translation id="4623097797855662355">Kolofoni</translation>
+<translation id="4624970070706497034">TalkBack ei enää tarjoa personointia Chromebookeilla. Voit edelleen käyttää TalkBackia, mutta vain oletuspikanäppäimillä. Paina Haku + A ja sitten K, niin näet käytettävissä olevat pikanäppäimet. Jos haluat edelleen käyttää TalkBackia, paina komentoa uudelleen.</translation>
 <translation id="463135993322337640">Saat tietoja uusista ominaisuuksista painamalla ChromeVox + o + n.</translation>
 <translation id="4649220074413114917">Voit pysäyttää käynnissä olevan puheen napauttamalla näyttöä kahdella sormella. Tämä on kätevää, jos et halua ChromeVoxin lukevan tiettyä sisältöä. Jatka napauttamalla näyttöä kahdella sormella.</translation>
 <translation id="4660783501463101648">Classic poistettiin. ChromeVox Classicin käyttöönoton pikanäppäin poistettiin.</translation>
@@ -590,7 +591,7 @@
 <translation id="4986606102545753256"><ph name="NAME" />, ikkuna</translation>
 <translation id="4993152509206108683">Nopeus <ph name="PERCENT" /> prosenttia.</translation>
 <translation id="4994420463726586413">Sano akun nykyinen tila</translation>
-<translation id="4997282455736854877"><ph name="NAME" />, radiopainike valittu</translation>
+<translation id="4997282455736854877"><ph name="NAME" />, valintanappi valittu</translation>
 <translation id="5011664330025416377">Aktivoi painamalla Haku+välilyönti</translation>
 <translation id="5012724933919010465"><ph name="NAME" />, valikkokohteen painike valittu</translation>
 <translation id="5020651427400641814">Ota puheen kirjaaminen käyttöön</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Pistekirjoitustekstitys käytössä</translation>
 <translation id="5183440668879371625">Pistekirjoituksen edellinen rivi</translation>
 <translation id="5189244881767082992">Rivi</translation>
-<translation id="5234747236692380506">kirjoita <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Popkorni</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Loppu</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Pikaopastus suoritettu!</translation>
 <translation id="5534303576632885660">header</translation>
 <translation id="5539820223028224601">Gainsboro</translation>
+<translation id="554893713779400387">Laita sanelu päälle tai pois päältä</translation>
 <translation id="5549179427201066174">Ota äänipalaute (earcon-äänimerkit) käyttöön tai poista se käytöstä</translation>
 <translation id="556042886152191864">Painike</translation>
 <translation id="5561345396546889625">Seuraava luettelo</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Loki</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Grafiikkasymboli</translation>
+<translation id="5648939288050772726">Onnittelut! Olet oppinut ChromeVoxin käytön perusteet. Voit avata ChromeVoxin komentovalikon koska tahansa painamalla Haku + piste. Seuraavista artikkeleista voit lukea lisää ChromeVoxista ja Chrome-käyttöjärjestelmästä.
+    Jos haluat poistua ohjeesta, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja klikkaa sitä.</translation>
 <translation id="5653397561111110475">Chromebookin kosketusnäytön esteettömyysominaisuuksien käyttö</translation>
 <translation id="5655682562155942719">Siirtymiskomennot</translation>
 <translation id="56637627897541303">Tekstialue</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{kaksoispiste}other{# kaksoispistettä}}</translation>
 <translation id="6444046323172968959">Ilmoitusvalintaikkuna</translation>
 <translation id="6452403590345320472">Sisällysluettelo</translation>
+<translation id="6457542714329819968">kirjoita</translation>
 <translation id="6468049171101508116">Seuraava-painike</translation>
 <translation id="646954774886932461">Hakemisto</translation>
 <translation id="6475604559827479857">Sanojen korostusväri:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Luonnollinen ääni</translation>
 <translation id="7714340021005120797">Ei seuraavia yhdistelmäruutuja</translation>
-<translation id="772146615414628379">Onnittelut! Olet oppinut ChromeVoxin käytön perusteet. Voit avata ChromeVoxin komentovalikon koska tahansa painamalla Haku + piste. Seuraavista artikkeleista voit lukea lisää ChromeVoxista ja Chrome-käyttöjärjestelmästä.
-    Jos haluat poistua ohjeesta, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja klikkaa sitä.</translation>
 <translation id="7724603315864178912">Leikkaa</translation>
 <translation id="7731785449856576010">Ei seuraavia mediawidgetejä</translation>
 <translation id="7735498529470878067">Kosketuksella tutkimalla voit saada nopeasti käsityksen näytön sisällöstä.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Tummanpunainen</translation>
 <translation id="923331726185079994">ChromeVox päivitetty</translation>
 <translation id="93384979447910801">Tumma merenvihreä</translation>
+<translation id="937605981140327129">TalkBack ei ole asennettuna. Asenna Android AccessibilitySuite Play Kaupasta ja yritä uudelleen.</translation>
 <translation id="948171205378458592">Vähennä puhenopeutta</translation>
 <translation id="957570623732056069">Siirry harjoituksessa kohteesta toiseen pyyhkäisemällä sormella vasemmalle tai oikealle</translation>
 <translation id="958854023026327378">Pyyhkäise alas yhdellä sormella</translation>

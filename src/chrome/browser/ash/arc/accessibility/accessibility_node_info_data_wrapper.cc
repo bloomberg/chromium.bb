@@ -249,6 +249,7 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
   MAP_ROLE(ui::kAXPagerClassname, ax::mojom::Role::kGroup);
   MAP_ROLE(ui::kAXProgressBarClassname, ax::mojom::Role::kProgressIndicator);
   MAP_ROLE(ui::kAXRadioButtonClassname, ax::mojom::Role::kRadioButton);
+  MAP_ROLE(ui::kAXRadioGroupClassname, ax::mojom::Role::kRadioGroup);
   MAP_ROLE(ui::kAXScrollViewClassname, ax::mojom::Role::kScrollView);
   MAP_ROLE(ui::kAXSeekBarClassname, ax::mojom::Role::kSlider);
   MAP_ROLE(ui::kAXSpinnerClassname, ax::mojom::Role::kPopUpButton);
@@ -641,6 +642,9 @@ bool AccessibilityNodeInfoDataWrapper::HasCoveringSpan(
 }
 
 bool AccessibilityNodeInfoDataWrapper::HasText() const {
+  if (!IsImportantInAndroid())
+    return false;
+
   for (const auto it : text_properties_) {
     if (HasNonEmptyStringProperty(node_ptr_, it))
       return true;
@@ -682,12 +686,14 @@ void AccessibilityNodeInfoDataWrapper::ComputeNameFromContentsInternal(
   if (IsVirtualNode() || IsAccessibilityFocusableContainer())
     return;
 
-  std::string name;
-  for (const auto it : text_properties_) {
-    if (GetProperty(it, &name) && !name.empty()) {
-      // Stop when we get a name for this subtree.
-      names->push_back(name);
-      return;
+  if (IsImportantInAndroid()) {
+    std::string name;
+    for (const auto it : text_properties_) {
+      if (GetProperty(it, &name) && !name.empty()) {
+        // Stop when we get a name for this subtree.
+        names->push_back(name);
+        return;
+      }
     }
   }
 

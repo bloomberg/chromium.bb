@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -30,7 +29,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/google/core/common/google_switches.h"
 #include "components/google/core/common/google_util.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
@@ -208,6 +206,10 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   // Creates hint data for the |hint_setup_url|'s so that the fetching of the
   // hints is triggered.
   void SetUpComponentUpdateHints(const GURL& hint_setup_url) {
+    optimization_guide::RetryForHistogramUntilCountReached(
+        GetHistogramTester(),
+        "OptimizationGuide.HintsManager.HintCacheInitialized", 1);
+
     const optimization_guide::HintsComponentInfo& component_info =
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, "*");

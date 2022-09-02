@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_pending_generator_registry.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -43,8 +43,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   scoped_refptr<Image> Paint(const String& name,
                              const ImageResourceObserver&,
                              const gfx::SizeF& container_size,
-                             const CSSStyleValueVector*,
-                             float device_scale_factor);
+                             const CSSStyleValueVector*);
 
   int WorkletId() const { return worklet_id_; }
   void Trace(Visitor*) const override;

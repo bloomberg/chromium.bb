@@ -4,6 +4,8 @@
 
 #include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 
+#include <tuple>
+
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
@@ -11,7 +13,6 @@
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
-#include "base/ignore_result.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
@@ -161,37 +162,37 @@ void OnSetRlzPingSent(int retry_count, bool success) {
 // Copy |value| without empty children.
 absl::optional<base::Value> CopyWithoutEmptyChildren(const base::Value& value) {
   switch (value.type()) {
-    case base::Value::Type::DICTIONARY: {
-      base::Value::DictStorage storage;
+    case base::Value::Type::DICT: {
+      base::Value::Dict dict;
+      const base::Value::Dict& dict_in = value.GetDict();
 
-      for (const auto key_value_pair : value.DictItems()) {
+      for (auto it = dict_in.begin(); it != dict_in.end(); ++it) {
         absl::optional<base::Value> item_copy =
-            CopyWithoutEmptyChildren(key_value_pair.second);
+            CopyWithoutEmptyChildren(it->second);
         if (item_copy)
-          storage.insert(
-              std::make_pair(key_value_pair.first, std::move(*item_copy)));
+          dict.Set(it->first, std::move(*item_copy));
       }
 
-      if (storage.empty())
+      if (dict.empty())
         return absl::nullopt;
 
-      return base::Value(std::move(storage));
+      return base::Value(std::move(dict));
     }
 
     case base::Value::Type::LIST: {
-      base::Value::ListStorage storage;
-      storage.reserve(value.GetList().size());
+      base::Value::List list;
+      list.reserve(value.GetList().size());
 
       for (const base::Value& item : value.GetList()) {
         absl::optional<base::Value> item_copy = CopyWithoutEmptyChildren(item);
         if (item_copy)
-          storage.push_back(std::move(*item_copy));
+          list.Append(std::move(*item_copy));
       }
 
-      if (storage.empty())
+      if (list.empty())
         return absl::nullopt;
 
-      return base::Value(std::move(storage));
+      return base::Value(std::move(list));
     }
 
     default:
@@ -463,39 +464,39 @@ void RlzValueStoreChromeOS::WriteStore() {
 
 bool RlzValueStoreChromeOS::AddValueToList(const std::string& list_name,
                                            base::Value value) {
-  base::Value* list_value = rlz_store_.FindListPath(list_name);
-  if (!list_value) {
-    list_value =
-        rlz_store_.SetPath(list_name, base::Value(base::Value::Type::LIST));
+  base::Value::List* list =
+      rlz_store_.GetDict().FindListByDottedPath(list_name);
+  if (!list) {
+    list = &rlz_store_.SetPath(list_name, base::Value(base::Value::Type::LIST))
+                ->GetList();
   }
-  if (!base::Contains(list_value->GetList(), value)) {
-    list_value->Append(std::move(value));
+  if (!base::Contains(*list, value)) {
+    list->Append(std::move(value));
   }
   return true;
 }
 
 bool RlzValueStoreChromeOS::RemoveValueFromList(const std::string& list_name,
                                                 const base::Value& to_remove) {
-  base::Value* list_value = rlz_store_.FindListPath(list_name);
-  if (!list_value)
+  base::Value::List* list =
+      rlz_store_.GetDict().FindListByDottedPath(list_name);
+  if (!list)
     return false;
 
-  base::Value::ListStorage storage = std::move(*list_value).TakeList();
-  base::EraseIf(storage, [&to_remove](const base::Value& value) {
-    return value == to_remove;
-  });
-  *list_value = base::Value(std::move(storage));
+  list->EraseIf(
+      [&to_remove](const base::Value& value) { return value == to_remove; });
 
   return true;
 }
 
 bool RlzValueStoreChromeOS::ListContainsValue(const std::string& list_name,
                                               const base::Value& value) const {
-  const base::Value* list_value = rlz_store_.FindListPath(list_name);
-  if (!list_value)
+  const base::Value::List* list =
+      rlz_store_.GetDict().FindListByDottedPath(list_name);
+  if (!list)
     return false;
 
-  return base::Contains(list_value->GetList(), value);
+  return base::Contains(*list, value);
 }
 
 bool RlzValueStoreChromeOS::HasAccessPointRlz(AccessPoint access_point) const {
@@ -556,7 +557,7 @@ ScopedRlzValueStoreLock::~ScopedRlzValueStoreLock() {
 
   if (g_lock_depth > 0) {
     // Other locks are still using store_, so don't free it yet.
-    ignore_result(store_.release());
+    std::ignore = store_.release();
     return;
   }
 

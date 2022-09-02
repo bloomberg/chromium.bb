@@ -14,7 +14,7 @@ const base::Feature kUseDownloadOfflineContentProvider{
 
 const base::Feature kDownloadAutoResumptionNative {
   "DownloadsAutoResumptionNative",
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -23,7 +23,7 @@ const base::Feature kDownloadAutoResumptionNative {
 
 const base::Feature kParallelDownloading {
   "ParallelDownloading",
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -33,7 +33,7 @@ const base::Feature kParallelDownloading {
 const base::Feature kDownloadLater{"DownloadLater",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const base::Feature kSmartSuggestionForLargeDownloads{
     "SmartSuggestionForLargeDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -47,7 +47,7 @@ const base::Feature kUseInProgressDownloadManagerForDownloadService{
 
 const base::Feature kAllowDownloadResumptionWithoutStrongValidators{
   "AllowDownloadResumptionWithoutStrongValidators",
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -69,14 +69,8 @@ const base::Feature kDeleteOverwrittenDownloads{
 const base::Feature kAllowFileBufferSizeControl{
     "AllowFileBufferSizeControl", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAllowSavePackageScanning{"AllowSavePackageScanning",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kIncognitoDownloadsWarning{
-    "IncognitoDownloadsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kDownloadRange{"DownloadRange",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 

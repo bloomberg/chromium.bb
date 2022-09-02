@@ -10,6 +10,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/numerics/safe_conversions.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 
@@ -103,6 +104,11 @@ void WallpaperBaseView::OnPaint(gfx::Canvas* canvas) {
 
   if (controller->ShouldApplyShield())
     canvas->FillRect(GetLocalBounds(), GetWallpaperShieldColor());
+}
+
+void WallpaperBaseView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  SchedulePaint();
 }
 
 void WallpaperBaseView::DrawWallpaper(const gfx::ImageSkia& wallpaper,

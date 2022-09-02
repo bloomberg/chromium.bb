@@ -79,6 +79,21 @@ class ToolkitCreateParams
     ToolkitCreateParamsImpl *d_impl;
 
   public:
+    enum LogMessageSeverity {
+        kSeverityVerbose = 0,
+        kSeverityInfo = 1,
+        kSeverityWarning = 2,
+        kSeverityError = 3,
+        kSeverityFatal = 4,
+    };
+
+    // The callback function that will be invoked whenever a log message
+    // happens.
+    typedef void(*LogMessageHandler)(LogMessageSeverity severity,
+                                     const char* file,
+                                     int line,
+                                     const char* message);
+
     typedef int(__cdecl *WinProcExceptionFilter)(EXCEPTION_POINTERS* info);
         // The callback function that will be invoked whenever SEH exceptions
         // are caught in win procs.
@@ -101,6 +116,11 @@ class ToolkitCreateParams
         // open a print dialog to ask for the target printing device.
         // Calling this will disable the print dialog and use the default
         // printing device on the system.
+
+    BLPWTK2_EXPORT void setLogMessageHandler(LogMessageHandler handler);
+        // By default, log messages go to a "blpwtk2.log" file and to debug output.
+        // Use this method to install a custom log message handler instead.  Note
+        // that the handler callback can be invoked from any thread.
 
     BLPWTK2_EXPORT void setWinProcExceptionFilter(WinProcExceptionFilter filter);
         // Use this method to install a custom filter that will be invoked
@@ -254,6 +274,7 @@ class ToolkitCreateParams
     // ACCESSORS
     ThreadMode threadMode() const;
     bool useDefaultPrintSettings() const;
+    LogMessageHandler logMessageHandler() const;
     WinProcExceptionFilter winProcExceptionFilter() const;
     ChannelErrorHandler channelErrorHandler() const;
     bool isInProcessRendererEnabled() const;

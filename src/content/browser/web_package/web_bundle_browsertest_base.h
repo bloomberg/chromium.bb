@@ -48,11 +48,11 @@ constexpr char kHeadersForJavaScript[] =
 
 base::FilePath GetTestDataPath(base::StringPiece file);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void CopyFileAndGetContentUri(const base::FilePath& file,
                               GURL* content_uri,
                               base::FilePath* new_file_path);
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 std::string ExecuteAndGetString(const ToRenderFrameHost& adapter,
                                 const std::string& script);
@@ -87,7 +87,8 @@ class MockParserFactory;
 
 class MockParser final : public web_package::mojom::WebBundleParser {
  public:
-  using Index = base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr>;
+  using Index =
+      base::flat_map<GURL, web_package::mojom::BundleResponseLocationPtr>;
 
   MockParser(
       MockParserFactory* factory,
@@ -157,7 +158,7 @@ class MockParserFactory final
   bool simulate_parse_response_crash_ = false;
   std::unique_ptr<MockParser> parser_;
   int parser_creation_count_ = 0;
-  base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr> index_;
+  base::flat_map<GURL, web_package::mojom::BundleResponseLocationPtr> index_;
   const GURL primary_url_;
 };
 
@@ -170,11 +171,6 @@ class TestBrowserClient : public ContentBrowserClient {
 
   ~TestBrowserClient() override = default;
   bool CanAcceptUntrustedExchangesIfNeeded() override;
-  std::string GetAcceptLangs(BrowserContext* context) override;
-  void SetAcceptLangs(const std::string langs);
-
- private:
-  std::string accept_langs_ = "en";
 };
 
 class WebBundleBrowserTestBase : public ContentBrowserTest {
@@ -189,8 +185,6 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
   void SetUpOnMainThread() override;
 
   void TearDownOnMainThread() override;
-
-  void SetAcceptLangs(const std::string langs);
 
   void NavigateToBundleAndWaitForReady(const GURL& test_data_url,
                                        const GURL& expected_commit_url);
@@ -430,14 +424,14 @@ void RunIframeSameDocumentNavigationTest(
 
 enum class TestFilePathMode {
   kNormalFilePath,
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   kContentURI,
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 };
 
 // Adding web_bundle_browsertest_utils:: extra to the prefix so the files using
 // these directives outside of the namespace don't fail.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define TEST_FILE_PATH_MODE_PARAMS                                     \
   testing::Values(                                                     \
       web_bundle_browsertest_utils::TestFilePathMode::kNormalFilePath, \
@@ -446,7 +440,7 @@ enum class TestFilePathMode {
 #define TEST_FILE_PATH_MODE_PARAMS \
   testing::Values(                 \
       web_bundle_browsertest_utils::TestFilePathMode::kNormalFilePath)
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace web_bundle_browsertest_utils
 }  // namespace content

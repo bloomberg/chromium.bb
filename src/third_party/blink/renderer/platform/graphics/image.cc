@@ -36,11 +36,8 @@
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_filter_helper.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_cache.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
@@ -56,9 +53,12 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
 namespace blink {
@@ -88,13 +88,13 @@ cc::ImageDecodeCache& Image::SharedCCDecodeCache(SkColorType color_type) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         cc::SoftwareImageDecodeCache, image_decode_cache,
         (kRGBA_F16_SkColorType, kLockedMemoryLimitBytes,
-         PaintImage::kDefaultGeneratorClientId));
+         PaintImage::GetNextGeneratorClientId()));
     return image_decode_cache;
   }
   DEFINE_THREAD_SAFE_STATIC_LOCAL(cc::SoftwareImageDecodeCache,
                                   image_decode_cache,
                                   (kN32_SkColorType, kLockedMemoryLimitBytes,
-                                   PaintImage::kDefaultGeneratorClientId));
+                                   PaintImage::GetNextGeneratorClientId()));
   return image_decode_cache;
 }
 
@@ -111,13 +111,24 @@ scoped_refptr<Image> Image::LoadPlatformResource(
   return image;
 }
 
-// static
 PaintImage Image::ResizeAndOrientImage(
     const PaintImage& image,
     ImageOrientation orientation,
     gfx::Vector2dF image_scale,
     float opacity,
     InterpolationQuality interpolation_quality) {
+  return ResizeAndOrientImage(image, orientation, image_scale, opacity,
+                              interpolation_quality, nullptr);
+}
+
+// static
+PaintImage Image::ResizeAndOrientImage(
+    const PaintImage& image,
+    ImageOrientation orientation,
+    gfx::Vector2dF image_scale,
+    float opacity,
+    InterpolationQuality interpolation_quality,
+    sk_sp<SkColorSpace> color_space) {
   gfx::Size size(image.width(), image.height());
   size = gfx::ScaleToFlooredSize(size, image_scale.x(), image_scale.y());
   AffineTransform transform;
@@ -131,17 +142,25 @@ PaintImage Image::ResizeAndOrientImage(
   if (size.IsEmpty())
     return PaintImage();
 
-  if (transform.IsIdentity() && opacity == 1) {
+  const auto image_color_space = image.GetSkImageInfo().colorSpace()
+                                     ? image.GetSkImageInfo().refColorSpace()
+                                     : SkColorSpace::MakeSRGB();
+  const auto surface_color_space =
+      color_space ? color_space : image_color_space;
+  const bool needs_color_conversion =
+      !SkColorSpace::Equals(image_color_space.get(), surface_color_space.get());
+
+  if (transform.IsIdentity() && opacity == 1 && !needs_color_conversion) {
     // Nothing to adjust, just use the original.
     DCHECK_EQ(image.width(), size.width());
     DCHECK_EQ(image.height(), size.height());
     return image;
   }
 
-  const SkImageInfo info =
-      SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType,
-                           SkColorSpace::MakeSRGB());
-  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+  const SkImageInfo surface_info = SkImageInfo::MakeN32(
+      size.width(), size.height(), image.GetSkImageInfo().alphaType(),
+      surface_color_space);
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(surface_info);
   if (!surface)
     return PaintImage();
 
@@ -202,7 +221,7 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
 
   PaintRecorder recorder;
   cc::PaintCanvas* canvas = recorder.beginRecording(tile_rect);
-  PaintFlags flags;
+  cc::PaintFlags flags;
   flags.setAntiAlias(should_antialias);
   canvas->drawImageRect(
       image, gfx::RectToSkRect(subset_rect),
@@ -262,8 +281,7 @@ void Image::DrawPattern(GraphicsContext& context,
   gfx::RectF tile_rect(subset_rect);
   tile_rect.Scale(tiling_info.scale.x(), tiling_info.scale.y());
   tile_rect.Offset(tiling_info.phase.OffsetFromOrigin());
-  tile_rect.Outset(0, 0, tiling_info.spacing.width(),
-                   tiling_info.spacing.height());
+  tile_rect.set_size(tile_rect.size() + tiling_info.spacing);
 
   SkMatrix local_matrix;
   local_matrix.setTranslate(tile_rect.x(), tile_rect.y());
@@ -289,14 +307,12 @@ void Image::DrawPattern(GraphicsContext& context,
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
-  PaintFlags flags(base_flags);
+  cc::PaintFlags flags(base_flags);
   flags.setColor(tile_shader ? SK_ColorBLACK : SK_ColorTRANSPARENT);
   flags.setShader(std::move(tile_shader));
-  if (draw_options.apply_dark_mode) {
-    DarkModeFilter* dark_mode_filter = draw_options.dark_mode_filter;
-    DarkModeFilterHelper::ApplyToImageIfNeeded(*dark_mode_filter, this, &flags,
-                                               gfx::RectToSkRect(subset_rect),
-                                               gfx::RectFToSkRect(dest_rect));
+  if (draw_options.dark_mode_filter) {
+    draw_options.dark_mode_filter->ApplyFilterToImage(
+        this, &flags, gfx::RectToSkRect(subset_rect));
   }
 
   context.DrawRect(gfx::RectFToSkRect(dest_rect), flags,
@@ -330,9 +346,8 @@ PaintImageBuilder Image::CreatePaintImageBuilder() {
       .set_is_multipart(is_multipart_);
 }
 
-bool Image::ApplyShader(PaintFlags& flags,
+bool Image::ApplyShader(cc::PaintFlags& flags,
                         const SkMatrix& local_matrix,
-                        const gfx::RectF& dst_rect,
                         const gfx::RectF& src_rect,
                         const ImageDrawOptions& draw_options) {
   // Default shader impl: attempt to build a shader based on the current frame
@@ -341,11 +356,9 @@ bool Image::ApplyShader(PaintFlags& flags,
   if (!image)
     return false;
 
-  if (draw_options.apply_dark_mode) {
-    DarkModeFilter* dark_mode_filter = draw_options.dark_mode_filter;
-    DarkModeFilterHelper::ApplyToImageIfNeeded(*dark_mode_filter, this, &flags,
-                                               gfx::RectFToSkRect(src_rect),
-                                               gfx::RectFToSkRect(dst_rect));
+  if (draw_options.dark_mode_filter) {
+    draw_options.dark_mode_filter->ApplyFilterToImage(
+        this, &flags, gfx::RectFToSkRect(src_rect));
   }
   flags.setShader(PaintShader::MakeImage(image, SkTileMode::kClamp,
                                          SkTileMode::kClamp, &local_matrix));

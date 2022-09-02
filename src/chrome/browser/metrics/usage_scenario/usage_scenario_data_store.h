@@ -8,7 +8,6 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -32,8 +31,7 @@ class TabUsageScenarioTrackerBrowserTest;
 //
 // The interval's length needs to be enforced by the owner of this class, it
 // should call ResetIntervalData regularly to get the usage data and reset it.
-class UsageScenarioDataStore
-    : public base::SupportsWeakPtr<UsageScenarioDataStore> {
+class UsageScenarioDataStore {
  public:
   UsageScenarioDataStore();
   UsageScenarioDataStore(const UsageScenarioDataStore& rhs) = delete;
@@ -62,7 +60,7 @@ class UsageScenarioDataStore
     base::TimeDelta time_playing_video_full_screen_single_monitor;
     // The time spent with at least one opened WebRTC connection.
     base::TimeDelta time_with_open_webrtc_connection;
-    // The time spent with at least one tab capturing video.
+    // The time spent with at least one WebContents capturing video.
     base::TimeDelta time_capturing_video;
     // The time spent playing video in at least one visible tab.
     base::TimeDelta time_playing_video_in_visible_tab;
@@ -214,12 +212,13 @@ class UsageScenarioDataStoreImpl : public UsageScenarioDataStore {
   // ends (when ResetIntervalData is called).
   base::TimeTicks has_opened_webrtc_connection_since_;
 
-  // The number of tabs capturing video (e.g. webcam).
-  uint16_t tabs_capturing_video_ = 0;
+  // The number of WebContents capturing video (e.g. webcam). Usually a tab, but
+  // some exceptions exist (e.g. OOBE WebUI on ChromeOS).
+  uint16_t web_contents_capturing_video_ = 0;
 
   // The timestamp of the beginning of a video capture session that has caused
-  // |tabs_capturing_video_| to increase to 1. Reset to |now| when an internal
-  // ends (when ResetIntervalData is called).
+  // |web_contents_capturing_video_| to increase to 1. Reset to |now| when an
+  // internal ends (when ResetIntervalData is called).
   base::TimeTicks capturing_video_since_;
 
   // The number of tabs playing audio.

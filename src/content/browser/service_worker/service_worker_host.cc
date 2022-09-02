@@ -8,13 +8,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
-#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -68,13 +65,15 @@ ServiceWorkerHost::~ServiceWorkerHost() {
 
 void ServiceWorkerHost::CompleteStartWorkerPreparation(
     int process_id,
-    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
-        broker_receiver) {
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> broker_receiver,
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interface_provider_remote) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, worker_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
   worker_process_id_ = process_id;
   broker_receiver_.Bind(std::move(broker_receiver));
+  remote_interfaces_.Bind(std::move(interface_provider_remote));
 }
 
 void ServiceWorkerHost::CreateWebTransportConnector(

@@ -3,11 +3,13 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
-import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//chrome/common/features.gni")
-import("//chromeos/assistant/assistant.gni")
+import("//chrome/services/speech/buildflags/buildflags.gni")
+import("//chromeos/ash/components/assistant/assistant.gni")
+import("//components/services/screen_ai/buildflags/features.gni")
+import("//crypto/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 
@@ -36,6 +38,8 @@ static_library("utility") {
     "//chrome/common",
     "//chrome/common:mojo_bindings",
     "//chrome/services/qrcode_generator",
+    "//chrome/services/speech/buildflags",
+    "//components/metrics:child_call_stack_profile_builder",
     "//components/mirroring/service:mirroring_service",
     "//components/paint_preview/buildflags",
     "//components/safe_browsing:buildflags",
@@ -43,6 +47,7 @@ static_library("utility") {
     "//components/services/language_detection",
     "//components/services/paint_preview_compositor",
     "//components/services/patch:lib",
+    "//components/services/screen_ai/buildflags",
     "//components/services/unzip:lib",
     "//components/strings",
     "//components/url_formatter",
@@ -108,6 +113,8 @@ static_library("utility") {
         "importer/nss_decryptor.cc",
         "importer/nss_decryptor.h",
       ]
+
+      deps += [ "//crypto:buildflags" ]
     }
     if (is_win) {
       sources += [
@@ -126,10 +133,13 @@ static_library("utility") {
     deps += [
       "//chrome/common:mojo_bindings",
       "//chrome/common/importer:interfaces",
-      "//chrome/services/speech:lib",
       "//components/autofill/core/common",
       "//services/proxy_resolver:lib",
     ]
+  }
+
+  if (enable_screen_ai_service) {
+    deps += [ "//components/services/screen_ai" ]
   }
 
   if (enable_extensions) {
@@ -153,11 +163,11 @@ static_library("utility") {
       libs = [ "esent.lib" ]
       ldflags += [ "/DELAYLOAD:esent.dll" ]
 
-      deps += [ "//chrome/services/util_win:lib" ]
-    }
-
-    if (is_win || is_mac || is_fuchsia) {
-      deps += [ "//components/wifi" ]
+      deps += [
+        "//chrome/services/system_signals/win",
+        "//chrome/services/util_win:lib",
+        "//components/device_signals/core/common/mojom",
+      ]
     }
   }
 
@@ -165,21 +175,21 @@ static_library("utility") {
     deps += [
       "//ash/services/ime:lib",
       "//ash/services/ime/public/mojom",
+      "//ash/services/nearby/public/mojom:mojom",
       "//ash/services/quick_pair",
       "//ash/services/recording",
       "//chrome/services/file_util",
       "//chrome/services/sharing",
-      "//chromeos/assistant:buildflags",
+      "//chromeos/ash/components/assistant:buildflags",
       "//chromeos/components/local_search_service:local_search_service",
       "//chromeos/components/local_search_service/public/mojom",
-      "//chromeos/services/nearby/public/mojom:mojom",
       "//chromeos/services/tts",
       "//chromeos/services/tts/public/mojom",
     ]
 
     if (enable_cros_libassistant) {
       deps += [
-        "//chromeos/services/assistant/audio_decoder:lib",
+        "//chromeos/ash/services/assistant/audio_decoder:lib",
         "//chromeos/services/assistant/public/mojom",
         "//chromeos/services/libassistant",
         "//chromeos/services/libassistant/public/mojom",
@@ -187,15 +197,20 @@ static_library("utility") {
     }
   }
 
+  if (is_chromeos) {
+    deps += [
+      "//chromeos/components/quick_answers/public/cpp",
+      "//chromeos/components/quick_answers/public/mojom",
+    ]
+  }
+
   if (use_nss_certs) {
     sources += [
       "importer/nss_decryptor_system_nss.cc",
       "importer/nss_decryptor_system_nss.h",
     ]
-    deps += [
-      "//crypto",
-      "//crypto:platform",
-    ]
+    deps += [ "//crypto" ]
+    configs += [ "//build/config/linux/nss" ]
   }
 
   if (enable_basic_printing) {
@@ -204,7 +219,8 @@ static_library("utility") {
       "//components/services/print_compositor/public/mojom",
     ]
 
-    if (is_win || is_mac || is_linux || is_chromeos) {
+    # TODO(crbug.com/1302871): Simplify this. Is `!is_android` sufficient?
+    if (is_win || is_mac || is_linux || is_chromeos || is_fuchsia) {
       deps += [ "//chrome/services/printing:lib" ]
     }
 
@@ -213,17 +229,6 @@ static_library("utility") {
         "//chrome/services/ipp_parser",
         "//chrome/services/ipp_parser/public/mojom",
       ]
-    }
-  }
-
-  if (enable_print_preview) {
-    if (is_win) {
-      sources += [
-        "printing_handler.cc",
-        "printing_handler.h",
-      ]
-      public_deps += [ "//chrome/common:cloud_print_utility_mojom" ]
-      deps += [ "//printing/backend" ]
     }
   }
 
@@ -236,5 +241,9 @@ static_library("utility") {
 
   if (is_android || enable_extensions) {
     deps += [ "//chrome/services/media_gallery_util:lib" ]
+  }
+
+  if (enable_browser_speech_service) {
+    deps += [ "//chrome/services/speech:lib" ]
   }
 }

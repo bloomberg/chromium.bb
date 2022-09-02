@@ -96,6 +96,10 @@ struct CONTENT_EXPORT UrlInfo {
     return (origin_isolation_request & OriginIsolationRequest::kCOOP);
   }
 
+  // Returns whether this UrlInfo is for a page that should be cross-origin
+  // isolated.
+  bool IsIsolated() const;
+
   GURL url;
 
   // This field indicates whether the URL is requesting additional process
@@ -107,10 +111,23 @@ struct CONTENT_EXPORT UrlInfo {
   OriginIsolationRequest origin_isolation_request =
       OriginIsolationRequest::kNone;
 
-  // If |url| represents a resource inside another resource (e.g. a resource
-  // with a urn: URL in WebBundle), origin of the original resource. Otherwise,
-  // this is just the origin of |url|.
-  url::Origin origin;
+  // This allows overriding the origin of |url| for process assignment purposes
+  // in certain very special cases. Namely, if |url| represents a resource
+  // inside another resource (e.g. a resource with a urn: URL in WebBundle),
+  // this will be the origin of the original resource. If the navigation to
+  // |url| is performed via the loadDataWithBaseURL API (e.g., in a <webview>
+  // tag or on Android Webview), this will be the base origin provided via that
+  // API. Otherwise, this will be nullopt.
+  //
+  // TODO(alexmos): Currently, this is also used to hold the origin committed
+  // by the renderer at DidCommitNavigation() time, for use in commit-time URL
+  // and origin checks that require a UrlInfo.  Investigate whether there's a
+  // cleaner way to organize these checks.  See https://crbug.com/1320402.
+  absl::optional<url::Origin> origin;
+
+  // If url is being loaded in a frame that is in a origin-restricted sandboxed,
+  // then this flag will be true.
+  bool is_sandboxed = false;
 
   // The StoragePartitionConfig that should be used when loading content from
   // |url|. If absent, ContentBrowserClient::GetStoragePartitionConfig will be
@@ -128,7 +145,10 @@ struct CONTENT_EXPORT UrlInfo {
   // safely expose otherwise. "Cross-origin isolation", for example, requires
   // assertion of a Cross-Origin-Opener-Policy and
   // Cross-Origin-Embedder-Policy, and unlocks SharedArrayBuffer.
-  WebExposedIsolationInfo web_exposed_isolation_info;
+  // When we haven't yet been to the network or inherited properties that are
+  // sufficient to know the future isolation state - we are in a speculative
+  // state - this member will be empty.
+  absl::optional<WebExposedIsolationInfo> web_exposed_isolation_info;
 
   // Indicates that the URL directs to PDF content, which should be isolated
   // from other types of content.
@@ -150,11 +170,14 @@ class CONTENT_EXPORT UrlInfoInit {
   UrlInfoInit& WithOriginIsolationRequest(
       UrlInfo::OriginIsolationRequest origin_isolation_request);
   UrlInfoInit& WithOrigin(const url::Origin& origin);
+  UrlInfoInit& WithSandbox(bool is_sandboxed);
   UrlInfoInit& WithStoragePartitionConfig(
       absl::optional<StoragePartitionConfig> storage_partition_config);
   UrlInfoInit& WithWebExposedIsolationInfo(
-      const WebExposedIsolationInfo& web_exposed_isolation_info);
+      absl::optional<WebExposedIsolationInfo> web_exposed_isolation_info);
   UrlInfoInit& WithIsPdf(bool is_pdf);
+
+  const absl::optional<url::Origin>& origin() { return origin_; }
 
  private:
   UrlInfoInit(UrlInfoInit&);
@@ -164,9 +187,10 @@ class CONTENT_EXPORT UrlInfoInit {
   GURL url_;
   UrlInfo::OriginIsolationRequest origin_isolation_request_ =
       UrlInfo::OriginIsolationRequest::kNone;
-  url::Origin origin_;
+  absl::optional<url::Origin> origin_;
+  bool is_sandboxed_ = false;
   absl::optional<StoragePartitionConfig> storage_partition_config_;
-  WebExposedIsolationInfo web_exposed_isolation_info_;
+  absl::optional<WebExposedIsolationInfo> web_exposed_isolation_info_;
   bool is_pdf_ = false;
 
   // Any new fields should be added to the UrlInfoInit(UrlInfo) constructor.

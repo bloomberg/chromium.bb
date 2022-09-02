@@ -7,11 +7,9 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
-#include "base/auto_reset.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
@@ -22,7 +20,6 @@
 #include "extensions/common/extension_guid.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_resource.h"
-#include "extensions/common/hashed_extension_id.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
@@ -36,10 +33,10 @@
 
 namespace base {
 class DictionaryValue;
-class Version;
 }
 
 namespace extensions {
+class HashedExtensionId;
 class PermissionSet;
 class PermissionsData;
 class PermissionsParser;
@@ -177,9 +174,6 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   // Valid schemes for web extent URLPatterns.
   static const int kValidWebExtentSchemes;
 
-  // Valid schemes for bookmark app installs by the user.
-  static const int kValidBookmarkAppSchemes;
-
   // Valid schemes for host permission URLPatterns.
   static const int kValidHostPermissionSchemes;
 
@@ -273,7 +267,8 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
 
   const base::FilePath& path() const { return path_; }
   const GURL& url() const { return extension_url_; }
-  const url::Origin& origin() const { return extension_origin_; }
+  const GURL& dynamic_url() const { return dynamic_url_; }
+  url::Origin origin() const { return extension_origin_; }
   mojom::ManifestLocation location() const;
   const ExtensionId& id() const;
   const HashedExtensionId& hashed_id() const;
@@ -322,7 +317,11 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   }
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
-  bool from_bookmark() const { return false; }
+  // TODO(crbug.com/1065748): Retire this function when there are no old
+  // entries.
+  bool from_deprecated_bookmark() const {
+    return (creation_flags_ & FROM_BOOKMARK) != 0;
+  }
   bool may_be_untrusted() const {
     return (creation_flags_ & MAY_BE_UNTRUSTED) != 0;
   }
@@ -351,6 +350,14 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
 
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
+
+  // Sets whether to ignore deprecated manifest versions for testing purposes.
+  // PLEASE DON'T USE THIS. Instead:
+  // * Ideally, use the current manifest version (V3)! :)
+  // * Failing that, please instead allow the warning to be emitted by e.g.
+  //   toggling ignore_manifest_warnings on ChromeTestExtensionLoader.
+  static void set_silence_deprecated_manifest_version_warnings_for_testing(
+      bool silence);
 
  private:
   friend class base::RefCountedThreadSafe<Extension>;
@@ -430,6 +437,9 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   // The extension origin and base url.
   url::Origin extension_origin_;
   GURL extension_url_;
+
+  // The base extension url for the extension using guid.
+  GURL dynamic_url_;
 
   // The extension's version.
   base::Version version_;

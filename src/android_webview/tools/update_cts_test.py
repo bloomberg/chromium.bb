@@ -5,10 +5,10 @@
 
 import json
 import os
-import six
 import sys
 import unittest
 import zipfile
+import six
 
 import mock  # pylint: disable=import-error
 from mock import call  # pylint: disable=import-error
@@ -18,6 +18,7 @@ sys.path.append(
     os.path.join(
         os.path.dirname(__file__), os.pardir, os.pardir, 'third_party',
         'catapult', 'common', 'py_utils'))
+# pylint: disable=wrong-import-position,import-error
 from py_utils import tempfile_ext
 
 import update_cts
@@ -65,7 +66,7 @@ def verify_zip_file(path, *files):
         raise AssertionError('Expected ' + f + ', found ' + s)
 
 
-class FakeDownload(object):
+class FakeDownload:
   """Allows test to simulate downloads of CTS zip files."""
 
   def __init__(self):
@@ -86,8 +87,10 @@ class FakeDownload(object):
     for p in config:
       for a in config[p]['arch']:
         o = config[p]['arch'][a]['_origin']
-        for apk in [e['apk'] for e in config[p]['test_runs']]:
-          self.append_to_zip_file(o, apk)
+        for test_run in config[p]['test_runs']:
+          self.append_to_zip_file(o, test_run['apk'])
+          for additional_apk in test_run.get('additional_apks', []):
+            self.append_to_zip_file(o, additional_apk['apk'])
 
   def append_to_zip_file(self, url, file_name):
     """Append files to any zip files associated with the url.
@@ -178,6 +181,10 @@ class UpdateCTSTest(unittest.TestCase):
         verify_zip_file(CONFIG_DATA['base12'], CONFIG_DATA['apk1'])
 
   @patch('devil.utils.cmd_helper.RunCmd')
+  @unittest.skipIf(os.name == "nt", "This fails on Windows because it calls "
+                   "download_cipd which ultimately calls cipd_ensure which "
+                   "creates a file with NamedTemporaryFile and then opens it "
+                   "by name, which hits permission errors.")
   def testDownloadCIPD(self, run_mock):
     with tempfile_ext.NamedTemporaryDirectory() as workDir,\
          tempfile_ext.NamedTemporaryDirectory() as repoRoot,\
@@ -199,6 +206,10 @@ class UpdateCTSTest(unittest.TestCase):
             cts_utils_test.readfile(
                 os.path.join(workDir, 'cipd', CIPD_DATA['file' + i])))
 
+  @unittest.skipIf(os.name == "nt", "This fails on Windows because it calls "
+                   "download_cipd which ultimately calls cipd_ensure which "
+                   "creates a file with NamedTemporaryFile and then opens it "
+                   "by name, which hits permission errors.")
   def testDownloadCIPD_dirExists(self):
     with tempfile_ext.NamedTemporaryDirectory() as workDir,\
          tempfile_ext.NamedTemporaryDirectory() as repoRoot,\
@@ -263,6 +274,10 @@ class UpdateCTSTest(unittest.TestCase):
 
   @patch('devil.utils.cmd_helper.RunCmd')
   @patch('devil.utils.cmd_helper.GetCmdOutput')
+  @unittest.skipIf(os.name == "nt", "This fails on Windows because it calls "
+                   "update_repository which calls cipd_ensure which creates a "
+                   "file with NamedTemporaryFile and then opens it by name, "
+                   "which hits permission errors.")
   def testUpdateRepository(self, cmd_mock, run_mock):
     with tempfile_ext.NamedTemporaryDirectory() as workDir,\
          tempfile_ext.NamedTemporaryDirectory() as repoRoot,\
@@ -353,6 +368,11 @@ class UpdateCTSTest(unittest.TestCase):
   @patch('devil.utils.cmd_helper.GetCmdOutput')
   @patch.object(cts_utils.ChromiumRepoHelper, 'update_testing_json')
   @patch('urllib.urlretrieve' if six.PY2 else 'urllib.request.urlretrieve')
+  @unittest.skipIf(os.name == "nt", "This fails on Windows because it calls "
+                   "create_cipd_cmd which calls download_cipd which ultimately "
+                   "calls cipd_ensure which creates a file with "
+                   "NamedTemporaryFile and then opens it by name, which hits "
+                   "permission errors.")
   def testCompleteUpdate(self, retrieve_mock, update_json_mock, cmd_mock,
                          run_mock):
     with tempfile_ext.NamedTemporaryDirectory() as workDir,\

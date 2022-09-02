@@ -5,6 +5,7 @@
 #include "components/site_isolation/site_isolation_policy.h"
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/json/values_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
@@ -13,6 +14,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_field_trial_list_resetter.h"
+#include "base/time/time.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -245,7 +247,7 @@ TEST_F(WebTriggeredIsolatedOriginsPolicyTest, UpdatedMaxSize) {
   DictionaryPrefUpdate update(
       user_prefs::UserPrefs::Get(browser_context()),
       site_isolation::prefs::kWebTriggeredIsolatedOrigins);
-  base::DictionaryValue* dict = update.Get();
+  base::Value* dict = update.Get();
   dict->SetKey("https://foo1.com", base::TimeToValue(base::Time::Now()));
   dict->SetKey("https://foo2.com", base::TimeToValue(base::Time::Now()));
   dict->SetKey("https://foo3.com", base::TimeToValue(base::Time::Now()));
@@ -346,7 +348,7 @@ TEST_F(PasswordSiteIsolationPolicyTest, ApplyPersistedIsolatedOrigins) {
   // Add foo.com and bar.com to stored isolated origins.
   {
     ListPrefUpdate update(prefs(), prefs::kUserTriggeredIsolatedOrigins);
-    base::ListValue* list = update.Get();
+    base::Value* list = update.Get();
     list->Append("http://foo.com");
     list->Append("https://bar.com");
   }
@@ -427,7 +429,7 @@ TEST_F(NoPasswordSiteIsolationPolicyTest,
   // Add foo.com to stored isolated origins.
   {
     ListPrefUpdate update(prefs(), prefs::kUserTriggeredIsolatedOrigins);
-    base::ListValue* list = update.Get();
+    base::Value* list = update.Get();
     list->Append("http://foo.com");
   }
 
@@ -534,7 +536,7 @@ class SitePerProcessMemoryThresholdBrowserTest
   // ContentBrowserClient::ShouldDisableSiteIsolation() returns true.
   std::vector<url::Origin> expected_embedder_origins_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android we don't expect any trial origins because the 512MB
   // physical memory used for testing is below the Android specific
   // hardcoded 1024MB memory limit that disables site isolation.
@@ -577,7 +579,7 @@ INSTANTIATE_TEST_SUITE_P(
     NoIsolation,
     SitePerProcessMemoryThresholdBrowserTestNoIsolation,
     testing::Values(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
         // Expect no isolation on Android because 512MB physical memory
         // triggered by kEnableLowEndDeviceMode in SetUp() is below the 1024MB
         // Android specific memory limit which disables site isolation for all
@@ -601,7 +603,7 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(Isolation,
                          SitePerProcessMemoryThresholdBrowserTestIsolation,
                          testing::Values(
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
                              // See the note above regarding why this
                              // expectation is different on Android.
                              SitePerProcessMemoryThresholdBrowserTestParams{
@@ -658,7 +660,7 @@ INSTANTIATE_TEST_SUITE_P(
     TrialNoIsolatedOrigin,
     SitePerProcessMemoryThresholdBrowserTestNoIsolatedOrigin,
     testing::Values(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
         // When the memory threshold is not explicitly specified, Android uses
         // a 1900MB global memory threshold.  The 512MB simulated device memory
         // is below 1900MB, so the test origin should not be isolated.
@@ -766,7 +768,7 @@ TEST_F(EnabledPasswordSiteIsolationFieldTrialTest, BelowThreshold) {
   // enabled on desktop.  It should be disabled on Android, because Android
   // defaults to a 1900MB memory threshold, which is above the 512MB physical
   // memory that this test simulates.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
 #else
   EXPECT_TRUE(SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
@@ -803,7 +805,7 @@ TEST_F(EnabledPasswordSiteIsolationFieldTrialTest, AboveThreshold) {
   // enabled on desktop.  It should be disabled on Android, because Android
   // defaults to a 1900MB memory threshold, which is above the 512MB physical
   // memory that this test simulates.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
 #else
   EXPECT_TRUE(SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
@@ -978,7 +980,7 @@ TEST_F(EnabledStrictOriginIsolationFieldTrialTest,
   // enabled on desktop.  It should be disabled on Android, because Android
   // defaults to a 1900MB memory threshold, which is above the 512MB physical
   // memory that this test simulates.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(content::SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
 #else
   EXPECT_TRUE(content::SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
@@ -1041,7 +1043,7 @@ TEST_F(DisabledStrictOriginIsolationFieldTrialTest,
 // The following tests verify that the list of Android's built-in isolated
 // origins takes effect. This list is only used in official builds, and only
 // when above the memory threshold.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_ANDROID)
 class BuiltInIsolatedOriginsTest : public SiteIsolationPolicyTest {
  public:
   BuiltInIsolatedOriginsTest() = default;

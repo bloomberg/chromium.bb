@@ -13,17 +13,21 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_worker.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/resource_load_observer_for_worker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
@@ -43,6 +47,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -186,6 +191,7 @@ class OutsideSettingsCSPDelegate final
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
     scoped_refptr<SecurityOrigin> origin,
+    bool is_creator_secure_context,
     Agent* agent,
     const String& name,
     const base::UnguessableToken& parent_devtools_token,
@@ -195,6 +201,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
     : ExecutionContext(isolate, agent),
+      is_creator_secure_context_(is_creator_secure_context),
       name_(name),
       parent_devtools_token_(parent_devtools_token),
       worker_clients_(worker_clients),
@@ -205,6 +212,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
       v8_cache_options_(v8_cache_options),
       reporting_proxy_(reporting_proxy) {
   GetSecurityContext().SetSecurityOrigin(std::move(origin));
+
   SetPolicyContainer(PolicyContainer::CreateEmpty());
   if (worker_clients_)
     worker_clients_->ReattachThread();
@@ -244,6 +252,14 @@ bool WorkerOrWorkletGlobalScope::HasPendingActivity() const {
 
 void WorkerOrWorkletGlobalScope::CountUse(WebFeature feature) {
   DCHECK(IsContextThread());
+
+  // `reporting_proxy_` should outlive `this` but there seems a situation where
+  // the assumption is broken. Don't count features while the context is
+  // destroyed.
+  // TODO(https://crbug.com/1298450): Fix the lifetime of WorkerReportingProxy.
+  if (IsContextDestroyed())
+    return;
+
   DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
   DCHECK_GT(WebFeature::kNumberOfFeatures, feature);
   if (used_features_[static_cast<size_t>(feature)])
@@ -405,6 +421,10 @@ bool WorkerOrWorkletGlobalScope::CanExecuteScripts(
   return !IsJSExecutionForbidden();
 }
 
+bool WorkerOrWorkletGlobalScope::HasInsecureContextInAncestors() const {
+  return !is_creator_secure_context_;
+}
+
 void WorkerOrWorkletGlobalScope::Dispose() {
   DCHECK(script_controller_);
 
@@ -499,16 +519,12 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   }
 
   // credentials mode is credentials mode, and referrer policy is the empty
-  // string."
-  // TODO(domfarolino): Module worker scripts are fetched with kImportanceAuto.
-  // Priority Hints is currently non-standard, but we can assume "fetch a module
-  // worker script tree" sets the script fetch options struct's "importance" to
-  // "auto". See https://github.com/whatwg/html/issues/3670 and
-  // https://crbug.com/821464.
+  // string.
+  // Module worker scripts are fetched with fetchpriority kAuto.
   ScriptFetchOptions options(
       nonce, IntegrityMetadataSet(), integrity_attribute, parser_state,
       credentials_mode, network::mojom::ReferrerPolicy::kDefault,
-      mojom::blink::FetchImportanceMode::kImportanceAuto,
+      mojom::blink::FetchPriorityHint::kAuto,
       RenderBlockingBehavior::kNonBlocking, reject_coep_unsafe_none);
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
@@ -534,6 +550,10 @@ int WorkerOrWorkletGlobalScope::GetOutstandingThrottledLimit() const {
   // is overridden, then this method should also be overridden with a
   // more meaningful value.
   return 2;
+}
+
+String WorkerOrWorkletGlobalScope::GetAcceptLanguages() const {
+  return web_worker_fetch_context_->GetAcceptLanguages();
 }
 
 void WorkerOrWorkletGlobalScope::Trace(Visitor* visitor) const {

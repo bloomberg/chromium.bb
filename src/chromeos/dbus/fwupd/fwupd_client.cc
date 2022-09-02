@@ -9,18 +9,80 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "chromeos/dbus/fwupd/dbus_constants.h"
 #include "chromeos/dbus/fwupd/fwupd_properties.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 
 namespace {
 
+// This enum should match the UpdatePriority enum here:
+// ash/webui/firmware_update_ui/mojom/firmware_update.mojom
+enum UpdatePriority { kLow, kMedium, kHigh, kCritical };
+
 FwupdClient* g_instance = nullptr;
+
+const char kCabFileExtension[] = ".cab";
+const int kSha256Length = 64;
+
+// "1" is the bitflag for an internal device. Defined here:
+// https://github.com/fwupd/fwupd/blob/main/libfwupd/fwupd-enums.h
+const uint64_t kInternalDeviceFlag = 1;
+
+base::FilePath GetFilePathFromUri(const GURL uri) {
+  const std::string filepath = uri.spec();
+
+  if (!filepath.empty()) {
+    // Verify that the extension is .cab.
+    std::size_t extension_delim = filepath.find_last_of(".");
+    if (extension_delim == std::string::npos ||
+        filepath.substr(extension_delim) != kCabFileExtension) {
+      // Bad file, return with empty file path;
+      LOG(ERROR) << "Bad file found: " << filepath;
+      return base::FilePath();
+    }
+
+    return base::FilePath(FILE_PATH_LITERAL(filepath));
+  }
+
+  // Return empty file path if filename can't be found.
+  return base::FilePath();
+}
+
+std::string ParseCheckSum(const std::string& raw_sum) {
+  // The raw checksum string from fwupd can be formatted as:
+  // "SHA{Option},SHA{Option}" or "SHA{Option}". Grab the SHA256 when possible.
+  const std::size_t delim_pos = raw_sum.find_first_of(",");
+  if (delim_pos != std::string::npos) {
+    DCHECK(raw_sum.size() > 0);
+    if (delim_pos >= raw_sum.size() - 1) {
+      return "";
+    }
+
+    const std::string first = raw_sum.substr(0, delim_pos);
+    const std::string second = raw_sum.substr(delim_pos + 1);
+    if (first.length() == kSha256Length) {
+      return first;
+    }
+    if (second.length() == kSha256Length) {
+      return second;
+    }
+    return "";
+  }
+
+  // Only one checksum available, use it if it's a sha256 checksum.
+  if (raw_sum.length() != kSha256Length) {
+    return "";
+  }
+
+  return raw_sum;
+}
 
 }  // namespace
 
@@ -54,6 +116,7 @@ class FwupdClientImpl : public FwupdClient {
 
   void RequestUpdates(const std::string& device_id) override {
     CHECK(features::IsFirmwareUpdaterAppEnabled());
+    VLOG(1) << "fwupd: RequestUpdates called for: " << device_id;
     dbus::MethodCall method_call(kFwupdServiceInterface,
                                  kFwupdGetUpgradesMethodName);
     dbus::MessageWriter writer(&method_call);
@@ -68,6 +131,7 @@ class FwupdClientImpl : public FwupdClient {
 
   void RequestDevices() override {
     CHECK(features::IsFirmwareUpdaterAppEnabled());
+    VLOG(1) << "fwupd: RequestDevices called";
     dbus::MethodCall method_call(kFwupdServiceInterface,
                                  kFwupdGetDevicesMethodName);
     proxy_->CallMethodWithErrorResponse(
@@ -79,6 +143,7 @@ class FwupdClientImpl : public FwupdClient {
   void InstallUpdate(const std::string& device_id,
                      base::ScopedFD file_descriptor,
                      FirmwareInstallOptions options) override {
+    VLOG(1) << "fwupd: InstallUpdate called for id: " << device_id;
     dbus::MethodCall method_call(kFwupdServiceInterface,
                                  kFwupdInstallMethodName);
     dbus::MessageWriter writer(&method_call);
@@ -98,8 +163,10 @@ class FwupdClientImpl : public FwupdClient {
     }
     writer.CloseContainer(&array_writer);
 
+  // TODO(michaelcheco): Investigate whether or not the estimated install time
+  // multiplied by some factor can be used in place of |TIMEOUT_INFINITE|.
     proxy_->CallMethodWithErrorResponse(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
         base::BindOnce(&FwupdClientImpl::InstallUpdateCallback,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -134,9 +201,10 @@ class FwupdClientImpl : public FwupdClient {
       }
 
       // Values in the response can have different types. The fields we are
-      // interested in, are all either strings (s) or uint32 (u). Some fields in
-      // the response have other types, but we don't use them, so we just skip
-      // them.
+      // interested in, are all either strings (s), uint64 (t), or uint32 (u).
+      // Some fields in the response have other types, but we don't use them, so
+      // we just skip them.
+
       if (variant_reader.GetDataSignature() == "u") {
         variant_reader.PopUint32(&value_uint);
         // Value doesn't support unsigned numbers, so this has to be converted
@@ -145,6 +213,14 @@ class FwupdClientImpl : public FwupdClient {
       } else if (variant_reader.GetDataSignature() == "s") {
         variant_reader.PopString(&value_string);
         result->SetKey(key, base::Value(value_string));
+      } else if (variant_reader.GetDataSignature() == "t") {
+        if (key == "Flags") {
+          uint64_t value_uint64 = 0;
+          variant_reader.PopUint64(&value_uint64);
+          const bool is_internal =
+              (value_uint64 & kInternalDeviceFlag) == kInternalDeviceFlag;
+          result->SetKey(key, base::Value(is_internal));
+        }
       }
     }
     return result;
@@ -153,40 +229,88 @@ class FwupdClientImpl : public FwupdClient {
   void RequestUpdatesCallback(const std::string& device_id,
                               dbus::Response* response,
                               dbus::ErrorResponse* error_response) {
+    bool can_parse = true;
     if (!response) {
-      LOG(ERROR) << "No Dbus response received from fwupd.";
-      return;
+      // This isn't necessarily an error. Keep at verbose logging to prevent
+      // spam.
+      VLOG(1) << "No Dbus response received from fwupd.";
+      can_parse = false;
     }
 
     dbus::MessageReader reader(response);
     dbus::MessageReader array_reader(nullptr);
 
-    if (!reader.PopArray(&array_reader)) {
+    if (can_parse && !reader.PopArray(&array_reader)) {
       LOG(ERROR) << "Failed to parse string from DBus Signal";
-      return;
+      can_parse = false;
     }
 
     FwupdUpdateList updates;
-    while (array_reader.HasMoreData()) {
+    while (can_parse && array_reader.HasMoreData()) {
       // Parse update description.
       std::unique_ptr<base::DictionaryValue> dict =
           PopStringToStringDictionary(&array_reader);
       if (!dict) {
         LOG(ERROR) << "Failed to parse the update description.";
-        return;
+        // Ran into an error, exit early.
+        break;
       }
 
       const auto* version = dict->FindKey("Version");
       const auto* description = dict->FindKey("Description");
       const auto* priority = dict->FindKey("Urgency");
+      const auto* uri = dict->FindKey("Uri");
+      const auto* checksum = dict->FindKey("Checksum");
 
-      const bool success = version && description && priority;
+      base::FilePath filepath;
+      if (uri) {
+        filepath = GetFilePathFromUri(GURL(uri->GetString()));
+      }
+
+      std::string sha_checksum;
+      if (checksum) {
+        sha_checksum = ParseCheckSum(checksum->GetString());
+      }
+
+      std::string description_value = "";
+
+      if (description) {
+        description_value = description->GetString();
+      } else {
+        VLOG(1) << "Device: " << device_id
+                << " is missing its description text.";
+      }
+
+      // If priority isn't specified we use default of low priority
+      int priority_value = UpdatePriority::kLow;
+      if (priority) {
+        priority_value = priority->GetInt();
+      } else {
+        LOG(WARNING)
+            << "Device: " << device_id
+            << " is missing its priority field, using default of low priority.";
+      }
+
+      const bool success =
+          version && !filepath.empty() && !sha_checksum.empty();
       // TODO(michaelcheco): Confirm that this is the expected behavior.
       if (success) {
-        updates.emplace_back(version->GetString(), description->GetString(),
-                             priority->GetInt());
+        VLOG(1) << "fwupd: Found update version for device: " << device_id
+                << " with version: " << version->GetString();
+        updates.emplace_back(version->GetString(), description_value,
+                             priority_value, filepath, sha_checksum);
       } else {
-        LOG(ERROR) << "Update version, description or priority is not found.";
+        if (!version) {
+          LOG(ERROR) << "Device: " << device_id
+                     << " is missing its version field.";
+        }
+        if (!uri) {
+          LOG(ERROR) << "Device: " << device_id << " is missing its URI field.";
+        }
+        if (!checksum) {
+          LOG(ERROR) << "Device: " << device_id
+                     << " is missing its checksum field.";
+        }
       }
     }
 
@@ -220,8 +344,14 @@ class FwupdClientImpl : public FwupdClient {
         return;
       }
 
-      const auto* id = dict->FindKey("DeviceId");
+      const auto* flags = dict->FindKey("Flags");
       const auto* name = dict->FindKey("Name");
+      if (flags && flags->GetBool()) {
+        VLOG(1) << "Ignoring internal device: " << name;
+        continue;
+      }
+
+      const auto* id = dict->FindKey("DeviceId");
 
       // The keys "DeviceId" and "Name" must exist in the dictionary.
       const bool success = id && name;
@@ -230,6 +360,8 @@ class FwupdClientImpl : public FwupdClient {
         return;
       }
 
+      VLOG(1) << "fwupd: Device found: " << id->GetString() << " "
+              << name->GetString();
       devices.emplace_back(id->GetString(), name->GetString());
     }
 
@@ -246,6 +378,7 @@ class FwupdClientImpl : public FwupdClient {
       success = false;
     }
 
+    VLOG(1) << "fwupd: InstallUpdate returned with: " << success;
     for (auto& observer : observers_)
       observer.OnInstallResponse(success);
   }

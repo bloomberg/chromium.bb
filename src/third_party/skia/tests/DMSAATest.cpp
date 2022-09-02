@@ -7,12 +7,14 @@
 
 #include "tests/Test.h"
 
+#include "include/core/SkBitmap.h"
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkVertices.h"
 #include "src/core/SkBlendModePriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkSurfacePriv.h"
-#include "src/gpu/GrStyle.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/ganesh/GrStyle.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 
 namespace {
 
@@ -202,7 +204,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DMSAA_dual_source_blend_disable, reporter, ct
                                                        texDims.height(),
                                                        kRGBA_8888_SkColorType,
                                                        SkColors::kBlue,
-                                                       GrMipMapped::kNo,
+                                                       GrMipmapped::kNo,
                                                        GrRenderable::kYes,
                                                        GrProtected::kNo);
 
@@ -217,7 +219,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DMSAA_dual_source_blend_disable, reporter, ct
                                                   surfaceDims.height(),
                                                   kRGBA_8888_SkColorType,
                                                   SkColors::kRed,
-                                                  GrMipMapped::kNo,
+                                                  GrMipmapped::kNo,
                                                   GrRenderable::kYes,
                                                   GrProtected::kNo);
 
@@ -225,7 +227,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DMSAA_dual_source_blend_disable, reporter, ct
                                                   surfaceDims.height(),
                                                   kRGBA_8888_SkColorType,
                                                   SkColors::kYellow,
-                                                  GrMipMapped::kNo,
+                                                  GrMipmapped::kNo,
                                                   GrRenderable::kYes,
                                                   GrProtected::kNo);
 

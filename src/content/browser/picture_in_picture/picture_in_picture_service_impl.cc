@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "content/browser/picture_in_picture/picture_in_picture_session.h"
-#include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
+#include "content/browser/picture_in_picture/video_picture_in_picture_window_controller_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -36,6 +36,7 @@ void PictureInPictureServiceImpl::StartSession(
     const gfx::Size& natural_size,
     bool show_play_pause_button,
     mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
+    const gfx::Rect& source_bounds,
     StartSessionCallback callback) {
   gfx::Size window_size;
   mojo::PendingRemote<blink::mojom::PictureInPictureSession> session_remote;
@@ -43,8 +44,8 @@ void PictureInPictureServiceImpl::StartSession(
   auto result = GetController().StartSession(
       this, MediaPlayerId(render_frame_host()->GetGlobalId(), player_id),
       std::move(player_remote), surface_id, natural_size,
-      show_play_pause_button, std::move(observer), &session_remote,
-      &window_size);
+      show_play_pause_button, std::move(observer), source_bounds,
+      &session_remote, &window_size);
 
   if (result == PictureInPictureResult::kSuccess) {
     // Frames are to be blocklisted from the back-forward cache because the
@@ -69,9 +70,9 @@ PictureInPictureServiceImpl::~PictureInPictureServiceImpl() {
   GetController().OnServiceDeleted(this);
 }
 
-PictureInPictureWindowControllerImpl&
+VideoPictureInPictureWindowControllerImpl&
 PictureInPictureServiceImpl::GetController() {
-  return *PictureInPictureWindowControllerImpl::GetOrCreateForWebContents(
+  return *VideoPictureInPictureWindowControllerImpl::GetOrCreateForWebContents(
       WebContents::FromRenderFrameHost(render_frame_host()));
 }
 

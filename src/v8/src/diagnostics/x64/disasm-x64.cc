@@ -1158,6 +1158,13 @@ int DisassemblerX64::AVXInstruction(byte* data) {
         AppendToBuffer("vcvtdq2pd %s,", NameOfAVXRegister(regop));
         current += PrintRightAVXOperand(current);
         break;
+      case 0xC2:
+        AppendToBuffer("vcmpss %s,%s,", NameOfAVXRegister(regop),
+                       NameOfAVXRegister(vvvv));
+        current += PrintRightAVXOperand(current);
+        AppendToBuffer(", (%s)", cmp_pseudo_op[*current]);
+        current += 1;
+        break;
       default:
         UnimplementedInstruction();
     }
@@ -1212,6 +1219,13 @@ int DisassemblerX64::AVXInstruction(byte* data) {
         AppendToBuffer("vhaddps %s,%s,", NameOfAVXRegister(regop),
                        NameOfAVXRegister(vvvv));
         current += PrintRightAVXOperand(current);
+        break;
+      case 0xC2:
+        AppendToBuffer("vcmpsd %s,%s,", NameOfAVXRegister(regop),
+                       NameOfAVXRegister(vvvv));
+        current += PrintRightAVXOperand(current);
+        AppendToBuffer(", (%s)", cmp_pseudo_op[*current]);
+        current += 1;
         break;
 #define DISASM_SSE2_INSTRUCTION_LIST_SD(instruction, _1, _2, opcode)     \
   case 0x##opcode:                                                       \
@@ -1523,14 +1537,17 @@ int DisassemblerX64::AVXInstruction(byte* data) {
 
         SSE2_INSTRUCTION_LIST(DECLARE_SSE_AVX_DIS_CASE)
 #undef DECLARE_SSE_AVX_DIS_CASE
-#define DECLARE_SSE_UNOP_AVX_DIS_CASE(instruction, notUsed1, notUsed2, opcode) \
-  case 0x##opcode: {                                                           \
-    AppendToBuffer("v" #instruction " %s,", NameOfAVXRegister(regop));         \
-    current += PrintRightAVXOperand(current);                                  \
-    break;                                                                     \
+#define DECLARE_SSE_UNOP_AVX_DIS_CASE(instruction, opcode, SIMDRegister)  \
+  case 0x##opcode: {                                                      \
+    AppendToBuffer("v" #instruction " %s,", NameOf##SIMDRegister(regop)); \
+    current += PrintRightAVXOperand(current);                             \
+    break;                                                                \
   }
-
-        SSE2_UNOP_INSTRUCTION_LIST(DECLARE_SSE_UNOP_AVX_DIS_CASE)
+        DECLARE_SSE_UNOP_AVX_DIS_CASE(ucomisd, 2E, AVXRegister)
+        DECLARE_SSE_UNOP_AVX_DIS_CASE(sqrtpd, 51, AVXRegister)
+        DECLARE_SSE_UNOP_AVX_DIS_CASE(cvtpd2ps, 5A, XMMRegister)
+        DECLARE_SSE_UNOP_AVX_DIS_CASE(cvtps2dq, 5B, AVXRegister)
+        DECLARE_SSE_UNOP_AVX_DIS_CASE(cvttpd2dq, E6, XMMRegister)
 #undef DECLARE_SSE_UNOP_AVX_DIS_CASE
       default:
         UnimplementedInstruction();
@@ -2001,6 +2018,10 @@ int DisassemblerX64::TwoByteOpcodeInstruction(byte* data) {
       current += 2;
     } else if (opcode == 0xE6) {
       current += PrintOperands("cvtdq2pd", XMMREG_XMMOPER_OP_ORDER, current);
+    } else if (opcode == 0xAE) {
+      // incssp[d|q]
+      AppendToBuffer("incssp%c ", operand_size_code());
+      current += PrintRightOperand(current);
     } else {
       UnimplementedInstruction();
     }
@@ -2292,6 +2313,8 @@ const char* DisassemblerX64::TwoByteMnemonic(byte opcode) {
       return "movsxb";
     case 0xBF:
       return "movsxw";
+    case 0xC2:
+      return "cmpss";
     default:
       return nullptr;
   }

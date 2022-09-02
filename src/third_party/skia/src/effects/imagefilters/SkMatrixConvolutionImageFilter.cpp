@@ -18,10 +18,10 @@
 #include "src/core/SkWriteBuffer.h"
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrMatrixConvolutionEffect.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrTextureProxy.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/effects/GrMatrixConvolutionEffect.h"
 #endif
 
 namespace {
@@ -372,6 +372,7 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilter::onFilterImage(const Contex
         SkASSERT(inputView.asTextureProxy());
 
         const auto isProtected = inputView.proxy()->isProtected();
+        const auto origin = inputView.origin();
 
         offset->fX = dstBounds.left();
         offset->fY = dstBounds.top();
@@ -403,7 +404,7 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilter::onFilterImage(const Contex
         // evaluating the FP, and the dst rect just uses the size of dstBounds.
         dstBounds.offset(input->subset().x(), input->subset().y());
         return DrawWithFP(context, std::move(fp), dstBounds, ctx.colorType(), ctx.colorSpace(),
-                          ctx.surfaceProps(), isProtected);
+                          ctx.surfaceProps(), origin, isProtected);
     }
 #endif
 

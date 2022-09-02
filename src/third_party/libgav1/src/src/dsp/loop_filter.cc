@@ -603,12 +603,82 @@ void Init10bpp() {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using Defs12bpp = LoopFilterFuncs_C<12, uint16_t>;
+
+void Init12bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(12);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  dsp->loop_filters[kLoopFilterSize4][kLoopFilterTypeHorizontal] =
+      Defs12bpp::Horizontal4;
+  dsp->loop_filters[kLoopFilterSize4][kLoopFilterTypeVertical] =
+      Defs12bpp::Vertical4;
+
+  dsp->loop_filters[kLoopFilterSize6][kLoopFilterTypeHorizontal] =
+      Defs12bpp::Horizontal6;
+  dsp->loop_filters[kLoopFilterSize6][kLoopFilterTypeVertical] =
+      Defs12bpp::Vertical6;
+
+  dsp->loop_filters[kLoopFilterSize8][kLoopFilterTypeHorizontal] =
+      Defs12bpp::Horizontal8;
+  dsp->loop_filters[kLoopFilterSize8][kLoopFilterTypeVertical] =
+      Defs12bpp::Vertical8;
+
+  dsp->loop_filters[kLoopFilterSize14][kLoopFilterTypeHorizontal] =
+      Defs12bpp::Horizontal14;
+  dsp->loop_filters[kLoopFilterSize14][kLoopFilterTypeVertical] =
+      Defs12bpp::Vertical14;
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  static_cast<void>(dsp);
+#ifndef LIBGAV1_Dsp12bpp_LoopFilterSize4_LoopFilterTypeHorizontal
+  dsp->loop_filters[kLoopFilterSize4][kLoopFilterTypeHorizontal] =
+      Defs12bpp::Horizontal4;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_LoopFilterSize4_LoopFilterTypeVertical
+  dsp->loop_filters[kLoopFilterSize4][kLoopFilterTypeVertical] =
+      Defs12bpp::Vertical4;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_LoopFilterSize6_LoopFilterTypeHorizontal
+  dsp->loop_filters[kLoopFilterSize6][kLoopFilterTypeHorizontal] =
+      Defs12bpp::Horizontal6;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_LoopFilterSize6_LoopFilterTypeVertical
+  dsp->loop_filters[kLoopFilterSize6][kLoopFilterTypeVertical] =
+      Defs12bpp::Vertical6;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_LoopFilterSize8_LoopFilterTypeHorizontal
+  dsp->loop_filters[kLoopFilterSize8][kLoopFilterTypeHorizontal] =
+      Defs12bpp::Horizontal8;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_LoopFilterSize8_LoopFilterTypeVertical
+  dsp->loop_filters[kLoopFilterSize8][kLoopFilterTypeVertical] =
+      Defs12bpp::Vertical8;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_LoopFilterSize14_LoopFilterTypeHorizontal
+  dsp->loop_filters[kLoopFilterSize14][kLoopFilterTypeHorizontal] =
+      Defs12bpp::Horizontal14;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_LoopFilterSize14_LoopFilterTypeVertical
+  dsp->loop_filters[kLoopFilterSize14][kLoopFilterTypeVertical] =
+      Defs12bpp::Vertical14;
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 }  // namespace
 
 void LoopFilterInit_C() {
   Init8bpp();
 #if LIBGAV1_MAX_BITDEPTH >= 10
   Init10bpp();
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  Init12bpp();
 #endif
   // Local functions that may be unused depending on the optimizations
   // available.

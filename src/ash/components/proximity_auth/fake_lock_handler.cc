@@ -20,30 +20,46 @@ void FakeLockHandler::ShowUserPodCustomIcon(
 void FakeLockHandler::HideUserPodCustomIcon(const AccountId& account_id) {}
 
 void FakeLockHandler::SetSmartLockState(const AccountId& account_id,
-                                        ash::SmartLockState state) {}
+                                        ash::SmartLockState state) {
+  smart_lock_state_ = state;
+}
 
 void FakeLockHandler::NotifySmartLockAuthResult(const AccountId& account_id,
-                                                bool successful) {}
+                                                bool successful) {
+  smart_lock_auth_result_ = successful;
+}
 
 void FakeLockHandler::EnableInput() {}
 
 void FakeLockHandler::SetAuthType(const AccountId& account_id,
                                   mojom::AuthType auth_type,
-                                  const std::u16string& auth_value) {}
+                                  const std::u16string& auth_value) {
+  latest_set_auth_type_ = auth_type;
+}
 
 mojom::AuthType FakeLockHandler::GetAuthType(
     const AccountId& account_id) const {
-  return mojom::AuthType::USER_CLICK;
+  return latest_set_auth_type_;
 }
 
 FakeLockHandler::ScreenType FakeLockHandler::GetScreenType() const {
   return FakeLockHandler::LOCK_SCREEN;
 }
 
-void FakeLockHandler::Unlock(const AccountId& account_id) {}
+void FakeLockHandler::Unlock(const AccountId& account_id) {
+  unlock_called_++;
+}
 
 void FakeLockHandler::AttemptEasySignin(const AccountId& account_id,
                                         const std::string& secret,
                                         const std::string& key_label) {}
+
+void FakeLockHandler::ClearSmartLockState() {
+  smart_lock_state_.reset();
+}
+
+void FakeLockHandler::ClearSmartLockAuthResult() {
+  smart_lock_auth_result_.reset();
+}
 
 }  // namespace proximity_auth

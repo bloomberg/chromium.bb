@@ -41,7 +41,7 @@ function handlePathInfo({execPath, profilePath}) {
   $('profile_path').textContent = profilePath;
 }
 
-// <if expr="chromeos or is_win">
+// <if expr="chromeos_ash or is_win">
 /**
  * Callback from the backend with the OS version to display.
  * @param {string} osVersion The OS version to display.
@@ -51,7 +51,7 @@ function returnOsVersion(osVersion) {
 }
 // </if>
 
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 /**
  * Callback from the backend with the firmware version to display.
  * @param {string} firmwareVersion
@@ -82,7 +82,7 @@ function returnCustomizationId(response) {
 }
 // </if>
 
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 /**
  * Callback from the backend to inform if Lacros is primary or not.
  * @param {string} isPrimary True if it is primary.
@@ -111,24 +111,24 @@ function copyToClipboard() {
 
 /* All the work we do onload. */
 function onLoadWork() {
-  // <if expr="chromeos or is_win">
+  // <if expr="chromeos_ash or is_win">
   addWebUIListener('return-os-version', returnOsVersion);
   // </if>
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   addWebUIListener('return-os-firmware-version', returnOsFirmwareVersion);
   addWebUIListener('return-arc-version', returnARCVersion);
   // </if>
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   addWebUIListener('return-lacros-primary', returnLacrosPrimary);
   // </if>
 
   chrome.send('requestVersionInfo');
-  const includeVariationsCmd = location.search.includes("show-variations-cmd");
+  const includeVariationsCmd = location.search.includes('show-variations-cmd');
   sendWithPromise('requestVariationInfo', includeVariationsCmd)
       .then(handleVariationInfo);
   sendWithPromise('requestPathInfo').then(handlePathInfo);
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   $('arc_holder').hidden = true;
   chrome.chromeosInfoPrivate.get(['customizationId'], returnCustomizationId);
   // </if>

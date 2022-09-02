@@ -6,9 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/network_onc_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -25,9 +25,10 @@ ManagedNetworkConfigurationHandler::InitializeForTesting(
     NetworkConfigurationHandler* network_configuration_handler,
     UIProxyConfigService* ui_proxy_config_service) {
   auto* handler = new ManagedNetworkConfigurationHandlerImpl();
-  handler->Init(/*cellular_policy_handler=*/nullptr, network_state_handler,
-                network_profile_handler, network_configuration_handler,
-                network_device_handler,
+  handler->Init(/*cellular_policy_handler=*/nullptr,
+                /*managed_cellular_pref_handler=*/nullptr,
+                network_state_handler, network_profile_handler,
+                network_configuration_handler, network_device_handler,
                 /*prohibitied_technologies_handler=*/nullptr);
   handler->set_ui_proxy_config_service(ui_proxy_config_service);
   return base::WrapUnique(handler);

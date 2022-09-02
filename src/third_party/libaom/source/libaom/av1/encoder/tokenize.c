@@ -146,8 +146,14 @@ static void tokenize_vartx(ThreadData *td, TX_SIZE tx_size,
   if (tx_size == plane_tx_size || plane) {
     plane_bsize =
         get_plane_block_size(mbmi->bsize, pd->subsampling_x, pd->subsampling_y);
-    av1_update_and_record_txb_context(plane, block, blk_row, blk_col,
-                                      plane_bsize, tx_size, arg);
+
+    struct tokenize_b_args *args = arg;
+    if (args->allow_update_cdf)
+      av1_update_and_record_txb_context(plane, block, blk_row, blk_col,
+                                        plane_bsize, tx_size, arg);
+    else
+      av1_record_txb_context(plane, block, blk_row, blk_col, plane_bsize,
+                             tx_size, arg);
 
   } else {
     // Half the block size in transform block unit.

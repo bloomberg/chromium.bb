@@ -72,6 +72,7 @@ set(VULKAN_SRC_FILES
     VkPipeline.hpp
     VkPipelineCache.cpp
     VkPipelineCache.hpp
+    VkPrivateData.hpp
     VkSpecializationInfo.cpp
     VkSpecializationInfo.hpp
     VkPipelineLayout.cpp
@@ -193,7 +194,7 @@ target_link_libraries(vk_swiftshader
         vk_pipeline
         vk_device
         vk_wsi
-        ${Reactor}
+        Reactor
         marl
         ${OS_LIBS}
         ${SWIFTSHADER_LIBS}

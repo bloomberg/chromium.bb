@@ -7,12 +7,14 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -185,7 +187,9 @@ BluetoothDeviceInfoPtr GetBluetoothDeviceInfo(device::BluetoothDevice* device) {
 
 }  // namespace
 
-TrayBluetoothHelperLegacy::TrayBluetoothHelperLegacy() {}
+TrayBluetoothHelperLegacy::TrayBluetoothHelperLegacy() {
+  DCHECK(!ash::features::IsBluetoothRevampEnabled());
+}
 
 TrayBluetoothHelperLegacy::~TrayBluetoothHelperLegacy() {
   if (adapter_)
@@ -307,9 +311,13 @@ BluetoothSystem::State TrayBluetoothHelperLegacy::GetBluetoothState() {
 
 void TrayBluetoothHelperLegacy::SetBluetoothEnabled(bool enabled) {
   if (enabled != (GetBluetoothState() == BluetoothSystem::State::kPoweredOn)) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        enabled ? UMA_STATUS_AREA_BLUETOOTH_ENABLED
-                : UMA_STATUS_AREA_BLUETOOTH_DISABLED);
+    if (enabled) {
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_Bluetooth_Enabled"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_Bluetooth_Disabled"));
+    }
   }
 
   Shell::Get()->bluetooth_power_controller()->SetBluetoothEnabled(enabled);

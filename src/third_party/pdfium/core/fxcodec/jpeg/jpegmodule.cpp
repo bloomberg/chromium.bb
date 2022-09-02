@@ -15,7 +15,6 @@
 
 #include "build/build_config.h"
 #include "core/fxcodec/cfx_codec_memory.h"
-#include "core/fxcodec/fx_codec.h"
 #include "core/fxcodec/jpeg/jpeg_common.h"
 #include "core/fxcodec/scanlinedecoder.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
@@ -51,13 +50,13 @@ static void src_skip_data(jpeg_decompress_struct* cinfo, long num) {
   cinfo->src->bytes_in_buffer -= num;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 static void dest_do_nothing(j_compress_ptr cinfo) {}
 
 static boolean dest_empty(j_compress_ptr cinfo) {
   return false;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // extern "C"
 
@@ -407,7 +406,7 @@ absl::optional<JpegModule::ImageInfo> JpegModule::LoadInfo(
   return info;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 bool JpegModule::JpegEncode(const RetainPtr<CFX_DIBBase>& pSource,
                             uint8_t** dest_buf,
                             size_t* dest_size) {
@@ -506,6 +505,6 @@ bool JpegModule::JpegEncode(const RetainPtr<CFX_DIBBase>& pSource,
 
   return true;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace fxcodec

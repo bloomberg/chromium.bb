@@ -56,19 +56,11 @@ size_t Buffer::ComputeRequiredAllocationSize(const VkBufferCreateInfo *pCreateIn
 	return (pCreateInfo->sharingMode == VK_SHARING_MODE_CONCURRENT) ? sizeof(uint32_t) * pCreateInfo->queueFamilyIndexCount : 0;
 }
 
-const VkMemoryRequirements Buffer::getMemoryRequirements() const
+const VkMemoryRequirements Buffer::GetMemoryRequirements(VkDeviceSize size, VkBufferUsageFlags usage)
 {
 	VkMemoryRequirements memoryRequirements = {};
 
-	// Add 15 bytes of padding to ensure that any type of attribute within the
-	// buffer can be read using 16-bit accesses.
-	// TODO(b/196822081): Also reserve space for a header containing the size of the buffer (for robust buffer access)
-	memoryRequirements.size = this->size + 15;
-
-	if(memoryRequirements.size < this->size)  // Overflow occurred
-	{
-		memoryRequirements.size = std::numeric_limits<VkDeviceSize>::max();
-	}
+	memoryRequirements.size = size;
 
 	if(usage & (VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT))
 	{
@@ -90,6 +82,11 @@ const VkMemoryRequirements Buffer::getMemoryRequirements() const
 	memoryRequirements.memoryTypeBits = vk::MEMORY_TYPE_GENERIC_BIT;
 
 	return memoryRequirements;
+}
+
+const VkMemoryRequirements Buffer::getMemoryRequirements() const
+{
+	return GetMemoryRequirements(size, usage);
 }
 
 bool Buffer::canBindToMemory(DeviceMemory *pDeviceMemory) const

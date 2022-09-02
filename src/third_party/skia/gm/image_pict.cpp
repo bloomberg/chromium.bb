@@ -28,11 +28,11 @@
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
 #include "include/gpu/GrTypes.h"
-#include "include/private/GrTypesPriv.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSamplerState.h"
-#include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/SurfaceContext.h"
+#include "include/private/gpu/ganesh/GrTypesPriv.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrSamplerState.h"
+#include "src/gpu/ganesh/GrTextureProxy.h"
+#include "src/gpu/ganesh/SurfaceContext.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkImage_Gpu.h"
 
@@ -181,7 +181,7 @@ protected:
     GrSurfaceProxyView onGenerateTexture(GrRecordingContext* rContext,
                                          const SkImageInfo& info,
                                          const SkIPoint& origin,
-                                         GrMipmapped mipMapped,
+                                         GrMipmapped mipmapped,
                                          GrImageTexGenPolicy policy) override {
         SkASSERT(rContext);
         SkASSERT(rContext->priv().matches(fRContext.get()));
@@ -197,7 +197,7 @@ protected:
         auto budgeted = policy == GrImageTexGenPolicy::kNew_Uncached_Unbudgeted ? SkBudgeted::kNo
                                                                                 : SkBudgeted::kYes;
         return GrSurfaceProxyView::Copy(
-                fRContext.get(), fView, mipMapped,
+                fRContext.get(), fView, mipmapped,
                 SkIRect::MakeXYWH(origin.x(), origin.y(), info.width(), info.height()),
                 SkBackingFit::kExact, budgeted);
     }

@@ -9,5 +9,5 @@ title: MobLab FAQ
 ---
 
 \*\*\*DEPRECATED, PLEASE VISIT
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/moblab> \*\*\*
+<https://www.chromium.org/chromium-os/testing/moblab> \*\*\*
 (20170714)

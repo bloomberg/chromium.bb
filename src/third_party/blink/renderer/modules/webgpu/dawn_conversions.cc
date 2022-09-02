@@ -14,8 +14,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_doublesequence_gpucolordict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpuautolayoutmode_gpupipelinelayout.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpuextent3ddict_unsignedlongenforcerangesequence.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpuorigin3ddict_unsignedlongenforcerangesequence.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 
@@ -84,13 +86,13 @@ WGPUExtent3D AsDawnType(const V8GPUExtent3D* webgpu_extent) {
       switch (webgpu_extent_sequence.size()) {
         default:
           dawn_extent.depthOrArrayLayers = webgpu_extent_sequence[2];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 2:
           dawn_extent.height = webgpu_extent_sequence[1];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 1:
           dawn_extent.width = webgpu_extent_sequence[0];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 0:
           break;
       }
@@ -124,13 +126,13 @@ WGPUOrigin3D AsDawnType(const V8GPUOrigin3D* webgpu_origin) {
       switch (webgpu_origin_sequence.size()) {
         default:
           dawn_origin.z = webgpu_origin_sequence[2];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 2:
           dawn_origin.y = webgpu_origin_sequence[1];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 1:
           dawn_origin.x = webgpu_origin_sequence[0];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 0:
           break;
       }
@@ -141,8 +143,7 @@ WGPUOrigin3D AsDawnType(const V8GPUOrigin3D* webgpu_origin) {
   return dawn_origin;
 }
 
-WGPUImageCopyTexture AsDawnType(const GPUImageCopyTexture* webgpu_view,
-                                GPUDevice* device) {
+WGPUImageCopyTexture AsDawnType(const GPUImageCopyTexture* webgpu_view) {
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->texture());
 
@@ -150,7 +151,7 @@ WGPUImageCopyTexture AsDawnType(const GPUImageCopyTexture* webgpu_view,
   dawn_view.texture = webgpu_view->texture()->GetHandle();
   dawn_view.mipLevel = webgpu_view->mipLevel();
   dawn_view.origin = AsDawnType(webgpu_view->origin());
-  dawn_view.aspect = AsDawnEnum<WGPUTextureAspect>(webgpu_view->aspect());
+  dawn_view.aspect = AsDawnEnum(webgpu_view->aspect());
 
   return dawn_view;
 }
@@ -230,6 +231,23 @@ WGPUTextureFormat AsDawnType(SkColorType color_type) {
     default:
       return WGPUTextureFormat_Undefined;
   }
+}
+
+WGPUPipelineLayout AsDawnType(
+    V8UnionGPUAutoLayoutModeOrGPUPipelineLayout* webgpu_layout) {
+  DCHECK(webgpu_layout);
+
+  switch (webgpu_layout->GetContentType()) {
+    case V8UnionGPUAutoLayoutModeOrGPUPipelineLayout::ContentType::
+        kGPUPipelineLayout:
+      return AsDawnType(webgpu_layout->GetAsGPUPipelineLayout());
+    case V8UnionGPUAutoLayoutModeOrGPUPipelineLayout::ContentType::
+        kGPUAutoLayoutMode:
+      return nullptr;
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace blink

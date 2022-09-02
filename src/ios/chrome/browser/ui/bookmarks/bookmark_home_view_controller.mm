@@ -120,7 +120,7 @@ const CGFloat kEstimatedRowHeight = 65.0;
 // calculate this value dynamically.
 const int kRowsHiddenByNavigationBar = 3;
 
-// Returns a vector of all URLs in |nodes|.
+// Returns a vector of all URLs in `nodes`.
 std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   std::vector<GURL> urls;
   for (const BookmarkNode* node : nodes) {
@@ -450,7 +450,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
   // Check that the tableView still contains as many rows, and that
-  // |self.cachedIndexPathRow| is not 0.
+  // `self.cachedIndexPathRow` is not 0.
   if (self.cachedIndexPathRow &&
       [self.tableView numberOfRowsInSection:0] > self.cachedIndexPathRow) {
     NSIndexPath* indexPath =
@@ -587,7 +587,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Asynchronously loads favicon for given index path. The loads are cancelled
 // upon cell reuse automatically.  When the favicon is not found in cache, try
-// loading it from a Google server if |fallbackToGoogleServer| is YES,
+// loading it from a Google server if `fallbackToGoogleServer` is YES,
 // otherwise, use the fall back icon style.
 - (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath
                        forCell:(UITableViewCell*)cell
@@ -682,6 +682,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // Deletes the current node.
 - (void)deleteNodes:(const std::set<const BookmarkNode*>&)nodes {
   DCHECK_GE(nodes.size(), 1u);
+  // TODO(crbug.com/1323778): This will need to be called on the
+  // SnackbarCommands handler.
   [self.handler
       showSnackbarMessage:bookmark_utils_ios::DeleteBookmarksWithUndoToast(
                               nodes, self.bookmarks, self.browserState)];
@@ -792,7 +794,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     // reachable through search). To avoid a kink in the animation, the title
     // is set to regular size, which means the search bar is at same level at
     // beginning and end of animation. This controller will be replaced in
-    // |stack| so there's no need to care about restoring this.
+    // `stack` so there's no need to care about restoring this.
     if ([self isDisplayingBookmarkRoot]) {
       self.navigationItem.largeTitleDisplayMode =
           UINavigationItemLargeTitleDisplayModeNever;
@@ -878,6 +880,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)handleMoveNode:(const bookmarks::BookmarkNode*)node
             toPosition:(int)position {
+  // TODO(crbug.com/1323778): This will need to be called on the
+  // SnackbarCommands handler.
   [self.handler
       showSnackbarMessage:
           bookmark_utils_ios::UpdateBookmarkPositionWithUndoToast(
@@ -918,6 +922,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   DCHECK(!folder->is_url());
   DCHECK_GE(folderPicker.editedNodes.size(), 1u);
 
+  // TODO(crbug.com/1323778): This will need to be called on the
+  // SnackbarCommands handler.
   [self.handler
       showSnackbarMessage:bookmark_utils_ios::MoveBookmarksWithUndoToast(
                               folderPicker.editedNodes, self.bookmarks, folder,
@@ -951,7 +957,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)bookmarkInteractionControllerDidStop:
     (BookmarkInteractionController*)controller {
   // TODO(crbug.com/805182): Use this method to tear down
-  // |self.bookmarkInteractionController|.
+  // `self.bookmarkInteractionController`.
 }
 
 #pragma mark - BookmarkModelBridgeObserver
@@ -1079,7 +1085,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
 }
 
-// Set up navigation bar for |viewController|'s navigationBar using |node|.
+// Set up navigation bar for `viewController`'s navigationBar using `node`.
 - (void)setupNavigationForBookmarkHomeViewController:
             (BookmarkHomeViewController*)viewController
                                    usingBookmarkNode:
@@ -1321,7 +1327,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         bookmarks::prefs::kEditBookmarksEnabled);
 }
 
-// Returns the bookmark node associated with |indexPath|.
+// Returns the bookmark node associated with `indexPath`.
 - (const BookmarkNode*)nodeAtIndexPath:(NSIndexPath*)indexPath {
   TableViewItem* item =
       [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
@@ -1431,8 +1437,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return self.scrimView.superview ? YES : NO;
 }
 
-// Triggers the URL sharing flow for the given |URL| and |title|, with the
-// |indexPath| for the cell representing the UI component for that URL.
+// Triggers the URL sharing flow for the given `URL` and `title`, with the
+// `indexPath` for the cell representing the UI component for that URL.
 - (void)shareURL:(const GURL&)URL
            title:(NSString*)title
        indexPath:(NSIndexPath*)indexPath {
@@ -1641,7 +1647,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 #pragma mark - ContextBarStates
 
-// Customizes the context bar buttons based the |state| passed in.
+// Customizes the context bar buttons based the `state` passed in.
 - (void)setContextBarState:(BookmarksContextBarState)state {
   _contextBarState = state;
   switch (state) {
@@ -2028,9 +2034,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (BOOL)canShowContextMenuFor:(NSIndexPath*)indexPath {
-  if (indexPath == nil || [self.sharedState.tableViewModel
-                              sectionIdentifierForSection:indexPath.section] !=
-                              BookmarkHomeSectionIdentifierBookmarks) {
+  if (indexPath == nil ||
+      [self.sharedState.tableViewModel
+          sectionIdentifierForSectionIndex:indexPath.section] !=
+          BookmarkHomeSectionIdentifierBookmarks) {
     return NO;
   }
 
@@ -2153,7 +2160,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return NO;
   }
 
-  // If the cell at |indexPath| is being edited (which happens when creating a
+  // If the cell at `indexPath` is being edited (which happens when creating a
   // new Folder) return NO.
   if ([tableView indexPathForCell:self.sharedState.editingFolderCell] ==
       indexPath) {
@@ -2247,7 +2254,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger sectionIdentifier = [self.sharedState.tableViewModel
-      sectionIdentifierForSection:indexPath.section];
+      sectionIdentifierForSectionIndex:indexPath.section];
   if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
     const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
     DCHECK(node);
@@ -2285,7 +2292,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)tableView:(UITableView*)tableView
     didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger sectionIdentifier = [self.sharedState.tableViewModel
-      sectionIdentifierForSection:indexPath.section];
+      sectionIdentifierForSectionIndex:indexPath.section];
   if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks &&
       self.sharedState.currentlyInEditMode) {
     const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
@@ -2519,6 +2526,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
        didDropURL:(const GURL&)URL
       atIndexPath:(NSIndexPath*)indexPath {
   NSUInteger index = base::checked_cast<NSUInteger>(indexPath.item);
+
+  // TODO(crbug.com/1323778): This will need to be called on the
+  // SnackbarCommands handler.
   [self.handler showSnackbarMessage:
                     bookmark_utils_ios::CreateBookmarkAtPositionWithUndoToast(
                         base::SysUTF8ToNSString(URL.spec()), URL, _rootNode,

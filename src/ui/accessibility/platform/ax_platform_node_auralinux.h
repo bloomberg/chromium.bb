@@ -195,6 +195,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // Event helpers
   void OnActiveDescendantChanged();
+  void OnBusyStateChanged(bool is_busy);
   void OnCheckedStateChanged();
   void OnEnabledChanged();
   void OnExpandedStateChanged(bool is_expanded);
@@ -226,6 +227,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void RunPostponedEvents();
 
   void ResendFocusSignalsForCurrentlyFocusedNode();
+  void SetAsCurrentlyFocusedNode();
   bool SupportsSelectionWithAtkSelection();
   bool SelectionAndFocusAreTheSame();
   void SetActiveViewsDialog();
@@ -238,7 +240,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // AXPlatformNodeBase overrides.
   bool IsPlatformCheckable() const override;
-  absl::optional<int> GetIndexInParent() override;
+  absl::optional<size_t> GetIndexInParent() override;
 
   bool IsNameExposed();
 
@@ -295,7 +297,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool HasDefaultActionVerb() const;
 
   std::string accessible_name_;
-
+  
  protected:
   AXPlatformNodeAuraLinux();
 

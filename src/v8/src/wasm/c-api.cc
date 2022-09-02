@@ -31,9 +31,9 @@
 #include "src/base/platform/wrappers.h"
 #include "src/builtins/builtins.h"
 #include "src/compiler/wasm-compiler.h"
+#include "src/objects/call-site-info-inl.h"
 #include "src/objects/js-collection-inl.h"
 #include "src/objects/managed-inl.h"
-#include "src/objects/stack-frame-info-inl.h"
 #include "src/wasm/leb-helper.h"
 #include "src/wasm/module-instantiate.h"
 #include "src/wasm/wasm-arguments.h"
@@ -84,9 +84,7 @@ ValKind V8ValueTypeToWasm(i::wasm::ValueType v8_valtype) {
       switch (v8_valtype.heap_representation()) {
         case i::wasm::HeapType::kFunc:
           return FUNCREF;
-        case i::wasm::HeapType::kExtern:
-          // TODO(7748): Rename this to EXTERNREF if/when third-party API
-          // changes.
+        case i::wasm::HeapType::kAny:
           return ANYREF;
         default:
           // TODO(wasm+): support new value types
@@ -111,7 +109,7 @@ i::wasm::ValueType WasmValKindToV8(ValKind kind) {
     case FUNCREF:
       return i::wasm::kWasmFuncRef;
     case ANYREF:
-      return i::wasm::kWasmExternRef;
+      return i::wasm::kWasmAnyRef;
     default:
       // TODO(wasm+): support new value types
       UNREACHABLE();
@@ -391,15 +389,13 @@ Engine::~Engine() { impl(this)->~EngineImpl(); }
 void Engine::operator delete(void* p) { ::operator delete(p); }
 
 auto Engine::make(own<Config>&& config) -> own<Engine> {
-  i::FLAG_expose_gc = true;
-  i::FLAG_experimental_wasm_reftypes = true;
   auto engine = new (std::nothrow) EngineImpl;
   if (!engine) return own<Engine>();
   engine->platform = v8::platform::NewDefaultPlatform();
   v8::V8::InitializePlatform(engine->platform.get());
-#ifdef V8_VIRTUAL_MEMORY_CAGE
-  if (!v8::V8::InitializeVirtualMemoryCage()) {
-    FATAL("Could not initialize the virtual memory cage");
+#ifdef V8_ENABLE_SANDBOX
+  if (!v8::V8::InitializeSandbox()) {
+    FATAL("Could not initialize the sandbox");
   }
 #endif
   v8::V8::Initialize();
@@ -1041,11 +1037,11 @@ own<Instance> GetInstance(StoreImpl* store,
 
 own<Frame> CreateFrameFromInternal(i::Handle<i::FixedArray> frames, int index,
                                    i::Isolate* isolate, StoreImpl* store) {
-  i::Handle<i::StackFrameInfo> frame(
-      i::StackFrameInfo::cast(frames->get(index)), isolate);
+  i::Handle<i::CallSiteInfo> frame(i::CallSiteInfo::cast(frames->get(index)),
+                                   isolate);
   i::Handle<i::WasmInstanceObject> instance(frame->GetWasmInstance(), isolate);
   uint32_t func_index = frame->GetWasmFunctionIndex();
-  size_t module_offset = i::StackFrameInfo::GetSourcePosition(frame);
+  size_t module_offset = i::CallSiteInfo::GetSourcePosition(frame);
   size_t func_offset = module_offset - i::wasm::GetWasmFunctionOffset(
                                            instance->module(), func_index);
   return own<Frame>(seal<Frame>(new (std::nothrow) FrameImpl(
@@ -1058,10 +1054,8 @@ own<Frame> Trap::origin() const {
   i::Isolate* isolate = impl(this)->isolate();
   i::HandleScope handle_scope(isolate);
 
-  i::Handle<i::JSMessageObject> message =
-      isolate->CreateMessage(impl(this)->v8_object(), nullptr);
-  i::Handle<i::FixedArray> frames(i::FixedArray::cast(message->stack_frames()),
-                                  isolate);
+  i::Handle<i::FixedArray> frames =
+      isolate->GetSimpleStackTrace(impl(this)->v8_object());
   if (frames->length() == 0) {
     return own<Frame>();
   }
@@ -1072,10 +1066,8 @@ ownvec<Frame> Trap::trace() const {
   i::Isolate* isolate = impl(this)->isolate();
   i::HandleScope handle_scope(isolate);
 
-  i::Handle<i::JSMessageObject> message =
-      isolate->CreateMessage(impl(this)->v8_object(), nullptr);
-  i::Handle<i::FixedArray> frames(i::FixedArray::cast(message->stack_frames()),
-                                  isolate);
+  i::Handle<i::FixedArray> frames =
+      isolate->GetSimpleStackTrace(impl(this)->v8_object());
   int num_frames = frames->length();
   // {num_frames} can be 0; the code below can handle that case.
   ownvec<Frame> result = ownvec<Frame>::make_uninitialized(num_frames);
@@ -1186,13 +1178,15 @@ auto Module::exports() const -> ownvec<ExportType> {
   return ExportsImpl(impl(this)->v8_object());
 }
 
+// We serialize the state of the module when calling this method; an arbitrary
+// number of functions can be tiered up to TurboFan, and only those will be
+// serialized.
+// The caller is responsible for "warming up" the module before serializing.
 auto Module::serialize() const -> vec<byte_t> {
   i::wasm::NativeModule* native_module =
       impl(this)->v8_object()->native_module();
   v8::base::Vector<const uint8_t> wire_bytes = native_module->wire_bytes();
   size_t binary_size = wire_bytes.size();
-  // We can only serialize after top-tier compilation (TurboFan) finished.
-  native_module->compilation_state()->WaitForTopTierFinished();
   i::wasm::WasmSerializer serializer(native_module);
   size_t serial_size = serializer.GetSerializedNativeModuleSize();
   size_t size_size = i::wasm::LEBHelper::sizeof_u64v(binary_size);
@@ -1205,7 +1199,13 @@ auto Module::serialize() const -> vec<byte_t> {
   ptr += binary_size;
   if (!serializer.SerializeNativeModule(
           {reinterpret_cast<uint8_t*>(ptr), serial_size})) {
-    buffer.reset();
+    // Serialization failed, because no TurboFan code is present yet. In this
+    // case, the serialized module just contains the wire bytes.
+    buffer = vec<byte_t>::make_uninitialized(size_size + binary_size);
+    byte_t* ptr = buffer.get();
+    i::wasm::LEBHelper::write_u64v(reinterpret_cast<uint8_t**>(&ptr),
+                                   binary_size);
+    std::memcpy(ptr, wire_bytes.begin(), binary_size);
   }
   return buffer;
 }
@@ -1220,13 +1220,23 @@ auto Module::deserialize(Store* store_abs, const vec<byte_t>& serialized)
   ptrdiff_t size_size = ptr - serialized.get();
   size_t serial_size = serialized.size() - size_size - binary_size;
   i::Handle<i::WasmModuleObject> module_obj;
-  size_t data_size = static_cast<size_t>(binary_size);
-  if (!i::wasm::DeserializeNativeModule(
-           isolate,
-           {reinterpret_cast<const uint8_t*>(ptr + data_size), serial_size},
-           {reinterpret_cast<const uint8_t*>(ptr), data_size}, {})
-           .ToHandle(&module_obj)) {
-    return nullptr;
+  if (serial_size > 0) {
+    size_t data_size = static_cast<size_t>(binary_size);
+    if (!i::wasm::DeserializeNativeModule(
+             isolate,
+             {reinterpret_cast<const uint8_t*>(ptr + data_size), serial_size},
+             {reinterpret_cast<const uint8_t*>(ptr), data_size}, {})
+             .ToHandle(&module_obj)) {
+      // We were given a serialized module, but failed to deserialize. Report
+      // this as an error.
+      return nullptr;
+    }
+  } else {
+    // No serialized module was given. This is fine, just create a module from
+    // scratch.
+    vec<byte_t> binary = vec<byte_t>::make_uninitialized(binary_size);
+    std::memcpy(binary.get(), ptr, binary_size);
+    return make(store_abs, binary);
   }
   return implement<Module>::type::make(store, module_obj);
 }
@@ -1523,9 +1533,7 @@ void PrepareFunctionData(i::Isolate* isolate,
                          const i::wasm::FunctionSig* sig,
                          const i::wasm::WasmModule* module) {
   // If the data is already populated, return immediately.
-  // TODO(v8:11880): avoid roundtrips between cdc and code.
-  if (function_data->c_wrapper_code() !=
-      ToCodeT(*BUILTIN_CODE(isolate, Illegal))) {
+  if (function_data->c_wrapper_code() != *BUILTIN_CODE(isolate, Illegal)) {
     return;
   }
   // Compile wrapper code.
@@ -1560,7 +1568,6 @@ void PushArgs(const i::wasm::FunctionSig* sig, const Val args[],
         packer->Push(WasmRefToV8(store->i_isolate(), args[i].ref())->ptr());
         break;
       case i::wasm::kRtt:
-      case i::wasm::kRttWithDepth:
       case i::wasm::kS128:
         // TODO(7748): Implement.
         UNIMPLEMENTED();
@@ -1600,7 +1607,6 @@ void PopArgs(const i::wasm::FunctionSig* sig, Val results[],
         break;
       }
       case i::wasm::kRtt:
-      case i::wasm::kRttWithDepth:
       case i::wasm::kS128:
         // TODO(7748): Implement.
         UNIMPLEMENTED();
@@ -1667,9 +1673,7 @@ auto Func::call(const Val args[], Val results[]) const -> own<Trap> {
   const i::wasm::FunctionSig* sig =
       instance->module()->functions[function_index].sig;
   PrepareFunctionData(isolate, function_data, sig, instance->module());
-  // TODO(v8:11880): avoid roundtrips between cdc and code.
-  i::Handle<i::CodeT> wrapper_code = i::Handle<i::CodeT>(
-      i::CodeT::cast(function_data->c_wrapper_code()), isolate);
+  i::Handle<i::CodeT> wrapper_code(function_data->c_wrapper_code(), isolate);
   i::Address call_target = function_data->internal().foreign_address();
 
   i::wasm::CWasmArgumentsPacker packer(function_data->packed_args_size());
@@ -1865,7 +1869,6 @@ auto Global::get() const -> Val {
       return Val(V8RefValueToWasm(store, v8_global->GetRef()));
     }
     case i::wasm::kRtt:
-    case i::wasm::kRttWithDepth:
     case i::wasm::kS128:
       // TODO(7748): Implement these.
       UNIMPLEMENTED();
@@ -1931,8 +1934,7 @@ auto Table::make(Store* store_abs, const TableType* type, const Ref* ref)
       break;
     case ANYREF:
       // See Engine::make().
-      DCHECK(i::wasm::WasmFeatures::FromFlags().has_reftypes());
-      i_type = i::wasm::kWasmExternRef;
+      i_type = i::wasm::kWasmAnyRef;
       break;
     default:
       UNREACHABLE();
@@ -1978,7 +1980,7 @@ auto Table::type() const -> own<TableType> {
     case i::wasm::HeapType::kFunc:
       kind = FUNCREF;
       break;
-    case i::wasm::HeapType::kExtern:
+    case i::wasm::HeapType::kAny:
       kind = ANYREF;
       break;
     default:
@@ -2011,6 +2013,7 @@ auto Table::set(size_t index, const Ref* ref) -> bool {
   i::HandleScope handle_scope(isolate);
   i::Handle<i::Object> obj = WasmRefToV8(isolate, ref);
   // TODO(7748): Generalize the condition if other table types are allowed.
+  // TODO(12868): Enforce type restrictions for stringref tables.
   if ((table->type() == i::wasm::kWasmFuncRef || table->type().has_index()) &&
       !obj->IsNull()) {
     obj = i::WasmInternalFunction::FromExternal(obj, isolate).ToHandleChecked();
@@ -2299,12 +2302,20 @@ struct borrowed_vec {
 
 // Vectors
 
+#ifdef V8_GC_MOLE
+#define ASSERT_VEC_BASE_SIZE(name, Name, vec, ptr_or_none)
+
+#else
+#define ASSERT_VEC_BASE_SIZE(name, Name, vec, ptr_or_none)                 \
+  static_assert(sizeof(wasm_##name##_vec_t) == sizeof(vec<Name>),          \
+                "C/C++ incompatibility");                                  \
+  static_assert(                                                           \
+      sizeof(wasm_##name##_t ptr_or_none) == sizeof(vec<Name>::elem_type), \
+      "C/C++ incompatibility");
+#endif
+
 #define WASM_DEFINE_VEC_BASE(name, Name, vec, ptr_or_none)                     \
-  static_assert(sizeof(wasm_##name##_vec_t) == sizeof(vec<Name>),              \
-                "C/C++ incompatibility");                                      \
-  static_assert(                                                               \
-      sizeof(wasm_##name##_t ptr_or_none) == sizeof(vec<Name>::elem_type),     \
-      "C/C++ incompatibility");                                                \
+  ASSERT_VEC_BASE_SIZE(name, Name, vec, ptr_or_none)                           \
   extern "C++" inline auto hide_##name##_vec(vec<Name>& v)                     \
       ->wasm_##name##_vec_t* {                                                 \
     return reinterpret_cast<wasm_##name##_vec_t*>(&v);                         \

@@ -258,11 +258,15 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
       mouse_event.button = button;
       mouse_event.SetPositionInWidget(15, 15);
       mouse_event.click_count = 1;
-      tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-          mouse_event);
+      tab->GetPrimaryMainFrame()
+          ->GetRenderViewHost()
+          ->GetWidget()
+          ->ForwardMouseEvent(mouse_event);
       mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-      tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-          mouse_event);
+      tab->GetPrimaryMainFrame()
+          ->GetRenderViewHost()
+          ->GetWidget()
+          ->ForwardMouseEvent(mouse_event);
     }
 
     if (disposition == WindowOpenDisposition::CURRENT_TAB) {
@@ -425,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuOrigin) {
 
 // Context menu, from HTTPS to HTTP.
 // TODO(crbug.com/1269041): Fix flakiness on Linux and Lacros then reenable.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_HttpsContextMenuOrigin DISABLED_HttpsContextMenuOrigin
 #else
 #define MAYBE_HttpsContextMenuOrigin HttpsContextMenuOrigin
@@ -534,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
 
 // Context menu, from HTTP to HTTP via server redirect.
 // TODO(crbug.com/1269041): Fix flakiness on Linux and Lacros then reenable.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_ContextMenuRedirect DISABLED_ContextMenuRedirect
 #else
 #define MAYBE_ContextMenuRedirect ContextMenuRedirect

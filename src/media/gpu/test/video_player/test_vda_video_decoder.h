@@ -11,7 +11,7 @@
 
 #include "base/containers/lru_cache.h"
 #include "base/sequence_checker.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "base/time/time.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/media_buildflags.h"
@@ -37,7 +37,6 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
                       OnProvidePictureBuffersCB on_provide_picture_buffers_cb,
                       const gfx::ColorSpace& target_color_space,
                       FrameRenderer* const frame_renderer,
-                      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                       bool linear_output = false);
 
   TestVDAVideoDecoder(const TestVDAVideoDecoder&) = delete;
@@ -62,7 +61,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
 
  private:
   // media::VideoDecodeAccelerator::Client implementation
-  void NotifyInitializationComplete(Status status) override;
+  void NotifyInitializationComplete(DecoderStatus status) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              VideoPixelFormat format,
                              uint32_t textures_per_buffer,
@@ -117,8 +116,6 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   FrameRenderer* const frame_renderer_;
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  // Owned by VideoDecoderClient.
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
   // Whether the decoder output buffers should be allocated with a linear
   // layout.
   const bool linear_output_;

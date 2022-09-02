@@ -34,14 +34,12 @@
           deep-link-focus-id$="[[Setting.kMouseSwapPrimaryButtons]]">
       </settings-dropdown-menu>
     </div>
-    <template is="dom-if" if="[[allowDisableAcceleration_]]">
-      <settings-toggle-button id="mouseAcceleration"
-          class="hr"
-          pref="{{prefs.settings.mouse.acceleration}}"
-          label="$i18n{mouseAccelerationLabel}"
-          deep-link-focus-id$="[[Setting.kMouseAcceleration]]">
-      </settings-toggle-button>
-    </template>
+    <settings-toggle-button id="mouseAcceleration"
+        class="hr"
+        pref="{{prefs.settings.mouse.acceleration}}"
+        label="$i18n{mouseAccelerationLabel}"
+        deep-link-focus-id$="[[Setting.kMouseAcceleration]]">
+    </settings-toggle-button>
     <div class="settings-box">
       <div class="start" id="mouseSpeedLabel" aria-hidden="true">
         $i18n{mouseSpeed}
@@ -109,14 +107,12 @@
               "[[Setting.kPointingStickSwapPrimaryButtons]]">
       </settings-dropdown-menu>
     </div>
-    <template is="dom-if" if="[[allowDisableAcceleration_]]">
-      <settings-toggle-button id="pointingStickAcceleration"
-          class="hr"
-          pref="{{prefs.settings.pointing_stick.acceleration}}"
-          label="$i18n{pointingStickAccelerationLabel}"
-          deep-link-focus-id$="[[Setting.kPointingStickAcceleration]]">
-      </settings-toggle-button>
-    </template>
+    <settings-toggle-button id="pointingStickAcceleration"
+        class="hr"
+        pref="{{prefs.settings.pointing_stick.acceleration}}"
+        label="$i18n{pointingStickAccelerationLabel}"
+        deep-link-focus-id$="[[Setting.kPointingStickAcceleration]]">
+    </settings-toggle-button>
     <div class="settings-box">
       <div class="start" id="pointingStickSpeedLabel" aria-hidden="true">
         $i18n{pointingStickSpeed}
@@ -147,14 +143,12 @@
         label="$i18n{tapDraggingLabel}"
         deep-link-focus-id$="[[Setting.kTouchpadTapDragging]]">
     </settings-toggle-button>
-    <template is="dom-if" if="[[allowDisableAcceleration_]]">
-      <settings-toggle-button id="touchpadAcceleration"
-          class="hr"
-          pref="{{prefs.settings.touchpad.acceleration}}"
-          label="$i18n{touchpadAccelerationLabel}"
-          deep-link-focus-id$="[[Setting.kTouchpadAcceleration]]">
-      </settings-toggle-button>
-    </template>
+    <settings-toggle-button id="touchpadAcceleration"
+        class="hr"
+        pref="{{prefs.settings.touchpad.acceleration}}"
+        label="$i18n{touchpadAccelerationLabel}"
+        deep-link-focus-id$="[[Setting.kTouchpadAcceleration]]">
+    </settings-toggle-button>
     <div class="settings-box">
       <div class="start" id="touchpadSpeedLabel" aria-hidden="true">
         $i18n{touchpadSpeed}
@@ -207,16 +201,18 @@
         </div>
       </template>
       <template is="dom-if" if="[[allowTouchpadHapticFeedback_]]">
-        <div class="settings-box" id="touchpadHapticFeedbackRow"
+        <div class="settings-box two-line" id="touchpadHapticFeedbackRow"
             on-click="onTouchpadHapticFeedbackRowClicked_">
           <div class="start settings-box-text">
-            <!--TODO(gavinwill): Add haptic feedback help link URL.-->
-            <localized-link
+            <div>$i18n{touchpadHapticFeedbackTitle}</div>
+            <div class="secondary">
+              <localized-link
                 on-click="onLearnMoreLinkClicked_"
-                id="touchpadHapticFeedbackLabel"
-                localized-string="$i18n{touchpadHapticFeedbackLabel}"
-                link-url="#">
-            </localized-link>
+                id="touchpadHapticFeedbackSecondary"
+                localized-string="$i18n{touchpadHapticFeedbackSecondaryText}"
+                link-url="$i18n{hapticFeedbackLearnMoreLink}">
+              </localized-link>
+            </div>
           </div>
           <cr-toggle id="touchpadHapticFeedbackToggle"
               checked="{{prefs.settings.touchpad.haptic_feedback.value}}"

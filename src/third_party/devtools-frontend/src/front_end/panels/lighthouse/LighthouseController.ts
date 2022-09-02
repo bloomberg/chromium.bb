@@ -4,6 +4,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 
@@ -105,6 +106,38 @@ const UIStrings = {
   */
   applyMobileEmulationDuring: 'Apply mobile emulation during auditing',
   /**
+   * @description ARIA label for a radio button input to select the Lighthouse mode.
+   */
+  lighthouseMode: 'Lighthouse mode',
+  /**
+   * @description Tooltip text of a radio button to select the Lighthouse mode. "Navigation" is a Lighthouse mode that audits a page navigation. "Timespan" is a Lighthouse mode that audits user interactions over a period of time. "Snapshot" is a Lighthouse mode that audits the current page state.
+   */
+  runLighthouseInMode: 'Run Lighthouse in navigation, timespan, or snapshot mode',
+  /**
+   * @description Label of a radio option for a Lighthouse mode that audits a page navigation. This should be marked as the default radio option.
+   */
+  navigation: 'Navigation (Default)',
+  /**
+   * @description Tooltip description of a radio option for a Lighthouse mode that audits a page navigation.
+   */
+  navigationTooltip: 'Navigation mode analyzes a page load, exactly like the original Lighthouse reports.',
+  /**
+   * @description Label of a radio option for a Lighthouse mode that audits user interactions over a period of time.
+   */
+  timespan: 'Timespan',
+  /**
+   * @description Tooltip description of a radio option for a Lighthouse mode that audits user interactions over a period of time.
+   */
+  timespanTooltip: 'Timespan mode analyzes an arbitrary period of time, typically containing user interactions.',
+  /**
+   * @description Label of a radio option for a Lighthouse mode that audits the current page state.
+   */
+  snapshot: 'Snapshot',
+  /**
+   * @description Tooltip description of a radio option for a Lighthouse mode that audits the current page state.
+   */
+  snapshotTooltip: 'Snapshot mode analyzes the page in a particular state, typically after user interactions.',
+  /**
   *@description Text for the mobile platform, as opposed to desktop
   */
   mobile: 'Mobile',
@@ -113,24 +146,45 @@ const UIStrings = {
   */
   desktop: 'Desktop',
   /**
-  *@description Text for option to enable simulated throttling in Lighthouse Panel
-  */
-  simulatedThrottling: 'Simulated throttling',
+   * @description Text for an option to select a throttling method.
+   */
+  throttlingMethod: 'Throttling method',
   /**
-  *@description Tooltip text that appears when hovering over the 'Simulated Throttling' checkbox in the settings pane opened by clicking the setting cog in the start view of the audits panel
-  */
+   * @description Text for an option in a dropdown to use simulated throttling. This is the default setting.
+   */
+  simulatedThrottling: 'Simulated throttling (default)',
+  /**
+   * @description Text for an option in a dropdown to use DevTools throttling. This option should only be used by advanced users.
+   */
+  devtoolsThrottling: 'DevTools throttling (advanced)',
+  /**
+   * @description Tooltip text that appears when hovering over the 'Simulated Throttling' checkbox in the settings pane opened by clicking the setting cog in the start view of the audits panel
+   */
   simulateASlowerPageLoadBasedOn:
-      'Simulate a slower page load, based on data from an initial unthrottled load. If disabled, the page is actually slowed with applied throttling.',
+      'Simulated throttling simulates a slower page load based on data from an initial unthrottled load. DevTools throttling actually slows down the page.',
   /**
   *@description Text of checkbox to reset storage features prior to running audits in Lighthouse
   */
   clearStorage: 'Clear storage',
+  /**
+   * @description Text of checkbox to use the legacy Lighthouse navigation mode
+   */
+  legacyNavigation: 'Legacy navigation',
+  /**
+   * @description Tooltip text that appears when hovering over the 'Legacy navigation' checkbox in the settings pane opened by clicking the setting cog in the start view of the audits panel. "Navigation mode" is a Lighthouse mode that analyzes a page navigation.
+   */
+  useLegacyNavigation: 'Analyze the page using classic Lighthouse when in navigation mode.',
   /**
   * @description Tooltip text of checkbox to reset storage features prior to running audits in
   * Lighthouse. Resetting the storage clears/empties it to a neutral state.
   */
   resetStorageLocalstorage:
       'Reset storage (`cache`, `service workers`, etc) before auditing. (Good for performance & `PWA` testing)',
+  /**
+  *@description Explanation for user that Ligthhouse can only audit when JavaScript is enabled
+  */
+  javaScriptDisabled:
+      'JavaScript is disabled. You need to enable JavaScript to audit this page. Open the Command Menu and run the Enable JavaScript command to enable JavaScript.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/lighthouse/LighthouseController.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -140,7 +194,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
   private manager?: SDK.ServiceWorkerManager.ServiceWorkerManager|null;
   private serviceWorkerListeners?: Common.EventTarget.EventDescriptor[];
-  private inspectedURL?: string;
+  private inspectedURL?: Platform.DevToolsPath.UrlString;
 
   constructor(protocolService: ProtocolService) {
     super();
@@ -155,6 +209,9 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     for (const runtimeSetting of RuntimeSettings) {
       runtimeSetting.setting.addChangeListener(this.recomputePageAuditability.bind(this));
     }
+
+    const javaScriptDisabledSetting = Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled');
+    javaScriptDisabledSetting.addChangeListener(this.recomputePageAuditability.bind(this));
 
     SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
     SDK.TargetManager.TargetManager.instance().addEventListener(
@@ -233,6 +290,10 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     return null;
   }
 
+  private javaScriptDisabled(): boolean {
+    return Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled').get();
+  }
+
   private async hasImportantResourcesNotCleared(): Promise<string> {
     const clearStorageSetting =
         RuntimeSettings.find(runtimeSetting => runtimeSetting.setting.name === 'lighthouse.clear_storage');
@@ -243,7 +304,11 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
       return '';
     }
     const mainTarget = this.manager.target();
-    const usageData = await mainTarget.storageAgent().invoke_getUsageAndQuota({origin: mainTarget.inspectedURL()});
+    const origin = mainTarget.inspectedURL();
+    if (!origin) {
+      return '';
+    }
+    const usageData = await mainTarget.storageAgent().invoke_getUsageAndQuota({origin});
     const locations = usageData.usageBreakdown.filter(usage => usage.usage)
                           .map(usage => STORAGE_TYPE_NAMES.get(usage.storageType))
                           .map(i18nStringFn => i18nStringFn ? i18nStringFn() : undefined)
@@ -257,9 +322,9 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     return '';
   }
 
-  private async evaluateInspectedURL(): Promise<string> {
+  private async evaluateInspectedURL(): Promise<Platform.DevToolsPath.UrlString> {
     if (!this.manager) {
-      return '';
+      return Platform.DevToolsPath.EmptyUrlString;
     }
     const mainTarget = this.manager.target();
     // target.inspectedURL is reliably populated, however it lacks any url #hash
@@ -274,10 +339,15 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
 
     const {currentIndex, entries} = navHistory;
     const navigationEntry = entries[currentIndex];
-    return navigationEntry.url;
+    return navigationEntry.url as Platform.DevToolsPath.UrlString;
   }
 
-  getFlags(): {internalDisableDeviceScreenEmulation: boolean, emulatedFormFactor: (string|undefined)} {
+  getFlags(): {
+    internalDisableDeviceScreenEmulation: boolean,
+    emulatedFormFactor: (string|undefined),
+    legacyNavigation: boolean,
+    mode: string,
+  } {
     const flags = {
       // DevTools handles all the emulation. This tells Lighthouse to not bother with emulation.
       internalDisableDeviceScreenEmulation: true,
@@ -285,11 +355,12 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     for (const runtimeSetting of RuntimeSettings) {
       runtimeSetting.setFlags(flags, runtimeSetting.setting.get());
     }
-    return /** @type {{internalDisableDeviceScreenEmulation: boolean, emulatedFormFactor: (string|undefined)}} */ flags as
-        {
-          internalDisableDeviceScreenEmulation: boolean,
-          emulatedFormFactor: (string | undefined),
-        };
+    return flags as {
+      internalDisableDeviceScreenEmulation: boolean,
+      emulatedFormFactor: (string | undefined),
+      legacyNavigation: boolean,
+      mode: string,
+    };
   }
 
   getCategoryIDs(): string[] {
@@ -302,7 +373,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     return categoryIDs;
   }
 
-  async getInspectedURL(options?: {force: boolean}): Promise<string> {
+  async getInspectedURL(options?: {force: boolean}): Promise<Platform.DevToolsPath.UrlString> {
     if (options && options.force || !this.inspectedURL) {
       this.inspectedURL = await this.evaluateInspectedURL();
     }
@@ -313,6 +384,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     const hasActiveServiceWorker = this.hasActiveServiceWorker();
     const hasAtLeastOneCategory = this.hasAtLeastOneCategory();
     const unauditablePageMessage = this.unauditablePageMessage();
+    const javaScriptDisabled = this.javaScriptDisabled();
 
     let helpText = '';
     if (hasActiveServiceWorker) {
@@ -321,11 +393,16 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
       helpText = i18nString(UIStrings.atLeastOneCategoryMustBeSelected);
     } else if (unauditablePageMessage) {
       helpText = unauditablePageMessage;
+    } else if (javaScriptDisabled) {
+      helpText = i18nString(UIStrings.javaScriptDisabled);
     }
 
     this.dispatchEventToListeners(Events.PageAuditabilityChanged, {helpText});
 
-    this.hasImportantResourcesNotCleared().then(warning => {
+    void this.hasImportantResourcesNotCleared().then(warning => {
+      if (this.getFlags().mode !== 'navigation') {
+        warning = '';
+      }
       this.dispatchEventToListeners(Events.PageWarningsChanged, {warning});
     });
   }
@@ -346,22 +423,7 @@ export const Presets: Preset[] = [
     title: i18nLazyString(UIStrings.performance),
     description: i18nLazyString(UIStrings.howLongDoesThisAppTakeToShow),
     plugin: false,
-  },
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-        'lighthouse.cat_pwa', true, Common.Settings.SettingStorageType.Synced),
-    configID: 'pwa',
-    title: i18nLazyString(UIStrings.progressiveWebApp),
-    description: i18nLazyString(UIStrings.doesThisPageMeetTheStandardOfA),
-    plugin: false,
-  },
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-        'lighthouse.cat_best_practices', true, Common.Settings.SettingStorageType.Synced),
-    configID: 'best-practices',
-    title: i18nLazyString(UIStrings.bestPractices),
-    description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
-    plugin: false,
+    supportedModes: ['navigation', 'timespan', 'snapshot'],
   },
   {
     setting: Common.Settings.Settings.instance().createSetting(
@@ -370,6 +432,16 @@ export const Presets: Preset[] = [
     title: i18nLazyString(UIStrings.accessibility),
     description: i18nLazyString(UIStrings.isThisPageUsableByPeopleWith),
     plugin: false,
+    supportedModes: ['navigation', 'snapshot'],
+  },
+  {
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.cat_best_practices', true, Common.Settings.SettingStorageType.Synced),
+    configID: 'best-practices',
+    title: i18nLazyString(UIStrings.bestPractices),
+    description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
+    plugin: false,
+    supportedModes: ['navigation', 'timespan', 'snapshot'],
   },
   {
     setting: Common.Settings.Settings.instance().createSetting(
@@ -378,6 +450,16 @@ export const Presets: Preset[] = [
     title: i18nLazyString(UIStrings.seo),
     description: i18nLazyString(UIStrings.isThisPageOptimizedForSearch),
     plugin: false,
+    supportedModes: ['navigation', 'snapshot'],
+  },
+  {
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.cat_pwa', true, Common.Settings.SettingStorageType.Synced),
+    configID: 'pwa',
+    title: i18nLazyString(UIStrings.progressiveWebApp),
+    description: i18nLazyString(UIStrings.doesThisPageMeetTheStandardOfA),
+    plugin: false,
+    supportedModes: ['navigation'],
   },
   {
     setting: Common.Settings.Settings.instance().createSetting(
@@ -386,6 +468,7 @@ export const Presets: Preset[] = [
     configID: 'lighthouse-plugin-publisher-ads',
     title: i18nLazyString(UIStrings.publisherAds),
     description: i18nLazyString(UIStrings.isThisPageOptimizedForAdSpeedAnd),
+    supportedModes: ['navigation'],
   },
 ];
 
@@ -410,18 +493,54 @@ export const RuntimeSettings: RuntimeSetting[] = [
     learnMore: undefined,
   },
   {
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.mode', 'navigation', Common.Settings.SettingStorageType.Synced),
+    title: i18nLazyString(UIStrings.lighthouseMode),
+    description: i18nLazyString(UIStrings.runLighthouseInMode),
+    setFlags: (flags: Flags, value: string|boolean): void => {
+      flags.mode = value;
+    },
+    options: [
+      {
+        label: i18nLazyString(UIStrings.navigation),
+        tooltip: i18nLazyString(UIStrings.navigationTooltip),
+        value: 'navigation',
+      },
+      {
+        label: i18nLazyString(UIStrings.timespan),
+        tooltip: i18nLazyString(UIStrings.timespanTooltip),
+        value: 'timespan',
+      },
+      {
+        label: i18nLazyString(UIStrings.snapshot),
+        tooltip: i18nLazyString(UIStrings.snapshotTooltip),
+        value: 'snapshot',
+      },
+    ],
+    learnMore: 'https://github.com/GoogleChrome/lighthouse/blob/HEAD/docs/user-flows.md' as
+        Platform.DevToolsPath.UrlString,
+  },
+  {
     // This setting is disabled, but we keep it around to show in the UI.
     setting: Common.Settings.Settings.instance().createSetting(
-        'lighthouse.throttling', true, Common.Settings.SettingStorageType.Synced),
-    title: i18nLazyString(UIStrings.simulatedThrottling),
+        'lighthouse.throttling', 'simulate', Common.Settings.SettingStorageType.Synced),
+    title: i18nLazyString(UIStrings.throttlingMethod),
     // We will disable this when we have a Lantern trace viewer within DevTools.
     learnMore:
-        'https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling',
+        'https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling' as
+        Platform.DevToolsPath.UrlString,
     description: i18nLazyString(UIStrings.simulateASlowerPageLoadBasedOn),
     setFlags: (flags: Flags, value: string|boolean): void => {
-      flags.throttlingMethod = value ? 'simulate' : 'devtools';
+      if (typeof value === 'string') {
+        flags.throttlingMethod = value;
+      } else {
+        flags.throttlingMethod = value ? 'simulate' : 'devtools';
+      }
     },
-    options: undefined,
+    options: [
+      {label: i18nLazyString(UIStrings.simulatedThrottling), value: 'simulate'},
+      {label: i18nLazyString(UIStrings.devtoolsThrottling), value: 'devtools'},
+    ],
   },
   {
     setting: Common.Settings.Settings.instance().createSetting(
@@ -434,6 +553,17 @@ export const RuntimeSettings: RuntimeSetting[] = [
     options: undefined,
     learnMore: undefined,
   },
+  {
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.legacy_navigation', true, Common.Settings.SettingStorageType.Synced),
+    title: i18nLazyString(UIStrings.legacyNavigation),
+    description: i18nLazyString(UIStrings.useLegacyNavigation),
+    setFlags: (flags: Flags, value: string|boolean): void => {
+      flags.legacyNavigation = value;
+    },
+    options: undefined,
+    learnMore: undefined,
+  },
 ];
 
 // TODO(crbug.com/1167717): Make this a const enum again
@@ -442,6 +572,8 @@ export enum Events {
   PageAuditabilityChanged = 'PageAuditabilityChanged',
   PageWarningsChanged = 'PageWarningsChanged',
   AuditProgressChanged = 'AuditProgressChanged',
+  RequestLighthouseTimespanStart = 'RequestLighthouseTimespanStart',
+  RequestLighthouseTimespanEnd = 'RequestLighthouseTimespanEnd',
   RequestLighthouseStart = 'RequestLighthouseStart',
   RequestLighthouseCancel = 'RequestLighthouseCancel',
 }
@@ -462,6 +594,8 @@ export type EventTypes = {
   [Events.PageAuditabilityChanged]: PageAuditabilityChangedEvent,
   [Events.PageWarningsChanged]: PageWarningsChangedEvent,
   [Events.AuditProgressChanged]: AuditProgressChangedEvent,
+  [Events.RequestLighthouseTimespanStart]: boolean,
+  [Events.RequestLighthouseTimespanEnd]: boolean,
   [Events.RequestLighthouseStart]: boolean,
   [Events.RequestLighthouseCancel]: void,
 };
@@ -472,12 +606,17 @@ export interface Preset {
   title: () => Common.UIString.LocalizedString;
   description: () => Common.UIString.LocalizedString;
   plugin: boolean;
+  supportedModes: string[];
 }
 export interface RuntimeSetting {
   setting: Common.Settings.Setting<string|boolean>;
   description: () => Common.UIString.LocalizedString;
   setFlags: (flags: Flags, value: string|boolean) => void;
-  options?: {label: () => Common.UIString.LocalizedString, value: string}[];
+  options?: {
+    label: () => Common.UIString.LocalizedString,
+    value: string,
+    tooltip?: () => Common.UIString.LocalizedString,
+  }[];
   title?: () => Common.UIString.LocalizedString;
-  learnMore?: string;
+  learnMore?: Platform.DevToolsPath.UrlString;
 }

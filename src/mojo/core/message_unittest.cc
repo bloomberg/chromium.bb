@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
@@ -227,7 +228,7 @@ TEST_F(MessageTest, DestroyMessageWithContext) {
 
 const char kTestMessageWithContext1[] = "hello laziness";
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 
 const char kTestMessageWithContext2[] = "my old friend";
 const char kTestMessageWithContext3[] = "something something";
@@ -330,7 +331,7 @@ TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
   });
 }
 
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
 TEST_F(MessageTest, SendLocalSimpleMessageWithHandlesWithContext) {
   auto message = std::make_unique<SimpleMessage>(kTestMessageWithContext1);
@@ -817,7 +818,7 @@ TEST_F(MessageTest, CommitInvalidMessageContents) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 
 TEST_F(MessageTest, ExtendPayloadWithHandlesAttached) {
   // Regression test for https://crbug.com/748996. Verifies that internal
@@ -933,7 +934,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadMessageAndCheckPipe, MessageTest, h) {
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[i]));
 }
 
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
 TEST_F(MessageTest, PartiallySerializedMessagesDontLeakHandles) {
   MojoMessageHandle message;

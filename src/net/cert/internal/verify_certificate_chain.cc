@@ -25,20 +25,20 @@ namespace net {
 namespace {
 
 bool IsHandledCriticalExtension(const ParsedExtension& extension) {
-  if (extension.oid == BasicConstraintsOid())
+  if (extension.oid == der::Input(kBasicConstraintsOid))
     return true;
   // Key Usage is NOT processed for end-entity certificates (this is the
   // responsibility of callers), however it is considered "handled" here in
   // order to allow being marked as critical.
-  if (extension.oid == KeyUsageOid())
+  if (extension.oid == der::Input(kKeyUsageOid))
     return true;
-  if (extension.oid == ExtKeyUsageOid())
+  if (extension.oid == der::Input(kExtKeyUsageOid))
     return true;
-  if (extension.oid == NameConstraintsOid())
+  if (extension.oid == der::Input(kNameConstraintsOid))
     return true;
-  if (extension.oid == SubjectAltNameOid())
+  if (extension.oid == der::Input(kSubjectAltNameOid))
     return true;
-  if (extension.oid == CertificatePoliciesOid()) {
+  if (extension.oid == der::Input(kCertificatePoliciesOid)) {
     // Policy qualifiers are skipped during processing, so if the
     // extension is marked critical need to ensure there weren't any
     // qualifiers other than User Notice / CPS.
@@ -50,17 +50,17 @@ bool IsHandledCriticalExtension(const ParsedExtension& extension) {
     //   qualifier), or MUST reject the certificate.
     std::vector<der::Input> unused_policies;
     CertErrors unused_errors;
-    return ParseCertificatePoliciesExtension(
+    return ParseCertificatePoliciesExtensionOids(
         extension.value, true /*fail_parsing_unknown_qualifier_oids*/,
         &unused_policies, &unused_errors);
 
     // TODO(eroman): Give a better error message.
   }
-  if (extension.oid == PolicyMappingsOid())
+  if (extension.oid == der::Input(kPolicyMappingsOid))
     return true;
-  if (extension.oid == PolicyConstraintsOid())
+  if (extension.oid == der::Input(kPolicyConstraintsOid))
     return true;
-  if (extension.oid == InhibitAnyPolicyOid())
+  if (extension.oid == der::Input(kInhibitAnyPolicyOid))
     return true;
 
   return false;
@@ -91,7 +91,7 @@ void VerifyNoUnconsumedCriticalExtensions(const ParsedCertificate& cert,
 //    support key rollover or changes in certificate policies.  These
 //    self-issued certificates are not counted when evaluating path length
 //    or name constraints.
-WARN_UNUSED_RESULT bool IsSelfIssued(const ParsedCertificate& cert) {
+[[nodiscard]] bool IsSelfIssued(const ParsedCertificate& cert) {
   return cert.normalized_subject() == cert.normalized_issuer();
 }
 
@@ -173,9 +173,9 @@ void VerifyExtendedKeyUsage(const ParsedCertificate& cert,
         return;
 
       for (const auto& key_purpose_oid : cert.extended_key_usage()) {
-        if (key_purpose_oid == AnyEKU())
+        if (key_purpose_oid == der::Input(kAnyEKU))
           return;
-        if (key_purpose_oid == ServerAuth())
+        if (key_purpose_oid == der::Input(kServerAuth))
           return;
       }
 
@@ -186,7 +186,7 @@ void VerifyExtendedKeyUsage(const ParsedCertificate& cert,
       bool has_nsgc = false;
 
       for (const auto& key_purpose_oid : cert.extended_key_usage()) {
-        if (key_purpose_oid == NetscapeServerGatedCrypto()) {
+        if (key_purpose_oid == der::Input(kNetscapeServerGatedCrypto)) {
           has_nsgc = true;
           break;
         }
@@ -223,9 +223,9 @@ void VerifyExtendedKeyUsage(const ParsedCertificate& cert,
         return;
 
       for (const auto& key_purpose_oid : cert.extended_key_usage()) {
-        if (key_purpose_oid == AnyEKU())
+        if (key_purpose_oid == der::Input(kAnyEKU))
           return;
-        if (key_purpose_oid == ClientAuth())
+        if (key_purpose_oid == der::Input(kClientAuth))
           return;
       }
 
@@ -344,8 +344,10 @@ class ValidPolicyTree {
       policy_set->insert(node.root_policy);
 
     // If the result includes anyPolicy, simplify it to a set of size 1.
-    if (policy_set->size() > 1 && SetContains(*policy_set, AnyPolicy()))
-      *policy_set = {AnyPolicy()};
+    if (policy_set->size() > 1 &&
+        SetContains(*policy_set, der::Input(kAnyPolicyOid))) {
+      *policy_set = {der::Input(kAnyPolicyOid)};
+    }
   }
 
   // Adds a node |n| to the current level which is a child of |parent|
@@ -370,8 +372,9 @@ class ValidPolicyTree {
 
     // Consider the root policy as the first policy other than anyPolicy (or
     // anyPolicy if it hasn't been restricted yet).
-    new_node.root_policy =
-        (parent.root_policy == AnyPolicy()) ? policy_oid : parent.root_policy;
+    new_node.root_policy = (parent.root_policy == der::Input(kAnyPolicyOid))
+                               ? policy_oid
+                               : parent.root_policy;
 
     current_level_.push_back(std::move(new_node));
   }
@@ -380,7 +383,7 @@ class ValidPolicyTree {
   // nullptr if there is none.
   static const Node* FindAnyPolicyNode(const Level& level) {
     for (const Node& node : level) {
-      if (node.valid_policy == AnyPolicy())
+      if (node.valid_policy == der::Input(kAnyPolicyOid))
         return &node;
     }
     return nullptr;
@@ -482,6 +485,7 @@ class PathVerifier {
   // follows the description in RFC 5937
   void ProcessRootCertificate(const ParsedCertificate& cert,
                               const CertificateTrust& trust,
+                              const der::GeneralizedTime& time,
                               KeyPurpose required_key_purpose,
                               CertErrors* errors,
                               bool* shortcircuit_chain_validation);
@@ -601,7 +605,7 @@ void PathVerifier::VerifyPolicies(const ParsedCertificate& cert,
     //          P.  Perform the following steps in order:
     bool cert_has_any_policy = false;
     for (const der::Input& p_oid : cert.policy_oids()) {
-      if (p_oid == AnyPolicy()) {
+      if (p_oid == der::Input(kAnyPolicyOid)) {
         cert_has_any_policy = true;
         continue;
       }
@@ -693,8 +697,8 @@ void PathVerifier::VerifyPolicyMappings(const ParsedCertificate& cert,
   //       special value anyPolicy does not appear as an
   //       issuerDomainPolicy or a subjectDomainPolicy.
   for (const ParsedPolicyMapping& mapping : cert.policy_mappings()) {
-    if (mapping.issuer_domain_policy == AnyPolicy() ||
-        mapping.subject_domain_policy == AnyPolicy()) {
+    if (mapping.issuer_domain_policy == der::Input(kAnyPolicyOid) ||
+        mapping.subject_domain_policy == der::Input(kAnyPolicyOid)) {
       // Because this implementation continues processing certificates after
       // this error, clear the valid policy tree to ensure the
       // "user_constrained_policy_set" output upon failure is empty.
@@ -896,17 +900,21 @@ void PathVerifier::PrepareForNextCertificate(const ParsedCertificate& cert,
     //         (1)  If requireExplicitPolicy is present and is less than
     //              explicit_policy, set explicit_policy to the value of
     //              requireExplicitPolicy.
-    if (cert.policy_constraints().has_require_explicit_policy &&
-        cert.policy_constraints().require_explicit_policy < explicit_policy_) {
-      explicit_policy_ = cert.policy_constraints().require_explicit_policy;
+    if (cert.policy_constraints().require_explicit_policy &&
+        cert.policy_constraints().require_explicit_policy.value() <
+            explicit_policy_) {
+      explicit_policy_ =
+          cert.policy_constraints().require_explicit_policy.value();
     }
 
     //         (2)  If inhibitPolicyMapping is present and is less than
     //              policy_mapping, set policy_mapping to the value of
     //              inhibitPolicyMapping.
-    if (cert.policy_constraints().has_inhibit_policy_mapping &&
-        cert.policy_constraints().inhibit_policy_mapping < policy_mapping_) {
-      policy_mapping_ = cert.policy_constraints().inhibit_policy_mapping;
+    if (cert.policy_constraints().inhibit_policy_mapping &&
+        cert.policy_constraints().inhibit_policy_mapping.value() <
+            policy_mapping_) {
+      policy_mapping_ =
+          cert.policy_constraints().inhibit_policy_mapping.value();
     }
   }
 
@@ -1034,7 +1042,7 @@ void PathVerifier::WrapUp(const ParsedCertificate& cert, CertErrors* errors) {
   //           certificate and requireExplicitPolicy is present and has a
   //           value of 0, set the explicit_policy state variable to 0.
   if (cert.has_policy_constraints() &&
-      cert.policy_constraints().has_require_explicit_policy &&
+      cert.policy_constraints().require_explicit_policy.has_value() &&
       cert.policy_constraints().require_explicit_policy == 0) {
     explicit_policy_ = 0;
   }
@@ -1119,6 +1127,7 @@ void PathVerifier::ApplyTrustAnchorConstraints(const ParsedCertificate& cert,
 
 void PathVerifier::ProcessRootCertificate(const ParsedCertificate& cert,
                                           const CertificateTrust& trust,
+                                          const der::GeneralizedTime& time,
                                           KeyPurpose required_key_purpose,
                                           CertErrors* errors,
                                           bool* shortcircuit_chain_validation) {
@@ -1135,11 +1144,12 @@ void PathVerifier::ProcessRootCertificate(const ParsedCertificate& cert,
       *shortcircuit_chain_validation = true;
       break;
     case CertificateTrustType::TRUSTED_ANCHOR:
+      break;
+    case CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION:
+      VerifyTimeValidity(cert, time, errors);
+      break;
     case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
-      // If the trust anchor has constraints, enforce them.
-      if (trust.type == CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS) {
-        ApplyTrustAnchorConstraints(cert, required_key_purpose, errors);
-      }
+      ApplyTrustAnchorConstraints(cert, required_key_purpose, errors);
       break;
   }
   if (*shortcircuit_chain_validation)
@@ -1258,7 +1268,7 @@ void PathVerifier::Run(
 
     if (is_root_cert) {
       bool shortcircuit_chain_validation = false;
-      ProcessRootCertificate(cert, last_cert_trust, required_key_purpose,
+      ProcessRootCertificate(cert, last_cert_trust, time, required_key_purpose,
                              cert_errors, &shortcircuit_chain_validation);
       if (shortcircuit_chain_validation) {
         // Chains that don't start from a trusted root should short-circuit the

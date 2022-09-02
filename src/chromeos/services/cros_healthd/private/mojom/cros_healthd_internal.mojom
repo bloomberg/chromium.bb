@@ -11,40 +11,61 @@
 
 module chromeos.cros_healthd.internal.mojom;
 
-import "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom";
-import "chromeos/services/network_health/public/mojom/network_diagnostics.mojom";
-import "chromeos/services/network_health/public/mojom/network_health.mojom";
-
-// Interface for Chrome to bootstrap the connection between cros_healthd and
-// Chrome. Chrome uses this interface to obtain cros_healthd services and
-// to provide Chrome services.
+// Collects data from chromium to Healthd.
 //
 // NextMinVersion: 1, NextIndex: 2
-interface ServiceBootstrap {
-    // Pass a receiver of service factory to cros_healthd to bind the services.
-    GetCrosHealthdServiceFactory@0(pending_receiver<
-      chromeos.cros_healthd.mojom.CrosHealthdServiceFactory> receiver);
-    // Pass a remote of internal service factory to cros_healthd for it to
-    // obtain the services in Chrome. This should be the only interface which
-    // the connection is passed from the provider side. All the services in
-    // Chrome should use internal service factory interface to provide services
-    // to cros_healthd.
-    // Should be called only once per connection.
-    SetCrosHealthdInternalServiceFactory@1(pending_remote<
-      CrosHealthdInternalServiceFactory> remote);
+interface ChromiumDataCollector {
+  // Get touchscreen devices info.
+  GetTouchscreenDevices@0() => (array<TouchscreenDevice> devices);
+  // Get the touchpad library name.
+  GetTouchpadLibraryName@1() => (string library_name);
 };
 
-// Factory interface which allows remote ends (cros_healthd) to request
-// implementations of several services in Chrome.
+// Data of a touch screen device in chromium.
 //
-// NextMinVersion: 1, NextIndex: 2
-interface CrosHealthdInternalServiceFactory {
-  // NetworkHealthService provides network health information from chrome
-  // network stack.
-  GetNetworkHealthService@0(pending_receiver<
-      chromeos.network_health.mojom.NetworkHealthService> receiver);
-  // NetworkDiagnosticsRoutines provides network diagnostics routines to test
-  // network.
-  GetNetworkDiagnosticsRoutines@1(pending_receiver<
-      chromeos.network_diagnostics.mojom.NetworkDiagnosticsRoutines> receiver);
+// NextMinVersion: 1, NextIndex: 4
+struct TouchscreenDevice {
+  // The input device of this touchscreen.
+  InputDevice input_device@0;
+  // Number of touch points this device supports (0 if unknown).
+  int32 touch_points@1;
+  // True if the specified touchscreen device is stylus capable.
+  bool has_stylus@2;
+  // True if there is a garage/dock switch associated with the stylus.
+  bool has_stylus_garage_switch@3;
+};
+
+// Data of a input device in chromium.
+//
+// NextMinVersion: 1, NextIndex: 5
+struct InputDevice {
+  // Name of the device.
+  string name@0;
+
+  // The connection type of the input device.
+  [Extensible]
+  enum ConnectionType {
+    // For mojo backward compatibility.
+    [Default] kUnmappedEnumField,
+    // Internally connected input device.
+    kInternal,
+    // Known externally connected usb input device.
+    kUSB,
+    // Known externally connected bluetooth input device.
+    kBluetooth,
+    // Device that may or may not be an external device.
+    kUnknown,
+  };
+
+  ConnectionType connection_type@1;
+  // The physical location(port) associated with the input device. This is
+  // (supposed to be) stable between reboots and hotplugs. However this may not
+  // always be set and will change when the device is connected via a different
+  // port.
+  string physical_location@2;
+  // If the device is enabled, and whether events should be dispatched to UI.
+  bool is_enabled@3;
+  // The path to the input device in the sysfs filesystem, this should be a path
+  // under /sys directory.
+  string sysfs_path@4;
 };

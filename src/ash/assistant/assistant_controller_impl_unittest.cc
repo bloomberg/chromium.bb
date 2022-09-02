@@ -20,6 +20,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "base/scoped_observation.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -77,10 +78,7 @@ class MockAssistantUiModelObserver : public AssistantUiModelObserver {
 class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
  public:
   // TestNewWindowDelegate:
-  MOCK_METHOD(void,
-              OpenUrl,
-              (const GURL& url, bool from_user_interaction),
-              (override));
+  MOCK_METHOD(void, OpenUrl, (const GURL& url, OpenUrlFrom from), (override));
 
   MOCK_METHOD(void,
               OpenFeedbackPage,
@@ -164,11 +162,9 @@ TEST_F(AssistantControllerImplTest, NotifiesOpeningUrlAndUrlOpened) {
             EXPECT_TRUE(from_server);
           }));
 
-  EXPECT_CALL(new_window_delegate(), OpenUrl)
-      .WillOnce([](const GURL& url, bool from_user_interaction) {
-        EXPECT_EQ(GURL("https://g.co/"), url);
-        EXPECT_TRUE(from_user_interaction);
-      });
+  EXPECT_CALL(new_window_delegate(),
+              OpenUrl(GURL("https://g.co/"),
+                      NewWindowDelegate::OpenUrlFrom::kUserInteraction));
 
   EXPECT_CALL(controller_observer_mock, OnUrlOpened)
       .WillOnce(testing::Invoke([](const GURL& url, bool from_server) {
@@ -176,6 +172,19 @@ TEST_F(AssistantControllerImplTest, NotifiesOpeningUrlAndUrlOpened) {
         EXPECT_TRUE(from_server);
       }));
 
+  controller()->OpenUrl(GURL("https://g.co/"), /*in_background=*/true,
+                        /*from_server=*/true);
+}
+
+TEST_F(AssistantControllerImplTest, NotOpenUrlIfAssistantNotReady) {
+  testing::NiceMock<MockAssistantControllerObserver> controller_observer_mock;
+  base::ScopedObservation<AssistantController, AssistantControllerObserver>
+      scoped_controller_obs{&controller_observer_mock};
+  scoped_controller_obs.Observe(controller());
+
+  EXPECT_CALL(controller_observer_mock, OnOpeningUrl).Times(0);
+
+  controller()->SetAssistant(nullptr);
   controller()->OpenUrl(GURL("https://g.co/"), /*in_background=*/true,
                         /*from_server=*/true);
 }
@@ -245,7 +254,12 @@ TEST_F(AssistantControllerImplTest, ClosesAssistantUiForFeedbackDeeplink) {
 // flag is off. SettingsController won't set options if dark mode bit is not
 // set.
 TEST_F(AssistantControllerImplTest, ColorModeIsSetWhenAssistantIsReadyFlagOff) {
-  ASSERT_FALSE(features::IsDarkLightModeEnabled());
+  // ProductivityLauncher uses DarkLightMode colors.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{}, /*disabled_features=*/{
+          chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
+          features::kProductivityLauncher});
 
   controller()->SetAssistant(test_assistant_service());
 
@@ -255,26 +269,27 @@ TEST_F(AssistantControllerImplTest, ColorModeIsSetWhenAssistantIsReadyFlagOff) {
 
 TEST_F(AssistantControllerImplTest, ColorModeIsUpdated) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDarkLightMode);
+  feature_list.InitAndEnableFeature(chromeos::features::kDarkLightMode);
 
-  ASSERT_TRUE(features::IsDarkLightModeEnabled());
+  ASSERT_TRUE(chromeos::features::IsDarkLightModeEnabled());
 
-  // AshColorProvider::IsDarkModeEnabled reports it's in dark mode if active
-  // pref service is not set.
-  AshColorProvider::Get()->OnActiveUserPrefServiceChanged(
-      Shell::Get()->session_controller()->GetPrimaryUserPrefService());
-  ASSERT_FALSE(AshColorProvider::Get()->IsDarkModeEnabled());
+  auto* active_user_pref_service =
+      Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+  ASSERT_TRUE(active_user_pref_service);
 
+  auto* color_provider = AshColorProvider::Get();
+  color_provider->OnActiveUserPrefServiceChanged(active_user_pref_service);
   controller()->SetAssistant(test_assistant_service());
-
+  const bool initial_dark_mode_status = color_provider->IsDarkModeEnabled();
   ASSERT_TRUE(test_assistant_service()->dark_mode_enabled().has_value());
-  EXPECT_FALSE(test_assistant_service()->dark_mode_enabled().value());
+  EXPECT_EQ(initial_dark_mode_status,
+            test_assistant_service()->dark_mode_enabled().value());
 
-  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
-      prefs::kDarkModeEnabled, true);
-
+  // Switch the color mode.
+  color_provider->ToggleColorMode();
   ASSERT_TRUE(test_assistant_service()->dark_mode_enabled().has_value());
-  EXPECT_TRUE(test_assistant_service()->dark_mode_enabled().value());
+  EXPECT_NE(initial_dark_mode_status,
+            test_assistant_service()->dark_mode_enabled().value());
 }
 
 }  // namespace ash

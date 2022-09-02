@@ -23,7 +23,7 @@
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_delegate.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #error "This file must not be included on macOS; Chromium Mac doesn't use Aura."
 #endif
 
@@ -133,7 +133,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   void Restore() override;
-  void SetFullscreen(bool fullscreen, const base::TimeDelta& delay) override;
+  void SetFullscreen(bool fullscreen, int64_t target_display_id) override;
   bool IsFullscreen() const override;
   void SetCanAppearInExistingFullscreenSpaces(
       bool can_appear_in_existing_fullscreen_spaces) override;
@@ -147,7 +147,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                     ui::mojom::DragEventSource source) override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   void ScheduleLayout() override;
-  void SetCursor(gfx::NativeCursor cursor) override;
+  void SetCursor(const ui::Cursor& cursor) override;
   bool IsMouseEventsEnabled() const override;
   bool IsMouseButtonDown() const override;
   void ClearNativeFocus() override;
@@ -224,9 +224,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   aura::client::DragUpdateInfo OnDragUpdated(
       const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  ui::mojom::DragOperation OnPerformDrop(
-      const ui::DropTargetEvent& event,
-      std::unique_ptr<ui::OSExchangeData> data) override;
   aura::client::DragDropDelegate::DropCallback GetDropCallback(
       const ui::DropTargetEvent& event) override;
 
@@ -254,7 +251,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   // Are we in the destructor?
   bool destroying_;
 
-  gfx::NativeCursor cursor_;
+  ui::Cursor cursor_;
 
   std::unique_ptr<TooltipManagerAura> tooltip_manager_;
 

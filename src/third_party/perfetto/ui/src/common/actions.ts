@@ -15,32 +15,32 @@
 import {Draft} from 'immer';
 
 import {assertExists, assertTrue} from '../base/logging';
-import {randomColor} from '../common/colorizer';
 import {RecordConfig} from '../controller/record_config_types';
+import {globals} from '../frontend/globals';
+import {aggregationKey, columnKey} from '../frontend/pivot_table_redux';
+import {
+  Aggregation,
+  TableColumn,
+} from '../frontend/pivot_table_redux_query_generator';
 import {ACTUAL_FRAMES_SLICE_TRACK_KIND} from '../tracks/actual_frames/common';
 import {ASYNC_SLICE_TRACK_KIND} from '../tracks/async_slices/common';
 import {COUNTER_TRACK_KIND} from '../tracks/counter/common';
 import {DEBUG_SLICE_TRACK_KIND} from '../tracks/debug_slices/common';
 import {
-  EXPECTED_FRAMES_SLICE_TRACK_KIND
+  EXPECTED_FRAMES_SLICE_TRACK_KIND,
 } from '../tracks/expected_frames/common';
 import {HEAP_PROFILE_TRACK_KIND} from '../tracks/heap_profile/common';
 import {
-  PERF_SAMPLES_PROFILE_TRACK_KIND
+  PERF_SAMPLES_PROFILE_TRACK_KIND,
 } from '../tracks/perf_samples_profile/common';
 import {
-  PROCESS_SCHEDULING_TRACK_KIND
+  PROCESS_SCHEDULING_TRACK_KIND,
 } from '../tracks/process_scheduling/common';
 import {PROCESS_SUMMARY_TRACK} from '../tracks/process_summary/common';
 
+import {randomColor} from './colorizer';
 import {createEmptyState} from './empty_state';
 import {DEFAULT_VIEWING_OPTION, PERF_SAMPLES_KEY} from './flamegraph_util';
-import {
-  AggregationAttrs,
-  PivotAttrs,
-  SubQueryAttrs,
-  TableAttrs
-} from './pivot_table_common';
 import {
   AdbRecordingTarget,
   Area,
@@ -51,8 +51,10 @@ import {
   LogsPagination,
   NewEngineMode,
   OmniboxState,
+  PivotTableReduxResult,
   RecordingTarget,
   SCROLLING_TRACK_GROUP,
+  SortDirection,
   State,
   Status,
   TraceTime,
@@ -68,14 +70,14 @@ const highPriorityTrackOrder = [
   PROCESS_SCHEDULING_TRACK_KIND,
   PROCESS_SUMMARY_TRACK,
   EXPECTED_FRAMES_SLICE_TRACK_KIND,
-  ACTUAL_FRAMES_SLICE_TRACK_KIND
+  ACTUAL_FRAMES_SLICE_TRACK_KIND,
 ];
 
 const lowPriorityTrackOrder = [
   PERF_SAMPLES_PROFILE_TRACK_KIND,
   HEAP_PROFILE_TRACK_KIND,
   COUNTER_TRACK_KIND,
-  ASYNC_SLICE_TRACK_KIND
+  ASYNC_SLICE_TRACK_KIND,
 ];
 
 export interface AddTrackArgs {
@@ -133,11 +135,18 @@ function rankIndex<T>(element: T, array: T[]): number {
   return index;
 }
 
+function generateNextId(draft: StateDraft): string {
+  const nextId = String(Number(draft.nextId) + 1);
+  draft.nextId = nextId;
+  return nextId;
+}
+
 export const StateActions = {
 
   openTraceFromFile(state: StateDraft, args: {file: File}): void {
     clearTraceState(state);
-    const id = `${state.nextId++}`;
+    const id = generateNextId(state);
+    state.currentEngineId = id;
     state.engines[id] = {
       id,
       ready: false,
@@ -147,7 +156,8 @@ export const StateActions = {
 
   openTraceFromBuffer(state: StateDraft, args: PostedTrace): void {
     clearTraceState(state);
-    const id = `${state.nextId++}`;
+    const id = generateNextId(state);
+    state.currentEngineId = id;
     state.engines[id] = {
       id,
       ready: false,
@@ -157,7 +167,8 @@ export const StateActions = {
 
   openTraceFromUrl(state: StateDraft, args: {url: string}): void {
     clearTraceState(state);
-    const id = `${state.nextId++}`;
+    const id = generateNextId(state);
+    state.currentEngineId = id;
     state.engines[id] = {
       id,
       ready: false,
@@ -167,7 +178,8 @@ export const StateActions = {
 
   openTraceFromHttpRpc(state: StateDraft, _args: {}): void {
     clearTraceState(state);
-    const id = `${state.nextId++}`;
+    const id = generateNextId(state);
+    state.currentEngineId = id;
     state.engines[id] = {
       id,
       ready: false,
@@ -181,23 +193,36 @@ export const StateActions = {
 
   fillUiTrackIdByTraceTrackId(
       state: StateDraft, trackState: TrackState, uiTrackId: string) {
+    const namespace = (trackState.config as {namespace?: string}).namespace;
+    if (namespace !== undefined) return;
+
+    const setUiTrackId = (trackId: number, uiTrackId: string) => {
+      if (state.uiTrackIdByTraceTrackId[trackId] !== undefined &&
+          state.uiTrackIdByTraceTrackId[trackId] !== uiTrackId) {
+        throw new Error(`Trying to map track id ${trackId} to UI track ${
+            uiTrackId}, already mapped to ${
+            state.uiTrackIdByTraceTrackId[trackId]}`);
+      }
+      state.uiTrackIdByTraceTrackId[trackId] = uiTrackId;
+    };
+
     const config = trackState.config as {trackId: number};
     if (config.trackId !== undefined) {
-      state.uiTrackIdByTraceTrackId.set(config.trackId, uiTrackId);
+      setUiTrackId(config.trackId, uiTrackId);
       return;
     }
 
     const multiple = trackState.config as {trackIds: number[]};
     if (multiple.trackIds !== undefined) {
       for (const trackId of multiple.trackIds) {
-        state.uiTrackIdByTraceTrackId.set(trackId, uiTrackId);
+        setUiTrackId(trackId, uiTrackId);
       }
     }
   },
 
   addTracks(state: StateDraft, args: {tracks: AddTrackArgs[]}) {
-    args.tracks.forEach(track => {
-      const id = track.id === undefined ? `${state.nextId++}` : track.id;
+    args.tracks.forEach((track) => {
+      const id = track.id === undefined ? generateNextId(state) : track.id;
       track.id = id;
       state.tracks[id] = track as TrackState;
       this.fillUiTrackIdByTraceTrackId(state, track as TrackState, id);
@@ -213,7 +238,7 @@ export const StateActions = {
     id?: string; engineId: string; kind: string; name: string;
     trackGroup?: string; config: {}; trackKindPriority: TrackKindPriority;
   }): void {
-    const id = args.id !== undefined ? args.id : `${state.nextId++}`;
+    const id = args.id !== undefined ? args.id : generateNextId(state);
     state.tracks[id] = {
       id,
       engineId: args.engineId,
@@ -251,7 +276,7 @@ export const StateActions = {
   addDebugTrack(state: StateDraft, args: {engineId: string, name: string}):
       void {
         if (state.debugTrackId !== undefined) return;
-        const trackId = `${state.nextId++}`;
+        const trackId = generateNextId(state);
         state.debugTrackId = trackId;
         this.addTrack(state, {
           id: trackId,
@@ -262,7 +287,7 @@ export const StateActions = {
           trackGroup: SCROLLING_TRACK_GROUP,
           config: {
             maxDepth: 1,
-          }
+          },
         });
         this.toggleTrackPinned(state, {trackId});
       },
@@ -272,9 +297,16 @@ export const StateActions = {
     if (debugTrackId === undefined) return;
     delete state.tracks[debugTrackId];
     state.scrollingTracks =
-        state.scrollingTracks.filter(id => id !== debugTrackId);
-    state.pinnedTracks = state.pinnedTracks.filter(id => id !== debugTrackId);
+        state.scrollingTracks.filter((id) => id !== debugTrackId);
+    state.pinnedTracks = state.pinnedTracks.filter((id) => id !== debugTrackId);
     state.debugTrackId = undefined;
+  },
+
+  maybeExpandOnlyTrackGroup(state: StateDraft, _: {}): void {
+    const trackGroups = Object.values(state.trackGroups);
+    if (trackGroups.length === 1) {
+      trackGroups[0].collapsed = false;
+    }
   },
 
   sortThreadTracks(state: StateDraft, _: {}): void {
@@ -308,13 +340,13 @@ export const StateActions = {
       // No sorting set for current column.
       state.aggregatePreferences[args.id].sorting = {
         column: args.column,
-        direction: 'DESC'
+        direction: 'DESC',
       };
     } else if (prefs.sorting.direction === 'DESC') {
       // Toggle the direction if the column is currently sorted.
       state.aggregatePreferences[args.id].sorting = {
         column: args.column,
-        direction: 'ASC'
+        direction: 'ASC',
       };
     } else {
       // If direction is currently 'ASC' toggle to no sorting.
@@ -333,11 +365,11 @@ export const StateActions = {
 
   executeQuery(
       state: StateDraft,
-      args: {queryId: string; engineId: string; query: string}): void {
+      args: {queryId: string; query: string, engineId?: string}): void {
     state.queries[args.queryId] = {
       id: args.queryId,
-      engineId: args.engineId,
       query: args.query,
+      engineId: args.engineId,
     };
   },
 
@@ -363,7 +395,7 @@ export const StateActions = {
         }
       }
       trackList.splice(0);
-      newList.forEach(x => {
+      newList.forEach((x) => {
         trackList.push(x);
       });
     };
@@ -432,9 +464,9 @@ export const StateActions = {
 
   createPermalink(state: StateDraft, args: {isRecordingConfig: boolean}): void {
     state.permalink = {
-      requestId: `${state.nextId++}`,
+      requestId: generateNextId(state),
       hash: undefined,
-      isRecordingConfig: args.isRecordingConfig
+      isRecordingConfig: args.isRecordingConfig,
     };
   },
 
@@ -446,7 +478,7 @@ export const StateActions = {
       },
 
   loadPermalink(state: StateDraft, args: {hash: string}): void {
-    state.permalink = {requestId: `${state.nextId++}`, hash: args.hash};
+    state.permalink = {requestId: generateNextId(state), hash: args.hash};
   },
 
   clearPermalink(state: StateDraft, _: {}): void {
@@ -490,13 +522,13 @@ export const StateActions = {
     if (args.id) {
       state.currentSelection = {
         kind: 'NOTE',
-        id: args.id
+        id: args.id,
       };
     }
   },
 
   addNote(state: StateDraft, args: {timestamp: number, color: string}): void {
-    const id = `${state.nextNoteId++}`;
+    const id = generateNextId(state);
     state.notes[id] = {
       noteType: 'DEFAULT',
       id,
@@ -514,7 +546,7 @@ export const StateActions = {
             state.currentSelection.kind !== 'AREA') {
           return;
         }
-        const id = args.persistent ? `${state.nextNoteId++}` : '0';
+        const id = args.persistent ? generateNextId(state) : '0';
         const color = args.persistent ? args.color : '#344596';
         state.notes[id] = {
           noteType: 'AREA',
@@ -538,19 +570,19 @@ export const StateActions = {
   },
 
   markArea(state: StateDraft, args: {area: Area, persistent: boolean}): void {
-    const areaId = `${state.nextAreaId++}`;
+    const areaId = generateNextId(state);
     assertTrue(args.area.endSec >= args.area.startSec);
     state.areas[areaId] = {
       id: areaId,
       startSec: args.area.startSec,
       endSec: args.area.endSec,
-      tracks: args.area.tracks
+      tracks: args.area.tracks,
     };
-    const id = args.persistent ? `${state.nextNoteId++}` : '0';
+    const noteId = args.persistent ? generateNextId(state) : '0';
     const color = args.persistent ? randomColor() : '#344596';
-    state.notes[id] = {
+    state.notes[noteId] = {
       noteType: 'AREA',
-      id,
+      id: noteId,
       areaId,
       color,
       text: '',
@@ -622,7 +654,7 @@ export const StateActions = {
       startNs: toNs(state.traceTime.startSec),
       endNs: args.ts,
       upids: [args.upid],
-      viewingOption: DEFAULT_VIEWING_OPTION
+      viewingOption: DEFAULT_VIEWING_OPTION,
     });
   },
 
@@ -641,7 +673,7 @@ export const StateActions = {
       startNs: toNs(state.traceTime.startSec),
       endNs: args.ts,
       upids: [args.upid],
-      viewingOption: PERF_SAMPLES_KEY
+      viewingOption: PERF_SAMPLES_KEY,
     });
   },
 
@@ -659,7 +691,7 @@ export const StateActions = {
       endNs: args.endNs,
       type: args.type,
       viewingOption: args.viewingOption,
-      focusRegex: ''
+      focusRegex: '',
     };
   },
 
@@ -693,15 +725,21 @@ export const StateActions = {
       },
 
   selectChromeSlice(
-      state: StateDraft, args: {id: number, trackId: string, table: string}):
+      state: StateDraft,
+      args: {id: number, trackId: string, table: string, scroll?: boolean}):
       void {
         state.currentSelection = {
           kind: 'CHROME_SLICE',
           id: args.id,
           trackId: args.trackId,
-          table: args.table
+          table: args.table,
         };
+        state.pendingScrollId = args.scroll ? args.id : undefined;
       },
+
+  clearPendingScrollId(state: StateDraft, _: {}): void {
+    state.pendingScrollId = undefined;
+  },
 
   selectThreadState(state: StateDraft, args: {id: number, trackId: string}):
       void {
@@ -739,10 +777,6 @@ export const StateActions = {
     state.extensionInstalled = args.available;
   },
 
-  updateBufferUsage(state: StateDraft, args: {percentage: number}): void {
-    state.bufferUsage = args.percentage;
-  },
-
   setRecordingTarget(state: StateDraft, args: {target: RecordingTarget}): void {
     state.recordingTarget = args.target;
   },
@@ -761,13 +795,13 @@ export const StateActions = {
   },
 
   selectArea(state: StateDraft, args: {area: Area}): void {
-    const areaId = `${state.nextAreaId++}`;
+    const areaId = generateNextId(state);
     assertTrue(args.area.endSec >= args.area.startSec);
     state.areas[areaId] = {
       id: areaId,
       startSec: args.area.startSec,
       endSec: args.area.endSec,
-      tracks: args.area.tracks
+      tracks: args.area.tracks,
     };
     state.currentSelection = {kind: 'AREA', areaId};
   },
@@ -778,7 +812,7 @@ export const StateActions = {
       id: args.areaId,
       startSec: args.area.startSec,
       endSec: args.area.endSec,
-      tracks: args.area.tracks
+      tracks: args.area.tracks,
     };
   },
 
@@ -787,7 +821,7 @@ export const StateActions = {
         state.currentSelection = {
           kind: 'AREA',
           areaId: args.areaId,
-          noteId: args.noteId
+          noteId: args.noteId,
         };
       },
 
@@ -855,10 +889,11 @@ export const StateActions = {
     state.metrics.requestedMetric = undefined;
   },
 
-  setAvailableMetrics(state: StateDraft, args: {metrics: string[]}): void {
-    state.metrics.availableMetrics = args.metrics;
-    if (args.metrics.length > 0) state.metrics.selectedIndex = 0;
-  },
+  setAvailableMetrics(state: StateDraft, args: {availableMetrics: string[]}):
+      void {
+        state.metrics.availableMetrics = args.availableMetrics;
+        if (args.availableMetrics.length > 0) state.metrics.selectedIndex = 0;
+      },
 
   setMetricSelectedIndex(state: StateDraft, args: {index: number}): void {
     if (!state.metrics.availableMetrics ||
@@ -910,84 +945,79 @@ export const StateActions = {
   },
 
   toggleAllTrackGroups(state: StateDraft, args: {collapsed: boolean}) {
-    for (const [_, group] of Object.entries(state.trackGroups)) {
+    for (const group of Object.values(state.trackGroups)) {
       group.collapsed = args.collapsed;
     }
   },
 
-  addNewPivotTable(state: StateDraft, args: {
-    name: string,
-    pivotTableId: string,
-    selectedPivots: PivotAttrs[],
-    selectedAggregations: AggregationAttrs[],
-    traceTime?: TraceTime,
-    selectedTrackIds?: number[]
-  }): void {
-    state.pivotTable[args.pivotTableId] = {
-      id: args.pivotTableId,
-      name: args.name,
-      selectedPivots: args.selectedPivots,
-      selectedAggregations: args.selectedAggregations,
-      isLoadingQuery: false,
-      traceTime: args.traceTime,
-      selectedTrackIds: args.selectedTrackIds
+  togglePivotTableRedux(state: StateDraft, args: {areaId: string|null}) {
+    state.nonSerializableState.pivotTableRedux.selectionArea =
+        args.areaId === null ?
+        null :
+        {areaId: args.areaId, tracks: globals.state.areas[args.areaId].tracks};
+    if (args.areaId !==
+        state.nonSerializableState.pivotTableRedux.selectionArea?.areaId) {
+      state.nonSerializableState.pivotTableRedux.queryResult = null;
+    }
+  },
+
+  setPivotStateQueryResult(
+      state: StateDraft, args: {queryResult: PivotTableReduxResult|null}) {
+    state.nonSerializableState.pivotTableRedux.queryResult = args.queryResult;
+  },
+
+  setPivotTableReduxConstrainToArea(
+      state: StateDraft, args: {constrain: boolean}) {
+    state.nonSerializableState.pivotTableRedux.constrainToArea = args.constrain;
+  },
+
+  dismissFlamegraphModal(state: StateDraft, _: {}) {
+    state.flamegraphModalDismissed = true;
+  },
+
+  setPivotTableEditMode(state: StateDraft, args: {editMode: boolean}) {
+    state.nonSerializableState.pivotTableRedux.editMode = args.editMode;
+    if (!args.editMode) {
+      // Switching from edit mode to view mode, need to request query
+      state.nonSerializableState.pivotTableRedux.queryRequested = true;
+    }
+  },
+
+  setPivotTableQueryRequested(
+      state: StateDraft, args: {queryRequested: boolean}) {
+    state.nonSerializableState.pivotTableRedux.queryRequested =
+        args.queryRequested;
+  },
+
+  setPivotTablePivotSelected(
+      state: StateDraft, args: {column: TableColumn, selected: boolean}) {
+    if (args.selected) {
+      state.nonSerializableState.pivotTableRedux.selectedPivotsMap.set(
+          columnKey(args.column), args.column);
+    } else {
+      state.nonSerializableState.pivotTableRedux.selectedPivotsMap.delete(
+          columnKey(args.column));
+    }
+  },
+
+  setPivotTableAggregationSelected(
+      state: StateDraft, args: {column: Aggregation, selected: boolean}) {
+    if (args.selected) {
+      state.nonSerializableState.pivotTableRedux.selectedAggregations.set(
+          aggregationKey(args.column), args.column);
+    } else {
+      state.nonSerializableState.pivotTableRedux.selectedAggregations.delete(
+          aggregationKey(args.column));
+    }
+  },
+
+  setPivotTableSortColumn(
+      state: StateDraft, args: {column: TableColumn, order: SortDirection}) {
+    state.nonSerializableState.pivotTableRedux.sortCriteria = {
+      column: args.column,
+      order: args.order,
     };
   },
-
-  deletePivotTable(state: StateDraft, args: {pivotTableId: string}): void {
-    delete state.pivotTable[args.pivotTableId];
-  },
-
-  resetPivotTableRequest(state: StateDraft, args: {pivotTableId: string}):
-      void {
-        state.pivotTable[args.pivotTableId].requestedAction = undefined;
-      },
-
-  setPivotTableRequest(
-      state: StateDraft,
-      args: {pivotTableId: string, action: string, attrs?: SubQueryAttrs}):
-      void {
-        state.pivotTable[args.pivotTableId].requestedAction = {
-          action: args.action,
-          attrs: args.attrs
-        };
-      },
-
-  setAvailablePivotTableColumns(
-      state: StateDraft,
-      args: {availableColumns: TableAttrs[], availableAggregations: string[]}):
-      void {
-        state.pivotTableConfig.availableColumns = args.availableColumns;
-        state.pivotTableConfig.availableAggregations =
-            args.availableAggregations;
-      },
-
-  toggleQueryLoading(state: StateDraft, args: {pivotTableId: string}): void {
-    state.pivotTable[args.pivotTableId].isLoadingQuery =
-        !state.pivotTable[args.pivotTableId].isLoadingQuery;
-  },
-
-  setSelectedPivotsAndAggregations(state: StateDraft, args: {
-    pivotTableId: string,
-    selectedPivots: PivotAttrs[],
-    selectedAggregations: AggregationAttrs[]
-  }) {
-    state.pivotTable[args.pivotTableId].selectedPivots =
-        args.selectedPivots.map(pivot => Object.assign({}, pivot));
-    state.pivotTable[args.pivotTableId].selectedAggregations =
-        args.selectedAggregations.map(
-            aggregation => Object.assign({}, aggregation));
-  },
-
-  setPivotTableRange(state: StateDraft, args: {
-    pivotTableId: string,
-    traceTime?: TraceTime,
-    selectedTrackIds?: number[]
-  }) {
-    const pivotTable = state.pivotTable[args.pivotTableId];
-    pivotTable.traceTime = args.traceTime;
-    pivotTable.selectedTrackIds = args.selectedTrackIds;
-  }
 };
 
 // When we are on the frontend side, we don't really want to execute the

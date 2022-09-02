@@ -10,10 +10,12 @@ let urlParams = window.location.hash ?
     new URLSearchParams(window.location.hash.substring(1)) :
     new URLSearchParams(window.location.search.substring(1));
 urlParams = urlParams.toString();
-document.getElementsByTagName('iframe')[0].src = mainUrl;
+
+let iframeUrl = mainUrl;
 if (urlParams) {
-    document.getElementsByTagName('iframe')[0].src = mainUrl + '?' + urlParams;
+  iframeUrl = mainUrl + '?' + urlParams;
 }
+document.getElementsByTagName('iframe')[0].src = iframeUrl;
 
 // Returns a remote for SignalingMessageExchanger interface which sends messages
 // to the browser.
@@ -42,6 +44,14 @@ systemInfo.setSystemInfoObserver(
 
 const notificationGenerator =
     ash.echeApp.mojom.NotificationGenerator.getRemote();
+
+const displayStreamHandler = ash.echeApp.mojom.DisplayStreamHandler.getRemote();
+
+const streamActionObserverRouter =
+    new ash.echeApp.mojom.StreamActionObserverCallbackRouter();
+// Set up a message pipe to the browser process to monitor stream action.
+displayStreamHandler.setStreamActionObserver(
+    streamActionObserverRouter.$.bindNewPipeAndPassRemote());
 
 /**
  * A pipe through which we can send messages to the guest frame.
@@ -77,8 +87,16 @@ const notificationGenerator =
 
  // window.close() doesn't work from the iframe.
  guestMessagePipe.registerHandler(Message.CLOSE_WINDOW, async () => {
-   console.log('echeapi browser_proxy.js window.close');
-   window.close();
+   const info = /** @type {!SystemInfo} */ (await systemInfo.getSystemInfo());
+   const systemInfoJson = JSON.parse(JSON.stringify(info));
+   const debugMode = JSON.parse(systemInfoJson.systemInfo)['debug_mode'];
+   if (debugMode) {
+     console.log('echeapi debug on, browser_proxy.js window.close block');
+   } else {
+     console.log('echeapi browser_proxy.js window.close');
+     displayStreamHandler.onStreamStatusChanged(
+         ash.echeApp.mojom.StreamStatus.kStreamStatusStopped);
+   }
  });
 
  // Register GET_SYSTEM_INFO pipes for wrapping getSystemInfo async api call.
@@ -108,6 +126,13 @@ const notificationGenerator =
            Message.TABLET_MODE, {/** @type {boolean} */ isTabletMode});
      });
 
+ // Add stream action listener and send result via pipes.
+ streamActionObserverRouter.onStreamAction.addListener((action) => {
+   console.log(`echeapi browser_proxy.js OnStreamAction ${action}`);
+   guestMessagePipe.sendMessage(
+       Message.STREAM_ACTION, {/** @type {number} */ action});
+ });
+
  guestMessagePipe.registerHandler(
      Message.SHOW_NOTIFICATION, async (message) => {
        // The C++ layer uses std::u16string, which use 16 bit characters. JS
@@ -123,6 +148,15 @@ const notificationGenerator =
        notificationGenerator.showNotification(
            titleArray, messageArray, message.notificationType);
      });
+
+ guestMessagePipe.registerHandler(Message.SHOW_TOAST, async (message) => {
+   // The C++ layer uses std::u16string, which use 16 bit characters. JS
+   // strings support either 8 or 16 bit characters, and must be converted
+   // to an array of 16 bit character codes that match std::u16string.
+   const textArray = {data: Array.from(message.text, c => c.charCodeAt())};
+   console.log('echeapi browser_proxy.js showToast');
+   notificationGenerator.showToast(textArray);
+ });
 
  guestMessagePipe.registerHandler(
      Message.TIME_HISTOGRAM_MESSAGE, async (message) => {
@@ -140,6 +174,13 @@ const notificationGenerator =
            histogramData.histogram, histogramData.value,
            histogramData.maxValue);
      });
+
+ // Register START_STREAMING pipes.
+ guestMessagePipe.registerHandler(Message.START_STREAMING, async () => {
+   console.log('echeapi browser_proxy.js startStreaming');
+   displayStreamHandler.onStreamStatusChanged(
+       ash.echeApp.mojom.StreamStatus.kStreamStatusStarted);
+ });
 
  // We can't access hash change event inside iframe so parse the notification
  // info from the anchor part of the url when hash is changed and send them to

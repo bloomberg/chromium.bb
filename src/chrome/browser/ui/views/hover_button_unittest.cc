@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/test/views/chrome_views_test_base.h"
@@ -100,7 +99,7 @@ TEST_F(HoverButtonTest, ValidateTestData) {
 
 // Tests whether the HoverButton has the correct tooltip and accessible name.
 TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
-  for (size_t i = 0; i < base::size(kTitleSubtitlePairs); ++i) {
+  for (size_t i = 0; i < std::size(kTitleSubtitlePairs); ++i) {
     TitleSubtitlePair pair = kTitleSubtitlePairs[i];
     SCOPED_TRACE(testing::Message() << "Index: " << i << ", expected_tooltip="
                                     << (pair.tooltip ? "true" : "false"));
@@ -162,7 +161,7 @@ TEST_F(HoverButtonTest, ActivatesOnMouseReleased) {
 }
 
 // No touch on desktop Mac.
-#if !defined(OS_MAC) || defined(USE_AURA)
+#if !BUILDFLAG(IS_MAC) || defined(USE_AURA)
 
 // Tests that tapping hover button does not crash if the tap handler removes the
 // button from views hierarchy.
@@ -186,6 +185,6 @@ TEST_F(HoverButtonTest, TapGestureThatDeletesTheButton) {
   widget()->Close();
 }
 
-#endif  // !defined(OS_MAC) || defined(USE_AURA)
+#endif  // !BUILDFLAG(IS_MAC) || defined(USE_AURA)
 
 }  // namespace

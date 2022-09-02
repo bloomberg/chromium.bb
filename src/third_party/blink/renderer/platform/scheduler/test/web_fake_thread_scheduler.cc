@@ -80,7 +80,6 @@ void WebFakeThreadScheduler::DidHandleInputEventOnMainThread(
 
 void WebFakeThreadScheduler::DidAnimateForInputOnCompositorThread() {}
 
-void WebFakeThreadScheduler::DidScheduleBeginMainFrame() {}
 void WebFakeThreadScheduler::DidRunBeginMainFrame() {}
 
 bool WebFakeThreadScheduler::IsHighPriorityWorkAnticipated() {
@@ -96,7 +95,7 @@ WebFakeThreadScheduler::PauseRenderer() {
   return nullptr;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void WebFakeThreadScheduler::PauseTimersForAndroidWebView() {}
 
 void WebFakeThreadScheduler::ResumeTimersForAndroidWebView() {}
@@ -109,8 +108,6 @@ void WebFakeThreadScheduler::SetTopLevelBlameContext(
 
 void WebFakeThreadScheduler::SetRendererProcessType(
     WebRendererProcessType type) {}
-
-void WebFakeThreadScheduler::OnMainFrameRequestedForInput() {}
 
 }  // namespace scheduler
 }  // namespace blink

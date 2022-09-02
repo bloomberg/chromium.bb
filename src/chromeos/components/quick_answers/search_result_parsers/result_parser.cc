@@ -10,7 +10,6 @@
 #include "chromeos/components/quick_answers/search_result_parsers/kp_entity_result_parser.h"
 #include "chromeos/components/quick_answers/search_result_parsers/unit_conversion_result_parser.h"
 
-namespace ash {
 namespace quick_answers {
 namespace {
 using base::Value;
@@ -25,7 +24,7 @@ const Value* ResultParser::GetFirstListElement(const Value& value,
     return nullptr;
   }
 
-  auto list = entries->GetList();
+  auto list = entries->GetListDeprecated();
   if (list.empty()) {
     // No valid dictionary entries found.
     return nullptr;
@@ -57,4 +56,3 @@ std::unique_ptr<ResultParser> ResultParserFactory::Create(
 }
 
 }  // namespace quick_answers
-}  // namespace ash

@@ -33,10 +33,6 @@ std::u16string GetDisplayUsername(const std::u16string& username) {
 
 }  // namespace
 
-constexpr base::FeatureParam<int> kCredentialLastUsedDaysThreshold{
-    &password_manager::features::kPasswordChangeOnlyRecentCredentials,
-    "credenital_last_used_days_threshold", /* two years */ 730};
-
 using password_manager::PasswordForm;
 
 using CredentialsView =
@@ -286,7 +282,7 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
             url_formatter::kFormatUrlOmitHTTPS |
             url_formatter::kFormatUrlOmitTrivialSubdomains |
             url_formatter::kFormatUrlTrimAfterHost,
-        net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+        base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
     ui_credential.change_password_url =
         password_manager::CreateChangePasswordUrl(ui_credential.url).spec();
   }
@@ -297,7 +293,9 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
       password_script_fetcher_->IsScriptAvailable(
           url::Origin::Create(ui_credential.url.DeprecatedGetOriginAsURL()));
   ui_credential.has_auto_change_button =
-      ui_credential.has_startable_script && IsEligibleForAutoChange(credential);
+      ui_credential.has_startable_script &&
+      base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordChangeInSettings);
 
   return ui_credential;
 }
@@ -349,24 +347,6 @@ bool PasswordCheckManager::CanUseAccountCheck() const {
   }
 }
 
-bool PasswordCheckManager::IsEligibleForAutoChange(
-    const CredentialWithPassword& credential) const {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordChangeInSettings)) {
-    return false;
-  }
-
-  // return |true| if |kPasswordChangeOnlyRecentCredentials| feature is not
-  // enabled.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordChangeOnlyRecentCredentials)) {
-    return true;
-  }
-
-  return (base::Time::Now() - credential.last_used_time).InDays() <
-         kCredentialLastUsedDaysThreshold.Get();
-}
-
 bool PasswordCheckManager::AreScriptsRefreshed() const {
   return IsPreconditionFulfilled(kScriptsCachePrewarmed);
 }
@@ -409,8 +389,7 @@ bool PasswordCheckManager::ShouldFetchPasswordScripts() const {
     case SyncState::kSyncingNormalEncryption:
       ABSL_FALLTHROUGH_INTENDED;
     case SyncState::kAccountPasswordsActiveNormalEncryption:
-      return base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordScriptsFetching);
+      return password_manager::features::IsPasswordScriptsFetchingEnabled();
   }
 }
 

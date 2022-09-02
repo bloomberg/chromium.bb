@@ -27,10 +27,8 @@
 #ifndef BASE_MEMORY_SINGLETON_H_
 #define BASE_MEMORY_SINGLETON_H_
 
-#include "base/at_exit.h"
 #include "base/atomicops.h"
-#include "base/base_export.h"
-#include "base/check_op.h"
+#include "base/dcheck_is_on.h"
 #include "base/lazy_instance_helpers.h"
 #include "base/threading/thread_restrictions.h"
 

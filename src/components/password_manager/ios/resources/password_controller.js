@@ -11,11 +11,6 @@
  * be translated to struct FormData for further processing.
  */
 
-goog.provide('__crWeb.passwords');
-
-/* Beginning of anonymous object. */
-(function() {
-
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected.
@@ -60,6 +55,21 @@ const hasPasswordField = function(win) {
 };
 
 /**
+ * Checks whether the two URLs are from the same origin.
+ * @param {string} url_one
+ * @param {string} url_two
+ * @return {boolean} Whether the two URLs have the same origin.
+ */
+function isSameOrigin_(url_one, url_two) {
+  if (!url_one || !url_two) {
+    // Attempting to create URL representations of an empty string throws an
+    // exception.
+    return false;
+  }
+  return new URL(url_one).origin == new URL(url_two).origin;
+}
+
+/**
  * Returns the contentWindow of all iframes that are from the the same origin
  * as the containing window.
  * @param {Window} win The window in which to look for frames.
@@ -70,7 +80,7 @@ const getSameOriginFrames = function(win) {
   const result = [];
   for (let i = 0; i < frames.length; i++) {
     try {
-      if (__gCrWeb.common.isSameOrigin(
+      if (isSameOrigin_(
               win.location.href, frames[i].contentWindow.location.href)) {
         result.push(frames[i].contentWindow);
       }
@@ -211,7 +221,7 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
   const normalizedOrigin =
       __gCrWeb.common.removeQueryAndReferenceFromURL(window.location.href);
   const origin = /** @type {string} */ (formData['origin']);
-  if (!__gCrWeb.common.isSameOrigin(origin, normalizedOrigin)) {
+  if (!isSameOrigin_(origin, normalizedOrigin)) {
     return false;
   }
   return fillPasswordFormWithData(formData, username, password, window);
@@ -411,7 +421,7 @@ __gCrWeb.passwords.getPasswordFormDataFromUnownedElements = function(window) {
   if (unownedControlElements.length === 0) {
     return;
   }
-  const unownedForm = new __gCrWeb['common'].JSONSafeObject;
+  const unownedForm = new __gCrWeb['common'].JSONSafeObject();
   const hasUnownedForm =
       __gCrWeb.fill.unownedFormElementsAndFieldSetsToFormData(
           window, fieldsets, unownedControlElements, extractMask, false,
@@ -434,5 +444,3 @@ __gCrWeb.passwords.getPasswordFormData = function(formElement, win) {
       null /* field */);
   return ok ? formData : null;
 };
-
-}());  // End of anonymous object

@@ -16,7 +16,6 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace ash {
 namespace quick_answers {
 
 class TranslationResultLoader : public ResultLoader {
@@ -38,15 +37,9 @@ class TranslationResultLoader : public ResultLoader {
                        ResponseParserCallback complete_callback) override;
 
  private:
-  void OnRequestAccessTokenComplete(
-      const PreprocessedOutput& preprocessed_output,
-      BuildRequestCallback callback,
-      const std::string& access_token) const;
-
   std::unique_ptr<TranslationResponseParser> translation_response_parser_;
 };
 
 }  // namespace quick_answers
-}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_TRANSLATION_RESULT_LOADER_H_

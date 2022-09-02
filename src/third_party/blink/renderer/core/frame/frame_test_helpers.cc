@@ -151,7 +151,7 @@ cc::LayerTreeSettings GetSynchronousSingleThreadLayerTreeSettings() {
   // test makes progress.
   settings.single_thread_proxy_scheduler = false;
   settings.use_layer_lists = true;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   settings.enable_elastic_overscroll = true;
 #endif
   return settings;
@@ -358,12 +358,14 @@ WebViewHelper::WebViewHelper(
          scoped_refptr<base::SingleThreadTaskRunner> task_runner,
          const viz::FrameSinkId& frame_sink_id, bool hidden,
          bool never_composited, bool is_for_child_local_root,
-         bool is_for_nested_main_frame) -> WebFrameWidget* {
+         bool is_for_nested_main_frame,
+         bool is_for_scalable_page) -> WebFrameWidget* {
         return create_test_web_widget.Run(
             std::move(pass_key), std::move(frame_widget_host),
             std::move(frame_widget), std::move(widget_host), std::move(widget),
             std::move(task_runner), frame_sink_id, hidden, never_composited,
-            is_for_child_local_root, is_for_nested_main_frame);
+            is_for_child_local_root, is_for_nested_main_frame,
+            is_for_scalable_page);
       },
       std::move(create_callback));
 }
@@ -621,7 +623,7 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
                       /*is_hidden=*/false,
                       /*is_prerendering=*/false,
                       /*is_inside_portal=*/false,
-                      /*is_fenced_frame=*/false,
+                      /*fenced_frame_mode=*/absl::nullopt,
                       /*compositing_enabled=*/true,
                       /*widgets_never_composited=*/false,
                       /*opener=*/opener, mojo::NullAssociatedReceiver(),
@@ -942,7 +944,7 @@ WebView* TestWebViewClient::CreateView(WebLocalFrame* opener,
                                        network::mojom::blink::WebSandboxFlags,
                                        const SessionStorageNamespaceId&,
                                        bool& consumed_user_gesture,
-                                       const absl::optional<WebImpression>&) {
+                                       const absl::optional<Impression>&) {
   auto webview_helper = std::make_unique<WebViewHelper>();
   WebView* result = webview_helper->InitializeWithOpener(opener);
   child_web_views_.push_back(std::move(webview_helper));

@@ -7,15 +7,11 @@
  * when the current range is over an editable; restores sticky mode when not on
  * an editable.
  */
-
-goog.provide('SmartStickyMode');
-
-goog.require('AutomationUtil');
-goog.require('ChromeVox');
-goog.require('ChromeVoxState');
+import {ChromeVoxState, ChromeVoxStateObserver} from '/chromevox/background/chromevox_state.js';
+import {ChromeVoxBackground} from '/chromevox/background/classic_background.js';
 
 /** @implements {ChromeVoxStateObserver} */
-SmartStickyMode = class {
+export class SmartStickyMode {
   constructor() {
     /** @private {boolean} */
     this.ignoreRangeChanges_ = false;
@@ -32,10 +28,14 @@ SmartStickyMode = class {
     ChromeVoxState.addObserver(this);
   }
 
-  /** @override */
-  onCurrentRangeChanged(newRange) {
+  /**
+   * @param {?cursors.Range} newRange
+   * @param {boolean=} opt_fromEditing
+   * @override
+   */
+  onCurrentRangeChanged(newRange, opt_fromEditing) {
     if (!newRange || this.ignoreRangeChanges_ ||
-        ChromeVoxState.isReadingContinuously ||
+        ChromeVoxState.instance.isReadingContinuously || opt_fromEditing ||
         localStorage['smartStickyMode'] !== 'true') {
       return;
     }
@@ -57,7 +57,8 @@ SmartStickyMode = class {
     // Several cases arise which may lead to a sticky mode toggle:
     // The node is either editable itself or a descendant of an editable.
     // The node is a relation target of an editable.
-    const shouldTurnOffStickyMode = !!this.getEditableOrRelatedEditable_(node);
+    const shouldTurnOffStickyMode =
+        Boolean(this.getEditableOrRelatedEditable_(node));
 
     // This toggler should not make any changes when the range isn't what we're
     // lloking for and we haven't previously tracked any sticky mode state from
@@ -166,7 +167,7 @@ SmartStickyMode = class {
       while (!found && focus) {
         if (focus.activeDescendantFor && focus.activeDescendantFor.length) {
           found = focus.activeDescendantFor.find(
-              (n) => n.state[chrome.automation.StateType.EDITABLE]);
+              n => n.state[chrome.automation.StateType.EDITABLE]);
         }
 
         if (found) {
@@ -175,7 +176,7 @@ SmartStickyMode = class {
 
         if (focus.controlledBy && focus.controlledBy.length) {
           found = focus.controlledBy.find(
-              (n) => n.state[chrome.automation.StateType.EDITABLE]);
+              n => n.state[chrome.automation.StateType.EDITABLE]);
         }
 
         if (found) {
@@ -188,4 +189,4 @@ SmartStickyMode = class {
 
     return null;
   }
-};
+}

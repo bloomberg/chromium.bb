@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/host_frame_rate_throttler.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host_observer.h"
@@ -32,7 +34,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/platform_window/win/win_window.h"
 #endif
 
@@ -51,8 +53,8 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(
     std::unique_ptr<Window> window)
     : WindowTreeHost(std::move(window)) {
   bounds_in_pixels_ = properties.bounds;
-  CreateCompositor(false, false,
-                   properties.enable_compositing_based_throttling);
+  CreateCompositor(false, false, properties.enable_compositing_based_throttling,
+                   properties.compositor_memory_limit_mb);
   CreateAndSetPlatformWindow(std::move(properties));
 }
 
@@ -67,11 +69,10 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
   // end up propagating unneeded bounds change event when it is first notified
   // through OnBoundsChanged, which may lead to unneeded re-layouts, etc.
   bounds_in_pixels_ = properties.bounds;
-
 #if defined(USE_OZONE)
   platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
       this, std::move(properties));
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   platform_window_ = std::make_unique<ui::WinWindow>(this, properties.bounds);
 #else
   NOTIMPLEMENTED();
@@ -109,16 +110,11 @@ void WindowTreeHostPlatform::HideImpl() {
 }
 
 gfx::Rect WindowTreeHostPlatform::GetBoundsInPixels() const {
-  return platform_window_ ? platform_window_->GetBounds() : gfx::Rect();
+  return platform_window_->GetBoundsInPixels();
 }
 
 void WindowTreeHostPlatform::SetBoundsInPixels(const gfx::Rect& bounds) {
-  pending_size_ = bounds.size();
-  platform_window_->SetBounds(bounds);
-}
-
-gfx::Point WindowTreeHostPlatform::GetLocationOnScreenInPixels() const {
-  return platform_window_->GetBounds().origin();
+  platform_window_->SetBoundsInPixels(bounds);
 }
 
 void WindowTreeHostPlatform::SetCapture() {
@@ -127,6 +123,10 @@ void WindowTreeHostPlatform::SetCapture() {
 
 void WindowTreeHostPlatform::ReleaseCapture() {
   platform_window_->ReleaseCapture();
+}
+
+gfx::Point WindowTreeHostPlatform::GetLocationOnScreenInPixels() const {
+  return platform_window_->GetBoundsInPixels().origin();
 }
 
 bool WindowTreeHostPlatform::CaptureSystemKeyEventsImpl(
@@ -208,7 +208,6 @@ void WindowTreeHostPlatform::OnBoundsChanged(const BoundsChange& change) {
   }
   if (bounds_in_pixels_.size() != old_bounds.size() ||
       current_scale != new_scale) {
-    pending_size_ = gfx::Size();
     OnHostResizedInPixels(bounds_in_pixels_.size());
     // Changing the size may destroy this.
     if (!weak_ref)
@@ -292,6 +291,13 @@ void WindowTreeHostPlatform::OnOcclusionStateChanged(
       break;
   }
   SetNativeWindowOcclusionState(aura_occlusion_state, {});
+}
+
+void WindowTreeHostPlatform::SetFrameRateThrottleEnabled(bool enabled) {
+  if (enabled)
+    HostFrameRateThrottler::GetInstance().AddHost(this);
+  else
+    HostFrameRateThrottler::GetInstance().RemoveHost(this);
 }
 
 }  // namespace aura

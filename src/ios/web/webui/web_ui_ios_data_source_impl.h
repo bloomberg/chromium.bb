@@ -29,12 +29,13 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   void AddString(const std::string& name, const std::u16string& value) override;
   void AddString(const std::string& name, const std::string& value) override;
   void AddLocalizedString(const std::string& name, int ids) override;
-  void AddLocalizedStrings(
-      const base::DictionaryValue& localized_strings) override;
+  void AddLocalizedStrings(const base::Value::Dict& localized_strings) override;
   void AddLocalizedStrings(
       base::span<const webui::LocalizedString> strings) override;
   void AddBoolean(const std::string& name, bool value) override;
   void UseStringsJs() override;
+  void EnableReplaceI18nInJS() override;
+  bool ShouldReplaceI18nInJS() const override;
   void AddResourcePath(const std::string& path, int resource_id) override;
   void SetDefaultResource(int resource_id) override;
   void DisableDenyXFrameOptions() override;
@@ -79,10 +80,11 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   // further changes are made to it after initialization.
   ui::TemplateReplacements replacements_;
   // The |replacements_| is intended to replace |localized_strings_|.
-  base::DictionaryValue localized_strings_;
+  base::Value localized_strings_{base::Value::Type::DICT};
   bool deny_xframe_options_;
   bool load_time_data_defaults_added_;
   bool replace_existing_source_;
+  bool should_replace_i18n_in_js_;
 };
 
 }  // web

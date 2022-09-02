@@ -23,7 +23,7 @@
           <settings-reset-profile-banner on-close="onResetProfileBannerClosed_">
           </settings-reset-profile-banner>
         </template>
-<if expr="chromeos or lacros">
+<if expr="chromeos_ash or chromeos_lacros">
         <template is="dom-if" if="[[showOSSettingsBanner_]]">
           <div id="osSettingsBanner" class="cr-row first">
             <div class="flex cr-padded-text"
@@ -52,13 +52,13 @@
             <settings-autofill-page prefs="{{prefs}}"></settings-autofill-page>
           </settings-section>
         </template>
-        <template is="dom-if"
-            if="[[showPrivacyReviewPromo_(pageVisibility.privacy)]]" restamp>
-          <settings-section page-title="" nest-under-section="privacy"
-              no-search>
-            <settings-privacy-review-promo></settings-privacy-review-promo>
-          </settings-section>
-        </template>
+        <settings-section id="privacyGuidePromoSection" page-title=""
+            hidden$="[[!showPrivacyGuidePromo_]]" nest-under-section="privacy"
+            no-search>
+          <settings-privacy-guide-promo id="privacyGuidePromo"
+              prefs="{{prefs}}">
+          </settings-privacy-guide-promo>
+        </settings-section>
         <template is="dom-if" if="[[showPage_(pageVisibility.safetyCheck)]]"
             restamp>
           <settings-section page-title="$i18n{safetyCheckSectionTitle}"
@@ -90,7 +90,7 @@
             section="search">
           <settings-search-page prefs="{{prefs}}"></settings-search-page>
         </settings-section>
-<if expr="not chromeos and not lacros">
+<if expr="not chromeos_ash and not chromeos_lacros">
         <template is="dom-if" if="[[showPage_(pageVisibility.defaultBrowser)]]"
             restamp>
           <settings-section page-title="$i18n{defaultBrowser}"
@@ -119,13 +119,13 @@
                 restamp>
               <settings-section page-title="$i18n{languagesPageTitle}"
                   section="languages">
-<if expr="chromeos">
+<if expr="chromeos_ash">
                 <cr-link-row id="openChromeOSLanguagesSettings"
                     on-click="onOpenChromeOSLanguagesSettingsClick_"
                     label="$i18n{openChromeOSLanguagesSettingsLabel}" external>
                 </cr-link-row>
 </if>
-<if expr="not chromeos">
+<if expr="not chromeos_ash">
                 <settings-languages-page prefs="{{prefs}}">
                 </settings-languages-page>
 </if>
@@ -146,7 +146,7 @@
                 <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
               </settings-section>
             </template>
-<if expr="not chromeos and not lacros">
+<if expr="not chromeos_ash">
             <settings-section page-title="$i18n{systemPageTitle}"
                 section="system">
               <settings-system-page prefs="{{prefs}}"></settings-system-page>

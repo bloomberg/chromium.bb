@@ -122,7 +122,7 @@ work well with others—even when we are implementing features ahead of others.
 
 ### Explainers
 
-[Explainers](https://w3ctag.github.io/explainers) are a proposal's first contact
+[Explainers](https://tag.w3.org/explainers) are a proposal's first contact
 with the world. Well-written and comprehensive explainers help other interested
 parties judge the value of a feature, by presenting the use cases, the research,
 and the tradeoffs involved in the design space. Notably, an explainer needs to

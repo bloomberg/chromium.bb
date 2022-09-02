@@ -73,16 +73,15 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/url_loading",
-    "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/intents",
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/ocmock",
+    "//ios/chrome/test/providers/app_distribution",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
-    "//ios/public/provider/chrome/browser/app_distribution:test_app_distribution",
     "//ios/public/provider/chrome/browser/user_feedback:test_support",
     "//ios/testing:block_swizzler",
     "//ios/testing:ocmock_support",
@@ -137,6 +136,7 @@ source_set("metric_kit_subscriber") {
   frameworks = [ "MetricKit.framework" ]
   deps = [
     "//base",
+    "//components/crash/core/app",
     "//components/crash/core/common:reporter_running_ios",
     "//components/version_info",
     "//ios/chrome/browser/crash_report",
@@ -149,6 +149,7 @@ source_set("app_state_header") {
     "app_state.h",
     "app_state_agent.h",
     "app_state_observer.h",
+    "startup_information.h",
   ]
   public_deps = [
     "//ios/chrome/browser/ui/main:scene_state_observer",
@@ -171,6 +172,7 @@ source_set("observing_app_state_agent") {
   public_deps = [
     ":app_state_header",
     "//ios/chrome/browser/ui/main:scene_state_header",
+    "//ios/chrome/browser/ui/main:scene_state_observer",
   ]
 }
 
@@ -182,7 +184,6 @@ source_set("application_delegate_internal") {
     "browser_launcher.h",
     "metrics_mediator.h",
     "metrics_mediator.mm",
-    "startup_information.h",
     "tab_switching.h",
     "url_opener.h",
     "url_opener.mm",
@@ -220,7 +221,6 @@ source_set("application_delegate_internal") {
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/metrics:metrics_internal",
-    "//ios/chrome/browser/ntp_snippets:ntp_snippets",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
@@ -236,7 +236,6 @@ source_set("application_delegate_internal") {
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/url_loading",
-    "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:agents",
     "//ios/chrome/browser/web_state_list:session_metrics",
@@ -248,7 +247,7 @@ source_set("application_delegate_internal") {
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
-    "//ios/public/provider/chrome/browser/discover_feed",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/web",
     "//net",

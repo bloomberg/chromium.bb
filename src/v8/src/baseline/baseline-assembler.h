@@ -26,6 +26,8 @@ class BaselineAssembler {
   explicit BaselineAssembler(MacroAssembler* masm) : masm_(masm) {}
   inline static MemOperand RegisterFrameOperand(
       interpreter::Register interpreter_register);
+  inline void RegisterFrameAddress(interpreter::Register interpreter_register,
+                                   Register rscratch);
   inline MemOperand ContextOperand();
   inline MemOperand FunctionOperand();
   inline MemOperand FeedbackVectorOperand();
@@ -37,6 +39,9 @@ class BaselineAssembler {
   V8_INLINE void RecordComment(const char* string);
   inline void Trap();
   inline void DebugBreak();
+
+  template <typename Field>
+  inline void DecodeField(Register reg);
 
   inline void Bind(Label* label);
   // Binds the label without marking it as a valid jump target.
@@ -77,6 +82,9 @@ class BaselineAssembler {
                         Label::Distance distance = Label::kFar);
   inline void JumpIfSmi(Condition cc, Register lhs, Register rhs, Label* target,
                         Label::Distance distance = Label::kFar);
+  inline void JumpIfImmediate(Condition cc, Register left, int right,
+                              Label* target,
+                              Label::Distance distance = Label::kFar);
   inline void JumpIfTagged(Condition cc, Register value, MemOperand operand,
                            Label* target,
                            Label::Distance distance = Label::kFar);
@@ -150,7 +158,9 @@ class BaselineAssembler {
   inline void LoadTaggedSignedField(Register output, Register source,
                                     int offset);
   inline void LoadTaggedAnyField(Register output, Register source, int offset);
-  inline void LoadByteField(Register output, Register source, int offset);
+  inline void LoadWord16FieldZeroExtend(Register output, Register source,
+                                        int offset);
+  inline void LoadWord8Field(Register output, Register source, int offset);
   inline void StoreTaggedSignedField(Register target, int offset, Smi value);
   inline void StoreTaggedFieldWithWriteBarrier(Register target, int offset,
                                                Register value);
@@ -159,6 +169,13 @@ class BaselineAssembler {
   inline void LoadFixedArrayElement(Register output, Register array,
                                     int32_t index);
   inline void LoadPrototype(Register prototype, Register object);
+
+  // Falls through and sets scratch_and_result to 0 on failure, jumps to
+  // on_result on success.
+  inline void TryLoadOptimizedOsrCode(Register scratch_and_result,
+                                      Register feedback_vector,
+                                      FeedbackSlot slot, Label* on_result,
+                                      Label::Distance distance);
 
   // Loads the feedback cell from the function, and sets flags on add so that
   // we can compare afterward.
@@ -170,6 +187,8 @@ class BaselineAssembler {
   inline void AddSmi(Register lhs, Smi rhs);
   inline void SmiUntag(Register value);
   inline void SmiUntag(Register output, Register value);
+
+  inline void Word32And(Register output, Register lhs, int rhs);
 
   inline void Switch(Register reg, int case_value_base, Label** labels,
                      int num_labels);

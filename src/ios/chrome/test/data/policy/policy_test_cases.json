@@ -54,6 +54,32 @@
       }
     ]
   },
+  "AllowChromeDataInBackups": {
+    "os": [
+      "ios"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "prefs": {
+          "ios.allow_chrome_data_in_backups": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Simple value.",
+        "policies": {
+          "AllowChromeDataInBackups": false
+        },
+        "prefs": {
+          "ios.allow_chrome_data_in_backups": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
   "BrowserSignin.SigninDisabled": {
     "os": [
       "ios"
@@ -114,6 +140,47 @@
       }
     ]
   },
+  "CloudReportingUploadFrequency": {
+    "os": [
+      "ios"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "CloudReportingUploadFrequency": 12
+        },
+        "policies_settings": {
+          "CloudReportingUploadFrequency": {
+            "scope": "machine",
+            "source": "cloud"
+          }
+        },
+        "prefs": {
+          "enterprise_reporting.upload_frequency": {
+            "value": "43200000000",
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudReportingUploadFrequency": 1
+        },
+        "policies_settings": {
+          "CloudReportingUploadFrequency": {
+            "scope": "machine",
+            "source": "cloud"
+          }
+        },
+        "prefs": {
+          "enterprise_reporting.upload_frequency": {
+            "value": "10800000000",
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
   "ChromeVariations": {
     "os": [
       "ios"
@@ -144,6 +211,23 @@
   },
   "CloudPolicyOverridesPlatformPolicy": {
     "reason_for_missing_test": "This policy has no pref as it is only directly read by the policy system."
+  },
+  "ComponentUpdatesEnabled": {
+    "os": [
+      "ios"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ComponentUpdatesEnabled": true
+        },
+        "prefs": {
+          "component_updates.component_updates_enabled": {
+            "location": "local_state"
+          }
+        }
+      }
+    ]
   },
   "DefaultPopupsSetting": {
     "os": [
@@ -289,6 +373,41 @@
       }
     ]
   },
+  "NewTabPageLocation": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+            "NewTabPageLocation": ""
+        },
+        "prefs": {
+          "ios.ntp.location_override": {
+              "default_value": ""
+          }
+        }
+      },
+      {
+        "policies": {
+            "NewTabPageLocation": "m.youtube.com"
+        },
+        "prefs": {
+          "ios.ntp.location_override": {
+              "value": "https://m.youtube.com"
+          }
+        }
+      },
+      {
+        "policies": {
+          "NewTabPageLocation": "https://store.google.com"
+        },
+        "prefs": {
+          "ios.ntp.location_override": {
+              "value": "https://store.google.com"
+          }
+        }
+      }
+    ]
+  },
   "NTPContentSuggestionsEnabled": {
     "os": [
       "ios"
@@ -303,6 +422,9 @@
         }
       }
     ]
+  },
+  "OptimizationGuideFetchingEnabled": {
+    "reason_for_missing_test": "Policy was removed"
   },
   "PasswordManagerEnabled": {
     "os": [

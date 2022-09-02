@@ -39,64 +39,103 @@ struct SystraceTracePoint {
   SystraceTracePoint() {}
 
   static SystraceTracePoint B(uint32_t tgid, base::StringView name) {
-    return SystraceTracePoint('B', tgid, std::move(name), 0);
+    return SystraceTracePoint('B', tgid, std::move(name), 0, {});
   }
 
   static SystraceTracePoint E(uint32_t tgid) {
-    return SystraceTracePoint('E', tgid, {}, 0);
+    return SystraceTracePoint('E', tgid, {}, 0, {});
   }
 
   static SystraceTracePoint C(uint32_t tgid,
                               base::StringView name,
                               int64_t value) {
-    return SystraceTracePoint('C', tgid, std::move(name), value);
+    return SystraceTracePoint('C', tgid, std::move(name), value, {});
   }
 
   static SystraceTracePoint S(uint32_t tgid,
                               base::StringView name,
                               int64_t cookie) {
-    return SystraceTracePoint('S', tgid, std::move(name), cookie);
+    return SystraceTracePoint('S', tgid, std::move(name), cookie, {});
   }
 
   static SystraceTracePoint F(uint32_t tgid,
                               base::StringView name,
                               int64_t cookie) {
-    return SystraceTracePoint('F', tgid, std::move(name), cookie);
+    return SystraceTracePoint('F', tgid, std::move(name), cookie, {});
   }
 
-  SystraceTracePoint(char p, uint32_t tg, base::StringView n, int64_t v)
-      : phase(p), tgid(tg), name(std::move(n)), value(v) {}
+  static SystraceTracePoint I(uint32_t tgid, base::StringView name) {
+    return SystraceTracePoint('I', tgid, std::move(name), 0, {});
+  }
 
-  // Phase can be one of B, E, C, S, F.
+  static SystraceTracePoint N(uint32_t tgid,
+                              base::StringView track_name,
+                              base::StringView name) {
+    return SystraceTracePoint('N', tgid, std::move(name), 0,
+                              std::move(track_name));
+  }
+
+  static SystraceTracePoint T(uint32_t tgid,
+                              base::StringView track_name,
+                              base::StringView name,
+                              int64_t cookie) {
+    return SystraceTracePoint('T', tgid, std::move(name), cookie,
+                              std::move(track_name));
+  }
+
+  static SystraceTracePoint U(uint32_t tgid,
+                              base::StringView track_name,
+                              base::StringView name,
+                              int64_t cookie) {
+    return SystraceTracePoint('U', tgid, std::move(name), cookie,
+                              std::move(track_name));
+  }
+
+  SystraceTracePoint(char p,
+                     uint32_t tg,
+                     base::StringView n,
+                     int64_t v,
+                     base::StringView s)
+      : phase(p), tgid(tg), name(std::move(n)), int_value(v), str_value(s) {}
+
+  // Phase can be one of B, E, C, S, F, I, N, T, U.
   char phase = '\0';
 
   uint32_t tgid = 0;
 
-  // For phase = 'B' and phase = 'C' only.
+  // For phase = B, C, S, F, N, U, T, U.
   base::StringView name;
 
-  // For phase = 'C' (counter value) and 'B', 'F' (async cookie).
-  int64_t value = 0;
+  // For phase = C (counter value) and B, S, F, N, T, U (async cookie).
+  int64_t int_value = 0;
+
+  // For phase = N, T, U (track name)
+  base::StringView str_value;
 
   // Visible for unittesting.
   friend std::ostream& operator<<(std::ostream& os,
                                   const SystraceTracePoint& point) {
     return os << "SystraceTracePoint{'" << point.phase << "', " << point.tgid
-              << ", \"" << point.name.ToStdString() << "\", " << point.value
+              << ", \"" << point.name.ToStdString() << "\", " << point.int_value
+              << ", \"" << point.str_value.ToStdString() << "\""
               << "}";
   }
 };
 
 // We have to handle trace_marker events of a few different types:
-// 1. some random text
-// 2. B|1636|pokeUserActivity
-// 3. E|1636
-// 4. C|1636|wq:monitor|0
-// 5. S|1636|frame_capture|123
-// 6. F|1636|frame_capture|456
+// 1.   some random text
+// 2.   B|1636|pokeUserActivity
+// 3.   E|1636
+// 4.   C|1636|wq:monitor|0
+// 5.   S|1636|frame_capture|123
+// 6.   F|1636|frame_capture|456
+// 7.   C|3209|TransfersBytesPendingOnDisk-value|0|Blob
+// 8.   I|4820|instant
+// 9.   N|1938|track_name|instant_name
+// 10.  T|1339|track_name|slice_name|789
+// 11.  U|6890|track_name|slice_name|135
 // Counters emitted by chromium can have a further "category group" appended
 // ("Blob" in the example below). We ignore the category group.
-// 7. C|3209|TransfersBytesPendingOnDisk-value|0|Blob
 inline SystraceParseResult ParseSystraceTracePoint(
     base::StringView str_untrimmed,
     SystraceTracePoint* out) {
@@ -164,7 +203,26 @@ inline SystraceParseResult ParseSystraceTracePoint(
         return SystraceParseResult::kFailure;
       }
       out->name = f2_name;
-      out->value = *maybe_cookie;
+      out->int_value = *maybe_cookie;
+      return SystraceParseResult::kSuccess;
+    }
+    case 'I': {  // Instant.
+      auto f2_name = read_next_field();
+      if (PERFETTO_UNLIKELY(!has_tgid || f2_name.empty())) {
+        return SystraceParseResult::kFailure;
+      }
+      out->name = f2_name;
+      return SystraceParseResult::kSuccess;
+    }
+    case 'N': {  // Instant on track.
+      auto f2_track_name = read_next_field();
+      auto f3_name = read_next_field();
+      if (PERFETTO_UNLIKELY(!has_tgid || f2_track_name.empty() ||
+                            f3_name.empty())) {
+        return SystraceParseResult::kFailure;
+      }
+      out->name = f3_name;
+      out->str_value = f2_track_name;
       return SystraceParseResult::kSuccess;
     }
     case 'C': {  // Counter.
@@ -176,7 +234,21 @@ inline SystraceParseResult ParseSystraceTracePoint(
         return SystraceParseResult::kFailure;
       }
       out->name = f2_name;
-      out->value = *maybe_value;
+      out->int_value = *maybe_value;
+      return SystraceParseResult::kSuccess;
+    }
+    case 'T':    // Begin of async slice on track.
+    case 'U': {  // End of async slice on track.
+      auto f2_track_name = read_next_field();
+      auto f3_name = read_next_field();
+      auto maybe_cookie = base::StringToInt64(read_next_field().ToStdString());
+      if (PERFETTO_UNLIKELY(!has_tgid || f2_track_name.empty() ||
+                            f3_name.empty() || !maybe_cookie)) {
+        return SystraceParseResult::kFailure;
+      }
+      out->name = f3_name;
+      out->str_value = f2_track_name;
+      out->int_value = *maybe_cookie;
       return SystraceParseResult::kSuccess;
     }
     default:
@@ -189,8 +261,8 @@ inline SystraceParseResult ParseSystraceTracePoint(
 // Visible for unittesting.
 inline bool operator==(const SystraceTracePoint& x,
                        const SystraceTracePoint& y) {
-  return std::tie(x.phase, x.tgid, x.name, x.value) ==
-         std::tie(y.phase, y.tgid, y.name, y.value);
+  return std::tie(x.phase, x.tgid, x.name, x.int_value, x.str_value) ==
+         std::tie(y.phase, y.tgid, y.name, y.int_value, y.str_value);
 }
 
 }  // namespace systrace_utils
@@ -207,14 +279,16 @@ class SystraceParser : public Destructible {
 
   void ParsePrintEvent(int64_t ts, uint32_t pid, base::StringView event);
 
-  void ParseTracingMarkWrite(int64_t ts,
-                             uint32_t pid,
-                             char trace_type,
-                             bool trace_begin,
-                             base::StringView trace_name,
-                             uint32_t tgid,
-                             int64_t value);
+  // Parse a kernel event that mimics the systrace format.
+  void ParseKernelTracingMarkWrite(int64_t ts,
+                                   uint32_t pid,
+                                   char trace_type,
+                                   bool trace_begin,
+                                   base::StringView trace_name,
+                                   uint32_t tgid,
+                                   int64_t value);
 
+  // Parse a kernel "systrace/0" event which mimics the systrace format.
   void ParseZeroEvent(int64_t ts,
                       uint32_t pid,
                       int32_t flag,

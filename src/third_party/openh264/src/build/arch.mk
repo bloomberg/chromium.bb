@@ -13,7 +13,7 @@ endif
 endif
 
 #for arm
-ifneq ($(filter-out arm64, $(filter arm%, $(ARCH))),)
+ifneq ($(filter-out arm64 arm64e, $(filter arm%, $(ARCH))),)
 ifeq ($(USE_ASM), Yes)
 ASM_ARCH = arm
 ASMFLAGS += -I$(SRC_PATH)codec/common/arm/
@@ -22,7 +22,7 @@ endif
 endif
 
 #for arm64
-ifneq ($(filter arm64 aarch64, $(ARCH)),)
+ifneq ($(filter arm64 aarch64 arm64e, $(ARCH)),)
 ifeq ($(USE_ASM), Yes)
 ASM_ARCH = arm64
 ASMFLAGS += -I$(SRC_PATH)codec/common/arm64/
@@ -49,6 +49,30 @@ ifeq ($(ENABLE_MSA), Yes)
 ENABLE_MSA = $(shell $(SRC_PATH)build/mips-simd-check.sh $(CC) msa)
 ifeq ($(ENABLE_MSA), Yes)
 CFLAGS += -DHAVE_MSA -mmsa
+endif
+endif
+endif
+endif
+
+#for loongarch
+ifneq ($(filter loongarch64, $(ARCH)),)
+ifeq ($(USE_ASM), Yes)
+ENABLE_LSX=Yes
+ENABLE_LASX=Yes
+ASM_ARCH = loongarch
+ASMFLAGS += -I$(SRC_PATH)codec/common/loongarch/
+#lsx
+ifeq ($(ENABLE_LSX), Yes)
+ENABLE_LSX = $(shell $(SRC_PATH)build/loongarch-simd-check.sh $(CC) lsx)
+ifeq ($(ENABLE_LSX), Yes)
+CFLAGS += -DHAVE_LSX -mlsx
+endif
+endif
+#lasx
+ifeq ($(ENABLE_LASX), Yes)
+ENABLE_LASX = $(shell $(SRC_PATH)build/loongarch-simd-check.sh $(CC) lasx)
+ifeq ($(ENABLE_LASX), Yes)
+CFLAGS += -DHAVE_LASX -mlasx
 endif
 endif
 endif

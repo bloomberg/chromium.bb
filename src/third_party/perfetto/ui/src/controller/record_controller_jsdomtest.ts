@@ -39,7 +39,20 @@ test('SysConfig', () => {
   expect(ftraceEvents.includes('raw_syscalls/sys_exit')).toBe(true);
 });
 
-test('cpu scheduling includes kSyms', () => {
+test('cpu scheduling includes kSyms if OS >= S', () => {
+  const config = createEmptyRecordConfig();
+  config.cpuSched = true;
+  const result =
+      TraceConfig.decode(genConfigProto(config, {os: 'S', name: 'Android S'}));
+  const sources = assertExists(result.dataSources);
+  const srcConfig = assertExists(sources[1].config);
+  const ftraceConfig = assertExists(srcConfig.ftraceConfig);
+  const ftraceEvents = assertExists(ftraceConfig.ftraceEvents);
+  expect(ftraceConfig.symbolizeKsyms).toBe(true);
+  expect(ftraceEvents.includes('sched/sched_blocked_reason')).toBe(true);
+});
+
+test('cpu scheduling does not include kSyms if OS <= S', () => {
   const config = createEmptyRecordConfig();
   config.cpuSched = true;
   const result =
@@ -48,8 +61,8 @@ test('cpu scheduling includes kSyms', () => {
   const srcConfig = assertExists(sources[1].config);
   const ftraceConfig = assertExists(srcConfig.ftraceConfig);
   const ftraceEvents = assertExists(ftraceConfig.ftraceEvents);
-  expect(ftraceConfig.symbolizeKsyms).toBe(true);
-  expect(ftraceEvents.includes('sched/sched_blocked_reason')).toBe(true);
+  expect(ftraceConfig.symbolizeKsyms).toBe(false);
+  expect(ftraceEvents.includes('sched/sched_blocked_reason')).toBe(false);
 });
 
 test('kSyms can be enabled individually', () => {
@@ -192,6 +205,72 @@ test('ChromeMemoryConfig', () => {
   expect(traceConfig).toEqual(expectedTraceConfig);
   expect(traceConfigI).toEqual(expectedTraceConfig);
   expect(traceConfigH).toEqual(expectedTraceConfig);
+});
+
+test('ChromeCpuProfilerConfig', () => {
+  const config = createEmptyRecordConfig();
+  config.chromeHighOverheadCategoriesSelected =
+      ['disabled-by-default-cpu_profiler'];
+  const decoded =
+      TraceConfig.decode(genConfigProto(config, {os: 'C', name: 'Chrome'}));
+  const sources = assertExists(decoded.dataSources);
+
+  const traceConfigSource = assertExists(sources[0].config);
+  expect(traceConfigSource.name).toBe('org.chromium.trace_event');
+  const traceEventChromeConfig = assertExists(traceConfigSource.chromeConfig);
+  const traceEventConfig = assertExists(traceEventChromeConfig.traceConfig);
+
+  const metadataConfigSource = assertExists(sources[1].config);
+  expect(metadataConfigSource.name).toBe('org.chromium.trace_metadata');
+  const traceMetadataChromeConfig =
+      assertExists(metadataConfigSource.chromeConfig);
+  const traceMetadataConfig =
+      assertExists(traceMetadataChromeConfig.traceConfig);
+
+  const profilerConfigSource = assertExists(sources[2].config);
+  expect(profilerConfigSource.name).toBe('org.chromium.sampler_profiler');
+  const profilerChromeConfig = assertExists(profilerConfigSource.chromeConfig);
+  const profilerConfig = assertExists(profilerChromeConfig.traceConfig);
+
+  const expectedTraceConfig = '{\"record_mode\":\"record-until-full\",' +
+      '\"included_categories\":[\"disabled-by-default-cpu_profiler\"],' +
+      '\"memory_dump_config\":{}}';
+  expect(traceEventConfig).toEqual(expectedTraceConfig);
+  expect(traceMetadataConfig).toEqual(expectedTraceConfig);
+  expect(profilerConfig).toEqual(expectedTraceConfig);
+});
+
+test('ChromeCpuProfilerDebugConfig', () => {
+  const config = createEmptyRecordConfig();
+  config.chromeHighOverheadCategoriesSelected =
+      ['disabled-by-default-cpu_profiler.debug'];
+  const decoded =
+      TraceConfig.decode(genConfigProto(config, {os: 'C', name: 'Chrome'}));
+  const sources = assertExists(decoded.dataSources);
+
+  const traceConfigSource = assertExists(sources[0].config);
+  expect(traceConfigSource.name).toBe('org.chromium.trace_event');
+  const traceEventChromeConfig = assertExists(traceConfigSource.chromeConfig);
+  const traceEventConfig = assertExists(traceEventChromeConfig.traceConfig);
+
+  const metadataConfigSource = assertExists(sources[1].config);
+  expect(metadataConfigSource.name).toBe('org.chromium.trace_metadata');
+  const traceMetadataChromeConfig =
+      assertExists(metadataConfigSource.chromeConfig);
+  const traceMetadataConfig =
+      assertExists(traceMetadataChromeConfig.traceConfig);
+
+  const profilerConfigSource = assertExists(sources[2].config);
+  expect(profilerConfigSource.name).toBe('org.chromium.sampler_profiler');
+  const profilerChromeConfig = assertExists(profilerConfigSource.chromeConfig);
+  const profilerConfig = assertExists(profilerChromeConfig.traceConfig);
+
+  const expectedTraceConfig = '{\"record_mode\":\"record-until-full\",' +
+      '\"included_categories\":[\"disabled-by-default-cpu_profiler.debug\"],' +
+      '\"memory_dump_config\":{}}';
+  expect(traceEventConfig).toEqual(expectedTraceConfig);
+  expect(traceMetadataConfig).toEqual(expectedTraceConfig);
+  expect(profilerConfig).toEqual(expectedTraceConfig);
 });
 
 test('ChromeConfigRingBuffer', () => {

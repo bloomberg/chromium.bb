@@ -54,6 +54,14 @@ views::Widget::InitParams DesktopBrowserFrameAuraLinux::GetWidgetParams() {
   params.remove_standard_frame = UseCustomFrame();
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
 
+  if ((browser.is_type_app() || browser.is_type_app_popup()) &&
+      browser.profile()) {
+    params.wayland_app_id = shell_integration_linux::GetXdgAppIdForWebApp(
+        browser.app_name(), browser.profile()->GetPath());
+  } else {
+    params.wayland_app_id = params.wm_class_name;
+  }
+
   return params;
 }
 
@@ -72,8 +80,9 @@ bool DesktopBrowserFrameAuraLinux::UseCustomFrame() const {
   }
 
   // Hosted app windows get a custom frame (if the desktop PWA experimental
-  // feature is enabled).
-  return browser_view()->GetIsWebAppType();
+  // feature is enabled), or if the window is picture in picture.
+  return browser_view()->GetIsWebAppType() ||
+         browser_view()->GetIsPictureInPictureType();
 }
 
 void DesktopBrowserFrameAuraLinux::TabDraggingKindChanged(

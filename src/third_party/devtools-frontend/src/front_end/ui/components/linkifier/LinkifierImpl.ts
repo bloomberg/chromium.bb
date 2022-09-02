@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Platform from '../../../core/platform/platform.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
-import linkifierImplStyles from './linkifierImpl.css.js';
 
+import linkifierImplStyles from './linkifierImpl.css.js';
 import * as LinkifierUtils from './LinkifierUtils.js';
 
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 
 export interface LinkifierData {
-  url: string;
+  url: Platform.DevToolsPath.UrlString;
   lineNumber?: number;
   columnNumber?: number;
 }
@@ -32,7 +33,7 @@ export class Linkifier extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-linkifier`;
 
   readonly #shadow = this.attachShadow({mode: 'open'});
-  #url: string = '';
+  #url: Platform.DevToolsPath.UrlString = Platform.DevToolsPath.EmptyUrlString;
   #lineNumber?: number;
   #columnNumber?: number;
 
@@ -45,14 +46,14 @@ export class Linkifier extends HTMLElement {
       throw new Error('Cannot construct a Linkifier without providing a valid string URL.');
     }
 
-    this.render();
+    void this.#render();
   }
 
   connectedCallback(): void {
     this.#shadow.adoptedStyleSheets = [linkifierImplStyles];
   }
 
-  private onLinkActivation(event: Event): void {
+  #onLinkActivation(event: Event): void {
     event.preventDefault();
     const linkifierClickEvent = new LinkifierClick({
       url: this.#url,
@@ -62,12 +63,12 @@ export class Linkifier extends HTMLElement {
     this.dispatchEvent(linkifierClickEvent);
   }
 
-  private async render(): Promise<void> {
+  async #render(): Promise<void> {
     // Disabled until https://crbug.com/1079231 is fixed.
     await coordinator.write(() => {
       // clang-format off
       // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
-      LitHtml.render(LitHtml.html`<a class="link" href=${this.#url} @click=${this.onLinkActivation}><slot>${LinkifierUtils.linkText(this.#url, this.#lineNumber)}</slot></a>`, this.#shadow, { host: this});
+      LitHtml.render(LitHtml.html`<a class="link" href=${this.#url} @click=${this.#onLinkActivation}><slot>${LinkifierUtils.linkText(this.#url, this.#lineNumber)}</slot></a>`, this.#shadow, { host: this});
       // clang-format on
     });
   }

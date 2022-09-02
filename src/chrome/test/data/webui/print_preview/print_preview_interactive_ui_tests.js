@@ -7,15 +7,15 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
-GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "build/build_config.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /* eslint-disable no-var */
 
 const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
   /** @override */
   get browsePreload() {
-    throw 'this is abstract and should be overriden by subclasses';
+    throw new Error('this is abstract and should be overriden by subclasses');
   }
 
   // The name of the mocha suite. Should be overridden by subclasses.
@@ -43,7 +43,7 @@ var PrintPreviewButtonStripInteractiveTest =
 };
 
 // Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
+GEN('#if BUILDFLAG(IS_WIN)');
 GEN('#define MAYBE_FocusPrintOnReady DISABLED_FocusPrintOnReady');
 GEN('#else');
 GEN('#define MAYBE_FocusPrintOnReady FocusPrintOnReady');
@@ -55,7 +55,7 @@ TEST_F(
           button_strip_interactive_test.TestNames.FocusPrintOnReady);
     });
 
-GEN('#if !defined(OS_CHROMEOS)');
+GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 var PrintPreviewDestinationDialogInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
@@ -177,7 +177,7 @@ var PrintPreviewScalingSettingsInteractiveTest =
 };
 
 // Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
+GEN('#if BUILDFLAG(IS_WIN)');
 GEN('#define MAYBE_AutoFocusInput DISABLED_InputAutoFocus');
 GEN('#else');
 GEN('#define MAYBE_AutoFocusInput InputAutoFocus');
@@ -189,7 +189,7 @@ TEST_F(
           scaling_settings_interactive_test.TestNames.AutoFocusInput);
     });
 
-GEN('#if defined(OS_CHROMEOS)');
+GEN('#if BUILDFLAG(IS_CHROMEOS)');
 var PrintPreviewDestinationDropdownCrosTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */

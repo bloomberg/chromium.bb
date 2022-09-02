@@ -5,7 +5,6 @@
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
-import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ozone.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
@@ -131,6 +130,8 @@ static_library("content_shell_lib") {
     "browser/shell_devtools_manager_delegate.h",
     "browser/shell_download_manager_delegate.cc",
     "browser/shell_download_manager_delegate.h",
+    "browser/shell_federated_permission_context.cc",
+    "browser/shell_federated_permission_context.h",
     "browser/shell_javascript_dialog.h",
     "browser/shell_javascript_dialog_manager.cc",
     "browser/shell_javascript_dialog_manager.h",
@@ -232,6 +233,8 @@ static_library("content_shell_lib") {
     "//build:chromeos_buildflags",
     "//cc/base",
     "//components/cdm/renderer",
+    "//components/custom_handlers",
+    "//components/custom_handlers:test_support",
     "//components/keyed_service/content",
     "//components/metrics",
     "//components/metrics:net",
@@ -248,7 +251,6 @@ static_library("content_shell_lib") {
     "//content:content_resources",
     "//content:dev_ui_content_resources",
     "//content:sandbox_helper_win",
-    "//content/app/resources",
     "//content/public/common",
     "//content/test:content_test_mojo_bindings",
     "//content/test:test_support",
@@ -266,6 +268,7 @@ static_library("content_shell_lib") {
     "//third_party/blink/public:image_resources",
     "//third_party/blink/public:resources",
     "//third_party/blink/public/strings",
+    "//third_party/blink/public/strings:accessibility_strings",
     "//ui/base",
     "//ui/base/clipboard",
     "//ui/base/ime/init",
@@ -306,8 +309,12 @@ static_library("content_shell_lib") {
     deps += [ "//gin" ]
   }
 
-  if (use_gtk) {
-    deps += [ "//ui/gtk" ]
+  if (is_linux) {
+    deps += [ "//ui/views/linux_ui:linux_ui_factory" ]
+  }
+
+  if (is_mac) {
+    deps += [ "//ui/display:test_support" ]
   }
 
   if (is_android) {
@@ -413,11 +420,12 @@ repack("pak") {
   testonly = true
 
   sources = [
-    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
+    "$root_gen_dir/base/tracing/protos/tracing_proto_resources.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
+    "$root_gen_dir/content/quota_internals_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
     "$root_gen_dir/content/test/web_ui_mojo_test_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
@@ -425,10 +433,10 @@ repack("pak") {
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/public/resources/inspector_overlay_resources.pak",
+    "$root_gen_dir/third_party/blink/public/strings/blink_accessibility_strings_en-US.pak",
     "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_generated_resources.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ax_strings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
@@ -436,9 +444,10 @@ repack("pak") {
 
   deps = [
     ":resources",
+    "//base/tracing/protos:chrome_track_event_resources",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
-    "//content/app/resources",
+    "//content/browser/resources:resources",
     "//content/browser/resources/media:resources",
     "//content/browser/webrtc/resources",
     "//content/test:web_ui_mojo_test_resources",
@@ -448,6 +457,7 @@ repack("pak") {
     "//third_party/blink/public:resources",
     "//third_party/blink/public:scaled_resources_100_percent",
     "//third_party/blink/public/strings",
+    "//third_party/blink/public/strings:accessibility_strings",
     "//ui/resources",
     "//ui/strings",
   ]
@@ -581,11 +591,17 @@ if (is_android) {
   }
 
   if (is_fuchsia) {
-    cr_fuchsia_package("content_shell_pkg") {
+    fuchsia_component("content_shell_component") {
       testonly = true
-      binary = ":content_shell"
-      package_name = "content_shell"
       manifest = "fuchsia/content_shell.cmx"
+      data_deps = [ ":content_shell" ]
+      visibility = [ ":*" ]
+    }
+
+    fuchsia_package("content_shell_pkg") {
+      testonly = true
+      package_name = "content_shell"
+      deps = [ ":content_shell_component" ]
     }
 
     fuchsia_package_installer("content_shell_fuchsia") {
@@ -828,16 +844,11 @@ if (is_mac) {
     # Add the SwiftShader .dylibs in the Libraries directory of the Framework.
     bundle_data("content_shell_swiftshader_binaries") {
       sources = [
-        "$root_out_dir/egl_intermediates/libswiftshader_libEGL.dylib",
-        "$root_out_dir/egl_intermediates/libswiftshader_libGLESv2.dylib",
         "$root_out_dir/vk_intermediates/libvk_swiftshader.dylib",
         "$root_out_dir/vk_intermediates/vk_swiftshader_icd.json",
       ]
       outputs = [ "{{bundle_contents_dir}}/Libraries/{{source_file_part}}" ]
-      public_deps = [
-        "//ui/gl:swiftshader_egl_library_copy",
-        "//ui/gl:swiftshader_vk_library_copy",
-      ]
+      public_deps = [ "//ui/gl:swiftshader_vk_library_copy" ]
     }
   }
 

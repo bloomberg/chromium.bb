@@ -28,13 +28,8 @@
 
 #include "get_environment.h"
 
+#include "allocation.h"
 #include "log.h"
-
-// This is a CMake generated file with #defines for if secure_getenv and __secure_getenv
-// are present.
-#if !defined(VULKAN_NON_CMAKE_BUILD)
-#include "loader_cmake_config.h"
-#endif  // !defined(VULKAN_NON_CMAKE_BUILD)
 
 // Environment variables
 #if defined(__linux__) || defined(__APPLE__) || defined(__Fuchsia__) || defined(__QNXNTO__) || defined(__FreeBSD__)
@@ -120,13 +115,7 @@ char *loader_getenv(const char *name, const struct loader_instance *inst) {
     // will always be at least 1. If it's 0, the variable wasn't set.
     if (valSize == 0) return NULL;
 
-    // Allocate the space necessary for the registry entry
-    if (NULL != inst && NULL != inst->alloc_callbacks.pfnAllocation) {
-        retVal = (char *)inst->alloc_callbacks.pfnAllocation(inst->alloc_callbacks.pUserData, valSize, sizeof(char *),
-                                                             VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
-    } else {
-        retVal = (char *)malloc(valSize);
-    }
+    retVal = loader_instance_heap_alloc(inst, valSize, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
 
     if (NULL != retVal) {
         GetEnvironmentVariableA(name, retVal, valSize);
@@ -147,13 +136,7 @@ char *loader_secure_getenv(const char *name, const struct loader_instance *inst)
     return loader_getenv(name, inst);
 }
 
-void loader_free_getenv(char *val, const struct loader_instance *inst) {
-    if (NULL != inst && NULL != inst->alloc_callbacks.pfnFree) {
-        inst->alloc_callbacks.pfnFree(inst->alloc_callbacks.pUserData, val);
-    } else {
-        free((void *)val);
-    }
-}
+void loader_free_getenv(char *val, const struct loader_instance *inst) { loader_instance_heap_free(inst, (void *)val); }
 
 #else
 

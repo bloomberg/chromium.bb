@@ -20,6 +20,7 @@
 #include "gpu/config/gpu_test_config.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -32,8 +33,8 @@
 
 #if BUILDFLAG(USE_DAWN)
 #include <dawn/dawn_proc.h>
+#include <dawn/native/DawnNative.h>
 #include <dawn/webgpu_cpp.h>
-#include <dawn_native/DawnNative.h>
 #endif  // BUILDFLAG(USE_DAWN)
 
 namespace gpu {
@@ -66,8 +67,9 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
     context_state_->InitializeGL(preferences, std::move(feature_info));
 
     backing_factory_ = std::make_unique<SharedImageBackingFactoryGLImage>(
-        preferences, workarounds, GpuFeatureInfo(), &image_factory_,
-        /*progress_reporter=*/nullptr);
+        preferences, workarounds, context_state_->feature_info(),
+        &image_factory_,
+        /*progress_reporter=*/nullptr, /*for_shared_memory_gmbs=*/false);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -372,24 +374,26 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, LegacyClearing) {
 // Test to check interaction between Dawn and skia GL representations.
 TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   // Create a Dawn Metal device
-  dawn_native::Instance instance;
+  dawn::native::Instance instance;
   instance.DiscoverDefaultAdapters();
 
-  std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
+  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
   auto adapter_it = std::find_if(
-      adapters.begin(), adapters.end(), [](dawn_native::Adapter adapter) {
-        return adapter.GetBackendType() == dawn_native::BackendType::Metal;
+      adapters.begin(), adapters.end(), [](dawn::native::Adapter adapter) {
+        wgpu::AdapterProperties properties;
+        adapter.GetProperties(&properties);
+        return properties.backendType == wgpu::BackendType::Metal;
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  dawn_native::DawnDeviceDescriptor device_descriptor;
+  dawn::native::DawnDeviceDescriptor device_descriptor;
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   device_descriptor.requiredFeatures.push_back("dawn-internal-usages");
 
   wgpu::Device device =
       wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
-  DawnProcTable procs = dawn_native::GetProcs();
+  DawnProcTable procs = dawn::native::GetProcs();
   dawnProcSetProcs(&procs);
 
   // Create a backing using mailbox.
@@ -521,24 +525,26 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_Dawn_Skia_UnclearTexture) {
   }
 
   // Create a Dawn Metal device
-  dawn_native::Instance instance;
+  dawn::native::Instance instance;
   instance.DiscoverDefaultAdapters();
 
-  std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
+  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
   auto adapter_it = std::find_if(
-      adapters.begin(), adapters.end(), [](dawn_native::Adapter adapter) {
-        return adapter.GetBackendType() == dawn_native::BackendType::Metal;
+      adapters.begin(), adapters.end(), [](dawn::native::Adapter adapter) {
+        wgpu::AdapterProperties properties;
+        adapter.GetProperties(&properties);
+        return properties.backendType == wgpu::BackendType::Metal;
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  dawn_native::DawnDeviceDescriptor device_descriptor;
+  dawn::native::DawnDeviceDescriptor device_descriptor;
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   device_descriptor.requiredFeatures.push_back("dawn-internal-usages");
 
   wgpu::Device device =
       wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
-  DawnProcTable procs = dawn_native::GetProcs();
+  DawnProcTable procs = dawn::native::GetProcs();
   dawnProcSetProcs(&procs);
   {
     auto dawn_representation =
@@ -609,24 +615,26 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, UnclearDawn_SkiaFails) {
                                      memory_type_tracker_.get());
 
   // Create dawn device
-  dawn_native::Instance instance;
+  dawn::native::Instance instance;
   instance.DiscoverDefaultAdapters();
 
-  std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
+  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
   auto adapter_it = std::find_if(
-      adapters.begin(), adapters.end(), [](dawn_native::Adapter adapter) {
-        return adapter.GetBackendType() == dawn_native::BackendType::Metal;
+      adapters.begin(), adapters.end(), [](dawn::native::Adapter adapter) {
+        wgpu::AdapterProperties properties;
+        adapter.GetProperties(&properties);
+        return properties.backendType == wgpu::BackendType::Metal;
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  dawn_native::DawnDeviceDescriptor device_descriptor;
+  dawn::native::DawnDeviceDescriptor device_descriptor;
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   device_descriptor.requiredFeatures.push_back("dawn-internal-usages");
 
   wgpu::Device device =
       wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
-  DawnProcTable procs = dawn_native::GetProcs();
+  DawnProcTable procs = dawn::native::GetProcs();
   dawnProcSetProcs(&procs);
   {
     auto dawn_representation =

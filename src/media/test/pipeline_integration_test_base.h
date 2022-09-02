@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "media/audio/clockless_audio_sink.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/demuxer.h"
@@ -212,6 +213,10 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
       TestMediaSource* source,
       uint8_t test_type,
       FakeEncryptedMedia* encrypted_media);
+  PipelineStatus StartPipelineWithMediaSource(
+      TestMediaSource* source,
+      uint8_t test_type,
+      CreateAudioDecodersCB prepend_audio_decoders_cb);
 
   void OnSeeked(base::TimeDelta seek_time, PipelineStatus status);
   void OnStatusCallback(const base::RepeatingClosure& quit_run_loop_closure,
@@ -238,6 +243,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
 
   // Pipeline::Client overrides.
   void OnError(PipelineStatus status) override;
+  void OnFallback(PipelineStatus status) override;
   void OnEnded() override;
   MOCK_METHOD1(OnMetadata, void(const PipelineMetadata&));
   MOCK_METHOD2(OnBufferingStateChange,

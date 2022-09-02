@@ -1,3 +1,6 @@
+if (is_wasm) {
+  import("wasm.gni")
+}
 if (is_fuchsia) {
   import("//build/fuchsia/sdk.gni")
 }
@@ -229,7 +232,7 @@ toolchain("msvc") {
 
   tool("copy") {
     cp_py = rebase_path("../cp.py")
-    command = "$shell python \"$cp_py\" {{source}} {{output}}"
+    command = "$shell python3 \"$cp_py\" {{source}} {{output}}"
     description = "copy {{source}} {{output}}"
   }
 }
@@ -272,7 +275,7 @@ template("gcc_like_toolchain") {
 
     tool("objcxx") {
       depfile = "{{output}}.d"
-      command = "$cc_wrapper $cxx -MD -MF $depfile {{defines}} {{include_dirs}} {{framework_dirs}} {{cflags}} {{cflags_cc}} {{cflags_objcc}} -c {{source}} -o {{output}}"
+      command = "$cc_wrapper $cxx -MD -MF $depfile {{defines}} {{include_dirs}} {{framework_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       outputs =
           [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
@@ -299,7 +302,7 @@ template("gcc_like_toolchain") {
         rspfile = "{{output}}.rsp"
         rspfile_content = "{{inputs}}"
         rm_py = rebase_path("../rm.py")
-        command = "$shell python \"$rm_py\" \"{{output}}\" && $ar rcs {{output}} @$rspfile"
+        command = "$shell python3 \"$rm_py\" \"{{output}}\" && $ar rcs {{output}} @$rspfile"
       }
 
       outputs =
@@ -339,7 +342,11 @@ template("gcc_like_toolchain") {
       command = "$link -shared {{ldflags}} $_start_group @$rspfile {{frameworks}} {{solibs}} $_end_group {{libs}} $rpath -o {{output}}"
       outputs = [ "{{root_out_dir}}/$soname" ]
       output_prefix = "lib"
-      default_output_extension = ".so"
+      if (is_mac || is_ios) {
+        default_output_extension = ".dylib"
+      } else {
+        default_output_extension = ".so"
+      }
       description = "link {{output}}"
       if (0 <= link_pool_depth) {
         pool = ":link_pool($default_toolchain)"
@@ -379,13 +386,13 @@ template("gcc_like_toolchain") {
 
     tool("copy") {
       cp_py = rebase_path("../cp.py")
-      command = "python \"$cp_py\" {{source}} {{output}}"
+      command = "python3 \"$cp_py\" {{source}} {{output}}"
       description = "copy {{source}} {{output}}"
     }
 
     tool("copy_bundle_data") {
       cp_py = rebase_path("../cp.py")
-      command = "python \"$cp_py\" {{source}} {{output}}"
+      command = "python3 \"$cp_py\" {{source}} {{output}}"
       description = "copy_bundle_data {{source}} {{output}}"
     }
 
@@ -418,4 +425,16 @@ gcc_like_toolchain("gcc_like_host") {
   cc = host_cc
   cxx = host_cxx
   link = host_link
+}
+
+# Only define this toolchain if actually building for wasm.
+if (is_wasm) {
+  gcc_like_toolchain("wasm") {
+    cpu = "wasm"
+    os = "wasm"
+    ar = "$skia_emsdk_dir/upstream/emscripten/emar"
+    cc = "$skia_emsdk_dir/upstream/emscripten/emcc"
+    cxx = "$skia_emsdk_dir/upstream/emscripten/em++"
+    link = cxx
+  }
 }

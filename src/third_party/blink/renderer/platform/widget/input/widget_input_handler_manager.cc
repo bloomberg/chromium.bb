@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "build/build_config.h"
 #include "cc/base/features.h"
 #include "cc/metrics/event_metrics.h"
 #include "cc/trees/layer_tree_host.h"
@@ -26,6 +27,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/web_widget_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/input/elastic_overscroll_controller.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
@@ -33,7 +36,7 @@
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "third_party/blink/renderer/platform/widget/compositing/android_webview/synchronous_compositor_registry.h"
 #include "third_party/blink/renderer/platform/widget/input/synchronous_compositor_proxy.h"
 #endif
@@ -123,7 +126,7 @@ std::unique_ptr<blink::WebGestureEvent> ScrollBeginFromScrollUpdate(
 
 }  // namespace
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 class SynchronousCompositorProxyRegistry
     : public SynchronousCompositorRegistry {
  public:
@@ -138,7 +141,7 @@ class SynchronousCompositorProxyRegistry
     DCHECK(!proxy_);
   }
 
-  void CreateProxy(SynchronousInputHandlerProxy* handler) {
+  void CreateProxy(InputHandlerProxy* handler) {
     DCHECK(compositor_thread_default_task_runner_->BelongsToCurrentThread());
     proxy_ = std::make_unique<SynchronousCompositorProxy>(handler);
     proxy_->Init();
@@ -184,13 +187,15 @@ scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
     base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
         frame_widget_input_handler,
     bool never_composited,
-    scheduler::WebThreadScheduler* compositor_thread_scheduler,
-    scheduler::WebThreadScheduler* main_thread_scheduler,
-    bool uses_input_handler) {
+    ThreadScheduler* compositor_thread_scheduler,
+    AgentGroupScheduler& agent_group_scheduler,
+    bool uses_input_handler,
+    bool allow_scroll_resampling) {
   scoped_refptr<WidgetInputHandlerManager> manager =
       new WidgetInputHandlerManager(
           std::move(widget), std::move(frame_widget_input_handler),
-          never_composited, compositor_thread_scheduler, main_thread_scheduler);
+          never_composited, compositor_thread_scheduler, agent_group_scheduler,
+          allow_scroll_resampling);
   if (uses_input_handler)
     manager->InitInputHandler();
 
@@ -210,22 +215,25 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
     base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
         frame_widget_input_handler,
     bool never_composited,
-    scheduler::WebThreadScheduler* compositor_thread_scheduler,
-    scheduler::WebThreadScheduler* main_thread_scheduler)
+    ThreadScheduler* compositor_thread_scheduler,
+    AgentGroupScheduler& agent_group_thread_scheduler,
+    bool allow_scroll_resampling)
     : widget_(std::move(widget)),
       frame_widget_input_handler_(std::move(frame_widget_input_handler)),
 
-      widget_scheduler_(main_thread_scheduler->CreateWidgetScheduler()),
-      main_thread_scheduler_(main_thread_scheduler),
+      widget_scheduler_(agent_group_thread_scheduler.GetMainThreadScheduler()
+                            .CreateWidgetScheduler()),
+      main_thread_scheduler_(
+          &agent_group_thread_scheduler.GetMainThreadScheduler()),
       input_event_queue_(base::MakeRefCounted<MainThreadEventQueue>(
           this,
           widget_scheduler_->InputTaskRunner(),
-          main_thread_scheduler,
+          main_thread_scheduler_,
           /*allow_raf_aligned_input=*/!never_composited)),
       main_thread_task_runner_(widget_scheduler_->InputTaskRunner()),
       compositor_thread_default_task_runner_(
           compositor_thread_scheduler
-              ? compositor_thread_scheduler->DefaultTaskRunner()
+              ? compositor_thread_scheduler->CompositorTaskRunner()
               : nullptr),
       compositor_thread_input_blocking_task_runner_(
           compositor_thread_scheduler
@@ -233,8 +241,9 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
               : nullptr),
       response_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.Response")) {
-#if defined(OS_ANDROID)
+              "PowerModeVoter.Response")),
+      allow_scroll_resampling_(allow_scroll_resampling) {
+#if BUILDFLAG(IS_ANDROID)
   if (compositor_thread_default_task_runner_) {
     synchronous_compositor_registry_ =
         std::make_unique<SynchronousCompositorProxyRegistry>(
@@ -245,7 +254,7 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
 
 void WidgetInputHandlerManager::InitInputHandler() {
   bool sync_compositing = false;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   sync_compositing =
       Platform::Current()->IsSynchronousCompositingEnabledForAndroidWebView();
 #endif
@@ -325,7 +334,7 @@ void WidgetInputHandlerManager::SetNeedsMainFrame() {
 }
 
 void WidgetInputHandlerManager::WillShutdown() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (synchronous_compositor_registry_)
     synchronous_compositor_registry_->DestroyProxy();
 #endif
@@ -381,20 +390,23 @@ void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
   // TODO(crbug.com/1137870): Scroll-begin events should not normally be
   // inertial. Here, the scroll-begin is created from the first scroll-update
   // event of a sequence and the first scroll-update should not be inertial,
-  // either. Consider passing in `false` as `is_inertial` argument and adding
+  // either. Consider setting `is_inertial` to `false` and adding
   // DCHECKs here to make sure `gesture_event` is not inertial.
-  cc::EventMetrics::GestureParams gesture_params(
-      gesture_event->GetScrollInputType(),
-      gesture_event->InertialPhase() ==
-          WebGestureEvent::InertialPhaseState::kMomentum);
+  const bool is_inertial = gesture_event->InertialPhase() ==
+                           WebGestureEvent::InertialPhaseState::kMomentum;
+  std::unique_ptr<cc::EventMetrics> metrics =
+      cc::ScrollEventMetrics::CreateFromExisting(
+          gesture_event->GetTypeAsUiEventType(),
+          gesture_event->GetScrollInputType(), is_inertial,
+          cc::EventMetrics::DispatchStage::kRendererCompositorStarted,
+          update_metrics);
+  if (metrics) {
+    metrics->SetDispatchStageTimestamp(
+        cc::EventMetrics::DispatchStage::kRendererCompositorFinished);
+  }
 
   auto event = std::make_unique<WebCoalescedInputEvent>(
       std::move(gesture_event), ui::LatencyInfo());
-  std::unique_ptr<cc::EventMetrics> metrics =
-      cc::EventMetrics::CreateFromExisting(
-          event->Event().GetTypeAsUiEventType(), gesture_params,
-          cc::EventMetrics::DispatchStage::kRendererCompositorFinished,
-          update_metrics);
 
   DispatchNonBlockingEventToMainThread(std::move(event), attribution,
                                        std::move(metrics));
@@ -420,7 +432,7 @@ WidgetInputHandlerManager::GetWidgetInputHandlerHost() {
   return nullptr;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void WidgetInputHandlerManager::AttachSynchronousCompositor(
     mojo::PendingRemote<mojom::blink::SynchronousCompositorControlHost>
         control_host,
@@ -527,34 +539,38 @@ void WidgetInputHandlerManager::DispatchEvent(
     event->EventPointer()->SetTimeStamp(base::TimeTicks::Now());
   }
 
-  absl::optional<cc::EventMetrics::GestureParams> gesture_params;
-  if (event->Event().IsGestureScroll() ||
-      WebInputEvent::IsPinchGestureEventType(event->Event().GetType())) {
+  std::unique_ptr<cc::EventMetrics> metrics;
+  if (event->Event().IsGestureScroll()) {
     const auto& gesture_event =
         static_cast<const WebGestureEvent&>(event->Event());
-    gesture_params.emplace(gesture_event.GetScrollInputType());
-    if (gesture_event.IsGestureScroll()) {
-      gesture_params->scroll_params.emplace(
-          gesture_event.InertialPhase() ==
-          WebGestureEvent::InertialPhaseState::kMomentum);
-      if (gesture_event.GetType() == WebInputEvent::Type::kGestureScrollBegin) {
-        has_seen_first_gesture_scroll_update_after_begin_ = false;
-      } else if (gesture_event.GetType() ==
-                 WebInputEvent::Type::kGestureScrollUpdate) {
-        if (has_seen_first_gesture_scroll_update_after_begin_) {
-          gesture_params->scroll_params->update_type =
-              cc::EventMetrics::ScrollUpdateType::kContinued;
-        } else {
-          gesture_params->scroll_params->update_type =
-              cc::EventMetrics::ScrollUpdateType::kStarted;
-          has_seen_first_gesture_scroll_update_after_begin_ = true;
-        }
-      }
+    const bool is_inertial = gesture_event.InertialPhase() ==
+                             WebGestureEvent::InertialPhaseState::kMomentum;
+    if (gesture_event.GetType() == WebInputEvent::Type::kGestureScrollUpdate) {
+      metrics = cc::ScrollUpdateEventMetrics::Create(
+          gesture_event.GetTypeAsUiEventType(),
+          gesture_event.GetScrollInputType(), is_inertial,
+          has_seen_first_gesture_scroll_update_after_begin_
+              ? cc::ScrollUpdateEventMetrics::ScrollUpdateType::kContinued
+              : cc::ScrollUpdateEventMetrics::ScrollUpdateType::kStarted,
+          gesture_event.data.scroll_update.delta_y, event->Event().TimeStamp());
+      has_seen_first_gesture_scroll_update_after_begin_ = true;
+    } else {
+      metrics = cc::ScrollEventMetrics::Create(
+          gesture_event.GetTypeAsUiEventType(),
+          gesture_event.GetScrollInputType(), is_inertial,
+          event->Event().TimeStamp());
+      has_seen_first_gesture_scroll_update_after_begin_ = false;
     }
+  } else if (WebInputEvent::IsPinchGestureEventType(event->Event().GetType())) {
+    const auto& gesture_event =
+        static_cast<const WebGestureEvent&>(event->Event());
+    metrics = cc::PinchEventMetrics::Create(
+        gesture_event.GetTypeAsUiEventType(),
+        gesture_event.GetScrollInputType(), event->Event().TimeStamp());
+  } else {
+    metrics = cc::EventMetrics::Create(event->Event().GetTypeAsUiEventType(),
+                                       event->Event().TimeStamp());
   }
-  std::unique_ptr<cc::EventMetrics> metrics =
-      cc::EventMetrics::Create(event->Event().GetTypeAsUiEventType(),
-                               gesture_params, event->Event().TimeStamp());
 
   if (uses_input_handler_) {
     // If the input_handler_proxy has disappeared ensure we just ack event.
@@ -702,7 +718,7 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
   input_handler_proxy_ =
       std::make_unique<InputHandlerProxy>(*input_handler.get(), this);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (sync_compositing) {
     DCHECK(synchronous_compositor_registry_);
     synchronous_compositor_registry_->CreateProxy(input_handler_proxy_.get());
@@ -781,6 +797,9 @@ void WidgetInputHandlerManager::FindScrollTargetReply(
           &WidgetInputHandlerManager::DidHandleInputEventSentToCompositor, this,
           std::move(browser_callback)),
       hit_test_result);
+
+  // Let the main frames flow.
+  input_handler_proxy_->SetDeferBeginMainFrame(false);
 }
 
 void WidgetInputHandlerManager::SendDroppedPointerDownCounts() {
@@ -835,10 +854,6 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
   if (event_disposition == InputHandlerProxy::REQUIRES_MAIN_THREAD_HIT_TEST) {
     TRACE_EVENT_INSTANT0("input", "PostingHitTestToMainThread",
                          TRACE_EVENT_SCOPE_THREAD);
-    // TODO(bokan): We're going to need to perform a hit test on the main thread
-    // before we can continue handling the event. This is the critical path of a
-    // scroll so we should probably ensure the scheduler can prioritize it
-    // accordingly. https://crbug.com/1082618.
     DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
     DCHECK_EQ(event->Event().GetType(),
               WebInputEvent::Type::kGestureScrollBegin);
@@ -855,6 +870,18 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
         FROM_HERE,
         base::BindOnce(&WidgetInputHandlerManager::FindScrollTargetOnMainThread,
                        this, event_position, std::move(result_callback)));
+
+    // The hit test is on the critical path of the scroll. Don't post any
+    // BeginMainFrame tasks until we've returned from the hit test and handled
+    // the rest of the input in the compositor event queue.
+    //
+    // NOTE: setting this in FindScrollTargetOnMainThread would be too late; we
+    // might have already posted a BeginMainFrame by then. Even though the
+    // scheduler prioritizes the hit test, that main frame won't see the updated
+    // scroll offset because the task is bound to CompositorCommitData from the
+    // time it was posted. We'd then have to wait for a SECOND BeginMainFrame to
+    // actually repaint the scroller at the right offset.
+    input_handler_proxy_->SetDeferBeginMainFrame(true);
     return;
   }
 
@@ -990,7 +1017,7 @@ WidgetInputHandlerManager::InputThreadTaskRunner(TaskRunnerType type) const {
   return main_thread_task_runner_;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 SynchronousCompositorRegistry*
 WidgetInputHandlerManager::GetSynchronousCompositorRegistry() {
   DCHECK(synchronous_compositor_registry_);

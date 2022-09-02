@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
@@ -15,8 +15,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "--disable-syntax-validation"
+      "src@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     ],
     "env": {
       "DEPOT_TOOLS_COLLECT_METRICS": "0",
@@ -123,7 +122,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython3",
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",

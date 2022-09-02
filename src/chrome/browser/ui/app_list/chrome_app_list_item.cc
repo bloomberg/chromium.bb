@@ -56,7 +56,7 @@ void ChromeAppListItem::TestApi::SetPosition(
 }
 
 void ChromeAppListItem::TestApi::SetName(const std::string& name) {
-  item_->SetName(name);
+  item_->SetChromeName(name);
 }
 
 // ChromeAppListItem
@@ -114,8 +114,9 @@ const char* ChromeAppListItem::GetItemType() const {
   return "";
 }
 
-void ChromeAppListItem::GetContextMenuModel(bool add_sort_options,
-                                            GetMenuModelCallback callback) {
+void ChromeAppListItem::GetContextMenuModel(
+    ash::AppListItemContext item_context,
+    GetMenuModelCallback callback) {
   std::move(callback).Run(nullptr);
 }
 
@@ -168,20 +169,22 @@ void ChromeAppListItem::IncrementIconVersion() {
     updater->SetItemIconVersion(id(), metadata_->icon_version);
 }
 
-void ChromeAppListItem::SetIcon(const gfx::ImageSkia& icon) {
+void ChromeAppListItem::SetIcon(const gfx::ImageSkia& icon,
+                                bool is_place_holder_icon) {
   metadata_->icon = icon;
   metadata_->icon.EnsureRepsForSupportedScales();
   metadata_->badge_color =
       ash::AppIconColorCache::GetInstance().GetLightVibrantColorForApp(id(),
                                                                        icon);
   metadata_->icon_color =
-      app_list::reorder::GetSortableIconColorForApp(id(), icon);
+      is_place_holder_icon
+          ? ash::IconColor()
+          : app_list::reorder::GetSortableIconColorForApp(id(), icon);
 
   AppListModelUpdater* updater = model_updater();
   if (updater) {
-    updater->SetItemIcon(id(), metadata_->icon);
+    updater->SetItemIconAndColor(id(), metadata_->icon, metadata_->icon_color);
     updater->SetNotificationBadgeColor(id(), metadata_->badge_color);
-    updater->SetIconColor(id(), metadata_->icon_color);
   }
 }
 
@@ -198,17 +201,19 @@ void ChromeAppListItem::SetFolderId(const std::string& folder_id) {
 
 void ChromeAppListItem::SetName(const std::string& name) {
   metadata_->name = name;
+  if (model_updater())
+    model_updater()->SetItemName(id(), name);
 }
 
 void ChromeAppListItem::SetPosition(const syncer::StringOrdinal& position) {
   metadata_->position = position;
 }
 
-void ChromeAppListItem::SetIsPersistent(bool is_persistent) {
-  metadata_->is_persistent = is_persistent;
+void ChromeAppListItem::SetIsSystemFolder(bool is_system_folder) {
+  metadata_->is_system_folder = is_system_folder;
   AppListModelUpdater* updater = model_updater();
   if (updater)
-    updater->SetItemIsPersistent(id(), is_persistent);
+    updater->SetItemIsSystemFolder(id(), is_system_folder);
 }
 
 void ChromeAppListItem::SetIsPageBreak(bool is_page_break) {

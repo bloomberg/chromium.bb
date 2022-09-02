@@ -28,10 +28,13 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/test/bind.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -66,7 +69,7 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
     // Pretend to respond asynchronously.
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(data)),
-        base::Milliseconds(1));
+        photo_download_delay_);
   }
 
   void DownloadPhotoToFile(const std::string& url,
@@ -143,6 +146,10 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
 
   void SetDecodedPhoto(const gfx::ImageSkia& image) { decoded_image_ = image; }
 
+  void SetPhotoDownloadDelay(base::TimeDelta delay) {
+    photo_download_delay_ = delay;
+  }
+
   const std::map<int, ::ambient::PhotoCacheEntry>& get_files() {
     return files_;
   }
@@ -159,6 +166,8 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
   absl::optional<gfx::ImageSkia> decoded_image_;
 
   std::map<int, ::ambient::PhotoCacheEntry> files_;
+
+  base::TimeDelta photo_download_delay_ = base::Milliseconds(1);
 };
 
 AmbientAshTestBase::AmbientAshTestBase()
@@ -196,13 +205,37 @@ void AmbientAshTestBase::SetAmbientModeEnabled(bool enabled) {
   }
 }
 
+void AmbientAshTestBase::SetAmbientAnimationTheme(AmbientAnimationTheme theme) {
+  Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
+      ambient::prefs::kAmbientAnimationTheme, static_cast<int>(theme));
+}
+
 void AmbientAshTestBase::ShowAmbientScreen() {
   // The widget will be destroyed in |AshTestBase::TearDown()|.
   ambient_controller()->ShowUi();
-  // The UI only shows when images are downloaded to avoid showing blank screen.
-  FastForwardToNextImage();
-  // Flush the message loop to finish all async calls.
-  base::RunLoop().RunUntilIdle();
+
+  static constexpr base::TimeDelta kTimeout = base::Seconds(10);
+  base::test::ScopedRunLoopTimeout loop_timeout(FROM_HERE, kTimeout);
+  base::RunLoop run_loop;
+  task_environment()->GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AmbientAshTestBase::SpinWaitForAmbientViewAvailable,
+                     base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+void AmbientAshTestBase::SpinWaitForAmbientViewAvailable(
+    const base::RepeatingClosure& quit_closure) {
+  if (GetContainerView()) {
+    quit_closure.Run();
+  } else {
+    static constexpr base::TimeDelta kPollingPeriod = base::Milliseconds(250);
+    task_environment()->GetMainThreadTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AmbientAshTestBase::SpinWaitForAmbientViewAvailable,
+                       base::Unretained(this), quit_closure),
+        kPollingPeriod);
+  }
 }
 
 void AmbientAshTestBase::HideAmbientScreen() {
@@ -468,6 +501,10 @@ AmbientPhotoCache* AmbientAshTestBase::photo_cache() {
   return photo_controller()->get_photo_cache_for_testing();
 }
 
+AmbientWeatherController* AmbientAshTestBase::weather_controller() {
+  return ambient_controller()->ambient_weather_controller();
+}
+
 std::vector<AmbientContainerView*> AmbientAshTestBase::GetContainerViews() {
   std::vector<AmbientContainerView*> result;
   for (auto* ctrl : RootWindowController::root_window_controllers()) {
@@ -548,6 +585,13 @@ void AmbientAshTestBase::SetDecodePhotoImage(const gfx::ImageSkia& image) {
       photo_controller()->get_photo_cache_for_testing());
 
   photo_cache->SetDecodedPhoto(image);
+}
+
+void AmbientAshTestBase::SetPhotoDownloadDelay(base::TimeDelta delay) {
+  auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
+      photo_controller()->get_photo_cache_for_testing());
+
+  photo_cache->SetPhotoDownloadDelay(delay);
 }
 
 }  // namespace ash

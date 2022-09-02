@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "constants/font_encodings.h"
 #include "core/fpdfapi/font/cpdf_type1font.h"
 #include "core/fpdfapi/page/cpdf_form.h"
 #include "core/fpdfapi/page/cpdf_iccprofile.h"
@@ -40,7 +41,6 @@
 #include "core/fxge/fx_font.h"
 #include "third_party/base/check.h"
 #include "third_party/base/containers/contains.h"
-#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -62,7 +62,7 @@ void InsertWidthArrayImpl(std::vector<int> widths, CPDF_Array* pWidthArray) {
     pWidthArray1->AppendNew<CPDF_Number>(w);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void InsertWidthArray(HDC hDC, int start, int end, CPDF_Array* pWidthArray) {
   std::vector<int> widths(end - start + 1);
   GetCharWidth(hDC, start, end, widths.data());
@@ -80,7 +80,7 @@ ByteString GetPSNameFromTT(HDC hDC) {
   }
   return result;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 void InsertWidthArray1(CFX_Font* pFont,
                        CFX_UnicodeEncoding* pEncoding,
@@ -492,7 +492,8 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddFont(std::unique_ptr<CFX_Font> pFont,
     }
     if (charset == FX_Charset::kANSI || charset == FX_Charset::kDefault ||
         charset == FX_Charset::kSymbol) {
-      pBaseDict->SetNewFor<CPDF_Name>("Encoding", "WinAnsiEncoding");
+      pBaseDict->SetNewFor<CPDF_Name>("Encoding",
+                                      pdfium::font_encodings::kWinAnsiEncoding);
       for (int charcode = 128; charcode <= 255; charcode++) {
         int glyph_index = pEncoding->GlyphFromCharCode(charcode);
         int char_width = pFont->GetGlyphWidth(glyph_index);
@@ -500,7 +501,7 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddFont(std::unique_ptr<CFX_Font> pFont,
       }
     } else {
       size_t i = CalculateEncodingDict(charset, pBaseDict);
-      if (i < pdfium::size(kFX_CharsetUnicodes)) {
+      if (i < std::size(kFX_CharsetUnicodes)) {
         const uint16_t* pUnicodes = kFX_CharsetUnicodes[i].m_pUnicodes;
         for (int j = 0; j < 128; j++) {
           int glyph_index = pEncoding->GlyphFromCharCode(pUnicodes[j]);
@@ -530,7 +531,7 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddFont(std::unique_ptr<CFX_Font> pFont,
     nStemV = pFont->GetSubstFont()->m_Weight / 5;
   } else {
     static const char stem_chars[] = {'i', 'I', '!', '1'};
-    const size_t count = pdfium::size(stem_chars);
+    const size_t count = std::size(stem_chars);
     uint32_t glyph = pEncoding->GlyphFromCharCode(stem_chars[0]);
     nStemV = pFont->GetGlyphWidth(glyph);
     for (size_t i = 1; i < count; i++) {
@@ -549,7 +550,7 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddFont(std::unique_ptr<CFX_Font> pFont,
   return GetFont(pBaseDict);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 RetainPtr<CPDF_Font> CPDF_DocPageData::AddWindowsFont(LOGFONTA* pLogFont) {
   pLogFont->lfHeight = -1000;
   pLogFont->lfWidth = 0;
@@ -597,7 +598,8 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddWindowsFont(LOGFONTA* pLogFont) {
   if (!bCJK) {
     if (eCharset == FX_Charset::kANSI || eCharset == FX_Charset::kDefault ||
         eCharset == FX_Charset::kSymbol) {
-      pBaseDict->SetNewFor<CPDF_Name>("Encoding", "WinAnsiEncoding");
+      pBaseDict->SetNewFor<CPDF_Name>("Encoding",
+                                      pdfium::font_encodings::kWinAnsiEncoding);
     } else {
       CalculateEncodingDict(eCharset, pBaseDict);
     }
@@ -631,28 +633,29 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddWindowsFont(LOGFONTA* pLogFont) {
   DeleteDC(hDC);
   return GetFont(pBaseDict);
 }
-#endif  //  defined(OS_WIN)
+#endif  //  BUILDFLAG(IS_WIN)
 
 size_t CPDF_DocPageData::CalculateEncodingDict(FX_Charset charset,
                                                CPDF_Dictionary* pBaseDict) {
   size_t i;
-  for (i = 0; i < pdfium::size(kFX_CharsetUnicodes); ++i) {
+  for (i = 0; i < std::size(kFX_CharsetUnicodes); ++i) {
     if (kFX_CharsetUnicodes[i].m_Charset == charset)
       break;
   }
-  if (i == pdfium::size(kFX_CharsetUnicodes))
+  if (i == std::size(kFX_CharsetUnicodes))
     return i;
 
   CPDF_Dictionary* pEncodingDict =
       GetDocument()->NewIndirect<CPDF_Dictionary>();
-  pEncodingDict->SetNewFor<CPDF_Name>("BaseEncoding", "WinAnsiEncoding");
+  pEncodingDict->SetNewFor<CPDF_Name>("BaseEncoding",
+                                      pdfium::font_encodings::kWinAnsiEncoding);
 
   CPDF_Array* pArray = pEncodingDict->SetNewFor<CPDF_Array>("Differences");
   pArray->AppendNew<CPDF_Number>(128);
 
   const uint16_t* pUnicodes = kFX_CharsetUnicodes[i].m_pUnicodes;
   for (int j = 0; j < 128; j++) {
-    ByteString name = PDF_AdobeNameFromUnicode(pUnicodes[j]);
+    ByteString name = AdobeNameFromUnicode(pUnicodes[j]);
     pArray->AppendNew<CPDF_Name>(name.IsEmpty() ? ".notdef" : name);
   }
   pBaseDict->SetNewFor<CPDF_Reference>("Encoding", GetDocument(),

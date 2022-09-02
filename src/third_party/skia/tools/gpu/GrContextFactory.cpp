@@ -7,7 +7,7 @@
  */
 
 #include "include/gpu/GrDirectContext.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
 #include "tools/gpu/GrContextFactory.h"
 #ifdef SK_GL
 #include "tools/gpu/gl/GLTestContext.h"
@@ -16,7 +16,6 @@
 #if SK_ANGLE
 #include "tools/gpu/gl/angle/GLTestContext_angle.h"
 #endif
-#include "tools/gpu/gl/command_buffer/GLTestContext_command_buffer.h"
 #ifdef SK_VULKAN
 #include "tools/gpu/vk/VkTestContext.h"
 #endif
@@ -29,7 +28,7 @@
 #ifdef SK_DAWN
 #include "tools/gpu/dawn/DawnTestContext.h"
 #endif
-#include "src/gpu/GrCaps.h"
+#include "src/gpu/ganesh/GrCaps.h"
 #include "tools/gpu/mock/MockTestContext.h"
 
 #if defined(SK_BUILD_FOR_WIN) && defined(SK_ENABLE_DISCRETE_GPU)
@@ -210,13 +209,13 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
                     glCtx = MakeANGLETestContext(ANGLEBackend::kOpenGL, ANGLEContextVersion::kES3,
                                                  glShareContext).release();
                     break;
-#endif
-#ifndef SK_NO_COMMAND_BUFFER
-                case kCommandBuffer_ES2_ContextType:
-                    glCtx = CommandBufferGLTestContext::Create(2, glShareContext);
+                case kANGLE_Metal_ES2_ContextType:
+                    glCtx = MakeANGLETestContext(ANGLEBackend::kMetal, ANGLEContextVersion::kES2,
+                                                 glShareContext).release();
                     break;
-                case kCommandBuffer_ES3_ContextType:
-                    glCtx = CommandBufferGLTestContext::Create(3, glShareContext);
+                case kANGLE_Metal_ES3_ContextType:
+                    glCtx = MakeANGLETestContext(ANGLEBackend::kMetal, ANGLEContextVersion::kES3,
+                                                 glShareContext).release();
                     break;
 #endif
                 default:
@@ -242,10 +241,10 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
             if (!testCtx) {
                 return ContextInfo();
             }
-
+#ifdef SK_GL
             // We previously had an issue where the VkDevice destruction would occasionally hang
-            // on systems with NVIDIA GPUs and having an existing GL context fixed it. Now (March
-            // 2020) we still need the GL context to keep Vulkan/TSAN bots from running incredibly
+            // on systems with NVIDIA GPUs and having an existing GL context fixed it. Now (Feb
+            // 2022) we still need the GL context to keep Vulkan/TSAN bots from running incredibly
             // slow. Perhaps this prevents repeated driver loading/unloading? Note that keeping
             // a persistent VkTestContext around instead was tried and did not work.
             if (!fSentinelGLContext) {
@@ -254,6 +253,7 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
                     fSentinelGLContext.reset(CreatePlatformGLTestContext(kGLES_GrGLStandard));
                 }
             }
+#endif
             break;
         }
 #endif

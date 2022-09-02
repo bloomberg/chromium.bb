@@ -8,6 +8,7 @@ GEN_INCLUDE([
   '//chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
 
+GEN('#include "build/build_config.h"');
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 GEN('#include "content/public/test/browser_test.h"');
@@ -119,8 +120,8 @@ AccessibilityTest.define('CrExtensionsA11yTest', {
   /** @override */
   tests: {
     'Accessible with No Extensions': function() {
-      let list = document.querySelector('extensions-manager')
-                     .shadowRoot.querySelector('#items-list');
+      const list = document.querySelector('extensions-manager')
+                       .shadowRoot.querySelector('#items-list');
       assertEquals(list.extensions.length, 0);
       assertEquals(list.apps.length, 0);
     }
@@ -150,8 +151,8 @@ AccessibilityTest.define('CrExtensionsA11yTestWithMultipleExensions', {
   /** @override */
   tests: {
     'Accessible with Extensions and Apps': function() {
-      let list = document.querySelector('extensions-manager')
-                     .shadowRoot.querySelector('#items-list');
+      const list = document.querySelector('extensions-manager')
+                       .shadowRoot.querySelector('#items-list');
       assertEquals(list.extensions.length, 1);
       assertEquals(list.apps.length, 3);
     },
@@ -179,8 +180,9 @@ AccessibilityTest.define('CrExtensionsShortcutA11yTestWithNoExtensions', {
   /** @override */
   tests: {
     'Accessible with No Extensions or Apps': function() {
-      let list = document.querySelector('extensions-manager')
-                     .shadowRoot.querySelector('extensions-keyboard-shortcuts');
+      const list =
+          document.querySelector('extensions-manager')
+              .shadowRoot.querySelector('extensions-keyboard-shortcuts');
       assertEquals(list.items.length, 0);
     },
   },
@@ -207,8 +209,9 @@ AccessibilityTest.define('CrExtensionsShortcutA11yTestWithExtensions', {
   /** @override */
   tests: {
     'Accessible with Extensions': function() {
-      let list = document.querySelector('extensions-manager')
-                     .shadowRoot.querySelector('extensions-keyboard-shortcuts');
+      const list =
+          document.querySelector('extensions-manager')
+              .shadowRoot.querySelector('extensions-keyboard-shortcuts');
       assertEquals(list.items.length, 1);
     },
   },
@@ -224,7 +227,7 @@ CrExtensionsErrorConsoleA11yTest =
   /** @override */
   testGenPreamble() {
     // (crbug.com/1199580): Disabled tests from Mac and Win failures
-    GEN('#if defined(OS_MAC) || defined(OS_WIN)');
+    GEN('#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)');
     GEN('#define DISABLED_All');
     GEN('#endif');
     GEN('  SetDevModeEnabled(true);');

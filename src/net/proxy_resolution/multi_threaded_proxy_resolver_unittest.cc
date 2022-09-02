@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker_impl.h"
+#include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/schemeful_site.h"
@@ -110,7 +111,7 @@ class BlockableProxyResolver : public MockProxyResolver {
     WILL_BLOCK,
   };
 
-  BlockableProxyResolver() : state_(State::NONE), condition_(&lock_) {}
+  BlockableProxyResolver() : condition_(&lock_) {}
 
   BlockableProxyResolver(const BlockableProxyResolver&) = delete;
   BlockableProxyResolver& operator=(const BlockableProxyResolver&) = delete;
@@ -171,7 +172,7 @@ class BlockableProxyResolver : public MockProxyResolver {
   }
 
  private:
-  State state_;
+  State state_ = State::NONE;
   base::Lock lock_;
   base::ConditionVariable condition_;
 };

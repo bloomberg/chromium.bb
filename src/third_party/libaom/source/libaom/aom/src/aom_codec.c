@@ -111,6 +111,7 @@ aom_codec_err_t aom_codec_control(aom_codec_ctx_t *ctx, int ctrl_id, ...) {
     }
   }
   ctx->err = AOM_CODEC_ERROR;
+  ctx->priv->err_detail = "Invalid control ID";
   return AOM_CODEC_ERROR;
 }
 

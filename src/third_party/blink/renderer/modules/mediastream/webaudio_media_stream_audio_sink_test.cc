@@ -32,8 +32,8 @@ class WebAudioMediaStreamAudioSinkTest : public testing::Test {
         String::FromUTF8("dummy_source_id"), MediaStreamSource::kTypeAudio,
         String::FromUTF8("dummy_source_name"), false /* remote */);
     component_ = MakeGarbageCollected<MediaStreamComponent>(
-        String::FromUTF8("audio_track"), audio_source);
-    component_->SetPlatformTrack(std::make_unique<MediaStreamAudioTrack>(true));
+        String::FromUTF8("audio_track"), audio_source,
+        std::make_unique<MediaStreamAudioTrack>(true));
     source_provider_ = std::make_unique<WebAudioMediaStreamAudioSink>(
         component_, context_sample_rate);
     source_provider_->SetSinkParamsForTesting(sink_params_);
@@ -54,10 +54,6 @@ class WebAudioMediaStreamAudioSinkTest : public testing::Test {
 };
 
 TEST_F(WebAudioMediaStreamAudioSinkTest, VerifyDataFlow) {
-  // TODO(miu): This test should be re-worked so that the audio data and format
-  // is feed into a MediaStreamAudioSource and, through the
-  // MediaStreamAudioTrack, ultimately delivered to the |source_provider_|.
-
   // Point the WebVector into memory owned by |sink_bus_|.
   WebVector<float*> audio_data(static_cast<size_t>(sink_bus_->channels()));
   for (int i = 0; i < sink_bus_->channels(); ++i)

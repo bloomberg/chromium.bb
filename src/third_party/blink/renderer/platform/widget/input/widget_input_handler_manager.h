@@ -35,8 +35,10 @@ class WebWidgetScheduler;
 class WebThreadScheduler;
 }  // namespace scheduler
 
+class AgentGroupScheduler;
 class SynchronousCompositorRegistry;
 class SynchronousCompositorProxyRegistry;
+class ThreadScheduler;
 class WebInputEventAttribution;
 class WidgetBase;
 
@@ -77,9 +79,10 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
       base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
           frame_widget_input_handler,
       bool never_composited,
-      scheduler::WebThreadScheduler* compositor_thread_scheduler,
-      scheduler::WebThreadScheduler* main_thread_scheduler,
-      bool needs_input_handler);
+      ThreadScheduler* compositor_thread_scheduler,
+      AgentGroupScheduler& agent_group_scheduler,
+      bool needs_input_handler,
+      bool allow_scroll_resampling);
 
   WidgetInputHandlerManager(const WidgetInputHandlerManager&) = delete;
   WidgetInputHandlerManager& operator=(const WidgetInputHandlerManager&) =
@@ -113,6 +116,7 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
       cc::TouchAction touch_action,
       uint32_t unique_touch_event_id,
       InputHandlerProxy::EventDisposition event_disposition) override;
+  bool AllowsScrollResampling() override { return allow_scroll_resampling_; }
 
   void ObserveGestureEventOnMainThread(
       const WebGestureEvent& gesture_event,
@@ -128,7 +132,7 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
 
   mojom::blink::WidgetInputHandlerHost* GetWidgetInputHandlerHost();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void AttachSynchronousCompositor(
       mojo::PendingRemote<mojom::blink::SynchronousCompositorControlHost>
           control_host,
@@ -178,13 +182,13 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   ~WidgetInputHandlerManager() override;
 
  private:
-  WidgetInputHandlerManager(
-      base::WeakPtr<WidgetBase> widget,
-      base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
-          frame_widget_input_handler,
-      bool never_composited,
-      scheduler::WebThreadScheduler* compositor_thread_scheduler,
-      scheduler::WebThreadScheduler* main_thread_scheduler);
+  WidgetInputHandlerManager(base::WeakPtr<WidgetBase> widget,
+                            base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
+                                frame_widget_input_handler,
+                            bool never_composited,
+                            ThreadScheduler* compositor_thread_scheduler,
+                            AgentGroupScheduler& agent_group_scheduler,
+                            bool allow_scroll_resampling);
   void InitInputHandler();
   void InitOnInputHandlingThread(
       const base::WeakPtr<cc::CompositorDelegateForInput>& compositor_delegate,
@@ -347,10 +351,14 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
 
   unsigned dropped_pointer_down_ = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<SynchronousCompositorProxyRegistry>
       synchronous_compositor_registry_;
 #endif
+
+  // Whether to use ScrollPredictor to resample scroll events. This is false for
+  // web_tests to ensure that scroll deltas are not timing-dependent.
+  const bool allow_scroll_resampling_ = true;
 };
 
 }  // namespace blink

@@ -247,7 +247,7 @@ class TestAuthMetadataProcessor : public AuthMetadataProcessor {
 const char TestAuthMetadataProcessor::kGoodGuy[] = "Dr Jekyll";
 const char TestAuthMetadataProcessor::kIdentityPropName[] = "novel identity";
 
-class Proxy : public ::grpc::testing::EchoTestService::Service {
+class Proxy : public grpc::testing::EchoTestService::Service {
  public:
   explicit Proxy(const std::shared_ptr<Channel>& channel)
       : stub_(grpc::testing::EchoTestService::NewStub(channel)) {}
@@ -260,11 +260,11 @@ class Proxy : public ::grpc::testing::EchoTestService::Service {
   }
 
  private:
-  std::unique_ptr<::grpc::testing::EchoTestService::Stub> stub_;
+  std::unique_ptr<grpc::testing::EchoTestService::Stub> stub_;
 };
 
 class TestServiceImplDupPkg
-    : public ::grpc::testing::duplicate::EchoTestService::Service {
+    : public grpc::testing::duplicate::EchoTestService::Service {
  public:
   Status Echo(ServerContext* /*context*/, const EchoRequest* /*request*/,
               EchoResponse* response) override {
@@ -290,8 +290,7 @@ class TestScenario {
   bool callback_server;
 };
 
-static std::ostream& operator<<(std::ostream& out,
-                                const TestScenario& scenario) {
+std::ostream& operator<<(std::ostream& out, const TestScenario& scenario) {
   return out << "TestScenario{use_interceptors="
              << (scenario.use_interceptors ? "true" : "false")
              << ", use_proxy=" << (scenario.use_proxy ? "true" : "false")
@@ -404,8 +403,8 @@ class End2endTest : public ::testing::TestWithParam<TestScenario> {
 
     if (!GetParam().inproc) {
       if (!GetParam().use_interceptors) {
-        channel_ = ::grpc::CreateCustomChannel(server_address_.str(),
-                                               channel_creds, args);
+        channel_ = grpc::CreateCustomChannel(server_address_.str(),
+                                             channel_creds, args);
       } else {
         channel_ = CreateCustomChannelWithInterceptors(
             server_address_.str(), channel_creds, args,
@@ -468,8 +467,8 @@ class End2endTest : public ::testing::TestWithParam<TestScenario> {
   int first_picked_port_;
 };
 
-static void SendRpc(grpc::testing::EchoTestService::Stub* stub, int num_rpcs,
-                    bool with_binary_metadata) {
+void SendRpc(grpc::testing::EchoTestService::Stub* stub, int num_rpcs,
+             bool with_binary_metadata) {
   EchoRequest request;
   EchoResponse response;
   request.set_message("Hello hello hello hello");
@@ -2292,7 +2291,7 @@ INSTANTIATE_TEST_SUITE_P(
 }  // namespace grpc
 
 int main(int argc, char** argv) {
-  grpc::testing::TestEnvironment env(argc, argv);
+  grpc::testing::TestEnvironment env(&argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
   int ret = RUN_ALL_TESTS();
   return ret;

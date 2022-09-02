@@ -57,12 +57,6 @@ VirtualKeyboardController::VirtualKeyboardController()
   UpdateDevices();
 
   // Set callback to show the emoji panel
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kImeSystemEmojiPicker)) {
-    ui::SetShowEmojiKeyboardCallback(base::BindRepeating(
-        &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
-        base::Unretained(this), input_method::ImeKeyset::kEmoji));
-  }
   ui::SetTabletModeShowEmojiKeyboardCallback(base::BindRepeating(
       &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
       base::Unretained(this), input_method::ImeKeyset::kEmoji));
@@ -128,9 +122,10 @@ void VirtualKeyboardController::UpdateDevices() {
     ui::InputDeviceType type = device.type;
     if (type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL)
       has_internal_keyboard_ = true;
-    if (type == ui::InputDeviceType::INPUT_DEVICE_USB ||
-        (type == ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH &&
-         bluetooth_devices_observer_->IsConnectedBluetoothDevice(device))) {
+    if ((type == ui::InputDeviceType::INPUT_DEVICE_USB ||
+         (type == ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH &&
+          bluetooth_devices_observer_->IsConnectedBluetoothDevice(device))) &&
+        !device.suspected_imposter) {
       has_external_keyboard_ = true;
     }
   }

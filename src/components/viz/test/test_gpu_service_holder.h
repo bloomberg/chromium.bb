@@ -15,9 +15,18 @@
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/vulkan/buildflags.h"
 
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
 #include "mojo/public/cpp/bindings/binder_map.h"
 #endif
+
+// START forward declarations for ScopedAllowRacyFeatureListOverrides.
+namespace ash {
+class AshScopedAllowRacyFeatureListOverrides;
+}  // namespace ash
+
+class ChromeShelfControllerTest;
+class ShelfContextMenuTest;
+// END forward declarations for ScopedAllowRacyFeatureListOverrides.
 
 namespace gpu {
 class CommandBufferTaskExecutor;
@@ -40,6 +49,26 @@ class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
    public:
     ~ScopedResetter() { TestGpuServiceHolder::ResetInstance(); }
   };
+
+  // Don't instantiate FeatureList::ScopedDisallowOverrides when the GPU thread
+  // is started. This shouldn't be required but there are existing tests that
+  // initialize ScopedFeatureList after TestGpuServiceHolder.
+  // TODO(crbug.com/1241161): Fix racy tests and remove this.
+  class ScopedAllowRacyFeatureListOverrides {
+   public:
+    ~ScopedAllowRacyFeatureListOverrides();
+
+   private:
+    // Existing allowlisted failures. DO NOT ADD ANYTHING TO THIS LIST! Instead,
+    // the test should change so the initialization of ScopedFeatureList happens
+    // before TestGpuServiceHolder is created.
+    friend class ::ChromeShelfControllerTest;
+    friend class ::ShelfContextMenuTest;
+    friend class ash::AshScopedAllowRacyFeatureListOverrides;
+
+    ScopedAllowRacyFeatureListOverrides();
+  };
+
   // Exposes a singleton to allow easy sharing of the GpuServiceImpl by
   // different clients (e.g. to share SharedImages via a common
   // SharedImageManager).
@@ -102,21 +131,15 @@ class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
   void DeleteOnGpuThread();
 
 // TODO(crbug.com/1267788): Fuchsia crashes. See details in the crbug.
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe);
   void BindInterfaceOnGpuThread(const std::string& interface_name,
                                 mojo::ScopedMessagePipeHandle interface_pipe);
 #endif
 
-#if !defined(OS_CHROMEOS)
-  // TODO(crbug.com/1241161): This is equally applicable to Chrome OS there are
-  // just a number of tests that already override the feature list after it's no
-  // longer safe that need to be fixed first.
-  base::FeatureList::ScopedDisallowOverrides disallow_feature_overrides{
-      "FeatureList overrides must happen before the GPU service thread has "
-      "been started."};
-#endif
+  absl::optional<base::FeatureList::ScopedDisallowOverrides>
+      disallow_feature_overrides_;
 
   base::Thread gpu_thread_;
   base::Thread io_thread_;
@@ -130,7 +153,7 @@ class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
   std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
 #endif
 
-#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_FUCHSIA)
   // Bound interfaces.
   mojo::BinderMap binders_;
 #endif

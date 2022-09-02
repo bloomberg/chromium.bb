@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.payments;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +25,6 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.Event;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
 
@@ -36,10 +34,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestContactDetailsTest implements MainActivityStartCallback {
-    // Disable animations to reduce flakiness.
-    @ClassRule
-    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
-
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_contact_details_test.html", this);
@@ -337,5 +331,32 @@ public class PaymentRequestContactDetailsTest implements MainActivityStartCallba
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
+    }
+
+    /**
+     * Test that requesting contact details in an incognito window does not crash. Previously the
+     * helper text ("Cards and addresses are from...") would try to fetch the signed-in user in
+     * incognito and hit a null-deference in doing so.
+     *
+     * See https://crbug.com/1311352
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testPaymentRequestIncognitoMode() throws TimeoutException {
+        // Open the test page in an incognito window.
+        mPaymentRequestTestRule.newIncognitoTabFromMenu();
+        mPaymentRequestTestRule.loadUrl(mPaymentRequestTestRule.getTestServer().getURL(
+                "/components/test/data/payments/payment_request_contact_details_test.html"));
+
+        // Trigger the PaymentRequest, and expand the contact info section to show the text. This is
+        // where the code would previously crash.
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickInContactInfoAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+
+        // Close the dialog.
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getDismissed());
     }
 }

@@ -20,6 +20,8 @@ extern const char kDisableVariationsSafeMode[];
 COMPONENT_EXPORT(VARIATIONS)
 extern const char kEnableBenchmarking[];
 COMPONENT_EXPORT(VARIATIONS)
+extern const char kEnableFieldTrialTestingConfig[];
+COMPONENT_EXPORT(VARIATIONS)
 extern const char kFakeVariationsChannel[];
 COMPONENT_EXPORT(VARIATIONS)
 extern const char kForceFieldTrialParams[];
@@ -33,6 +35,8 @@ COMPONENT_EXPORT(VARIATIONS)
 extern const char kVariationsServerURL[];
 COMPONENT_EXPORT(VARIATIONS)
 extern const char kVariationsInsecureServerURL[];
+COMPONENT_EXPORT(VARIATIONS)
+extern const char kEnableFinchSeedDeltaCompression[];
 
 }  // namespace switches
 }  // namespace variations

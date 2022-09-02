@@ -63,18 +63,29 @@ export function onboardingChooseDestinationPageTest() {
         component.shadowRoot.querySelector('#destinationOriginalOwner');
     const newOwnerComponent =
         component.shadowRoot.querySelector('#destinationNewOwner');
+    const notSureOwnerComponent =
+        component.shadowRoot.querySelector('#destinationNotSureOwner');
 
     originalOwnerComponent.click();
     await flushTasks;
 
     assertTrue(originalOwnerComponent.checked);
     assertFalse(newOwnerComponent.checked);
+    assertFalse(notSureOwnerComponent.checked);
 
     newOwnerComponent.click();
     await flushTasks;
 
     assertFalse(originalOwnerComponent.checked);
     assertTrue(newOwnerComponent.checked);
+    assertFalse(notSureOwnerComponent.checked);
+
+    notSureOwnerComponent.click();
+    await flushTasks;
+
+    assertFalse(originalOwnerComponent.checked);
+    assertFalse(newOwnerComponent.checked);
+    assertTrue(notSureOwnerComponent.checked);
   });
 
   test('ChooseDestinationPageSameOwnerOnNextCallsSetSameOwner', async () => {
@@ -106,4 +117,30 @@ export function onboardingChooseDestinationPageTest() {
 
         assertEquals(component.onNextButtonClick(), resolver.promise);
       });
+
+  test(
+      'ChooseDestinationPageNotSureOwnerOnNextCallsSetDifferentOwner',
+      async () => {
+        const resolver = new PromiseResolver();
+        await initializeChooseDestinationPage();
+        service.setDifferentOwner = () => resolver.promise;
+        const notSureOwnerComponent =
+            component.shadowRoot.querySelector('#destinationNotSureOwner');
+
+        notSureOwnerComponent.click();
+        await flushTasks;
+        assertTrue(notSureOwnerComponent.checked);
+
+        assertEquals(component.onNextButtonClick(), resolver.promise);
+      });
+
+  test('ChooseDestinationPageDisabledRadioGroup', async () => {
+    await initializeChooseDestinationPage();
+
+    const chooseDestinationGroup =
+        component.shadowRoot.querySelector('#chooseDestinationGroup');
+    assertFalse(chooseDestinationGroup.disabled);
+    component.allButtonsDisabled = true;
+    assertTrue(chooseDestinationGroup.disabled);
+  });
 }

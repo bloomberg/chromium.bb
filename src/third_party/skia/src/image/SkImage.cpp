@@ -21,6 +21,7 @@
 #include "src/core/SkMipmap.h"
 #include "src/core/SkMipmapBuilder.h"
 #include "src/core/SkNextID.h"
+#include "src/core/SkSamplingPriv.h"
 #include "src/core/SkSpecialImage.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkReadPixelsRec.h"
@@ -31,14 +32,14 @@
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrContextThreadSafeProxy.h"
 #include "include/gpu/GrDirectContext.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/GrImageContextPriv.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrBicubicEffect.h"
-#include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/GrImageContextPriv.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/effects/GrBicubicEffect.h"
+#include "src/gpu/ganesh/effects/GrTextureEffect.h"
 #include "src/image/SkImage_Gpu.h"
 #endif
 
@@ -178,7 +179,7 @@ sk_sp<SkData> SkImage::refEncodedData() const {
 }
 
 sk_sp<SkImage> SkImage::MakeFromEncoded(sk_sp<SkData> encoded,
-                                        skstd::optional<SkAlphaType> alphaType) {
+                                        std::optional<SkAlphaType> alphaType) {
     if (nullptr == encoded || 0 == encoded->size()) {
         return nullptr;
     }
@@ -216,7 +217,9 @@ sk_sp<SkImage> SkImage::makeSubset(const SkIRect& subset, GrDirectContext* direc
 
 #if SK_SUPPORT_GPU
 
-bool SkImage::isTextureBacked() const { return as_IB(this)->onIsTextureBacked(); }
+bool SkImage::isTextureBacked() const {
+    return as_IB(this)->isGaneshBacked() || as_IB(this)->isGraphiteBacked();
+}
 
 size_t SkImage::textureSize() const { return as_IB(this)->onTextureSize(); }
 
@@ -386,10 +389,20 @@ std::unique_ptr<GrFragmentProcessor> SkImage_Base::MakeFragmentProcessorFromView
                                      GrBicubicEffect::Direction::kXY,
                                      *rContext->priv().caps());
     }
-    if (view.proxy()->asTextureProxy()->mipmapped() == GrMipmapped::kNo) {
+    if (sampling.isAniso()) {
+        if (!rContext->priv().caps()->anisoSupport()) {
+            // Fallback to linear
+            sampling = SkSamplingPriv::AnisoFallback(view.mipmapped() == GrMipmapped::kYes);
+        }
+    } else if (view.mipmapped() == GrMipmapped::kNo) {
         sampling = SkSamplingOptions(sampling.filter);
     }
-    GrSamplerState sampler(wmx, wmy, sampling.filter, sampling.mipmap);
+    GrSamplerState sampler;
+    if (sampling.isAniso()) {
+        sampler = GrSamplerState::Aniso(wmx, wmy, sampling.maxAniso, view.mipmapped());
+    } else {
+        sampler = GrSamplerState(wmx, wmy, sampling.filter, sampling.mipmap);
+    }
     if (subset) {
         if (domain) {
             return GrTextureEffect::MakeSubset(std::move(view),
@@ -422,14 +435,14 @@ GrSurfaceProxyView SkImage_Base::FindOrMakeCachedMipmappedView(GrRecordingContex
     }
     GrProxyProvider* proxyProvider = rContext->priv().proxyProvider();
 
-    GrUniqueKey baseKey;
+    skgpu::UniqueKey baseKey;
     GrMakeKeyFromImageID(&baseKey, imageUniqueID, SkIRect::MakeSize(view.dimensions()));
     SkASSERT(baseKey.isValid());
-    GrUniqueKey mipmappedKey;
-    static const GrUniqueKey::Domain kMipmappedDomain = GrUniqueKey::GenerateDomain();
+    skgpu::UniqueKey mipmappedKey;
+    static const skgpu::UniqueKey::Domain kMipmappedDomain = skgpu::UniqueKey::GenerateDomain();
     {  // No extra values beyond the domain are required. Must name the var to please
        // clang-tidy.
-        GrUniqueKey::Builder b(&mipmappedKey, baseKey, kMipmappedDomain, 0);
+        skgpu::UniqueKey::Builder b(&mipmappedKey, baseKey, kMipmappedDomain, 0);
     }
     SkASSERT(mipmappedKey.isValid());
     if (sk_sp<GrTextureProxy> cachedMippedView =
@@ -452,6 +465,19 @@ GrBackendTexture SkImage_Base::onGetBackendTexture(bool flushPendingGrContextIO,
 }
 
 #endif // SK_SUPPORT_GPU
+
+#ifdef SK_GRAPHITE_ENABLED
+std::tuple<skgpu::graphite::TextureProxyView, SkColorType> SkImage_Base::asView(
+        skgpu::graphite::Recorder* recorder, skgpu::graphite::Mipmapped mipmapped) const {
+    if (!recorder) {
+        return {};
+    }
+    if (this->dimensions().area() <= 1) {
+        mipmapped = skgpu::graphite::Mipmapped::kNo;
+    }
+    return this->onAsView(recorder, mipmapped);
+}
+#endif // SK_GRAPHITE_ENABLED
 
 GrDirectContext* SkImage_Base::directContext() const {
 #if SK_SUPPORT_GPU
@@ -510,10 +536,11 @@ bool SkImage_Base::onAsLegacyBitmap(GrDirectContext* dContext, SkBitmap* bitmap)
 
 sk_sp<SkImage> SkImage::MakeFromPicture(sk_sp<SkPicture> picture, const SkISize& dimensions,
                                         const SkMatrix* matrix, const SkPaint* paint,
-                                        BitDepth bitDepth, sk_sp<SkColorSpace> colorSpace) {
+                                        BitDepth bitDepth, sk_sp<SkColorSpace> colorSpace,
+                                        SkSurfaceProps props) {
     return MakeFromGenerator(SkImageGenerator::MakeFromPicture(dimensions, std::move(picture),
                                                                matrix, paint, bitDepth,
-                                                               std::move(colorSpace)));
+                                                               std::move(colorSpace), props));
 }
 
 sk_sp<SkImage> SkImage::makeWithFilter(GrRecordingContext* rContext, const SkImageFilter* filter,
@@ -723,10 +750,6 @@ sk_sp<SkImage> SkMipmapBuilder::attachTo(const SkImage* src) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "src/core/SkReadBuffer.h"
-#include "src/core/SkSamplingPriv.h"
-#include "src/core/SkWriteBuffer.h"
-
 SkSamplingOptions SkSamplingPriv::FromFQ(SkLegacyFQ fq, SkMediumAs behavior) {
     switch (fq) {
         case kHigh_SkLegacyFQ:
@@ -741,27 +764,4 @@ SkSamplingOptions SkSamplingPriv::FromFQ(SkLegacyFQ fq, SkMediumAs behavior) {
             break;
     }
     return SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
-}
-
-SkSamplingOptions SkSamplingPriv::Read(SkReadBuffer& buffer) {
-    if (buffer.readBool()) {
-        SkScalar B = buffer.readScalar(),
-                 C = buffer.readScalar();
-        return SkSamplingOptions({B,C});
-    } else {
-        auto filter = buffer.read32LE<SkFilterMode>(SkFilterMode::kLinear);
-        auto mipmap = buffer.read32LE<SkMipmapMode>(SkMipmapMode::kLinear);
-        return SkSamplingOptions(filter, mipmap);
-    }
-}
-
-void SkSamplingPriv::Write(SkWriteBuffer& buffer, const SkSamplingOptions& sampling) {
-    buffer.writeBool(sampling.useCubic);
-    if (sampling.useCubic) {
-        buffer.writeScalar(sampling.cubic.B);
-        buffer.writeScalar(sampling.cubic.C);
-    } else {
-        buffer.writeUInt((unsigned)sampling.filter);
-        buffer.writeUInt((unsigned)sampling.mipmap);
-    }
 }

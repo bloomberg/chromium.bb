@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
@@ -23,13 +24,6 @@
 
 namespace remoting {
 namespace protocol {
-
-namespace {
-
-const char kStreamLabel[] = "screen_stream";
-const char kVideoLabel[] = "screen_video";
-
-}  // namespace
 
 struct WebrtcVideoStream::FrameStats : public WebrtcVideoEncoder::FrameStats {
   FrameStats() = default;
@@ -46,11 +40,18 @@ struct WebrtcVideoStream::FrameStats : public WebrtcVideoEncoder::FrameStats {
   uint32_t capturer_id = 0;
 };
 
-WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
-    : session_options_(session_options) {}
+WebrtcVideoStream::WebrtcVideoStream(const std::string& stream_name,
+                                     const SessionOptions& session_options)
+    : stream_name_(stream_name), session_options_(session_options) {}
 
 WebrtcVideoStream::~WebrtcVideoStream() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (peer_connection_ && transceiver_) {
+    // Ignore any error here, as this may return an error if the
+    // peer-connection has been closed.
+    peer_connection_->RemoveTrackOrError(transceiver_->sender());
+  }
 }
 
 void WebrtcVideoStream::Start(
@@ -75,18 +76,17 @@ void WebrtcVideoStream::Start(
       base::BindRepeating(&WebrtcVideoStream::OnSinkAddedOrUpdated,
                           weak_factory_.GetWeakPtr()));
   rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
-      peer_connection_factory->CreateVideoTrack(kVideoLabel,
-                                                video_track_source_);
+      peer_connection_factory->CreateVideoTrack(stream_name_,
+                                                video_track_source_.get());
 
   webrtc::RtpTransceiverInit init;
-  init.stream_ids = {kStreamLabel};
+  init.stream_ids = {stream_name_};
 
   // value() DCHECKs if AddTransceiver() fails, which only happens if a track
   // was already added with the stream label.
-  auto transceiver =
-      peer_connection_->AddTransceiver(video_track, init).value();
+  transceiver_ = peer_connection_->AddTransceiver(video_track, init).value();
 
-  webrtc_transport->OnVideoTransceiverCreated(transceiver);
+  webrtc_transport->OnVideoTransceiverCreated(transceiver_);
 
   video_encoder_factory->SetVideoChannelStateObserver(
       weak_factory_.GetWeakPtr());
@@ -95,7 +95,7 @@ void WebrtcVideoStream::Start(
                                         base::Unretained(this)));
 }
 
-void WebrtcVideoStream::SelectSource(int id) {
+void WebrtcVideoStream::SelectSource(webrtc::ScreenId id) {
   capturer_->SelectSource(id);
 }
 

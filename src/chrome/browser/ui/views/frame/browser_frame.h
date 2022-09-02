@@ -7,7 +7,6 @@
 
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/context_menu_controller.h"
@@ -16,6 +15,7 @@
 class BrowserDesktopWindowTreeHost;
 class BrowserNonClientFrameView;
 class BrowserRootView;
+enum class BrowserThemeChangeType;
 class BrowserView;
 class NativeBrowserFrame;
 class NonClientFrameView;
@@ -126,7 +126,7 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   bool GetAccelerator(int command_id,
                       ui::Accelerator* accelerator) const override;
   const ui::ThemeProvider* GetThemeProvider() const override;
-  ui::ColorProviderManager::InitializerSupplier* GetCustomTheme()
+  ui::ColorProviderManager::ThemeInitializerSupplier* GetCustomTheme()
       const override;
   void OnNativeWidgetWorkspaceChanged() override;
 
@@ -150,6 +150,10 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
 
   void SetTabDragKind(TabDragKind tab_drag_kind);
   TabDragKind tab_drag_kind() const { return tab_drag_kind_; }
+
+ protected:
+  // views::Widget:
+  ui::ColorProviderManager::Key GetColorProviderKey() const override;
 
  private:
   void OnTouchUiChanged();
@@ -199,7 +203,7 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   // contents for smoother dragging.
   TabDragKind tab_drag_kind_ = TabDragKind::kNone;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Store the number of virtual desks that currently exist. Used to determine
   // whether the system menu should be reset. If the value is -1, then either
   // the ash::DesksHelper does not exist or haven't retrieved the system menu

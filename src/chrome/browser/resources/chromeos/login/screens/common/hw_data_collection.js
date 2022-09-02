@@ -55,9 +55,7 @@ class HWDataCollectionScreen extends HWDataCollectionScreenElementBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('HWDataCollectionScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('HWDataCollectionScreen');
   }
 
   /**
@@ -84,11 +82,6 @@ class HWDataCollectionScreen extends HWDataCollectionScreenElementBase {
       this.userActed('unselect-hw-data-usage');
     }
   }
-
-  /**
-   * @private
-   */
-  onDataUsageHelpLinkClicked_() {}
 }
 
 customElements.define(HWDataCollectionScreen.is, HWDataCollectionScreen);

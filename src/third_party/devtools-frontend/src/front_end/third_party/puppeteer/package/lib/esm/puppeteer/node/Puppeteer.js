@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 import { Puppeteer, } from '../common/Puppeteer.js';
-import { PUPPETEER_REVISIONS } from '../revisions.js';
-
 import { BrowserFetcher } from './BrowserFetcher.js';
 import Launcher from './Launcher.js';
-
+import { PUPPETEER_REVISIONS } from '../revisions.js';
 /**
  * Extends the main {@link Puppeteer} class with Node specific behaviour for fetching and
  * downloading browsers.
@@ -178,6 +176,9 @@ export class PuppeteerNode extends Puppeteer {
      * @returns A new BrowserFetcher instance.
      */
     createBrowserFetcher(options) {
+        if (!this._projectRoot) {
+            throw new Error('_projectRoot is undefined. Unable to create a BrowserFetcher.');
+        }
         return new BrowserFetcher(this._projectRoot, options);
     }
 }

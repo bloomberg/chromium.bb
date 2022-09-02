@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
@@ -199,7 +200,7 @@ class ChromeAssistantUtilTest : public testing::Test {
 
     profile_ = profile_manager_->CreateTestingProfile(
         kTestProfileName, /*prefs=*/{}, kTestProfileName16,
-        /*avatar_id=*/0, /*supervised_user_id=*/{},
+        /*avatar_id=*/0,
         IdentityTestEnvironmentProfileAdaptor::
             GetIdentityTestEnvironmentFactories());
     identity_test_env_adaptor_ =

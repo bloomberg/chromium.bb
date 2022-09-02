@@ -20,10 +20,12 @@
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
+#include "chrome/browser/feed/web_feed_tab_helper.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -32,7 +34,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/lens/lens_features.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -116,7 +118,7 @@ std::unique_ptr<TestRenderViewContextMenu> CreateContextMenu(
   content::ContextMenuParams params = CreateParams(MenuItem::LINK);
   params.unfiltered_link_url = params.link_url;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents->GetMainFrame(), params);
+      *web_contents->GetPrimaryMainFrame(), params);
   menu->set_protocol_handler_registry(registry);
   menu->Init();
   return menu;
@@ -384,7 +386,7 @@ class RenderViewContextMenuExtensionsTest : public RenderViewContextMenuTest {
     RenderViewContextMenuTest::SetUp();
     // TestingProfile does not provide a protocol registry.
     registry_ = std::make_unique<custom_handlers::ProtocolHandlerRegistry>(
-        profile(), nullptr);
+        profile()->GetPrefs(), nullptr);
   }
 
   void TearDown() override {
@@ -448,7 +450,7 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     registry_ = std::make_unique<custom_handlers::ProtocolHandlerRegistry>(
-        profile(), nullptr);
+        profile()->GetPrefs(), nullptr);
 
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(),
@@ -482,7 +484,7 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     params.unfiltered_link_url = params.link_url =
         GURL(chrome::kChromeUISettingsURL);
     auto menu = std::make_unique<TestRenderViewContextMenu>(
-        *web_contents()->GetMainFrame(), params);
+        *web_contents()->GetPrimaryMainFrame(), params);
     menu->set_protocol_handler_registry(registry_.get());
     menu->Init();
     return menu;
@@ -541,7 +543,7 @@ TEST_F(RenderViewContextMenuPrefsTest,
   content::ContextMenuParams params = CreateParams(MenuItem::SELECTION);
   params.page_url = GURL("http://www.foo.com/");
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents()->GetMainFrame(), params);
+      *web_contents()->GetPrimaryMainFrame(), params);
   menu->set_dlp_rules_manager(nullptr);
   menu->set_selection_navigation_url(GURL("http://www.bar.com/"));
 
@@ -591,33 +593,13 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_CUSTOM_FIRST));
 }
 
-// Verify that request headers do not specify pass through when "Save Image
-// As..." is used with Data Saver disabled.
-TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
-  data_reduction_proxy::DataReductionProxySettings::
-      SetDataSaverEnabledForTesting(profile()->GetPrefs(), false);
-
-  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
-  params.unfiltered_link_url = params.link_url;
-  auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents()->GetMainFrame(), params);
-
-  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
-
-  const std::string& headers =
-      content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
-  EXPECT_TRUE(headers.find(
-      "Chrome-Proxy-Accept-Transform: identity") == std::string::npos);
-  EXPECT_TRUE(headers.find("Cache-Control: no-cache") == std::string::npos);
-}
-
 // Check that if image is broken "Load image" menu item is present.
 TEST_F(RenderViewContextMenuPrefsTest, LoadBrokenImage) {
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
   params.unfiltered_link_url = params.link_url;
   params.has_image_contents = false;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents()->GetMainFrame(), params);
+      *web_contents()->GetPrimaryMainFrame(), params);
   AppendImageItems(menu.get());
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LOAD_IMAGE));
@@ -630,7 +612,7 @@ TEST_F(RenderViewContextMenuPrefsTest, SaveMediaSuggestedFileName) {
   content::ContextMenuParams params = CreateParams(MenuItem::VIDEO);
   params.suggested_filename = kTestSuggestedFileName;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents()->GetMainFrame(), params);
+      *web_contents()->GetPrimaryMainFrame(), params);
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEAVAS, 0 /* event_flags */);
 
   // Video item should have suggested file name.
@@ -641,7 +623,7 @@ TEST_F(RenderViewContextMenuPrefsTest, SaveMediaSuggestedFileName) {
   params = CreateParams(MenuItem::AUDIO);
   params.suggested_filename = kTestSuggestedFileName;
   menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents()->GetMainFrame(), params);
+      *web_contents()->GetPrimaryMainFrame(), params);
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEAVAS, 0 /* event_flags */);
 
   // Audio item should have suggested file name.
@@ -655,7 +637,7 @@ TEST_F(RenderViewContextMenuPrefsTest, SaveMediaSuggestedFileName) {
 TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationParamsSet) {
   TestNavigationDelegate delegate;
   web_contents()->SetDelegate(&delegate);
-  content::RenderFrameHost& main_frame = *web_contents()->GetMainFrame();
+  content::RenderFrameHost& main_frame = *web_contents()->GetPrimaryMainFrame();
 
   content::ContextMenuParams params = CreateParams(MenuItem::LINK);
   params.unfiltered_link_url = params.link_url;
@@ -680,7 +662,7 @@ TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationParamsSet) {
 TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationInitiatorSet) {
   TestNavigationDelegate delegate;
   web_contents()->SetDelegate(&delegate);
-  content::RenderFrameHost& main_frame = *web_contents()->GetMainFrame();
+  content::RenderFrameHost& main_frame = *web_contents()->GetPrimaryMainFrame();
 
   content::ContextMenuParams params = CreateParams(MenuItem::LINK);
   params.unfiltered_link_url = params.link_url;
@@ -707,7 +689,7 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
   params.input_field_type =
       blink::mojom::ContextMenuDataInputFieldType::kPassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents()->GetMainFrame(), params);
+      *web_contents()->GetPrimaryMainFrame(), params);
   menu->Init();
 
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS));
@@ -730,7 +712,7 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
   params.input_field_type =
       blink::mojom::ContextMenuDataInputFieldType::kPassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *incognito_web_contents->GetMainFrame(), params);
+      *incognito_web_contents->GetPrimaryMainFrame(), params);
   menu->Init();
 
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS));
@@ -759,16 +741,94 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SAVELINKAS));
 }
 
+// Verify that item "Search web for" on password Manager is not present
+TEST_F(RenderViewContextMenuPrefsTest,
+       SearchWebForOptionOnPasswordsManagerIsDisabled) {
+  content::ContextMenuParams params =
+      CreateParams(MenuItem::SELECTION | MenuItem::EDITABLE);
+  params.page_url = chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_selection_navigation_url(GURL("https://www.foo.com/"));
+  menu->Init();
+
+  EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
+}
+
+// Verify that item "Search web for" on password check is not present
+TEST_F(RenderViewContextMenuPrefsTest,
+       SearchWebForOptionOnPasswordCheckIsDisabled) {
+  content::ContextMenuParams params =
+      CreateParams(MenuItem::SELECTION | MenuItem::EDITABLE);
+  params.page_url = chrome::GetSettingsUrl(chrome::kPasswordCheckSubPage);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_selection_navigation_url(GURL("https://www.foo.com/"));
+  menu->Init();
+
+  EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
+}
+
+TEST_F(RenderViewContextMenuPrefsTest, FollowOrUnfollow) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(feed::kWebUiFeed);
+
+  feed::WebFeedTabHelper::CreateForWebContents(web_contents());
+  feed::WebFeedTabHelper* web_feed_tab_helper =
+      feed::WebFeedTabHelper::FromWebContents(web_contents());
+
+  // "Follow site" should be added when the site for the page is not followed.
+  {
+    web_feed_tab_helper->SetWebFeedInfoForTesting(
+        web_contents()->GetLastCommittedURL(),
+        TabWebFeedFollowState::kNotFollowed, std::string());
+    content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+    TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                   params);
+    menu.Init();
+    EXPECT_TRUE(menu.IsItemPresent(IDC_FOLLOW));
+    EXPECT_FALSE(menu.IsItemPresent(IDC_UNFOLLOW));
+  }
+
+  // "Unfollow site" should be added when the site for the page is followed.
+  {
+    web_feed_tab_helper->SetWebFeedInfoForTesting(
+        web_contents()->GetLastCommittedURL(), TabWebFeedFollowState::kFollowed,
+        std::string());
+    content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+    TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                   params);
+    menu.Init();
+    EXPECT_FALSE(menu.IsItemPresent(IDC_FOLLOW));
+    EXPECT_TRUE(menu.IsItemPresent(IDC_UNFOLLOW));
+  }
+
+  // Neither "Follow site" nor "Unfollow site" should be added when the follow
+  // state of the site for the page is unknown.
+  {
+    web_feed_tab_helper->SetWebFeedInfoForTesting(
+        web_contents()->GetLastCommittedURL(), TabWebFeedFollowState::kUnknown,
+        std::string());
+    content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+    TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                   params);
+    menu.Init();
+    EXPECT_FALSE(menu.IsItemPresent(IDC_FOLLOW));
+    EXPECT_FALSE(menu.IsItemPresent(IDC_FOLLOW));
+  }
+}
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Verify that the Lens Region Search menu item is displayed when the feature
 // is enabled.
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(lens::features::kLensRegionSearch);
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
-  TestRenderViewContextMenu menu(*web_contents()->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
   menu.Init();
 
   EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
@@ -779,13 +839,14 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
 TEST_F(RenderViewContextMenuPrefsTest,
        LensRegionSearchEnterprisePoicyDisabled) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(lens::features::kLensRegionSearch);
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   // Set enterprise policy to false.
   profile()->GetPrefs()->SetBoolean(prefs::kLensRegionSearchEnabled, false);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
-  TestRenderViewContextMenu menu(*web_contents()->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
   menu.Init();
 
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
@@ -795,12 +856,13 @@ TEST_F(RenderViewContextMenuPrefsTest,
 // clicks on an image.
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchDisabledOnImage) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(lens::features::kLensRegionSearch);
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
   params.has_image_contents = true;
-  TestRenderViewContextMenu menu(*web_contents()->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
   AppendImageItems(&menu);
 
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
@@ -812,11 +874,12 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchDisabledOnImage) {
 TEST_F(RenderViewContextMenuPrefsTest,
        LensRegionSearchNonGoogleDefaultSearchEngineSupportsImageSearch) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(lens::features::kLensRegionSearch);
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.search.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
-  TestRenderViewContextMenu menu(*web_contents()->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
   menu.Init();
 
   EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH));
@@ -828,11 +891,12 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        LensRegionSearchDefaultSearchEngineDoesNotSupportImageSearch) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(lens::features::kLensRegionSearch);
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.search.com",
                                        /*supports_image_search=*/false);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
-  TestRenderViewContextMenu menu(*web_contents()->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
   menu.Init();
 
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH));
@@ -843,11 +907,12 @@ TEST_F(RenderViewContextMenuPrefsTest,
 // is disabled.
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchExperimentDisabled) {
   base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(lens::features::kLensRegionSearch);
+  features.InitAndDisableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
-  TestRenderViewContextMenu menu(*web_contents()->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
   menu.Init();
 
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
@@ -857,12 +922,13 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchExperimentDisabled) {
 // Chrome UI Scheme.
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchChromeUIScheme) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(lens::features::kLensRegionSearch);
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
   params.page_url = GURL(chrome::kChromeUISettingsURL);
-  TestRenderViewContextMenu menu(*web_contents()->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
   menu.Init();
 
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));

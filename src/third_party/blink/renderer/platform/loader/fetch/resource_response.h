@@ -70,12 +70,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     kHTTPVersion_2_0
   };
 
-  enum CTPolicyCompliance {
-    kCTPolicyComplianceDetailsNotAvailable,
-    kCTPolicyComplies,
-    kCTPolicyDoesNotComply
-  };
-
   ResourceResponse();
   explicit ResourceResponse(const KURL& current_request_url);
   ResourceResponse(const ResourceResponse&);
@@ -196,11 +190,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     has_major_certificate_errors_ = has_major_certificate_errors;
   }
 
-  CTPolicyCompliance GetCTPolicyCompliance() const {
-    return ct_policy_compliance_;
-  }
-  void SetCTPolicyCompliance(CTPolicyCompliance);
-
   bool IsLegacyTLSVersion() const { return is_legacy_tls_version_; }
   void SetIsLegacyTLSVersion(bool value) { is_legacy_tls_version_ = value; }
 
@@ -235,6 +224,13 @@ class PLATFORM_EXPORT ResourceResponse final {
   }
   void SetWasFetchedViaServiceWorker(bool value) {
     was_fetched_via_service_worker_ = value;
+  }
+
+  base::TimeTicks ArrivalTimeAtRenderer() const {
+    return arrival_time_at_renderer_;
+  }
+  void SetArrivalTimeAtRenderer(base::TimeTicks value) {
+    arrival_time_at_renderer_ = value;
   }
 
   network::mojom::FetchResponseSource GetServiceWorkerResponseSource() const {
@@ -302,6 +298,13 @@ class PLATFORM_EXPORT ResourceResponse final {
   network::mojom::IPAddressSpace AddressSpace() const { return address_space_; }
   void SetAddressSpace(network::mojom::IPAddressSpace value) {
     address_space_ = value;
+  }
+
+  network::mojom::IPAddressSpace ClientAddressSpace() const {
+    return client_address_space_;
+  }
+  void SetClientAddressSpace(network::mojom::IPAddressSpace value) {
+    client_address_space_ = value;
   }
 
   bool WasAlpnNegotiated() const { return was_alpn_negotiated_; }
@@ -428,6 +431,11 @@ class PLATFORM_EXPORT ResourceResponse final {
     request_include_credentials_ = request_include_credentials;
   }
 
+  bool HasPartitionedCookie() const { return has_partitioned_cookie_; }
+  void SetHasPartitionedCookie(bool has_partitioned_cookie) {
+    has_partitioned_cookie_ = has_partitioned_cookie;
+  }
+
  private:
   void UpdateHeaderParsedState(const AtomicString& name);
 
@@ -445,12 +453,14 @@ class PLATFORM_EXPORT ResourceResponse final {
   net::IPEndPoint remote_ip_endpoint_;
 
   // The address space from which this resource was fetched.
+  // https://wicg.github.io/private-network-access/#response-ip-address-space
   network::mojom::IPAddressSpace address_space_ =
       network::mojom::IPAddressSpace::kUnknown;
 
-  // The Certificate Transparency policy compliance status of the resource.
-  CTPolicyCompliance ct_policy_compliance_ =
-      kCTPolicyComplianceDetailsNotAvailable;
+  // The address space of the request client.
+  // https://wicg.github.io/private-network-access/#policy-container-ip-address-space
+  network::mojom::IPAddressSpace client_address_space_ =
+      network::mojom::IPAddressSpace::kUnknown;
 
   bool was_cached_ : 1;
   bool connection_reused_ : 1;
@@ -520,6 +530,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   // Whether the resource came from the cache and validated over the network.
   bool is_validated_ : 1;
 
+  // [spec] https://fetch.spec.whatwg.org/#response-request-includes-credentials
   // The request's |includeCredentials| value from the "HTTP-network fetch"
   // algorithm.
   // See: https://fetch.spec.whatwg.org/#concept-http-network-fetch
@@ -599,14 +610,17 @@ class PLATFORM_EXPORT ResourceResponse final {
   // removed.
   int64_t decoded_body_length_ = 0;
 
+  // Represents when the response arrives at the renderer.
+  base::TimeTicks arrival_time_at_renderer_;
+
   // This is propagated from the browser process's PrefetchURLLoader on
   // cross-origin prefetch responses. It is used to pass the token along to
   // preload header requests from these responses.
   absl::optional<base::UnguessableToken> recursive_prefetch_token_;
 
   // Any DNS aliases for the requested URL, as read from CNAME records.
-  // The alias chain order is preserved in reverse, from canonical name (i.e.
-  // address record name) through to query name.
+  // Includes all known aliases, e.g. from A, AAAA, or HTTPS, not just from the
+  // address used for the connection, in no particular order.
   Vector<String> dns_aliases_;
 
   // The URL of WebBundle this response was loaded from. This value is only
@@ -616,6 +630,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   absl::optional<net::AuthChallengeInfo> auth_challenge_info_;
 
   bool emitted_extra_info_ = false;
+
+  // See URLResponseHead.has_partitioned_cookie.
+  // TODO(https://crbug.com/1296161): Delete this field.
+  bool has_partitioned_cookie_ = false;
 };
 
 }  // namespace blink

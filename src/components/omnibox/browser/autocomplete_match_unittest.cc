@@ -9,9 +9,10 @@
 #include <utility>
 
 #include "autocomplete_match.h"
-#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/fake_autocomplete_provider.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,7 +77,7 @@ TEST(AutocompleteMatchTest, MoreRelevant) {
   AutocompleteMatch m2(nullptr, 0, false,
                        AutocompleteMatchType::URL_WHAT_YOU_TYPED);
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
+  for (size_t i = 0; i < std::size(cases); ++i) {
     m1.relevance = cases[i].r1;
     m2.relevance = cases[i].r2;
     EXPECT_EQ(cases[i].expected_result,
@@ -175,7 +176,7 @@ TEST(AutocompleteMatchTest, InlineTailPrefix) {
     match.type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
     match.contents = base::UTF8ToUTF16(test_case.before_contents);
     match.contents_class = test_case.before_contents_class;
-    match.InlineTailPrefix(u"12345678");
+    match.SetTailSuggestContentPrefix(u"12345678");
     EXPECT_EQ(match.contents, base::UTF8ToUTF16(test_case.after_contents));
     EXPECT_TRUE(EqualClassifications(match.contents_class,
                                      test_case.after_contents_class));
@@ -275,7 +276,7 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
                                                             preserve_subdomain);
       EXPECT_EQ(base::WideToUTF16(expected_result),
                 url_formatter::FormatUrl(GURL(url), format_types,
-                                         net::UnescapeRule::SPACES, nullptr,
+                                         base::UnescapeRule::SPACES, nullptr,
                                          nullptr, nullptr));
     }
   };
@@ -400,7 +401,7 @@ TEST(AutocompleteMatchTest, Duplicates) {
     { L"http://www./", "http://www./", "http://google.com/", false },
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
+  for (size_t i = 0; i < std::size(cases); ++i) {
     CheckDuplicateCase(cases[i]);
   }
 }
@@ -420,7 +421,7 @@ TEST(AutocompleteMatchTest, DedupeDriveURLs) {
        "https://drive.google.com/open?id=another-doc-id", false},
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
+  for (size_t i = 0; i < std::size(cases); ++i) {
     CheckDuplicateCase(cases[i]);
   }
 }
@@ -514,10 +515,11 @@ TEST(AutocompleteMatchTest, TryRichAutocompletion) {
     input.set_prevent_inline_autocomplete(input_prevent_inline_autocomplete);
 
     AutocompleteMatch match;
-    EXPECT_EQ(match.TryRichAutocompletion(base::UTF8ToUTF16(primary_text),
-                                          base::UTF8ToUTF16(secondary_text),
-                                          input, shortcut_provider),
-              expected_return);
+    EXPECT_EQ(
+        match.TryRichAutocompletion(base::UTF8ToUTF16(primary_text),
+                                    base::UTF8ToUTF16(secondary_text), input,
+                                    shortcut_provider ? u"non-empty" : u""),
+        expected_return);
 
     EXPECT_EQ(match.rich_autocompletion_triggered,
               expected_rich_autocompletion_triggered);
@@ -826,4 +828,114 @@ TEST(AutocompleteMatchTest, TryRichAutocompletionSplit) {
     SCOPED_TRACE("primary split, incorrect order");
     test("x_y_z", "z_y_x_", "x_z_y_", false, {}, "", false);
   }
+}
+
+TEST(AutocompleteMatchTest, TryRichAutocompletionShortcutText) {
+  auto test = [](const std::string input_text, const std::string primary_text,
+                 const std::string secondary_text,
+                 const std::string shortcut_text, bool expected_return,
+                 const std::string expected_inline_autocompletion,
+                 const std::string expected_additional_text,
+                 bool expected_allowed_to_be_default_match) {
+    AutocompleteInput input(base::UTF8ToUTF16(input_text),
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+
+    AutocompleteMatch match;
+    EXPECT_EQ(
+        match.TryRichAutocompletion(base::UTF8ToUTF16(primary_text),
+                                    base::UTF8ToUTF16(secondary_text), input,
+                                    base::UTF8ToUTF16(shortcut_text)),
+        expected_return);
+
+    EXPECT_EQ(base::UTF16ToUTF8(match.inline_autocompletion).c_str(),
+              expected_inline_autocompletion);
+    EXPECT_TRUE(match.prefix_autocompletion.empty());
+    EXPECT_TRUE(match.split_autocompletion.Empty());
+    EXPECT_EQ(base::UTF16ToUTF8(match.additional_text).c_str(),
+              expected_additional_text);
+    EXPECT_EQ(match.allowed_to_be_default_match,
+              expected_allowed_to_be_default_match);
+  };
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kRichAutocompletion,
+      {
+          {"RichAutocompletionAutocompleteTitles", "true"},
+          {"RichAutocompletionAutocompleteShortcutText", "true"},
+      });
+
+  // Prefer URL prefix AC when the input prefix matches the URL, title, and
+  // shortcut text.
+  {
+    SCOPED_TRACE("URL");
+    test("prefix", "prefix-url.com/suffix", "prefix title suffix",
+         "prefix shortcut text suffix", true, "-url.com/suffix", "", true);
+  }
+
+  // Prefer title prefix AC when the input prefix matches the title and shortcut
+  // text.
+  {
+    SCOPED_TRACE("Title");
+    test("prefix ", "prefix-url.com/suffix", "prefix title suffix",
+         "prefix shortcut text suffix", true, "title suffix",
+         "prefix-url.com/suffix", true);
+  }
+
+  // Do shortcut text prefix AC when title and URL don't prefix match, even if
+  // they non-prefix match.
+  {
+    SCOPED_TRACE("Shortcut text");
+    test("short", "url.com/shortcut", "title shortcut", "shortcut text", true,
+         "cut text", "url.com/shortcut", true);
+  }
+
+  // Don't shortcut text AC when the shortcut text doesn't prefix match, even if
+  // it does non-prefix match.
+  {
+    SCOPED_TRACE("None");
+    test("suffix", "prefix-url.com/suffix", "prefix title suffix",
+         "prefix shortcut text suffix", false, "", "", false);
+  }
+}
+
+TEST(AutocompleteMatchTest, BetterDuplicate) {
+  const auto create_match = [](scoped_refptr<FakeAutocompleteProvider> provider,
+                               int relevance) {
+    return AutocompleteMatch{provider.get(), relevance, false,
+                             AutocompleteMatchType::URL_WHAT_YOU_TYPED};
+  };
+
+  scoped_refptr<FakeAutocompleteProvider> document_provider =
+      new FakeAutocompleteProvider(AutocompleteProvider::Type::TYPE_DOCUMENT);
+
+  scoped_refptr<FakeAutocompleteProvider> bookmark_provider =
+      new FakeAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
+
+  scoped_refptr<FakeAutocompleteProvider> history_provider =
+      new FakeAutocompleteProvider(
+          AutocompleteProvider::Type::TYPE_HISTORY_QUICK);
+
+  // Prefer document provider matches over other providers, even if scored
+  // lower.
+  EXPECT_TRUE(
+      AutocompleteMatch::BetterDuplicate(create_match(document_provider, 0),
+                                         create_match(history_provider, 1000)));
+
+  // Prefer document provider matches over other providers, even if scored
+  // lower.
+  EXPECT_TRUE(
+      AutocompleteMatch::BetterDuplicate(create_match(bookmark_provider, 0),
+                                         create_match(history_provider, 1000)));
+
+  // Prefer document provider matches over bookmark provider matches.
+  EXPECT_TRUE(AutocompleteMatch::BetterDuplicate(
+      create_match(document_provider, 0),
+      create_match(bookmark_provider, 1000)));
+
+  // Prefer more relevant matches.
+  EXPECT_FALSE(
+      AutocompleteMatch::BetterDuplicate(create_match(history_provider, 500),
+                                         create_match(history_provider, 510)));
 }

@@ -45,7 +45,7 @@
 <translation id="2424073332829844142">Ativar e desativar a tecla Caps Lock</translation>
 <translation id="2441202986792279177">Alternar rapidamente entre janelas</translation>
 <translation id="2454251766545114447">Diminuir zoom da tela</translation>
-<translation id="2478303094958140141">Ativar ou desativar o ChromeVox (feedback falado)</translation>
+<translation id="2478303094958140141">Ativar ou desativar o ChromeVox (resposta falada)</translation>
 <translation id="2480851840841871861">Abrir o Google Assistente</translation>
 <translation id="2488661730534396940">Ativar o espaço de trabalho à esquerda</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -71,6 +71,7 @@
 <translation id="3140353188828248647">Foco na barra de endereço</translation>
 <translation id="3256109297135787951">Remover o destaque de um item na estante</translation>
 <translation id="3288816184963444640">Fechar a janela atual</translation>
+<translation id="3322797428033495633">Focar na janela picture-in-picture</translation>
 <translation id="3350805006883559974">Criar ponto flutuante da janela ativa na parte superior</translation>
 <translation id="3407560819924487926">Abrir o gerenciador de tarefas</translation>
 <translation id="3417835166382867856">Pesquisar guias</translation>
@@ -157,6 +158,7 @@
 <translation id="6445033640292336367">Voltar a guia para a posição original</translation>
 <translation id="6474744297082284761">Diminuir zoom (quando encaixado na base OU se a lupa de tela cheia estiver ativada)</translation>
 <translation id="649811797655257835">Selecione o arquivo e pressione <ph name="SPACE" /></translation>
+<translation id="6515089016094047210">Abrir ou fechar o widget do Google Agenda.</translation>
 <translation id="6551886416582667425">Fazer uma captura/gravação de tela parcial</translation>
 <translation id="6556040137485212400">Abrir a janela que ficou sem ser usada há mais tempo</translation>
 <translation id="666343722268997814">Abrir menu de clique com o botão direito para o item destacado</translation>
@@ -190,7 +192,7 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="SPACE" /> ou <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Abrir um arquivo no navegador</translation>
 <translation id="7952165122793773711">Ir para as guias 1 a 8</translation>
-<translation id="8026334261755873520">Limpar dados de navegação</translation>
+<translation id="8026334261755873520">Remover dados de navegação</translation>
 <translation id="8130528849632411619">Ir para o início do documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
 <translation id="8234414138295101081">Girar a tela em 90 graus</translation>

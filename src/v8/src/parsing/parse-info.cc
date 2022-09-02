@@ -31,7 +31,8 @@ UnoptimizedCompileFlags::UnoptimizedCompileFlags(Isolate* isolate,
   set_collect_type_profile(isolate->is_collecting_type_profile());
   set_coverage_enabled(!isolate->is_best_effort_code_coverage());
   set_block_coverage_enabled(isolate->is_block_code_coverage());
-  set_might_always_opt(FLAG_always_opt || FLAG_prepare_always_opt);
+  set_might_always_turbofan(FLAG_always_turbofan ||
+                            FLAG_prepare_always_turbofan);
   set_allow_natives_syntax(FLAG_allow_natives_syntax);
   set_allow_lazy_compile(true);
   set_collect_source_positions(!FLAG_enable_lazy_source_positions ||
@@ -102,8 +103,8 @@ UnoptimizedCompileFlags UnoptimizedCompileFlags::ForToplevelCompile(
                                    is_user_javascript, language_mode, repl_mode,
                                    type, lazy);
 
-  LOG(isolate,
-      ScriptEvent(Logger::ScriptEventType::kReserveId, flags.script_id()));
+  LOG(isolate, ScriptEvent(V8FileLogger::ScriptEventType::kReserveId,
+                           flags.script_id()));
   return flags;
 }
 
@@ -173,23 +174,29 @@ ReusableUnoptimizedCompileState::ReusableUnoptimizedCompileState(
     Isolate* isolate)
     : hash_seed_(HashSeed(isolate)),
       allocator_(isolate->allocator()),
-      logger_(isolate->logger()),
+      v8_file_logger_(isolate->v8_file_logger()),
       dispatcher_(isolate->lazy_compile_dispatcher()),
       ast_string_constants_(isolate->ast_string_constants()),
-      zone_(allocator_, "unoptimized-compile-zone"),
+      ast_raw_string_zone_(allocator_,
+                           "unoptimized-compile-ast-raw-string-zone"),
+      single_parse_zone_(allocator_, "unoptimized-compile-parse-zone"),
       ast_value_factory_(
-          new AstValueFactory(zone(), ast_string_constants(), hash_seed())) {}
+          new AstValueFactory(ast_raw_string_zone(), single_parse_zone(),
+                              ast_string_constants(), hash_seed())) {}
 
 ReusableUnoptimizedCompileState::ReusableUnoptimizedCompileState(
     LocalIsolate* isolate)
     : hash_seed_(HashSeed(isolate)),
       allocator_(isolate->allocator()),
-      logger_(isolate->main_thread_logger()),
+      v8_file_logger_(isolate->main_thread_logger()),
       dispatcher_(isolate->lazy_compile_dispatcher()),
       ast_string_constants_(isolate->ast_string_constants()),
-      zone_(allocator_, "unoptimized-compile-zone"),
+      ast_raw_string_zone_(allocator_,
+                           "unoptimized-compile-ast-raw-string-zone"),
+      single_parse_zone_(allocator_, "unoptimized-compile-parse-zone"),
       ast_value_factory_(
-          new AstValueFactory(zone(), ast_string_constants(), hash_seed())) {}
+          new AstValueFactory(ast_raw_string_zone(), single_parse_zone(),
+                              ast_string_constants(), hash_seed())) {}
 
 ReusableUnoptimizedCompileState::~ReusableUnoptimizedCompileState() = default;
 
@@ -235,7 +242,7 @@ ParseInfo::ParseInfo(LocalIsolate* isolate, const UnoptimizedCompileFlags flags,
     : ParseInfo(flags, state, reusable_state, stack_limit,
                 isolate->runtime_call_stats()) {}
 
-ParseInfo::~ParseInfo() = default;
+ParseInfo::~ParseInfo() { reusable_state_->NotifySingleParseCompleted(); }
 
 DeclarationScope* ParseInfo::scope() const { return literal()->scope(); }
 

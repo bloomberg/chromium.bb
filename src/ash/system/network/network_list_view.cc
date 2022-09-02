@@ -60,7 +60,6 @@ using chromeos::network_config::mojom::OncSource;
 using chromeos::network_config::mojom::ProxyMode;
 
 namespace ash {
-namespace tray {
 namespace {
 
 const int kMobileNetworkBatteryIconSize = 20;
@@ -86,7 +85,14 @@ bool IsManagedByPolicy(const NetworkInfo& info) {
 
 bool ShouldShowActivateCellularNetwork(const NetworkInfo& info) {
   return NetworkTypeMatchesType(info.type, NetworkType::kCellular) &&
-         info.activation_state == ActivationStateType::kNotActivated;
+         info.activation_state == ActivationStateType::kNotActivated &&
+         info.sim_eid.empty();
+}
+
+bool ShouldShowContactCarrier(const NetworkInfo& info) {
+  return NetworkTypeMatchesType(info.type, NetworkType::kCellular) &&
+         info.activation_state == ActivationStateType::kNotActivated &&
+         !info.sim_eid.empty();
 }
 
 gfx::ImageSkia GetNetworkImageForNetwork(const NetworkInfo& info) {
@@ -102,12 +108,11 @@ gfx::ImageSkia GetNetworkImageForNetwork(const NetworkInfo& info) {
     network_image = info.image;
   }
 
-  // When the cellular network is disabled, its appearance should be grayed out
-  // to indicate users that these networks are unavailable. We must change the
+  // When the network is disabled, its appearance should be grayed out to
+  // indicate users that these networks are unavailable. We must change the
   // image before we add it to the view, and then alter the label and sub-label
-  // if they exist after it is added to the view. TODO(crbug.com/1254917): Gray
-  // out disabled WiFi networks in quick setting page.
-  if (info.type == NetworkType::kCellular && info.disable) {
+  // if they exist after it is added to the view.
+  if (info.disable) {
     network_image = gfx::ImageSkiaOperations::CreateTransparentImage(
         network_image, kAlphaValueForInhibitedIconOpacity);
   }
@@ -123,6 +128,8 @@ bool ShouldShowUnlockCellularNetwork(const NetworkInfo& info) {
 int GetCellularNetworkSubText(const NetworkInfo& info) {
   if (ShouldShowActivateCellularNetwork(info))
     return IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE;
+  if (ShouldShowContactCarrier(info))
+    return IDS_ASH_STATUS_TRAY_NETWORK_UNAVAILABLE_SIM_NETWORK;
   if (!ShouldShowUnlockCellularNetwork(info))
     return 0;
   if (Shell::Get()->session_controller()->IsActiveUserSessionStarted())
@@ -142,9 +149,9 @@ SkColor GetCellularNetworkSubTextColor(const NetworkInfo& info) {
       AshColorProvider::ContentLayerType::kTextColorWarning);
 }
 
-// Updates the cellular list item's label text colors to disabled if the item is
-// disabled.
-void UpdateCellularListItemTextColor(HoverHighlightView* view,
+// Updates the disabled network item's label text colors to grey if the item
+// is disabled.
+void UpdateDisabledListItemTextColor(HoverHighlightView* view,
                                      const NetworkInfo& info) {
   // The network row is disabled if blocked by policy, device is inhibited or
   // when SIM is locked and user is not logged in.
@@ -173,7 +180,6 @@ void SetupCellularListItemWithSubtext(HoverHighlightView* view,
   }
   view->SetSubText(l10n_util::GetStringUTF16(cellular_subtext_message_id));
   view->sub_text_label()->SetEnabledColor(GetCellularNetworkSubTextColor(info));
-  UpdateCellularListItemTextColor(view, info);
 }
 
 bool ComputeNetworkDisabledProperty(const NetworkStatePropertiesPtr& network,
@@ -185,8 +191,8 @@ bool ComputeNetworkDisabledProperty(const NetworkStatePropertiesPtr& network,
       ShouldShowUnlockCellularNetwork(info)) {
     return info.sim_locked;
   }
-  // If the device is inhibited or network is blocked by policy, we want to
-  // have the cellular network rows disabled.
+  // If the device is inhibited or network is blocked by policy, the network
+  // row should be disabled.
   return activation_state == ActivationStateType::kActivating ||
          network->prohibited_by_policy || inhibited;
 }
@@ -260,6 +266,8 @@ void NetworkListView::OnGetNetworkStateList(
             network->type_state->get_cellular()->activation_state;
         info->activation_state = activation_state;
         info->sim_locked = network->type_state->get_cellular()->sim_locked;
+        info->sim_eid = network->type_state->get_cellular()->eid;
+
         if (cellular_device && IsInhibited(cellular_device))
           inhibited = true;
         // If cellular is not enabled, skip cellular networks with no service.
@@ -493,19 +501,16 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
     } else if (info.connection_state == ConnectionStateType::kConnecting) {
       SetupConnectingScrollListItem(view);
     }
-    if (NetworkTypeMatchesType(info.type, NetworkType::kCellular)) {
-      UpdateCellularListItemTextColor(view, info);
-    }
   }
+  UpdateDisabledListItemTextColor(view, info);
   view->SetTooltipText(info.tooltip);
 
   // Add an additional icon to the right of the label for networks
   // that require it (e.g. Tether, controlled by extension).
   views::View* icon = CreatePowerStatusView(info);
   if (icon) {
-    view->AddRightView(icon, views::CreateEmptyBorder(gfx::Insets(
-                                 0 /* top */, 0 /* left */, 0 /* bottom */,
-                                 kPowerStatusPaddingRight)));
+    view->AddRightView(icon, views::CreateEmptyBorder(gfx::Insets::TLBR(
+                                 0, 0, 0, kPowerStatusPaddingRight)));
   } else {
     icon = CreatePolicyView(info);
     if (icon)
@@ -522,7 +527,7 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
 std::u16string NetworkListView::GenerateAccessibilityLabel(
     const NetworkInfo& info) {
   if (CanNetworkConnect(info.connection_state, info.type, info.activation_state,
-                        info.connectable)) {
+                        info.connectable, info.sim_eid)) {
     return l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_CONNECT, info.label);
   }
@@ -530,6 +535,11 @@ std::u16string NetworkListView::GenerateAccessibilityLabel(
   if (ShouldShowActivateCellularNetwork(info)) {
     return l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_ACTIVATE, info.label);
+  }
+
+  if (ShouldShowContactCarrier(info)) {
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_UNAVAILABLE_SIM_NETWORK, info.label);
   }
 
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN,
@@ -558,9 +568,8 @@ std::u16string NetworkListView::GenerateAccessibilityDescription(
         return connection_status;
       }
       if (IsManagedByPolicy(info)) {
-        return l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_DESC_MANAGED, info.label,
-            connection_status);
+        return l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_DESC_MANAGED);
       }
       return info.label;
     case NetworkType::kWiFi: {
@@ -589,9 +598,13 @@ std::u16string NetworkListView::GenerateAccessibilityDescription(
           base::FormatPercent(info.signal_strength));
     }
     case NetworkType::kCellular:
-      if (info.activation_state == ActivationStateType::kNotActivated) {
+      if (ShouldShowActivateCellularNetwork(info)) {
         return l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE);
+      }
+      if (ShouldShowContactCarrier(info)) {
+        return l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_UNAVAILABLE_SIM_NETWORK);
       }
       if (info.sim_locked) {
         if (Shell::Get()->session_controller()->IsActiveUserSessionStarted()) {
@@ -633,7 +646,7 @@ std::u16string NetworkListView::GenerateAccessibilityDescription(
     default:
       return u"";
   }
-}  // namespace tray
+}
 
 views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   // Mobile can be Cellular or Tether.
@@ -802,7 +815,7 @@ TriView* NetworkListView::CreateConnectionWarning() {
 
   connection_warning->AddView(TriView::Container::CENTER, label);
   connection_warning->SetContainerBorder(
-      TriView::Container::CENTER, views::CreateEmptyBorder(gfx::Insets(
+      TriView::Container::CENTER, views::CreateEmptyBorder(gfx::Insets::TLBR(
                                       0, 0, 0, kTrayPopupLabelRightPadding)));
 
   // Nothing to the right of the text.
@@ -810,5 +823,4 @@ TriView* NetworkListView::CreateConnectionWarning() {
   return connection_warning;
 }
 
-}  // namespace tray
 }  // namespace ash

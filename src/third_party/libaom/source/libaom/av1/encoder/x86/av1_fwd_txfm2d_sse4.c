@@ -354,8 +354,7 @@ static FwdTxfm2dFunc fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
 void av1_lowbd_fwd_txfm_sse4_1(const int16_t *src_diff, tran_low_t *coeff,
                                int diff_stride, TxfmParam *txfm_param) {
   FwdTxfm2dFunc fwd_txfm2d_func = fwd_txfm2d_func_ls[txfm_param->tx_size];
-  if ((fwd_txfm2d_func == NULL) ||
-      (txfm_param->lossless && txfm_param->tx_size == TX_4X4)) {
+  if (txfm_param->lossless && txfm_param->tx_size == TX_4X4) {
     av1_lowbd_fwd_txfm_c(src_diff, coeff, diff_stride, txfm_param);
   } else {
     fwd_txfm2d_func(src_diff, coeff, diff_stride, txfm_param->tx_type,

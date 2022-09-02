@@ -27,17 +27,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::DoAll;
-using testing::Invoke;
-using testing::Mock;
-using testing::WithArgs;
-
-namespace em = enterprise_management;
-
 namespace policy {
 
 namespace {
+
+using ::testing::_;
+using ::testing::DoAll;
+using ::testing::Invoke;
+using ::testing::Mock;
+using ::testing::WithArgs;
+namespace em = ::enterprise_management;
 
 constexpr char kStatefulPath[] = "/tmp";
 constexpr char kPackageName[] = "com.example.app";
@@ -145,9 +144,9 @@ class MockAppInstallEventLoggerDelegate
   MOCK_CONST_METHOD1(GetAndroidId_, void(AndroidIdCallback*));
 };
 
-void SetPolicy(policy::PolicyMap* map, const char* name, base::Value value) {
-  map->Set(name, policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-           policy::POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+void SetPolicy(PolicyMap* map, const char* name, base::Value value) {
+  map->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+           std::move(value), nullptr);
 }
 
 }  // namespace
@@ -399,33 +398,33 @@ TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
   CreateLogger();
   logger_->SetStatefulPathForTesting(base::FilePath(kStatefulPath));
 
-  policy::PolicyMap new_policy_map;
+  PolicyMap new_policy_map;
 
   base::DictionaryValue arc_policy;
   auto list = std::make_unique<base::ListValue>();
 
   // Test that REQUIRED, PREINSTALLED and FORCE_INSTALLED are markers to include
   // app to the tracking. BLOCKED and AVAILABLE are excluded.
-  auto package1 = std::make_unique<base::DictionaryValue>();
-  package1->SetString("installType", "REQUIRED");
-  package1->SetString("packageName", kPackageName);
-  list->Append(std::move(package1));
-  auto package2 = std::make_unique<base::DictionaryValue>();
-  package2->SetString("installType", "PREINSTALLED");
-  package2->SetString("packageName", kPackageName2);
-  list->Append(std::move(package2));
-  auto package3 = std::make_unique<base::DictionaryValue>();
-  package3->SetString("installType", "FORCE_INSTALLED");
-  package3->SetString("packageName", kPackageName3);
-  list->Append(std::move(package3));
-  auto package4 = std::make_unique<base::DictionaryValue>();
-  package4->SetString("installType", "BLOCKED");
-  package4->SetString("packageName", kPackageName4);
-  list->Append(std::move(package4));
-  auto package5 = std::make_unique<base::DictionaryValue>();
-  package5->SetString("installType", "AVAILABLE");
-  package5->SetString("packageName", kPackageName5);
-  list->Append(std::move(package5));
+  base::Value::Dict package1;
+  package1.Set("installType", "REQUIRED");
+  package1.Set("packageName", kPackageName);
+  list->Append(base::Value(std::move(package1)));
+  base::Value::Dict package2;
+  package2.Set("installType", "PREINSTALLED");
+  package2.Set("packageName", kPackageName2);
+  list->Append(base::Value(std::move(package2)));
+  base::Value::Dict package3;
+  package3.Set("installType", "FORCE_INSTALLED");
+  package3.Set("packageName", kPackageName3);
+  list->Append(base::Value(std::move(package3)));
+  base::Value::Dict package4;
+  package4.Set("installType", "BLOCKED");
+  package4.Set("packageName", kPackageName4);
+  list->Append(base::Value(std::move(package4)));
+  base::Value::Dict package5;
+  package5.Set("installType", "AVAILABLE");
+  package5.Set("packageName", kPackageName5);
+  list->Append(base::Value(std::move(package5)));
   arc_policy.SetList("applications", std::move(list));
 
   std::string arc_policy_string;
@@ -439,8 +438,8 @@ TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
   EXPECT_CALL(delegate_,
               Add(std::set<std::string>(), MatchEventExceptTimestamp(event_)));
 
-  logger_->OnPolicyUpdated(policy::PolicyNamespace(),
-                           policy::PolicyMap() /* previous */, new_policy_map);
+  logger_->OnPolicyUpdated(PolicyNamespace(), /*previous=*/PolicyMap(),
+                           new_policy_map);
   Mock::VerifyAndClearExpectations(&delegate_);
 
   // Expected new packages added with disk info.

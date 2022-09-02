@@ -11,10 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/mojom/app_permissions.mojom.h"
 #include "ash/components/arc/mojom/intent_helper.mojom-forward.h"
+#include "ash/components/arc/mojom/privacy_items.mojom.h"
 #include "ash/public/cpp/message_center/arc_notification_manager_base.h"
 #include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -63,7 +66,8 @@ class ArcApps : public KeyedService,
                 public arc::ArcIntentHelperObserver,
                 public ash::ArcNotificationManagerBase::Observer,
                 public ash::ArcNotificationsHostInitializer::Observer,
-                public apps::InstanceRegistry::Observer {
+                public apps::InstanceRegistry::Observer,
+                public arc::mojom::PrivacyItemsHost {
  public:
   static ArcApps* Get(Profile* profile);
 
@@ -77,10 +81,13 @@ class ArcApps : public KeyedService,
     return arc_icon_once_loader_;
   }
 
+  WebApkManager* GetWebApkManagerForTesting() { return web_apk_manager_.get(); }
+
  private:
   friend class ArcAppsFactory;
   friend class PublisherTest;
   FRIEND_TEST_ALL_PREFIXES(PublisherTest, ArcAppsOnApps);
+  FRIEND_TEST_ALL_PREFIXES(PublisherTest, ArcApps_CapabilityAccess);
 
   using AppIdToTaskIds = std::map<std::string, std::set<int>>;
   using TaskIdToAppId = std::map<int, std::string>;
@@ -99,6 +106,14 @@ class ArcApps : public KeyedService,
                 apps::LoadIconCallback callback) override;
   void LaunchAppWithParams(AppLaunchParams&& params,
                            LaunchCallback callback) override;
+  void LaunchShortcut(const std::string& app_id,
+                      const std::string& shortcut_id,
+                      int64_t display_id) override;
+  void OnPreferredAppSet(
+      const std::string& app_id,
+      IntentFilterPtr intent_filter,
+      IntentPtr intent,
+      ReplacedAppPreferences replaced_app_preferences) override;
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -173,7 +188,6 @@ class ArcApps : public KeyedService,
   // arc::ArcIntentHelperObserver overrides.
   void OnIntentFiltersUpdated(
       const absl::optional<std::string>& package_name) override;
-  void OnPreferredAppsChanged() override;
   void OnArcSupportedLinksChanged(
       const std::vector<arc::mojom::SupportedLinksPtr>& added,
       const std::vector<arc::mojom::SupportedLinksPtr>& removed,
@@ -192,6 +206,12 @@ class ArcApps : public KeyedService,
   void OnArcNotificationManagerDestroyed(
       ash::ArcNotificationManagerBase* notification_manager) override;
 
+  // PrivacyItemsHost overrides.
+  void OnPrivacyItemsChanged(
+      std::vector<arc::mojom::PrivacyItemPtr> privacy_items) override;
+  void OnMicCameraIndicatorRequirementChanged(bool flag) override {}
+  void OnLocationIndicatorRequirementChanged(bool flag) override {}
+
   // apps::InstanceRegistry::Observer overrides.
   void OnInstanceUpdate(const apps::InstanceUpdate& update) override;
   void OnInstanceRegistryWillBeDestroyed(
@@ -202,10 +222,10 @@ class ArcApps : public KeyedService,
                          IconEffects icon_effects,
                          apps::LoadIconCallback callback);
 
-  std::unique_ptr<App> CreateApp(ArcAppListPrefs* prefs,
-                                 const std::string& app_id,
-                                 const ArcAppListPrefs::AppInfo& app_info,
-                                 bool update_icon = true);
+  AppPtr CreateApp(ArcAppListPrefs* prefs,
+                   const std::string& app_id,
+                   const ArcAppListPrefs::AppInfo& app_info,
+                   bool update_icon = true);
   apps::mojom::AppPtr Convert(ArcAppListPrefs* prefs,
                               const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info,
@@ -245,6 +265,9 @@ class ArcApps : public KeyedService,
 
   AppIdToTaskIds app_id_to_task_ids_;
   TaskIdToAppId task_id_to_app_id_;
+
+  // App id set which might be accessing camera or microphone.
+  base::flat_set<std::string> accessing_apps_;
 
   // Handles requesting app shortcuts from Android.
   std::unique_ptr<arc::ArcAppShortcutsRequest> arc_app_shortcuts_request_;

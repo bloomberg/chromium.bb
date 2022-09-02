@@ -24,6 +24,7 @@
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync_device_info/local_device_info_util.h"
@@ -421,10 +422,7 @@ SessionStore::SessionStore(
 
   bool found_local_header = false;
 
-  for (auto& storage_key_and_specifics : initial_data) {
-    const std::string& storage_key = storage_key_and_specifics.first;
-    SessionSpecifics& specifics = storage_key_and_specifics.second;
-
+  for (auto& [storage_key, specifics] : initial_data) {
     // The store should not contain invalid data, but as a precaution we filter
     // out anyway in case the persisted data is corrupted.
     if (!AreValidSpecifics(specifics)) {

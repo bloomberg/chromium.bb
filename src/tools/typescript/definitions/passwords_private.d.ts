@@ -54,6 +54,7 @@ declare global {
         id: number;
         frontendId: number;
         fromAccountStore: boolean;
+        passwordNote: string;
       }
 
       export interface ExceptionEntry {
@@ -72,6 +73,7 @@ declare global {
         compromiseTime: number;
         elapsedTimeSinceCompromise: string;
         compromiseType: CompromiseType;
+        isMuted: boolean;
       }
 
       export interface InsecureCredential {
@@ -97,12 +99,19 @@ declare global {
         url: string;
         username: string;
         password: string;
+        note: string;
         useAccountStore: boolean;
+      }
+
+      export interface ChangeSavedPasswordParams {
+        username: string;
+        password: string;
+        note?: string;
       }
 
       export function recordPasswordsPageAccessInSettings(): void;
       export function changeSavedPassword(
-          ids: Array<number>, newUsername: string, newPassword: string,
+          ids: Array<number>, params: ChangeSavedPasswordParams,
           callback?: () => void): void;
       export function removeSavedPassword(id: number): void;
       export function removeSavedPasswords(ids: Array<number>): void;
@@ -137,6 +146,12 @@ declare global {
           callback?: () => void): void;
       export function removeInsecureCredential(
           credential: InsecureCredential, callback?: () => void): void;
+      export function muteInsecureCredential(
+          credential: InsecureCredential, callback?: () => void): void;
+      export function unmuteInsecureCredential(
+          credential: InsecureCredential, callback?: () => void): void;
+      export function recordChangePasswordFlowStarted(
+          credential: InsecureCredential, isManualFlow: boolean): void;
       export function startPasswordCheck(callback?: () => void): void;
       export function stopPasswordCheck(callback?: () => void): void;
       export function getPasswordCheckStatus(

@@ -409,7 +409,7 @@ export class ProfileView extends UI.View.SimpleView implements UI.SearchableView
     this.dataProvider = this.createFlameChartDataProvider();
     this.flameChart = new CPUProfileFlameChart(this.searchableViewInternal, this.dataProvider);
     this.flameChart.addEventListener(PerfUI.FlameChart.Events.EntryInvoked, event => {
-      this.onEntryInvoked(event);
+      void this.onEntryInvoked(event);
     });
   }
 
@@ -431,7 +431,7 @@ export class ProfileView extends UI.View.SimpleView implements UI.SearchableView
         (debuggerModel.createRawLocation(script, node.lineNumber, node.columnNumber) as SDK.DebuggerModel.Location);
     const uiLocation =
         await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
-    Common.Revealer.reveal(uiLocation);
+    void Common.Revealer.reveal(uiLocation);
   }
 
   changeView(): void {
@@ -549,7 +549,7 @@ export const enum ViewTypes {
 
 export class WritableProfileHeader extends ProfileHeader implements Common.StringOutputStream.OutputStream {
   readonly debuggerModel: SDK.DebuggerModel.DebuggerModel|null;
-  fileName?: string;
+  fileName?: Platform.DevToolsPath.RawPathString;
   jsonifiedProfile?: string|null;
   profile?: Protocol.Profiler.Profile;
   protocolProfileInternal?: Protocol.Profiler.Profile;
@@ -599,7 +599,7 @@ export class WritableProfileHeader extends ProfileHeader implements Common.Strin
       const now = Platform.DateUtilities.toISO8601Compact(new Date());
       const fileExtension = this.profileType().fileExtension();
 
-      this.fileName = `${this.profileType().typeName()}-${now}${fileExtension}`;
+      this.fileName = `${this.profileType().typeName()}-${now}${fileExtension}` as Platform.DevToolsPath.RawPathString;
     }
 
     const accepted = await fileOutputStream.open(this.fileName);
@@ -610,7 +610,7 @@ export class WritableProfileHeader extends ProfileHeader implements Common.Strin
     if (data) {
       await fileOutputStream.write(data);
     }
-    fileOutputStream.close();
+    void fileOutputStream.close();
   }
 
   async loadFromFile(file: File): Promise<Error|null> {

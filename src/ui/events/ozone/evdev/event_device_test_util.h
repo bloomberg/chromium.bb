@@ -77,7 +77,9 @@ extern const DeviceCapabilities kLinkKeyboard;
 extern const DeviceCapabilities kLinkTouchscreen;
 extern const DeviceCapabilities kLinkWithToolTypeTouchscreen;
 extern const DeviceCapabilities kLinkTouchpad;
+extern const DeviceCapabilities kRedrixTouchpad;
 extern const DeviceCapabilities kMorphiusPointingStick;
+extern const DeviceCapabilities kMorphiusTabletModeSwitch;
 extern const DeviceCapabilities kHpUsbKeyboard;
 extern const DeviceCapabilities kHpUsbKeyboard_Extra;
 extern const DeviceCapabilities kLogitechUsbMouse;
@@ -113,6 +115,7 @@ extern const DeviceCapabilities kMicrosoftBluetoothNumberPad;
 extern const DeviceCapabilities kDellLatitudeE6510Touchpad;
 extern const DeviceCapabilities kHPProBook6560bTouchpad;
 extern const DeviceCapabilities kJinlonKeyboard;
+extern const DeviceCapabilities kSymbolTechBarcodeScanner;
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_EVDEV_EVENT_DEVICE_TEST_UTIL_H_

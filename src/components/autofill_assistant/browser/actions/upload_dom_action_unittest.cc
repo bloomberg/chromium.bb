@@ -167,13 +167,13 @@ TEST_F(UploadDomActionTest, MultipleDomUpload) {
 
   EXPECT_CALL(mock_action_delegate_, FindAllElements(selector, _))
       .WillOnce(testing::WithArgs<1>([](auto&& callback) {
-        auto element_result = std::make_unique<ElementFinder::Result>();
-        element_result->dom_object.object_data.object_id = "fake_object_id";
+        auto element_result = std::make_unique<ElementFinderResult>();
+        element_result->SetObjectId("fake_object_id");
         std::move(callback).Run(OkClientStatus(), std::move(element_result));
       }));
 
-  ElementFinder::Result expected_result;
-  expected_result.dom_object.object_data.object_id = "fake_object_id";
+  ElementFinderResult expected_result;
+  expected_result.SetObjectId("fake_object_id");
 
   std::vector<std::string> fake_htmls{"<div></div>", "<span></span>"};
   EXPECT_CALL(mock_web_controller_,
@@ -202,13 +202,13 @@ TEST_F(UploadDomActionTest, MultipleDomUploadRedactText) {
 
   EXPECT_CALL(mock_action_delegate_, FindAllElements(selector, _))
       .WillOnce(testing::WithArgs<1>([](auto&& callback) {
-        auto element_result = std::make_unique<ElementFinder::Result>();
-        element_result->dom_object.object_data.object_id = "fake_object_id";
+        auto element_result = std::make_unique<ElementFinderResult>();
+        element_result->SetObjectId("fake_object_id");
         std::move(callback).Run(OkClientStatus(), std::move(element_result));
       }));
 
-  ElementFinder::Result expected_result;
-  expected_result.dom_object.object_data.object_id = "fake_object_id";
+  ElementFinderResult expected_result;
+  expected_result.SetObjectId("fake_object_id");
 
   std::vector<std::string> fake_htmls{"<div></div>", "<span></span>"};
 

@@ -13,7 +13,6 @@
 
 namespace SkSL {
 
-class String;
 class Type;
 
 class ExternalFunction : public Symbol {
@@ -21,7 +20,7 @@ public:
     inline static constexpr Kind kSymbolKind = Kind::kExternal;
 
     ExternalFunction(const char* name, const Type& type)
-        : INHERITED(-1, kSymbolKind, name, &type) {}
+        : INHERITED(Position(), kSymbolKind, name, &type) {}
 
     virtual int callParameterCount() const = 0;
 
@@ -36,8 +35,8 @@ public:
                       skvm::F32* outResult,
                       skvm::I32 mask) const = 0;
 
-    String description() const override {
-        return String("external<") + this->name() + ">";
+    std::string description() const override {
+        return "external<" + std::string(this->name()) + ">";
     }
 
     // Disable IRNode pooling on external function nodes. ExternalFunction node lifetimes are

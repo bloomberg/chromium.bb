@@ -25,7 +25,7 @@ struct PhysicalSize;
 // PhysicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the physical coordinate system.
 // For more information about physical and logical coordinate systems, see:
-// https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/layout/README.md#coordinate-spaces
+// https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/core/layout/README.md#coordinate-spaces
 struct CORE_EXPORT PhysicalOffset {
   constexpr PhysicalOffset() = default;
   constexpr PhysicalOffset(LayoutUnit left, LayoutUnit top)
@@ -94,21 +94,10 @@ struct CORE_EXPORT PhysicalOffset {
   constexpr LayoutPoint ToLayoutPoint() const { return {left, top}; }
   constexpr LayoutSize ToLayoutSize() const { return {left, top}; }
 
-  explicit PhysicalOffset(const gfx::Size& size)
-      : left(size.width()), top(size.height()) {}
   explicit PhysicalOffset(const gfx::Point& point)
       : left(point.x()), top(point.y()) {}
   explicit PhysicalOffset(const gfx::Vector2d& vector)
       : left(vector.x()), top(vector.y()) {}
-
-  static PhysicalOffset FromFloatSizeFloor(const FloatSize& size) {
-    return {LayoutUnit::FromFloatFloor(size.width()),
-            LayoutUnit::FromFloatFloor(size.height())};
-  }
-  static PhysicalOffset FromFloatSizeRound(const FloatSize& size) {
-    return {LayoutUnit::FromFloatRound(size.width()),
-            LayoutUnit::FromFloatRound(size.height())};
-  }
 
   static PhysicalOffset FromPointFFloor(const gfx::PointF& point) {
     return {LayoutUnit::FromFloatFloor(point.x()),
@@ -133,7 +122,6 @@ struct CORE_EXPORT PhysicalOffset {
   }
 
   constexpr explicit operator gfx::PointF() const { return {left, top}; }
-  constexpr explicit operator FloatSize() const { return {left, top}; }
   constexpr explicit operator gfx::Vector2dF() const { return {left, top}; }
 
   String ToString() const;

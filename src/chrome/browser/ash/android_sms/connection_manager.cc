@@ -6,23 +6,16 @@
 
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "chrome/browser/ash/android_sms/android_sms_urls.h"
 #include "chrome/browser/ash/android_sms/connection_establisher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 
 namespace ash {
-
-// TODO(https://crbug.com/1164001): remove when chromeos/multidevice_setup is
-// migrated.
-namespace multidevice_setup {
-namespace mojom = ::chromeos::multidevice_setup::mojom;
-}
-
 namespace android_sms {
 
 ConnectionManager::ServiceWorkerProvider::ServiceWorkerProvider() = default;

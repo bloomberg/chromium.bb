@@ -41,7 +41,6 @@ bool IsSurfaceControl(TextureOwner::Mode mode) {
     case TextureOwner::Mode::kAImageReaderSecureSurfaceControl:
       return true;
     case TextureOwner::Mode::kAImageReaderInsecure:
-    case TextureOwner::Mode::kAImageReaderInsecureMultithreaded:
       return false;
     case TextureOwner::Mode::kSurfaceTextureInsecure:
       NOTREACHED();
@@ -65,21 +64,10 @@ bool IsSurfaceControl(TextureOwner::Mode mode) {
 // display compositor, 1 frame in flight and 1 frame being prepared by the
 // renderer.
 uint32_t NumRequiredMaxImages(TextureOwner::Mode mode) {
-  if (IsSurfaceControl(mode) ||
-      mode == TextureOwner::Mode::kAImageReaderInsecureMultithreaded) {
+  if (IsSurfaceControl(mode)) {
     DCHECK(!features::LimitAImageReaderMaxSizeToOne());
     if (features::IncreaseBufferCountForHighFrameRate())
       return 5;
-
-    // WebView overlays relies on WebView zero copy at the moment, which
-    // requires at least 3 buffers (one renderer prepares, one is locked by
-    // display compositor in latest compositor frame and one is pending
-    // deletion). These are additional to normal 3 that we need to surface
-    // control.
-    // TODO(vasilyt): This needs to be resolved before feature launch, but
-    // should work for dogfoog.
-    if (features::IncreaseBufferCountForWebViewOverlays())
-      return 6;
 
     return 3;
   }
@@ -128,10 +116,12 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
 ImageReaderGLOwner::ImageReaderGLOwner(
     std::unique_ptr<gles2::AbstractTexture> texture,
     Mode mode,
-    scoped_refptr<SharedContextState> context_state)
+    scoped_refptr<SharedContextState> context_state,
+    scoped_refptr<RefCountedLock> drdc_lock)
     : TextureOwner(false /* binds_texture_on_image_update */,
                    std::move(texture),
                    std::move(context_state)),
+      RefCountedLockHelperDrDc(std::move(drdc_lock)),
       loader_(base::android::AndroidImageReader::GetInstance()),
       context_(gl::GLContext::GetCurrent()),
       surface_(gl::GLSurface::GetCurrent()) {
@@ -399,10 +389,17 @@ void ImageReaderGLOwner::ReleaseRefOnImage(AImage* image,
 void ImageReaderGLOwner::ReleaseRefOnImageLocked(AImage* image,
                                                  base::ScopedFD fence_fd) {
   lock_.AssertAcquired();
+
   // During cleanup on losing the texture, all images are synchronously released
   // and the |image_reader_| is destroyed.
   if (!image_reader_)
     return;
+
+  // Ensure that DrDc lock is held when |buffer_available_cb| can be triggered
+  // because we do not want any other thread to steal the free buffer slot which
+  // is meant to be used by |buffer_available_cb| and hence resulting in wrong
+  // FrameInfo for all future frames.
+  AssertAcquiredDrDcLock();
 
   auto it = image_refs_.find(image);
   DCHECK(it != image_refs_.end());
@@ -427,21 +424,19 @@ void ImageReaderGLOwner::ReleaseRefOnImageLocked(AImage* image,
   DCHECK_GT(max_images_, static_cast<int32_t>(image_refs_.size()));
   auto buffer_available_cb = std::move(buffer_available_cb_);
 
-  {
-    // |buffer_available_cb| will try to acquire lock again via
-    // UpdatetexImage(), hence we need to unlock here. Note that when
-    // |max_images_| is 1, this callback will always be empty here since it will
-    // be run immediately in RunWhenBufferIsAvailable(). Hence resetting
-    // |current_image_ref_| in UpdateTexImage() can not trigger this callback.
-    // Otherwise triggering this callback from UpdateTexImage() on
-    // |current_image_ref_| reset would cause callback and hence FrameInfoHelper
-    // to run and eventually call UpdateTexImage() from there which could have
-    // been filmsy.
+  // |buffer_available_cb| will try to acquire lock again via
+  // UpdatetexImage(), hence we need to unlock here. Note that when
+  // |max_images_| is 1, this callback will always be empty here since it will
+  // be run immediately in RunWhenBufferIsAvailable(). Hence resetting
+  // |current_image_ref_| in UpdateTexImage() can not trigger this callback.
+  // Otherwise triggering this callback from UpdateTexImage() on
+  // |current_image_ref_| reset would cause callback and hence FrameInfoHelper
+  // to run and eventually call UpdateTexImage() from there which could have
+  // been filmsy.
+  if (buffer_available_cb) {
     base::AutoUnlock auto_unlock(lock_);
-    if (buffer_available_cb) {
-      DCHECK_GT(max_images_, 1);
-      std::move(buffer_available_cb).Run();
-    }
+    DCHECK_GT(max_images_, 1);
+    std::move(buffer_available_cb).Run();
   }
 }
 
@@ -492,14 +487,16 @@ void ImageReaderGLOwner::RunWhenBufferIsAvailable(base::OnceClosure callback) {
     // queue to become full. In that case callback will not be able to render
     // and acquire updated image and hence will use FrameInfo of the previous
     // image which will result in wrong coded size for all future frames. To
-    // avoid, this no other threads should try to UpdateTexImage() when this
-    // callback is run. lock held by the caller (GetFrameInfo()) of this
-    // method ensures that this never happens.
+    // avoid this, no other thread should try to UpdateTexImage() when this
+    // callback is run. Hence drdc_lock should be held from all the places from
+    // where the callback could be run which is either OnGpu::GetFrameInfo() or
+    // ImageReaderGLOwner::ReleaseRefOnImageLocked() and
+    // OnGpu::GetFrameInfoImpl() should assume that the drdc_lock is always
+    // held.
     std::move(callback).Run();
   } else {
     base::AutoLock auto_lock(lock_);
-    buffer_available_cb_ = base::BindPostTask(
-        base::ThreadTaskRunnerHandle::Get(), std::move(callback));
+    buffer_available_cb_ = std::move(callback);
   }
 }
 

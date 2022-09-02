@@ -51,6 +51,10 @@ public final class FeedProcessScopeDependencyProviderTest {
             return true;
         }
         @Override
+        public boolean isUsageAndCrashReportingPermittedByPolicy() {
+            return true;
+        }
+        @Override
         public boolean isUsageAndCrashReportingPermittedByUser() {
             return true;
         }
@@ -64,10 +68,6 @@ public final class FeedProcessScopeDependencyProviderTest {
         }
         @Override
         public void setMetricsReportingEnabled(boolean enabled) {}
-        @Override
-        public boolean isMetricsReportingManaged() {
-            return false;
-        }
     };
 
     @Before

@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -49,9 +50,9 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
@@ -63,9 +64,7 @@ float GetDprForSizeAdjustment(const Element& owner_element) {
 #ifndef OS_ANDROID
   LocalFrame* frame = owner_element.GetDocument().GetFrame();
   const Page* page = frame ? frame->GetPage() : nullptr;
-  if (Platform::Current()->IsUseZoomForDSFEnabled() && page) {
-    dpr = page->GetChromeClient().GetScreenInfo(*frame).device_scale_factor;
-  }
+  dpr = page->GetChromeClient().GetScreenInfo(*frame).device_scale_factor;
 #endif
   return dpr;
 }
@@ -151,7 +150,7 @@ bool ExternalPopupMenu::ShowInternal() {
 void ExternalPopupMenu::Show(PopupMenu::ShowEventType) {
   if (!ShowInternal())
     return;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   const WebInputEvent* current_event = CurrentInputEvent::Get();
   if (current_event &&
       current_event->GetType() == WebInputEvent::Type::kMouseDown) {

@@ -40,6 +40,9 @@ struct WebViewCreateParams {
     uint32 processId;
         // Process in which the RenderView will live.  A value of 0 will
         // cause Content to create a new subprocess to host the RenderView.
+
+    int32 width;
+    int32 height;
 };
 
 interface ProcessHost {
@@ -60,7 +63,7 @@ interface ProcessHost {
         // to associate the connection of the incoming request with the
         // correct instance of process host.
 
-    createWebView(WebViewHost& host, WebViewCreateParams params) => (WebViewClient& client, int32 status);
+    createWebView(pending_receiver<WebViewHost> host, WebViewCreateParams params) => (pending_receiver<WebViewClient> client, int32 status);
         // Create a new webview.
 
     [Sync]

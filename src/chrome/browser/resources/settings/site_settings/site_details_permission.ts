@@ -10,15 +10,16 @@
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared_css.js';
-import '../settings_vars_css.js';
+import '../settings_vars.css.js';
 import '../i18n_setup.js';
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ContentSetting, ContentSettingsTypes, SiteSettingSource} from './constants.js';
+import {getTemplate} from './site_details_permission.html.js';
 import {SiteSettingsMixin} from './site_settings_mixin.js';
 import {RawSiteException} from './site_settings_prefs_browser_proxy.js';
 
@@ -41,7 +42,7 @@ export class SiteDetailsPermissionElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -88,7 +89,7 @@ export class SiteDetailsPermissionElement extends
   label: string;
   icon: string;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.addWebUIListener(
@@ -193,7 +194,6 @@ export class SiteDetailsPermissionElement extends
     }
     assertNotReached(
         `No string for ${this.category}'s default of ${defaultSetting}`);
-    return '';
   }
 
   /**
@@ -237,8 +237,11 @@ export class SiteDetailsPermissionElement extends
                // Set all permission info string arguments as null. This is OK
                // because there is no need to know what the information string
                // will be, just whether there is one or not.
-               null, null, null, null, null, null, null, null, null, null, null,
-               null) !== '';
+               null, null, null, null, null, null,
+               // <if expr="is_win and _google_chrome">
+               null,
+               // </if>
+               null, null, null, null, null, null) !== '';
   }
 
   /**
@@ -351,9 +354,13 @@ export class SiteDetailsPermissionElement extends
       setting: ContentSetting, allowlistString: string|null,
       adsBlacklistString: string|null, adsBlockString: string|null,
       embargoString: string|null, insecureOriginString: string|null,
-      killSwitchString: string|null, extensionAllowString: string|null,
-      extensionBlockString: string|null, extensionAskString: string|null,
-      policyAllowString: string|null, policyBlockString: string|null,
+      killSwitchString: string|null,
+      // <if expr="is_win and _google_chrome">
+      protectedContentIdentifierAllowedString: string|null,
+      // </if>
+      extensionAllowString: string|null, extensionBlockString: string|null,
+      extensionAskString: string|null, policyAllowString: string|null,
+      policyBlockString: string|null,
       policyAskString: string|null): (string|null) {
     if (source === undefined || category === undefined ||
         setting === undefined) {
@@ -400,13 +407,18 @@ export class SiteDetailsPermissionElement extends
       return killSwitchString;
     } else if (source === SiteSettingSource.POLICY) {
       return policyStrings[setting];
+      // <if expr="is_win and _google_chrome">
+    } else if (
+        category === ContentSettingsTypes.PROTECTED_CONTENT &&
+        setting === ContentSetting.ALLOW) {
+      return protectedContentIdentifierAllowedString;
+      // </if>
     } else if (
         source === SiteSettingSource.DEFAULT ||
         source === SiteSettingSource.PREFERENCE) {
       return '';
     }
     assertNotReached(`No string for ${category} setting source '${source}'`);
-    return '';
   }
 }
 

@@ -25,7 +25,6 @@ namespace internal {
   */
 template<typename Scalar> struct scalar_igamma_op : binary_op_base<Scalar,Scalar>
 {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_igamma_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a, const Scalar& x) const {
     using numext::igamma; return igamma(a, x);
   }
@@ -51,7 +50,6 @@ struct functor_traits<scalar_igamma_op<Scalar> > {
   */
 template <typename Scalar>
 struct scalar_igamma_der_a_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_igamma_der_a_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator()(const Scalar& a, const Scalar& x) const {
     using numext::igamma_der_a;
     return igamma_der_a(a, x);
@@ -79,7 +77,6 @@ struct functor_traits<scalar_igamma_der_a_op<Scalar> > {
   */
 template <typename Scalar>
 struct scalar_gamma_sample_der_alpha_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_gamma_sample_der_alpha_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator()(const Scalar& alpha, const Scalar& sample) const {
     using numext::gamma_sample_der_alpha;
     return gamma_sample_der_alpha(alpha, sample);
@@ -105,7 +102,6 @@ struct functor_traits<scalar_gamma_sample_der_alpha_op<Scalar> > {
   */
 template<typename Scalar> struct scalar_igammac_op : binary_op_base<Scalar,Scalar>
 {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_igammac_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a, const Scalar& x) const {
     using numext::igammac; return igammac(a, x);
   }
@@ -130,7 +126,6 @@ struct functor_traits<scalar_igammac_op<Scalar> > {
   *
   */
 template<typename Scalar> struct scalar_betainc_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_betainc_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& x, const Scalar& a, const Scalar& b) const {
     using numext::betainc; return betainc(x, a, b);
   }
@@ -156,7 +151,6 @@ struct functor_traits<scalar_betainc_op<Scalar> > {
  * \sa class CwiseUnaryOp, Cwise::lgamma()
  */
 template<typename Scalar> struct scalar_lgamma_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_lgamma_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const {
     using numext::lgamma; return lgamma(a);
   }
@@ -178,7 +172,6 @@ struct functor_traits<scalar_lgamma_op<Scalar> >
  * \sa class CwiseUnaryOp, Cwise::digamma()
  */
 template<typename Scalar> struct scalar_digamma_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_digamma_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const {
     using numext::digamma; return digamma(a);
   }
@@ -200,7 +193,6 @@ struct functor_traits<scalar_digamma_op<Scalar> >
  * \sa class CwiseUnaryOp, Cwise::zeta()
  */
 template<typename Scalar> struct scalar_zeta_op {
-    EIGEN_EMPTY_STRUCT_CTOR(scalar_zeta_op)
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& x, const Scalar& q) const {
         using numext::zeta; return zeta(x, q);
     }
@@ -222,7 +214,6 @@ struct functor_traits<scalar_zeta_op<Scalar> >
  * \sa class CwiseUnaryOp, Cwise::polygamma()
  */
 template<typename Scalar> struct scalar_polygamma_op {
-    EIGEN_EMPTY_STRUCT_CTOR(scalar_polygamma_op)
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& n, const Scalar& x) const {
         using numext::polygamma; return polygamma(n, x);
     }
@@ -244,7 +235,6 @@ struct functor_traits<scalar_polygamma_op<Scalar> >
  * \sa class CwiseUnaryOp, ArrayBase::erf()
  */
 template<typename Scalar> struct scalar_erf_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_erf_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar
   operator()(const Scalar& a) const {
     return numext::erf(a);
@@ -283,7 +273,6 @@ struct functor_traits<scalar_erf_op<Scalar> > {
  * \sa class CwiseUnaryOp, Cwise::erfc()
  */
 template<typename Scalar> struct scalar_erfc_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_erfc_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const {
     using numext::erfc; return erfc(a);
   }
@@ -306,7 +295,6 @@ struct functor_traits<scalar_erfc_op<Scalar> >
  * \sa class CwiseUnaryOp, Cwise::ndtri()
  */
 template<typename Scalar> struct scalar_ndtri_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_ndtri_op)
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (const Scalar& a) const {
     using numext::ndtri; return ndtri(a);
   }

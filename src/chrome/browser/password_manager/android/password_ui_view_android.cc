@@ -21,10 +21,10 @@
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/android/chrome_jni_headers/PasswordUIView_jni.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
@@ -32,6 +32,7 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
+#include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -253,6 +254,11 @@ ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetAccountDashboardURL(
       env, l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
 }
 
+ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetTrustedVaultLearnMoreURL(
+    JNIEnv* env) {
+  return ConvertUTF8ToJavaString(env, chrome::kSyncTrustedVaultLearnMoreURL);
+}
+
 jboolean JNI_PasswordUIView_HasAccountForLeakCheckRequest(JNIEnv* env) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(
@@ -271,18 +277,14 @@ static jlong JNI_PasswordUIView_Init(JNIEnv* env,
 PasswordUIViewAndroid::SerializationResult
 PasswordUIViewAndroid::ObtainAndSerializePasswords(
     const base::FilePath& target_directory) {
-  // This is run on a backend task runner. Do not access any member variables
-  // except for |credential_provider_for_testing_| and
-  // |password_manager_presenter_|.
-  password_manager::CredentialProviderInterface* const provider =
-      credential_provider_for_testing_ ? credential_provider_for_testing_.get()
-                                       : &password_manager_presenter_;
-
-  std::vector<std::unique_ptr<password_manager::PasswordForm>> passwords =
-      provider->GetAllPasswords();
+  std::vector<password_manager::CredentialUIEntry> credentials =
+      saved_passwords_presenter_.GetSavedCredentials();
+  base::EraseIf(credentials, [](const auto& credential) {
+    return credential.blocked_by_user;
+  });
 
   // The UI should not trigger serialization if there are not passwords.
-  DCHECK(!passwords.empty());
+  DCHECK(!credentials.empty());
 
   // Creating a file will block the execution on I/O.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -305,7 +307,7 @@ PasswordUIViewAndroid::ObtainAndSerializePasswords(
 
   // Write the serialized data in CSV.
   std::string data =
-      password_manager::PasswordCSVWriter::SerializePasswords(passwords);
+      password_manager::PasswordCSVWriter::SerializePasswords(credentials);
   int bytes_written = base::WriteFile(export_file, data.data(), data.size());
   if (bytes_written != base::checked_cast<int>(data.size())) {
     return {
@@ -313,7 +315,7 @@ PasswordUIViewAndroid::ObtainAndSerializePasswords(
         logging::SystemErrorCodeToString(logging::GetLastSystemErrorCode())};
   }
 
-  return {static_cast<int>(passwords.size()), export_file.value(),
+  return {static_cast<int>(credentials.size()), export_file.value(),
           std::string()};
 }
 

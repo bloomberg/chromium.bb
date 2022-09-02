@@ -13,8 +13,8 @@
 #include "build/buildflag.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "build/rust/tests/test_mixed_source_set/test_mixed_source_set.h"
-#include "build/rust/tests/test_rust_source_set/src/lib.rs.h"
+#include "build/rust/tests/test_mixed_static_library/test_mixed_static_library.h"
+#include "build/rust/tests/test_rust_static_library/src/lib.rs.h"
 
 TEST(RustTest, CppCallingIntoRust_BasicFFI) {
   EXPECT_EQ(7, add_two_ints_via_rust(3, 4));
@@ -24,9 +24,9 @@ TEST(RustTest, RustComponentUsesPartitionAlloc) {
   // Verify that PartitionAlloc is consistently used in C++ and Rust.
   auto cpp_allocated_int = std::make_unique<int>();
   SomeStruct* rust_allocated_ptr = allocate_via_rust().into_raw();
-  EXPECT_EQ(base::IsManagedByPartitionAlloc(
+  EXPECT_EQ(partition_alloc::IsManagedByPartitionAlloc(
                 reinterpret_cast<uintptr_t>(rust_allocated_ptr)),
-            base::IsManagedByPartitionAlloc(
+            partition_alloc::IsManagedByPartitionAlloc(
                 reinterpret_cast<uintptr_t>(cpp_allocated_int.get())));
   rust::Box<SomeStruct>::from_raw(rust_allocated_ptr);
 }

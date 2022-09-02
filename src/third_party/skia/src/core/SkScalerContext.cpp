@@ -8,6 +8,7 @@
 #include "include/core/SkPaint.h"
 #include "src/core/SkScalerContext.h"
 
+#include "include/core/SkDrawable.h"
 #include "include/core/SkFontMetrics.h"
 #include "include/core/SkMaskFilter.h"
 #include "include/core/SkPathEffect.h"
@@ -36,9 +37,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef SK_DEBUG
-    #define DUMP_RECx
-#endif
+namespace {
+static inline const constexpr bool kSkShowTextBlitCoverage = false;
+static inline const constexpr bool kSkScalerContextDumpRec = false;
+}
 
 SkScalerContextRec SkScalerContext::PreprocessRec(const SkTypeface& typeface,
                                                   const SkScalerContextEffects& effects,
@@ -83,12 +85,12 @@ SkScalerContext::SkScalerContext(sk_sp<SkTypeface> typeface, const SkScalerConte
 
     , fPreBlend(fMaskFilter ? SkMaskGamma::PreBlend() : SkScalerContext::GetMaskPreBlend(fRec))
 {
-#ifdef DUMP_REC
-    SkDebugf("SkScalerContext checksum %x count %d length %d\n",
-             desc->getChecksum(), desc->getCount(), desc->getLength());
-    SkDebugf("%s", fRec.dump().c_str());
-    SkDebugf("  effects %x\n", desc->findEntry(kEffects_SkDescriptorTag, nullptr));
-#endif
+    if constexpr (kSkScalerContextDumpRec) {
+        SkDebugf("SkScalerContext checksum %x count %d length %d\n",
+                 desc->getChecksum(), desc->getCount(), desc->getLength());
+        SkDebugf("%s", fRec.dump().c_str());
+        SkDebugf("  effects %p\n", desc->findEntry(kEffects_SkDescriptorTag, nullptr));
+    }
 }
 
 SkScalerContext::~SkScalerContext() {}
@@ -274,8 +276,6 @@ SK_ERROR:
     return glyph;
 }
 
-#define SK_SHOW_TEXT_BLIT_COVERAGE 0
-
 static void applyLUTToA8Mask(const SkMask& mask, const uint8_t* lut) {
     uint8_t* SK_RESTRICT dst = (uint8_t*)mask.fImage;
     unsigned rowBytes = mask.fRowBytes;
@@ -384,9 +384,11 @@ static void pack4xHToMask(const SkPixmap& src, const SkMask& dst,
                 g = fir[1];
                 b = fir[2];
             }
-#if SK_SHOW_TEXT_BLIT_COVERAGE
-            r = std::max(r, 10); g = std::max(g, 10); b = std::max(b, 10);
-#endif
+            if constexpr (kSkShowTextBlitCoverage) {
+                r = std::max(r, 10u);
+                g = std::max(g, 10u);
+                b = std::max(b, 10u);
+            }
             if (toA8) {
                 U8CPU a = (r + g + b) / 3;
                 if (maskPreBlend.isApplicable()) {
@@ -695,6 +697,14 @@ void SkScalerContext::getPath(SkGlyph& glyph, SkArenaAlloc* alloc) {
     this->internalGetPath(glyph, alloc);
 }
 
+sk_sp<SkDrawable> SkScalerContext::getDrawable(SkGlyph& glyph) {
+    return this->generateDrawable(glyph);
+}
+//TODO: make pure virtual
+sk_sp<SkDrawable> SkScalerContext::generateDrawable(const SkGlyph&) {
+    return nullptr;
+}
+
 void SkScalerContext::getFontMetrics(SkFontMetrics* fm) {
     SkASSERT(fm);
     this->generateFontMetrics(fm);
@@ -866,17 +876,17 @@ bool SkScalerContextRec::computeMatrices(PreMatrixScale preMatrixScale, SkVector
 
     // At this point, given GA, create s.
     switch (preMatrixScale) {
-        case kFull_PreMatrixScale:
+        case PreMatrixScale::kFull:
             s->fX = SkScalarAbs(GA.get(SkMatrix::kMScaleX));
             s->fY = SkScalarAbs(GA.get(SkMatrix::kMScaleY));
             break;
-        case kVertical_PreMatrixScale: {
+        case PreMatrixScale::kVertical: {
             SkScalar yScale = SkScalarAbs(GA.get(SkMatrix::kMScaleY));
             s->fX = yScale;
             s->fY = yScale;
             break;
         }
-        case kVerticalInteger_PreMatrixScale: {
+        case PreMatrixScale::kVerticalInteger: {
             SkScalar realYScale = SkScalarAbs(GA.get(SkMatrix::kMScaleY));
             SkScalar intYScale = SkScalarRoundToScalar(realYScale);
             if (intYScale == 0) {
@@ -890,18 +900,18 @@ bool SkScalerContextRec::computeMatrices(PreMatrixScale preMatrixScale, SkVector
 
     // The 'remaining' matrix sA is the total matrix A without the scale.
     if (!skewedOrFlipped && (
-            (kFull_PreMatrixScale == preMatrixScale) ||
-            (kVertical_PreMatrixScale == preMatrixScale && A.getScaleX() == A.getScaleY())))
+            (PreMatrixScale::kFull == preMatrixScale) ||
+            (PreMatrixScale::kVertical == preMatrixScale && A.getScaleX() == A.getScaleY())))
     {
-        // If GA == A and kFull_PreMatrixScale, sA is identity.
-        // If GA == A and kVertical_PreMatrixScale and A.scaleX == A.scaleY, sA is identity.
+        // If GA == A and kFull, sA is identity.
+        // If GA == A and kVertical and A.scaleX == A.scaleY, sA is identity.
         sA->reset();
-    } else if (!skewedOrFlipped && kVertical_PreMatrixScale == preMatrixScale) {
-        // If GA == A and kVertical_PreMatrixScale, sA.scaleY is SK_Scalar1.
+    } else if (!skewedOrFlipped && PreMatrixScale::kVertical == preMatrixScale) {
+        // If GA == A and kVertical, sA.scaleY is SK_Scalar1.
         sA->reset();
         sA->setScaleX(A.getScaleX() / s->fY);
     } else {
-        // TODO: like kVertical_PreMatrixScale, kVerticalInteger_PreMatrixScale with int scales.
+        // TODO: like kVertical, kVerticalInteger with int scales.
         *sA = A;
         sA->preScale(SkScalarInvert(s->fX), SkScalarInvert(s->fY));
     }
@@ -929,18 +939,18 @@ SkAxisAlignment SkScalerContextRec::computeAxisAlignmentForHText() const {
     // In other words, making the text bigger, stretching it along the
     // horizontal axis, or fake italicizing it does not move the baseline.
     if (!SkToBool(fFlags & SkScalerContext::kBaselineSnap_Flag)) {
-        return kNone_SkAxisAlignment;
+        return SkAxisAlignment::kNone;
     }
 
     if (0 == fPost2x2[1][0]) {
         // The x axis is mapped onto the x axis.
-        return kX_SkAxisAlignment;
+        return SkAxisAlignment::kX;
     }
     if (0 == fPost2x2[0][0]) {
         // The x axis is mapped onto the y axis.
-        return kY_SkAxisAlignment;
+        return SkAxisAlignment::kY;
     }
-    return kNone_SkAxisAlignment;
+    return SkAxisAlignment::kNone;
 }
 
 void SkScalerContextRec::setLuminanceColor(SkColor c) {
@@ -1004,7 +1014,7 @@ void SkScalerContext::MakeRecAndEffects(const SkFont& font, const SkPaint& paint
 
     SkTypeface* typeface = font.getTypefaceOrDefault();
 
-    rec->fFontID = typeface->uniqueID();
+    rec->fTypefaceID = typeface->uniqueID();
     rec->fTextSize = font.getSize();
     rec->fPreScaleX = font.getScaleX();
     rec->fPreSkewX  = font.getSkewX();

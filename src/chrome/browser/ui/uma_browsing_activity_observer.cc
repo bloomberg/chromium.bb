@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -48,8 +49,8 @@ void UMABrowsingActivityObserver::Init() {
 UMABrowsingActivityObserver::UMABrowsingActivityObserver() {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
+  subscription_ = browser_shutdown::AddAppTerminatingCallback(base::BindOnce(
+      &UMABrowsingActivityObserver::OnAppTerminating, base::Unretained(this)));
 }
 
 UMABrowsingActivityObserver::~UMABrowsingActivityObserver() {}
@@ -84,11 +85,13 @@ void UMABrowsingActivityObserver::Observe(
 
     LogRenderProcessHostCount();
     LogBrowserTabCount();
-  } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
-    LogTimeBeforeUpdate();
-    delete g_uma_browsing_activity_observer_instance;
-    g_uma_browsing_activity_observer_instance = NULL;
   }
+}
+
+void UMABrowsingActivityObserver::OnAppTerminating() const {
+  LogTimeBeforeUpdate();
+  delete g_uma_browsing_activity_observer_instance;
+  g_uma_browsing_activity_observer_instance = NULL;
 }
 
 void UMABrowsingActivityObserver::LogTimeBeforeUpdate() const {
@@ -140,18 +143,20 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
       unique_domain[domain] += 1;
     }
 
-    const std::vector<tab_groups::TabGroupId>& groups =
-        tab_strip_model->group_model()->ListTabGroups();
-    tab_group_count += groups.size();
-    for (const tab_groups::TabGroupId& group_id : groups) {
-      const TabGroup* const tab_group =
-          tab_strip_model->group_model()->GetTabGroup(group_id);
-      if (tab_group->IsCustomized() ||
-          !tab_group->visual_data()->title().empty()) {
-        ++customized_tab_group_count;
-      }
-      if (tab_group->visual_data()->is_collapsed()) {
-        ++collapsed_tab_group_count;
+    if (tab_strip_model->group_model()) {
+      const std::vector<tab_groups::TabGroupId>& groups =
+          tab_strip_model->group_model()->ListTabGroups();
+      tab_group_count += groups.size();
+      for (const tab_groups::TabGroupId& group_id : groups) {
+        const TabGroup* const tab_group =
+            tab_strip_model->group_model()->GetTabGroup(group_id);
+        if (tab_group->IsCustomized() ||
+            !tab_group->visual_data()->title().empty()) {
+          ++customized_tab_group_count;
+        }
+        if (tab_group->visual_data()->is_collapsed()) {
+          ++collapsed_tab_group_count;
+        }
       }
     }
 
@@ -195,15 +200,17 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   const Browser* current_browser = BrowserList::GetInstance()->GetLastActive();
   if (current_browser) {
     TabStripModel* const tab_strip_model = current_browser->tab_strip_model();
-    const absl::optional<tab_groups::TabGroupId> active_group =
-        tab_strip_model->GetTabGroupForTab(tab_strip_model->active_index());
-    UMA_HISTOGRAM_COUNTS_100("Tabs.TabCountInGroupPerLoad",
-                             active_group.has_value()
-                                 ? tab_strip_model->group_model()
-                                       ->GetTabGroup(active_group.value())
-                                       ->ListTabs()
-                                       .length()
-                                 : 0);
+    if (tab_strip_model->group_model()) {
+      const absl::optional<tab_groups::TabGroupId> active_group =
+          tab_strip_model->GetTabGroupForTab(tab_strip_model->active_index());
+      UMA_HISTOGRAM_COUNTS_100("Tabs.TabCountInGroupPerLoad",
+                               active_group.has_value()
+                                   ? tab_strip_model->group_model()
+                                         ->GetTabGroup(active_group.value())
+                                         ->ListTabs()
+                                         .length()
+                                   : 0);
+    }
   }
 
   // Record how many tab groups with a user-set name or color are open across

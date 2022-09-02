@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -69,14 +69,14 @@ class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
   // startNode - Optional. If provided, start chaining from the given node.
   //             If not, use the current focus or last clicked node.
   bool LogicalScroll(mojom::blink::ScrollDirection,
-                     ScrollGranularity,
+                     ui::ScrollGranularity,
                      Node* start_node,
                      Node* mouse_press_node);
 
   // Performs a logical scroll that chains, crossing frames, starting from
   // the given node or a reasonable default (focus/last clicked).
   bool BubblingScroll(mojom::blink::ScrollDirection,
-                      ScrollGranularity,
+                      ui::ScrollGranularity,
                       Node* starting_node,
                       Node* mouse_press_node);
 
@@ -153,9 +153,6 @@ class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
 
   uint32_t GetNonCompositedMainThreadScrollingReasons() const;
   void RecordScrollRelatedMetrics(WebGestureDevice) const;
-
-  WebGestureEvent SynthesizeGestureScrollBegin(
-      const WebGestureEvent& update_event);
 
   bool SnapAtGestureScrollEnd(const WebGestureEvent& end_event,
                               base::ScopedClosureRunner callback);

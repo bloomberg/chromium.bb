@@ -15,18 +15,25 @@ import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 
+import com.google.common.base.Optional;
+
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
-import org.chromium.chrome.browser.password_check.PasswordCheckReferrer;
 import org.chromium.chrome.browser.password_check.PasswordCheckUIStatus;
+import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncherFactory;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
+import org.chromium.chrome.browser.password_manager.PasswordCheckReferrer;
+import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelper;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
+import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
+import org.chromium.chrome.browser.password_manager.PasswordStoreCredential;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.safe_browsing.metrics.SettingsAccessPoint;
@@ -37,15 +44,18 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesSta
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 
-class SafetyCheckMediator implements PasswordCheck.Observer {
+class SafetyCheckMediator
+        implements PasswordCheck.Observer, PasswordStoreBridge.PasswordStoreObserver {
     /**
      * The minimal amount of time to show the checking state.
      * This needs to be non-zero to make it seem like the browser is doing work. This is different
@@ -67,8 +77,14 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
     private SyncConsentActivityLauncher mSigninLauncher;
     /** Async logic for password check. */
     private boolean mShowSafePasswordState;
+    /** Helper for password check. TODO(crbug.com/1315267): Move this into a new class. */
+    private PasswordCheckupClientHelper mPasswordCheckupHelper;
+    /** Password store bridge. TODO(crbug.com/1315267): Move this into a new class. */
+    private PasswordStoreBridge mPasswordStoreBridge;
     private boolean mPasswordsLoaded;
     private boolean mLeaksLoaded;
+
+    private ObservableSupplier<ModalDialogManager> mModalDialogManagerSupplier;
 
     // Indicates that the password check results are blocked on disk load at different stages.
     @IntDef({PasswordCheckLoadStage.IDLE, PasswordCheckLoadStage.INITIAL_WAIT_FOR_LOAD,
@@ -91,6 +107,7 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
     private Runnable mRunnableSafeBrowsing;
     private Runnable mRunnableUpdates;
     private long mCheckStartTime = -1;
+    private Integer mBreachedCredentialsCount = 0;
 
     /**
      * UMA histogram values for Safety check interactions. Some value don't apply to Android.
@@ -147,21 +164,36 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
      * @param client An updates client.
      * @param settingsLauncher An instance of the {@link SettingsLauncher} implementation.
      * @param signinLauncher An instance implementing {@SigninActivityLauncher}.
+     * @param passwordCheckupHelper An instance of the {@link PasswordCheckupClientHelper}.
+     * @param modalDialogManagerSupplier A supplier for the {@link ModalDialogManager}.
      */
     public SafetyCheckMediator(PropertyModel model, SafetyCheckUpdatesDelegate client,
-            SettingsLauncher settingsLauncher, SyncConsentActivityLauncher signinLauncher) {
-        this(model, client, settingsLauncher, signinLauncher, new Handler());
+            SettingsLauncher settingsLauncher, SyncConsentActivityLauncher signinLauncher,
+            PasswordCheckupClientHelper passwordCheckupHelper,
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
+        this(model, client, settingsLauncher, signinLauncher, passwordCheckupHelper, new Handler());
+        mPasswordStoreBridge = new PasswordStoreBridge();
+        mModalDialogManagerSupplier = modalDialogManagerSupplier;
     }
 
     @VisibleForTesting
     SafetyCheckMediator(PropertyModel model, SafetyCheckUpdatesDelegate client,
             SettingsLauncher settingsLauncher, SyncConsentActivityLauncher signinLauncher,
+            PasswordCheckupClientHelper passwordCheckupHelper, PasswordStoreBridge bridge,
             Handler handler) {
+        this(model, client, settingsLauncher, signinLauncher, passwordCheckupHelper, handler);
+        mPasswordStoreBridge = bridge;
+    }
+
+    SafetyCheckMediator(PropertyModel model, SafetyCheckUpdatesDelegate client,
+            SettingsLauncher settingsLauncher, SyncConsentActivityLauncher signinLauncher,
+            PasswordCheckupClientHelper passwordCheckupHelper, Handler handler) {
         mModel = model;
         mUpdatesClient = client;
         mSettingsLauncher = settingsLauncher;
         mSigninLauncher = signinLauncher;
         mHandler = handler;
+        mPasswordCheckupHelper = passwordCheckupHelper;
         mPreferenceManager = SharedPreferencesManager.getInstance();
         // Set the listener for clicking the updates element.
         mModel.set(SafetyCheckProperties.UPDATES_CLICK_LISTENER,
@@ -225,10 +257,6 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
         }
         mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.CHECKING);
         mLoadStage = PasswordCheckLoadStage.INITIAL_WAIT_FOR_LOAD;
-        // Reset the status of the password disk loads. If it's loaded, PasswordCheck will invoke
-        // the callbacks again (the |callImmediatelyIfReady| argument to |addObserver| is true).
-        mPasswordsLoaded = false;
-        mLeaksLoaded = false;
         // If the user is not signed in, immediately set the state and do not block on disk loads.
         if (!SafetyCheckBridge.userSignedIn()) {
             mLoadStage = PasswordCheckLoadStage.IDLE;
@@ -238,7 +266,7 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
                     PasswordsStatus.SIGNED_OUT, PasswordsStatus.MAX_VALUE + 1);
             updatePasswordElementClickDestination();
         }
-        PasswordCheckFactory.getOrCreate(mSettingsLauncher).addObserver(this, true);
+        fetchPasswordsAndBreachedCredentials();
         if (mPasswordsLoaded && mLeaksLoaded) {
             determinePasswordStateOnLoadComplete();
         }
@@ -269,12 +297,7 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
         mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.CHECKING);
         // Start all the checks.
         checkSafeBrowsing();
-        // Start observing the password check events (including data loads).
-        PasswordCheckFactory.getOrCreate(mSettingsLauncher).addObserver(this, false);
-        // This indicates that the results of the initial data load should not be applied even if
-        // they become available during the check.
-        mLoadStage = PasswordCheckLoadStage.IDLE;
-        PasswordCheckFactory.getOrCreate(mSettingsLauncher).startCheck();
+        checkPasswords();
         mUpdatesClient.checkForUpdates(new WeakReference(mUpdatesCheckCallback));
     }
 
@@ -285,6 +308,8 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
     @Override
     public void onCompromisedCredentialsFetchCompleted() {
         mLeaksLoaded = true;
+        mBreachedCredentialsCount = PasswordCheckFactory.getOrCreate(mSettingsLauncher)
+                                            .getCompromisedCredentialsCount();
         if (mPasswordsLoaded) {
             determinePasswordStateOnLoadComplete();
         }
@@ -296,10 +321,7 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
      */
     @Override
     public void onSavedPasswordsFetchCompleted() {
-        mPasswordsLoaded = true;
-        if (mLeaksLoaded) {
-            determinePasswordStateOnLoadComplete();
-        }
+        onPasswordsLoaded();
     }
 
     /**
@@ -311,6 +333,9 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
         if (status == PasswordCheckUIStatus.RUNNING || mLoadStage != PasswordCheckLoadStage.IDLE) {
             return;
         }
+
+        if (mModel == null) return;
+
         // Handle error state.
         if (status != PasswordCheckUIStatus.IDLE) {
             setRunnablePasswords(() -> {
@@ -338,14 +363,40 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
     @Override
     public void onPasswordCheckProgressChanged(int alreadyProcessed, int remainingInQueue) {}
 
+    /**
+     *  PasswordStoreBridge.PasswordStoreObserver implementation.
+     */
+
+    /**
+     * Gets invoked when the passwords are fetched from the disk or have changed.
+     * After this call, {@link PasswordStoreBridge#getPasswordStoreCredentialsCount} returns a valid
+     * value.
+     */
+    @Override
+    public void onSavedPasswordsChanged(int count) {
+        onPasswordsLoaded();
+    }
+
+    /**
+     * Not used by mediator as Password edit event isn't interesting.
+     */
+    @Override
+    public void onEdit(PasswordStoreCredential credential) {}
+
     /** Cancels any pending callbacks and registered observers.  */
     public void destroy() {
         cancelCallbacks();
-        // Refresh the ref without creating a new one.
-        PasswordCheck passwordCheck = PasswordCheckFactory.getPasswordCheckInstance();
-        if (passwordCheck != null) {
-            passwordCheck.stopCheck();
-            passwordCheck.removeObserver(this);
+        if (mPasswordCheckupHelper == null) {
+            // Refresh the ref without creating a new one.
+            PasswordCheck passwordCheck = PasswordCheckFactory.getPasswordCheckInstance();
+            if (passwordCheck != null) {
+                passwordCheck.stopCheck();
+                passwordCheck.removeObserver(this);
+            }
+        } else {
+            mPasswordCheckupHelper = null;
+            mPasswordStoreBridge.removeObserver(this);
+            mPasswordStoreBridge.destroy();
         }
         mUpdatesClient = null;
         mModel = null;
@@ -418,9 +469,13 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
     private void determinePasswordStateOnLoadComplete() {
         // Nothing is blocked on data load, so ignore the load.
         if (mLoadStage == PasswordCheckLoadStage.IDLE) return;
-        // If something is blocked, that means the passwords check is being observed. At this point,
-        // no further events need to be observed.
-        PasswordCheckFactory.getOrCreate(mSettingsLauncher).removeObserver(this);
+        if (mPasswordCheckupHelper == null) {
+            // If something is blocked, that means the passwords check is being observed. At this
+            // point, no further events need to be observed.
+            PasswordCheckFactory.getOrCreate(mSettingsLauncher).removeObserver(this);
+        } else {
+            mPasswordStoreBridge.removeObserver(this);
+        }
         // Only delay updating the UI on the user-triggered check and not initially.
         if (mLoadStage == PasswordCheckLoadStage.INITIAL_WAIT_FOR_LOAD) {
             updatePasswordsStateOnDataLoaded();
@@ -432,10 +487,8 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
     /** Applies the results of the password check to the model. Only called when data is loaded. */
     private void updatePasswordsStateOnDataLoaded() {
         // Always display the compromised state.
-        int compromised = PasswordCheckFactory.getOrCreate(mSettingsLauncher)
-                                  .getCompromisedCredentialsCount();
-        if (compromised != 0) {
-            mModel.set(SafetyCheckProperties.COMPROMISED_PASSWORDS, compromised);
+        if (mBreachedCredentialsCount != 0) {
+            mModel.set(SafetyCheckProperties.COMPROMISED_PASSWORDS, mBreachedCredentialsCount);
             mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.COMPROMISED_EXIST);
             // Record the value in UMA.
             RecordHistogram.recordEnumeratedHistogram("Settings.SafetyCheck.PasswordsResult",
@@ -444,8 +497,7 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
                 && !mShowSafePasswordState) {
             // Cannot show the safe state at the initial load if last run is older than 10 mins.
             mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.UNCHECKED);
-        } else if (PasswordCheckFactory.getOrCreate(mSettingsLauncher).getSavedPasswordsCount()
-                == 0) {
+        } else if (!hasSavedPasswords()) {
             // Can show safe state: display no passwords.
             mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.NO_PASSWORDS);
             // Record the value in UMA.
@@ -491,20 +543,159 @@ class SafetyCheckMediator implements PasswordCheck.Observer {
                         SafetyCheckInteractions.PASSWORDS_MANAGE,
                         SafetyCheckInteractions.MAX_VALUE + 1);
                 // Open the Password Check UI.
-                PasswordCheckFactory.getOrCreate(mSettingsLauncher)
-                        .showUi(p.getContext(), PasswordCheckReferrer.SAFETY_CHECK);
+                if (mPasswordCheckupHelper == null) {
+                    PasswordCheckFactory.getOrCreate(mSettingsLauncher)
+                            .showUi(p.getContext(), PasswordCheckReferrer.SAFETY_CHECK);
+                } else {
+                    PasswordManagerHelper.showPasswordCheckup(p.getContext(),
+                            PasswordCheckReferrer.SAFETY_CHECK, mPasswordCheckupHelper,
+                            SyncService.get(), mModalDialogManagerSupplier);
+                }
                 return true;
             };
         } else {
             listener = (p) -> {
                 // Open the Password Manager.
+                CredentialManagerLauncher credentialManagerLauncher =
+                        PasswordManagerHelper.usesUnifiedPasswordManagerUI()
+                        ? CredentialManagerLauncherFactory.getInstance().createLauncher()
+                        : null;
                 PasswordManagerHelper.showPasswordSettings(p.getContext(),
                         ManagePasswordsReferrer.SAFETY_CHECK, mSettingsLauncher,
-                        CredentialManagerLauncherFactory.getInstance().createLauncher(),
-                        SyncService.get());
+                        credentialManagerLauncher, SyncService.get(), mModalDialogManagerSupplier);
                 return true;
             };
         }
         mModel.set(SafetyCheckProperties.PASSWORDS_CLICK_LISTENER, listener);
+    }
+
+    private void onPasswordsLoaded() {
+        if (mModel == null) return;
+
+        mPasswordsLoaded = true;
+        if (mLeaksLoaded) {
+            determinePasswordStateOnLoadComplete();
+        }
+    }
+
+    private void fetchPasswordsAndBreachedCredentials() {
+        mLeaksLoaded = false;
+        mPasswordsLoaded = false;
+        if (mPasswordCheckupHelper == null) {
+            // Reset the status of the password disk loads. If it's loaded, PasswordCheck will
+            // invoke the callbacks again (the |callImmediatelyIfReady| argument to |addObserver| is
+            // true).
+            PasswordCheckFactory.getOrCreate(mSettingsLauncher).addObserver(this, true);
+            return;
+        }
+
+        mPasswordStoreBridge.addObserver(this, true);
+        WeakReference<SafetyCheckMediator> weakRef = new WeakReference(this);
+        PasswordManagerHelper.getBreachedCredentialsCount(PasswordCheckReferrer.SAFETY_CHECK,
+                mPasswordCheckupHelper, getSyncingAccount(),
+                count
+                -> {
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onBreachedCredentialsObtained(count, false);
+                },
+                error -> {
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onPasswordCheckFailed(error);
+                });
+    }
+
+    private void checkPasswords() {
+        mLoadStage = PasswordCheckLoadStage.IDLE;
+
+        if (mPasswordCheckupHelper == null) {
+            // Start observing the password check events (including data loads).
+            PasswordCheckFactory.getOrCreate(mSettingsLauncher).addObserver(this, false);
+            // This indicates that the results of the initial data load should not be applied even
+            // if they become available during the check.
+            PasswordCheckFactory.getOrCreate(mSettingsLauncher).startCheck();
+            return;
+        }
+
+        WeakReference<SafetyCheckMediator> weakRef = new WeakReference(this);
+        PasswordManagerHelper.runPasswordCheckupInBackground(PasswordCheckReferrer.SAFETY_CHECK,
+                mPasswordCheckupHelper, getSyncingAccount(),
+                unused
+                -> {
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onPasswordCheckFinished();
+                },
+                error -> {
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onPasswordCheckFailed(error);
+                });
+    }
+
+    private boolean hasSavedPasswords() {
+        if (mPasswordCheckupHelper == null) {
+            return PasswordCheckFactory.getOrCreate(mSettingsLauncher).getSavedPasswordsCount() > 0;
+        }
+        return mPasswordStoreBridge.getPasswordStoreCredentialsCount() > 0;
+    }
+
+    /**
+     * Following methods are used only with the new PasswordCheck API.
+     */
+
+    private void onBreachedCredentialsObtained(Integer count, boolean duringCheck) {
+        if (mModel == null) return;
+
+        if (duringCheck) {
+            // Hand off the completed state to the method for handling loaded passwords data.
+            mLoadStage = PasswordCheckLoadStage.COMPLETED_WAIT_FOR_LOAD;
+        }
+
+        mBreachedCredentialsCount = count;
+        mLeaksLoaded = true;
+        if (mPasswordsLoaded) {
+            determinePasswordStateOnLoadComplete();
+        }
+    }
+
+    private void onPasswordCheckFinished() {
+        if (mModel == null) return;
+
+        WeakReference<SafetyCheckMediator> weakRef = new WeakReference(this);
+        PasswordManagerHelper.getBreachedCredentialsCount(PasswordCheckReferrer.SAFETY_CHECK,
+                mPasswordCheckupHelper, getSyncingAccount(),
+                count
+                -> {
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onBreachedCredentialsObtained(count, true);
+                },
+                error -> {
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onPasswordCheckFailed(error);
+                });
+    }
+
+    private void onPasswordCheckFailed(Exception error) {
+        if (mModel == null) return;
+
+        setRunnablePasswords(() -> {
+            if (mModel != null) {
+                RecordHistogram.recordEnumeratedHistogram("Settings.SafetyCheck.PasswordsResult",
+                        SafetyCheckProperties.passwordsStateToNative(PasswordsState.ERROR),
+                        PasswordsStatus.MAX_VALUE + 1);
+                mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.ERROR);
+                updatePasswordElementClickDestination();
+            }
+        });
+    }
+
+    private Optional<String> getSyncingAccount() {
+        return PasswordManagerHelper.hasChosenToSyncPasswords(SyncService.get())
+                ? Optional.of(CoreAccountInfo.getEmailFrom(SyncService.get().getAccountInfo()))
+                : Optional.absent();
     }
 }

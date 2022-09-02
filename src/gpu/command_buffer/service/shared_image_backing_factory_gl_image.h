@@ -25,7 +25,6 @@ class ProgressReporter;
 namespace gpu {
 class SharedImageBacking;
 class GpuDriverBugWorkarounds;
-struct GpuFeatureInfo;
 struct GpuPreferences;
 struct Mailbox;
 class ImageFactory;
@@ -35,11 +34,17 @@ class ImageFactory;
 class GPU_GLES2_EXPORT SharedImageBackingFactoryGLImage
     : public SharedImageBackingFactoryGLCommon {
  public:
+  // for_shared_memory_gmbs is a temporary parameter which is used for checking
+  // if gfx::SHARED_MEMORY_BUFFER is supported by the factory.
+  // It is used for migrating GLImage backing, for part that works with
+  // SharedMemory GMB with SharedMemoryBacking and Composite backings, and all
+  // other parts with OzoneBacking and other backings.
   SharedImageBackingFactoryGLImage(const GpuPreferences& gpu_preferences,
                                    const GpuDriverBugWorkarounds& workarounds,
-                                   const GpuFeatureInfo& gpu_feature_info,
+                                   const gles2::FeatureInfo* feature_info,
                                    ImageFactory* image_factory,
-                                   gl::ProgressReporter* progress_reporter);
+                                   gl::ProgressReporter* progress_reporter,
+                                   const bool for_shared_memory_gmbs);
   ~SharedImageBackingFactoryGLImage() override;
 
   // SharedImageBackingFactory implementation.
@@ -114,6 +119,9 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLImage
 
   // Factory used to generate GLImages for SCANOUT backings.
   const raw_ptr<ImageFactory> image_factory_ = nullptr;
+
+  // Whether factory is specifically for SHARED_MEMORY Gmbs
+  const bool for_shared_memory_gmbs_ = false;
 
   BufferFormatInfo buffer_format_info_[viz::RESOURCE_FORMAT_MAX + 1];
   GpuMemoryBufferFormatSet gpu_memory_buffer_formats_;

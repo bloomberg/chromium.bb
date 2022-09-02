@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_piece.h"
 #import "ios/chrome/browser/ui/list_model/list_item.h"
@@ -76,9 +75,9 @@ TEST_F(ListModelTest, GenericModelBoxing) {
   // |generalModel| is a superclass of |specificModel|. So specificModel can be
   // boxed into generalModel, but not the other way around.
   // specificModel = generalModel would not compile.
-  ListModel<ListItem*, ListItem*>* generalModel = specificModel;
+  [[maybe_unused]] ListModel<ListItem*, ListItem*>* generalModel =
+      specificModel;
   generalModel = nil;
-  ALLOW_UNUSED_LOCAL(generalModel);
 }
 
 TEST_F(ListModelTest, EmptyModel) {
@@ -119,7 +118,8 @@ TEST_F(ListModelTest, SingleSection) {
   EXPECT_EQ(3, [model numberOfItemsInSection:0]);
 
   // Check the section identifier <-> section correspondance methods.
-  EXPECT_EQ(SectionIdentifierCheese, [model sectionIdentifierForSection:0]);
+  EXPECT_EQ(SectionIdentifierCheese,
+            [model sectionIdentifierForSectionIndex:0]);
   EXPECT_EQ(0, [model sectionForSectionIdentifier:SectionIdentifierCheese]);
 
   // Check the item type <-> item correspondance methods.
@@ -173,9 +173,11 @@ TEST_F(ListModelTest, MultipleSections) {
   EXPECT_EQ(2, [model numberOfItemsInSection:1]);
 
   // Check the section identifier <-> section correspondance methods.
-  EXPECT_EQ(SectionIdentifierCheese, [model sectionIdentifierForSection:0]);
+  EXPECT_EQ(SectionIdentifierCheese,
+            [model sectionIdentifierForSectionIndex:0]);
   EXPECT_EQ(0, [model sectionForSectionIdentifier:SectionIdentifierCheese]);
-  EXPECT_EQ(SectionIdentifierWeasley, [model sectionIdentifierForSection:1]);
+  EXPECT_EQ(SectionIdentifierWeasley,
+            [model sectionIdentifierForSectionIndex:1]);
   EXPECT_EQ(1, [model sectionForSectionIdentifier:SectionIdentifierWeasley]);
 
   // Check the item type <-> item correspondance methods.
@@ -686,10 +688,10 @@ TEST_F(ListModelTest, Headers) {
 
   EXPECT_EQ(cheeseHeader,
             [model headerForSectionWithIdentifier:SectionIdentifierCheese]);
-  EXPECT_EQ(cheeseHeader, [model headerForSection:cheeseSection]);
+  EXPECT_EQ(cheeseHeader, [model headerForSectionIndex:cheeseSection]);
 
   EXPECT_FALSE([model headerForSectionWithIdentifier:SectionIdentifierWeasley]);
-  EXPECT_FALSE([model headerForSection:weasleySection]);
+  EXPECT_FALSE([model headerForSectionIndex:weasleySection]);
 }
 
 TEST_F(ListModelTest, Footers) {
@@ -716,11 +718,11 @@ TEST_F(ListModelTest, Footers) {
       [model sectionForSectionIdentifier:SectionIdentifierWeasley];
 
   EXPECT_FALSE([model footerForSectionWithIdentifier:SectionIdentifierCheese]);
-  EXPECT_FALSE([model footerForSection:cheeseSection]);
+  EXPECT_FALSE([model footerForSectionIndex:cheeseSection]);
 
   EXPECT_EQ(weasleyFooter,
             [model footerForSectionWithIdentifier:SectionIdentifierWeasley]);
-  EXPECT_EQ(weasleyFooter, [model footerForSection:weasleySection]);
+  EXPECT_EQ(weasleyFooter, [model footerForSectionIndex:weasleySection]);
 }
 
 // Tests -[ListModel indexPathForItemType:].

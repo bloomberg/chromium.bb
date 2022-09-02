@@ -8,7 +8,9 @@
 #include <set>
 #include <utility>
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include "build/build_config.h"
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <sys/stat.h>
 #endif
 
@@ -420,13 +422,17 @@ ExternalMojoBroker::ExternalMojoBroker(const std::string& broker_path) {
 
   mojo::NamedPlatformChannel::Options channel_options;
   channel_options.server_name = broker_path;
+#if BUILDFLAG(IS_ANDROID)
+  // On Android, use the abstract namespace to avoid filesystem access.
+  channel_options.use_abstract_namespace = true;
+#endif
   mojo::NamedPlatformChannel named_channel(channel_options);
 
   mojo::PlatformChannelServerEndpoint server_endpoint =
       named_channel.TakeServerEndpoint();
   DCHECK(server_endpoint.is_valid());
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   chmod(broker_path.c_str(), 0770);
 #endif
 

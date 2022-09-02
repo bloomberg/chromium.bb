@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -32,7 +33,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "base/mac/foundation_util.h"
 #endif
 
@@ -92,9 +93,9 @@ const std::vector<base::FilePath> GetTestFiles() {
   }
   std::sort(files.begin(), files.end());
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   base::mac::ClearAmIBundledCache();
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 
   return files;
 }
@@ -170,6 +171,10 @@ std::vector<AutofillProfile*> PersonalDataManagerMock::GetProfiles() const {
   return result;
 }
 
+FormStructureTestApi test_api(FormStructure* form_structure) {
+  return FormStructureTestApi(form_structure);
+}
+
 }  // namespace
 
 // A data-driven test for verifying merging of Autofill profiles. Each input is
@@ -227,6 +232,7 @@ AutofillMergeTest::~AutofillMergeTest() = default;
 
 void AutofillMergeTest::SetUp() {
   test::DisableSystemServices(nullptr);
+  personal_data_.set_auto_accept_address_imports_for_testing(true);
   form_data_importer_ = std::make_unique<FormDataImporter>(
       &autofill_client_,
       /*payments::PaymentsClient=*/nullptr, &personal_data_, "en");
@@ -291,9 +297,9 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
             const_cast<AutofillField*>(form_structure.field(j));
         ServerFieldType type =
             StringToFieldType(base::UTF16ToUTF8(field->name));
-        field->set_heuristic_type(type);
+        field->set_heuristic_type(GetActivePatternSource(), type);
       }
-      form_structure.IdentifySections(false);
+      test_api(&form_structure).IdentifySections(false);
 
       // Import the profile.
       std::unique_ptr<CreditCard> imported_credit_card;

@@ -153,11 +153,11 @@ RetainPtr<CFX_DIBitmap> XFA_LoadImageFromBuffer(
   CFX_DIBAttribute dibAttr;
   pProgressiveDecoder->LoadImageInfo(pImageFileRead, type, &dibAttr, false);
   switch (dibAttr.m_wDPIUnit) {
-    case FXCODEC_RESUNIT_CENTIMETER:
+    case CFX_DIBAttribute::kResUnitCentimeter:
       dibAttr.m_nXDPI = static_cast<int32_t>(dibAttr.m_nXDPI * 2.54f);
       dibAttr.m_nYDPI = static_cast<int32_t>(dibAttr.m_nYDPI * 2.54f);
       break;
-    case FXCODEC_RESUNIT_METER:
+    case CFX_DIBAttribute::kResUnitMeter:
       dibAttr.m_nXDPI =
           static_cast<int32_t>(dibAttr.m_nXDPI / (float)100 * 2.54f);
       dibAttr.m_nYDPI =
@@ -452,11 +452,6 @@ bool CXFA_FFWidget::OnKillFocus(CXFA_FFWidget* pNewWidget) {
 
 bool CXFA_FFWidget::OnKeyDown(XFA_FWL_VKEYCODE dwKeyCode,
                               Mask<XFA_FWL_KeyFlag> dwFlags) {
-  return false;
-}
-
-bool CXFA_FFWidget::OnKeyUp(XFA_FWL_VKEYCODE dwKeyCode,
-                            Mask<XFA_FWL_KeyFlag> dwFlags) {
   return false;
 }
 

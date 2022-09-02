@@ -13,12 +13,9 @@
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/consent_auditor/consent_auditor.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/user_consent_specifics.pb.h"
 #include "content/public/test/browser_test.h"
 
-using consent_auditor::ConsentStatus;
-using consent_auditor::Feature;
 using fake_server::FakeServer;
 using sync_pb::SyncEntity;
 using sync_pb::UserConsentSpecifics;

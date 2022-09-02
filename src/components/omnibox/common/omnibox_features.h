@@ -13,11 +13,11 @@ namespace omnibox {
 // Please do not add more features to this "big blob" list.
 // Instead, use the categorized and alphabetized lists below this "big blob".
 // You can create a new category if none of the existing ones fit.
-extern const base::Feature kOmniboxTabSwitchSuggestions;
 extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kImageSearchSuggestionThumbnail;
 extern const base::Feature kDisplayTitleForCurrentUrl;
 extern const base::Feature kOmniboxRemoveSuggestionsFromClipboard;
+extern const base::Feature kAndroidAuxiliarySearch;
 
 // Flags that affect the "twiddle" step of AutocompleteResult, i.e. SortAndCull.
 // TODO(tommycli): There are more flags above that belong in this category.
@@ -34,16 +34,18 @@ extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 extern const bool kOmniboxMaxURLMatchesEnabledByDefault;
 extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kDynamicMaxAutocomplete;
+extern const base::Feature kRetainSuggestionsWithHeaders;
 
-// On-Focus Suggestions a.k.a. ZeroSuggest.
+// Local history zero-prefix (aka zero-suggest) and prefix suggestions.
 extern const base::Feature kClobberTriggersContextualWebZeroSuggest;
 extern const base::Feature kClobberTriggersSRPZeroSuggest;
+extern const base::Feature kLocalHistorySuggestRevamp;
+extern const base::Feature kLocalHistoryZeroSuggest;
 extern const base::Feature kOmniboxLocalZeroSuggestAgeThreshold;
 extern const base::Feature kOmniboxTrendingZeroPrefixSuggestionsOnNTP;
 extern const base::Feature kOnFocusSuggestionsContextualWeb;
 extern const base::Feature kOnFocusSuggestionsContextualWebAllowSRP;
 extern const base::Feature kOnFocusSuggestionsContextualWebOnContent;
-extern const base::Feature kLocalHistoryZeroSuggest;
 extern const base::Feature kZeroSuggestPrefetching;
 // Related, kMaxZeroSuggestMatches.
 
@@ -57,7 +59,7 @@ extern const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile;
 extern const base::Feature kDisableCGIParamMatching;
 extern const base::Feature kShortBookmarkSuggestions;
 extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
-extern const base::Feature kPreserveLongerShortcutsText;
+extern const base::Feature kAggregateShortcuts;
 extern const base::Feature kBookmarkPaths;
 
 // Document provider
@@ -73,22 +75,21 @@ extern const base::Feature kRichAutocompletion;
 extern const base::Feature kNtpRealboxPedals;
 extern const base::Feature kNtpRealboxSuggestionAnswers;
 extern const base::Feature kNtpRealboxTailSuggest;
-extern const base::Feature kOmniboxPedalsAndroidBatch1;
-extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
-extern const base::Feature kOmniboxPedalsBatch3;
-extern const base::Feature kOmniboxPedalsBatch3NonEnglish;
-extern const base::Feature kOmniboxPedalsTranslationConsole;
-extern const base::Feature kOmniboxKeywordSearchButton;
-extern const base::Feature kWebUIOmniboxPopup;
+extern const base::Feature kOmniboxFuzzyUrlSuggestions;
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).
 extern const base::Feature kOmniboxAssistantVoiceSearch;
 
+// Omnibox & Suggestions UI - these affect both the omnibox and the suggestions
+// popup.
+extern const base::Feature kClosePopupWithEscape;
+extern const base::Feature kBlurWithEscape;
+
 // Settings Page - these affect the appearance of the Search Engines settings
 // page
-extern const base::Feature kKeywordSpaceTriggeringSetting;
 extern const base::Feature kActiveSearchEngines;
+extern const base::Feature kSiteSearchStarterPack;
 
 // Experiment to introduce new security indicators for HTTPS.
 extern const base::Feature kUpdatedConnectionSecurityIndicators;
@@ -97,6 +98,10 @@ extern const base::Feature kUpdatedConnectionSecurityIndicators;
 extern const base::Feature kDefaultTypedNavigationsToHttps;
 extern const char kDefaultTypedNavigationsToHttpsTimeoutParam[];
 extern const base::Feature kOmniboxSpareRenderer;
+
+// Omnibox Logging.
+extern const base::Feature kReportAssistedQueryStats;
+extern const base::Feature kReportSearchboxStats;
 
 }  // namespace omnibox
 

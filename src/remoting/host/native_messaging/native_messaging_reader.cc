@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
@@ -23,12 +22,12 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 
@@ -116,7 +115,7 @@ void NativeMessagingReader::Core::ReadMessage() {
 
     std::string message_json(message_length, '\0');
     read_result =
-        read_stream_.ReadAtCurrentPos(base::data(message_json), message_length);
+        read_stream_.ReadAtCurrentPos(std::data(message_json), message_length);
     if (read_result != static_cast<int>(message_length)) {
       LOG(ERROR) << "Failed to read message body, read returned "
                  << read_result;
@@ -160,7 +159,7 @@ NativeMessagingReader::NativeMessagingReader(base::File file)
 NativeMessagingReader::~NativeMessagingReader() {
   read_task_runner_->DeleteSoon(FROM_HERE, core_.release());
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // The ReadMessage() method uses a blocking read (on all platforms) which
   // cause a deadlock if the owning thread attempts to destroy this object
   // while there is a read operation pending.
@@ -181,7 +180,7 @@ NativeMessagingReader::~NativeMessagingReader() {
       PLOG(ERROR) << "CancelSynchronousIo() failed";
     }
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 void NativeMessagingReader::Start(const MessageCallback& message_callback,

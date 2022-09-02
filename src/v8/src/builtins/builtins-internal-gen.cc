@@ -23,13 +23,6 @@ namespace v8 {
 namespace internal {
 
 // -----------------------------------------------------------------------------
-// Stack checks.
-
-void Builtins::Generate_StackCheck(MacroAssembler* masm) {
-  masm->TailCallRuntime(Runtime::kStackGuard);
-}
-
-// -----------------------------------------------------------------------------
 // TurboFan support builtins.
 
 TF_BUILTIN(CopyFastSmiOrObjectElements, CodeStubAssembler) {
@@ -111,8 +104,7 @@ TF_BUILTIN(DebugBreakTrampoline, CodeStubAssembler) {
   BIND(&tailcall_to_shared);
   // Tail call into code object on the SharedFunctionInfo.
   TNode<CodeT> code = GetSharedFunctionInfoCode(shared);
-  // TODO(v8:11880): call CodeT directly.
-  TailCallJSCode(FromCodeT(code), context, function, new_target, arg_count);
+  TailCallJSCode(code, context, function, new_target, arg_count);
 }
 
 class WriteBarrierCodeStubAssembler : public CodeStubAssembler {
@@ -246,7 +238,7 @@ class WriteBarrierCodeStubAssembler : public CodeStubAssembler {
                         TruncateIntPtrToInt32(new_cell_value));
   }
 
-  void GenerationalWriteBarrier(SaveFPRegsMode fp_mode) {
+  void WriteBarrier(SaveFPRegsMode fp_mode) {
     Label incremental_wb(this), test_old_to_young_flags(this),
         remembered_set_only(this), remembered_set_and_incremental_wb(this),
         next(this);
@@ -348,20 +340,13 @@ class WriteBarrierCodeStubAssembler : public CodeStubAssembler {
     BIND(&next);
   }
 
-  void GenerateRecordWrite(RememberedSetAction rs_mode,
-                           SaveFPRegsMode fp_mode) {
+  void GenerateRecordWrite(SaveFPRegsMode fp_mode) {
     if (V8_DISABLE_WRITE_BARRIERS_BOOL) {
       Return(TrueConstant());
       return;
     }
-    switch (rs_mode) {
-      case RememberedSetAction::kEmit:
-        GenerationalWriteBarrier(fp_mode);
-        break;
-      case RememberedSetAction::kOmit:
-        IncrementalWriteBarrier(fp_mode);
-        break;
-    }
+
+    WriteBarrier(fp_mode);
     IncrementCounter(isolate()->counters()->write_barriers(), 1);
     Return(TrueConstant());
   }
@@ -391,22 +376,12 @@ class WriteBarrierCodeStubAssembler : public CodeStubAssembler {
   }
 };
 
-TF_BUILTIN(RecordWriteEmitRememberedSetSaveFP, WriteBarrierCodeStubAssembler) {
-  GenerateRecordWrite(RememberedSetAction::kEmit, SaveFPRegsMode::kSave);
+TF_BUILTIN(RecordWriteSaveFP, WriteBarrierCodeStubAssembler) {
+  GenerateRecordWrite(SaveFPRegsMode::kSave);
 }
 
-TF_BUILTIN(RecordWriteOmitRememberedSetSaveFP, WriteBarrierCodeStubAssembler) {
-  GenerateRecordWrite(RememberedSetAction::kOmit, SaveFPRegsMode::kSave);
-}
-
-TF_BUILTIN(RecordWriteEmitRememberedSetIgnoreFP,
-           WriteBarrierCodeStubAssembler) {
-  GenerateRecordWrite(RememberedSetAction::kEmit, SaveFPRegsMode::kIgnore);
-}
-
-TF_BUILTIN(RecordWriteOmitRememberedSetIgnoreFP,
-           WriteBarrierCodeStubAssembler) {
-  GenerateRecordWrite(RememberedSetAction::kOmit, SaveFPRegsMode::kIgnore);
+TF_BUILTIN(RecordWriteIgnoreFP, WriteBarrierCodeStubAssembler) {
+  GenerateRecordWrite(SaveFPRegsMode::kIgnore);
 }
 
 TF_BUILTIN(EphemeronKeyBarrierSaveFP, WriteBarrierCodeStubAssembler) {
@@ -725,7 +700,7 @@ TF_BUILTIN(DeleteProperty, DeletePropertyBaseAssembler) {
 
     BIND(&dont_delete);
     {
-      STATIC_ASSERT(LanguageModeSize == 2);
+      static_assert(LanguageModeSize == 2);
       GotoIf(SmiNotEqual(language_mode, SmiConstant(LanguageMode::kSloppy)),
              &slow);
       Return(FalseConstant());
@@ -766,10 +741,21 @@ class SetOrCopyDataPropertiesAssembler : public CodeStubAssembler {
       : CodeStubAssembler(state) {}
 
  protected:
-  TNode<Object> SetOrCopyDataProperties(TNode<Context> context,
-                                        TNode<JSReceiver> target,
-                                        TNode<Object> source, Label* if_runtime,
-                                        bool use_set = true) {
+  TNode<JSObject> AllocateJsObjectTarget(TNode<Context> context) {
+    const TNode<NativeContext> native_context = LoadNativeContext(context);
+    const TNode<JSFunction> object_function = Cast(
+        LoadContextElement(native_context, Context::OBJECT_FUNCTION_INDEX));
+    const TNode<Map> map =
+        Cast(LoadJSFunctionPrototypeOrInitialMap(object_function));
+    const TNode<JSObject> target = AllocateJSObjectFromMap(map);
+    return target;
+  }
+  TNode<Object> SetOrCopyDataProperties(
+      TNode<Context> context, TNode<JSReceiver> target, TNode<Object> source,
+      Label* if_runtime,
+      base::Optional<TNode<IntPtrT>> excluded_property_count = base::nullopt,
+      base::Optional<TNode<IntPtrT>> excluded_property_base = base::nullopt,
+      bool use_set = true) {
     Label if_done(this), if_noelements(this),
         if_sourcenotjsobject(this, Label::kDeferred);
 
@@ -792,12 +778,12 @@ class SetOrCopyDataPropertiesAssembler : public CodeStubAssembler {
 
     BIND(&if_noelements);
     {
-      // If the target is deprecated, the object will be updated on first store.
-      // If the source for that store equals the target, this will invalidate
-      // the cached representation of the source. Handle this case in runtime.
+      // If the target is deprecated, the object will be updated on first
+      // store. If the source for that store equals the target, this will
+      // invalidate the cached representation of the source. Handle this case
+      // in runtime.
       TNode<Map> target_map = LoadMap(target);
       GotoIf(IsDeprecatedMap(target_map), if_runtime);
-
       if (use_set) {
         TNode<BoolT> target_is_simple_receiver = IsSimpleObjectMap(target_map);
         ForEachEnumerableOwnProperty(
@@ -812,8 +798,27 @@ class SetOrCopyDataPropertiesAssembler : public CodeStubAssembler {
         ForEachEnumerableOwnProperty(
             context, source_map, CAST(source), kEnumerationOrder,
             [=](TNode<Name> key, TNode<Object> value) {
-              CallBuiltin(Builtin::kSetPropertyInLiteral, context, target, key,
+              Label skip(this);
+              if (excluded_property_count.has_value()) {
+                BuildFastLoop<IntPtrT>(
+                    IntPtrConstant(0), excluded_property_count.value(),
+                    [&](TNode<IntPtrT> index) {
+                      auto offset = Signed(TimesSystemPointerSize(index));
+                      TNode<IntPtrT> location = Signed(
+                          IntPtrSub(excluded_property_base.value(), offset));
+                      auto property = LoadFullTagged(location);
+
+                      Label continue_label(this);
+                      BranchIfSameValue(key, property, &skip, &continue_label);
+                      Bind(&continue_label);
+                    },
+                    1, IndexAdvanceMode::kPost);
+              }
+
+              CallBuiltin(Builtin::kCreateDataProperty, context, target, key,
                           value);
+              Goto(&skip);
+              Bind(&skip);
             },
             if_runtime);
       }
@@ -834,11 +839,61 @@ class SetOrCopyDataPropertiesAssembler : public CodeStubAssembler {
     }
 
     BIND(&if_done);
-    return UndefinedConstant();
+    return target;
   }
 };
 
 }  // namespace
+
+TF_BUILTIN(CopyDataPropertiesWithExcludedPropertiesOnStack,
+           SetOrCopyDataPropertiesAssembler) {
+  auto source = UncheckedParameter<Object>(Descriptor::kSource);
+  auto excluded_property_count =
+      UncheckedParameter<IntPtrT>(Descriptor::kExcludedPropertyCount);
+  auto excluded_properties =
+      UncheckedParameter<IntPtrT>(Descriptor::kExcludedPropertyBase);
+  auto context = Parameter<Context>(Descriptor::kContext);
+
+  // first check undefine or null
+  Label if_runtime(this, Label::kDeferred);
+  GotoIf(IsNullOrUndefined(source), &if_runtime);
+
+  TNode<JSReceiver> target = AllocateJsObjectTarget(context);
+  Return(SetOrCopyDataProperties(context, target, source, &if_runtime,
+                                 excluded_property_count, excluded_properties,
+                                 false));
+
+  BIND(&if_runtime);
+  // The excluded_property_base is passed as a raw stack pointer, but is
+  // bitcasted to a Smi . This is safe because the stack pointer is aligned, so
+  // it looks like a Smi to the GC.
+  CSA_DCHECK(this, IntPtrEqual(WordAnd(excluded_properties,
+                                       IntPtrConstant(kSmiTagMask)),
+                               IntPtrConstant(kSmiTag)));
+  TailCallRuntime(Runtime::kCopyDataPropertiesWithExcludedPropertiesOnStack,
+                  context, source, SmiTag(excluded_property_count),
+                  BitcastWordToTaggedSigned(excluded_properties));
+}
+
+TF_BUILTIN(CopyDataPropertiesWithExcludedProperties,
+           SetOrCopyDataPropertiesAssembler) {
+  auto source = UncheckedParameter<Object>(Descriptor::kSource);
+
+  auto excluded_property_count_smi =
+      UncheckedParameter<Smi>(Descriptor::kExcludedPropertyCount);
+  auto context = Parameter<Context>(Descriptor::kContext);
+
+  auto excluded_property_count = SmiToIntPtr(excluded_property_count_smi);
+  CodeStubArguments arguments(this, excluded_property_count);
+
+  TNode<IntPtrT> excluded_properties =
+      ReinterpretCast<IntPtrT>(arguments.AtIndexPtr(
+          IntPtrSub(excluded_property_count, IntPtrConstant(2))));
+
+  arguments.PopAndReturn(CallBuiltin(
+      Builtin::kCopyDataPropertiesWithExcludedPropertiesOnStack, context,
+      source, excluded_property_count, excluded_properties));
+}
 
 // ES #sec-copydataproperties
 TF_BUILTIN(CopyDataProperties, SetOrCopyDataPropertiesAssembler) {
@@ -849,7 +904,9 @@ TF_BUILTIN(CopyDataProperties, SetOrCopyDataPropertiesAssembler) {
   CSA_DCHECK(this, TaggedNotEqual(target, source));
 
   Label if_runtime(this, Label::kDeferred);
-  Return(SetOrCopyDataProperties(context, target, source, &if_runtime, false));
+  SetOrCopyDataProperties(context, target, source, &if_runtime, base::nullopt,
+                          base::nullopt, false);
+  Return(UndefinedConstant());
 
   BIND(&if_runtime);
   TailCallRuntime(Runtime::kCopyDataProperties, context, target, source);
@@ -862,7 +919,9 @@ TF_BUILTIN(SetDataProperties, SetOrCopyDataPropertiesAssembler) {
 
   Label if_runtime(this, Label::kDeferred);
   GotoIfForceSlowPath(&if_runtime);
-  Return(SetOrCopyDataProperties(context, target, source, &if_runtime, true));
+  SetOrCopyDataProperties(context, target, source, &if_runtime, base::nullopt,
+                          base::nullopt, true);
+  Return(UndefinedConstant());
 
   BIND(&if_runtime);
   TailCallRuntime(Runtime::kSetDataProperties, context, target, source);
@@ -989,7 +1048,7 @@ TF_BUILTIN(AdaptorWithBuiltinExitFrame, CodeStubAssembler) {
       Int32Constant(BuiltinExitFrameConstants::kNumExtraArgsWithoutReceiver));
 
   const bool builtin_exit_frame = true;
-  TNode<Code> code =
+  TNode<CodeT> code =
       HeapConstant(CodeFactory::CEntry(isolate(), 1, SaveFPRegsMode::kIgnore,
                                        ArgvMode::kStack, builtin_exit_frame));
 
@@ -1002,6 +1061,11 @@ TF_BUILTIN(AdaptorWithBuiltinExitFrame, CodeStubAssembler) {
                SmiFromInt32(argc),  // additional stack argument 2
                target,              // additional stack argument 3
                new_target);         // additional stack argument 4
+}
+
+TF_BUILTIN(NewHeapNumber, CodeStubAssembler) {
+  auto val = UncheckedParameter<Float64T>(Descriptor::kValue);
+  Return(ChangeFloat64ToTagged(val));
 }
 
 TF_BUILTIN(AllocateInYoungGeneration, CodeStubAssembler) {
@@ -1279,14 +1343,14 @@ TF_BUILTIN(SetProperty, CodeStubAssembler) {
 // being initialized, and have not yet been made accessible to the user. Thus,
 // any operation here should be unobservable until after the object has been
 // returned.
-TF_BUILTIN(SetPropertyInLiteral, CodeStubAssembler) {
+TF_BUILTIN(CreateDataProperty, CodeStubAssembler) {
   auto context = Parameter<Context>(Descriptor::kContext);
   auto receiver = Parameter<JSObject>(Descriptor::kReceiver);
   auto key = Parameter<Object>(Descriptor::kKey);
   auto value = Parameter<Object>(Descriptor::kValue);
 
-  KeyedStoreGenericGenerator::SetPropertyInLiteral(state(), context, receiver,
-                                                   key, value);
+  KeyedStoreGenericGenerator::CreateDataProperty(state(), context, receiver,
+                                                 key, value);
 }
 
 TF_BUILTIN(InstantiateAsmJs, CodeStubAssembler) {
@@ -1328,8 +1392,7 @@ TF_BUILTIN(InstantiateAsmJs, CodeStubAssembler) {
   // On failure, tail call back to regular JavaScript by re-calling the given
   // function which has been reset to the compile lazy builtin.
 
-  // TODO(v8:11880): call CodeT directly.
-  TNode<Code> code = FromCodeT(LoadJSFunctionCode(function));
+  TNode<CodeT> code = LoadJSFunctionCode(function);
   TailCallJSCode(code, context, function, new_target, arg_count);
 }
 

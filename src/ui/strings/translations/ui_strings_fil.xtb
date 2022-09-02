@@ -35,7 +35,7 @@
 <translation id="2006524834898217237">Siguraduhing nakakonekta ang device na ito sa Internet.</translation>
 <translation id="208586643495776849">Pakisubukang muli</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 araw}one{# araw}other{# na araw}}</translation>
-<translation id="2148716181193084225">Ngayon</translation>
+<translation id="2148716181193084225">Ngayong Araw</translation>
 <translation id="2161656808144014275">Text</translation>
 <translation id="2168039046890040389">Pataas</translation>
 <translation id="2190355936436201913">(walang laman)</translation>
@@ -52,6 +52,7 @@
 <translation id="2445449901874883781">Gumamit ng mataas na density</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2497284189126895209">Lahat ng Mga File</translation>
+<translation id="2498950423397131220">Float</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Nakumpleto na ang pag-calibrate</translation>
 <translation id="252373100621549798">Hindi Kilalang Display</translation>
@@ -62,7 +63,6 @@
 <translation id="2666092431469916601">Tuktok</translation>
 <translation id="2701330563083355633">Ibinahagi mula kay <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Bago</translation>
-<translation id="2743387203779672305">Kopyahin sa clipboard</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 taon ang nakalipas}one{# taon ang nakalipas}other{# na taon ang nakalipas}}</translation>
 <translation id="2878511608894704031">I-delete Lahat</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{sa loob ng 1 araw}one{sa loob ng # araw}other{sa loob ng # na araw}}</translation>
@@ -94,12 +94,14 @@
 <translation id="3889424535448813030">Right Arrow</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Al&amp;isin</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">Tamang Lamang</translation>
 <translation id="3994749195054421561">Pinagbukod-bukod sa pataas na ayos ang column na <ph name="COLUMN_NAME" />.</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 Hindi Pa Nababasang Notification}one{# Hindi Pa Nababasang Notification}other{# na Hindi Pa Nababasang Notification}}</translation>
-<translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 buwan ang nakalipas}one{# buwan ang nakalipas}other{# na buwan ang nakalipas}}</translation>
 <translation id="4289300219472526559">Simulan ang Pagsasalita</translation>
+<translation id="4289540628985791613">Pangkalahatang-ideya</translation>
 <translation id="4306392492252714209">Alisin sa clipboard.</translation>
 <translation id="4491109536499578614">Larawan</translation>
 <translation id="4565377596337484307">Itago ang password</translation>
@@ -203,7 +205,6 @@
 <translation id="8730621377337864115">Tapos na</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 oras}one{# oras}other{# na oras}}</translation>
 <translation id="8798099450830957504">Default</translation>
-<translation id="883911313571074303">I-annotate ang larawan</translation>
 <translation id="8841375032071747811">Button na Bumalik</translation>
 <translation id="8867568208303837180">Ipinapadala...</translation>
 <translation id="8876215549894133151">Format:</translation>

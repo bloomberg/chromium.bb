@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 
+#include "chromeos/ui/base/window_state_type.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
+#include "components/exo/wayland/wayland_display_observer.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -17,11 +20,13 @@ struct wl_resource;
 
 namespace exo {
 
+class ShellSurface;
 class ShellSurfaceBase;
 
 namespace wayland {
+class SerialTracker;
 
-constexpr uint32_t kZAuraShellVersion = 28;
+constexpr uint32_t kZAuraShellVersion = 34;
 
 // Adds bindings to the Aura Shell. Normally this implies Ash on ChromeOS
 // builds. On non-ChromeOS builds the protocol provides access to Aura windowing
@@ -73,6 +78,7 @@ class AuraSurface : public SurfaceObserver,
   void OnWindowOcclusionChanged(Surface* surface) override;
   void OnFrameLockingChanged(Surface* surface, bool lock) override;
   void OnDeskChanged(Surface* surface, int state) override;
+  void ThrottleFrameRate(bool on) override;
 
   // Overridden from ActivationChangeObserver:
   void OnWindowActivating(ActivationReason reason,
@@ -99,16 +105,39 @@ class AuraSurface : public SurfaceObserver,
 // Provides an implementation for top level operations on the shell.
 class AuraToplevel {
  public:
-  AuraToplevel(ShellSurfaceBase* shell_surface);
+  AuraToplevel(ShellSurface* shell_surface,
+               SerialTracker* const serial_tracker,
+               wl_resource* aura_toplevel_resource,
+               wl_resource* xdg_toplevel_resource);
+
   AuraToplevel(const AuraToplevel&) = delete;
   AuraToplevel& operator=(const AuraToplevel&) = delete;
-  ~AuraToplevel();
+
+  virtual ~AuraToplevel();
 
   void SetOrientationLock(uint32_t lock_type);
   void SetClientSubmitsSurfacesInPixelCoordinates(bool enable);
+  void SetClientUsesScreenCoordinates();
+  void SetWindowBounds(int32_t x, int32_t y, int32_t width, int32_t height);
+  void SetRestoreInfo(int32_t restore_session_id, int32_t restore_window_id);
+  void SetRestoreInfoWithWindowIdSource(
+      int32_t restore_session_id,
+      const std::string& restore_window_id_source);
+  void SetSystemModal(bool modal);
 
- private:
-  ShellSurfaceBase* shell_surface_;
+  void OnConfigure(const gfx::Rect& bounds,
+                   chromeos::WindowStateType state_type,
+                   bool resizing,
+                   bool activated);
+  virtual void OnOriginChange(const gfx::Point& origin);
+
+  ShellSurface* shell_surface_;
+  SerialTracker* const serial_tracker_;
+  wl_resource* xdg_toplevel_resource_;
+  wl_resource* aura_toplevel_resource_;
+  bool supports_window_bounds_ = false;
+
+  base::WeakPtrFactory<AuraToplevel> weak_ptr_factory_{this};
 };
 
 class AuraPopup {
@@ -122,6 +151,27 @@ class AuraPopup {
 
  private:
   ShellSurfaceBase* shell_surface_;
+};
+
+class AuraOutput : public WaylandDisplayObserver {
+ public:
+  explicit AuraOutput(wl_resource* resource);
+
+  AuraOutput(const AuraOutput&) = delete;
+  AuraOutput& operator=(const AuraOutput&) = delete;
+
+  ~AuraOutput() override;
+
+  // Overridden from WaylandDisplayObserver:
+  bool SendDisplayMetrics(const display::Display& display,
+                          uint32_t changed_metrics) override;
+
+ protected:
+  virtual void SendInsets(const gfx::Insets& insets);
+  virtual void SendLogicalTransform(int32_t transform);
+
+ private:
+  wl_resource* const resource_;
 };
 
 }  // namespace wayland

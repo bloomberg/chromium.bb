@@ -51,7 +51,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.content_public.browser.test.util.RenderProcessHostUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -235,7 +234,7 @@ public class AwContentsTest {
             Assert.assertEquals(awContents.getEffectiveBackgroundColorForTesting(), Color.WHITE);
 
             awSettings.setForceDarkMode(AwSettings.FORCE_DARK_ON);
-            Assert.assertTrue(awSettings.isDarkMode());
+            Assert.assertTrue(awSettings.isForceDarkApplied());
             Assert.assertEquals(awContents.getEffectiveBackgroundColorForTesting(), Color.BLACK);
 
             awContents.setBackgroundColor(Color.RED);
@@ -1031,16 +1030,6 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @MediumTest
-    @CommandLineFlags.
-    Add({"enable-features=" + VizFeatures.USE_SKIA_RENDERER, "disable-oop-rasterization"})
-    public void testHardwareRenderingSmokeTestSkiaRenderer() throws Throwable {
-        mActivityTestRule.startBrowserProcess();
-        doHardwareRenderingSmokeTest();
-    }
-
-    @Test
-    @Feature({"AndroidWebView"})
-    @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.P)
     public void testHardwareRenderingSmokeTestVulkanWhereSupported() throws Throwable {
         // Manually curated list.
@@ -1155,7 +1144,7 @@ public class AwContentsTest {
     @SmallTest
     public void testLoadUrlRecordsScheme_http() {
         // No need to spin up a web server, since we don't care if the load ever succeeds.
-        final String httpUrlWithNoRealPage = "http://some.origin/some/path.html";
+        final String httpUrlWithNoRealPage = "http://some.origin.test/some/path.html";
         loadUrlAndCheckScheme(httpUrlWithNoRealPage, AwContents.UrlScheme.HTTP_SCHEME);
     }
 

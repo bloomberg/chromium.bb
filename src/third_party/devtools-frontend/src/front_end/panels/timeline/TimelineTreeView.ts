@@ -138,6 +138,14 @@ const UIStrings = {
   */
   hideHeaviestStack: 'Hide Heaviest stack',
   /**
+   * @description Screen reader announcement when the heaviest stack sidebar is shown in the Performance panel.
+   */
+  heaviestStackShown: 'Heaviest stack sidebar shown',
+  /**
+   * @description Screen reader announcement when the heaviest stack sidebar is hidden in the Performance panel.
+   */
+  heaviestStackHidden: 'Heaviest stack sidebar hidden',
+  /**
   *@description Data grid name for Timeline Stack data grids
   */
   timelineStack: 'Timeline Stack',
@@ -525,7 +533,7 @@ export class TimelineTreeView extends UI.Widget.VBox implements UI.SearchableVie
       return;
     }
     const searchRegex = searchConfig.toSearchRegex();
-    this.searchResults = this.root.searchTree(event => TimelineUIUtils.testContentMatching(event, searchRegex));
+    this.searchResults = this.root.searchTree(event => TimelineUIUtils.testContentMatching(event, searchRegex.regex));
     this.searchableView.updateSearchMatchesCount(this.searchResults.length);
   }
 
@@ -748,9 +756,9 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
   }
 
   private beautifyDomainName(this: AggregatedTimelineTreeView, name: string): string {
-    if (AggregatedTimelineTreeView.isExtensionInternalURL(name)) {
+    if (AggregatedTimelineTreeView.isExtensionInternalURL(name as Platform.DevToolsPath.UrlString)) {
       name = i18nString(UIStrings.chromeExtensionsOverhead);
-    } else if (AggregatedTimelineTreeView.isV8NativeURL(name)) {
+    } else if (AggregatedTimelineTreeView.isV8NativeURL(name as Platform.DevToolsPath.UrlString)) {
       name = i18nString(UIStrings.vRuntime);
     } else if (name.startsWith('chrome-extension')) {
       name = this.executionContextNamesByOrigin.get(name) || name;
@@ -832,7 +840,8 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         new UI.Toolbar.ToolbarSettingComboBox(options, this.groupBySetting, i18nString(UIStrings.groupBy)));
     toolbar.appendSpacer();
     toolbar.appendToolbarItem(this.splitWidget.createShowHideSidebarButton(
-        i18nString(UIStrings.showHeaviestStack), i18nString(UIStrings.hideHeaviestStack)));
+        i18nString(UIStrings.showHeaviestStack), i18nString(UIStrings.hideHeaviestStack),
+        i18nString(UIStrings.heaviestStackShown), i18nString(UIStrings.heaviestStackHidden)));
   }
 
   private buildHeaviestStack(treeNode: TimelineModel.TimelineProfileTree.Node):
@@ -940,11 +949,11 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
     contextMenu.appendApplicableItems(frame.ownerNode);
   }
 
-  private static isExtensionInternalURL(url: string): boolean {
+  private static isExtensionInternalURL(url: Platform.DevToolsPath.UrlString): boolean {
     return url.startsWith(AggregatedTimelineTreeView.extensionInternalPrefix);
   }
 
-  private static isV8NativeURL(url: string): boolean {
+  private static isV8NativeURL(url: Platform.DevToolsPath.UrlString): boolean {
     return url.startsWith(AggregatedTimelineTreeView.v8NativePrefix);
   }
 

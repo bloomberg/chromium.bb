@@ -38,8 +38,6 @@ void bench(int id, int rows, int size = Size)
     A = A*A.adjoint();
   BenchTimer t_llt, t_ldlt, t_lu, t_fplu, t_qr, t_cpqr, t_cod, t_fpqr, t_jsvd, t_bdcsvd;
 
-  int svd_opt = ComputeThinU|ComputeThinV;
-  
   int tries = 5;
   int rep = 1000/size;
   if(rep==0) rep = 1;
@@ -53,8 +51,8 @@ void bench(int id, int rows, int size = Size)
   ColPivHouseholderQR<Mat> cpqr(A.rows(),A.cols());
   CompleteOrthogonalDecomposition<Mat> cod(A.rows(),A.cols());
   FullPivHouseholderQR<Mat> fpqr(A.rows(),A.cols());
-  JacobiSVD<MatDyn> jsvd(A.rows(),A.cols());
-  BDCSVD<MatDyn> bdcsvd(A.rows(),A.cols());
+  JacobiSVD<MatDyn, ComputeThinU|ComputeThinV> jsvd(A.rows(),A.cols());
+  BDCSVD<MatDyn, ComputeThinU|ComputeThinV> bdcsvd(A.rows(),A.cols());
   
   BENCH(t_llt, tries, rep, compute_norm_equation(llt,A));
   BENCH(t_ldlt, tries, rep, compute_norm_equation(ldlt,A));
@@ -67,9 +65,9 @@ void bench(int id, int rows, int size = Size)
   if(size*rows<=10000000)
     BENCH(t_fpqr, tries, rep, compute(fpqr,A));
   if(size<500) // JacobiSVD is really too slow for too large matrices
-    BENCH(t_jsvd, tries, rep, jsvd.compute(A,svd_opt));
+    BENCH(t_jsvd, tries, rep, jsvd.compute(A));
 //   if(size*rows<=20000000)
-    BENCH(t_bdcsvd, tries, rep, bdcsvd.compute(A,svd_opt));
+    BENCH(t_bdcsvd, tries, rep, bdcsvd.compute(A));
   
   results["LLT"][id] = t_llt.best();
   results["LDLT"][id] = t_ldlt.best();

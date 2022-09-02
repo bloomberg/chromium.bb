@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -43,17 +44,26 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/url_util.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/strings/string_util_win.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/shell_integration.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
+#include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
+#include "chrome/common/extensions/chrome_manifest_url_handlers.h"
+#include "chrome/common/webui_url_constants.h"
+#include "extensions/browser/extension_registry.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace {
 
@@ -68,15 +78,19 @@ bool ProfileHasOtherTabbedBrowser(Profile* profile) {
   return other_tabbed_browser != browser_list->end();
 }
 
-// Validates the URL whether it is allowed to be opened at launching.
+// Validates the URL whether it is allowed to be opened at launching. Dangerous
+// schemes are excluded to prevent untrusted external applications from opening
+// them except on Lacros where URLs coming from untrusted applications are
+// checked in a different layer (such as the dbus UrlHandlerService and the
+// ArcIntentHelperBridge). Thus, chrome:// URLs are allowed on Lacros so that
+// trusted calls in Ash can open them.
 bool ValidateUrl(const GURL& url) {
-  // Exclude dangerous schemes.
   if (!url.is_valid())
     return false;
 
   const GURL settings_url(chrome::kChromeUISettingsURL);
   bool url_points_to_an_approved_settings_page = false;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // In ChromeOS, allow any settings page to be specified on the command line.
   url_points_to_an_approved_settings_page =
       url.DeprecatedGetOriginAsURL() == settings_url.DeprecatedGetOriginAsURL();
@@ -86,22 +100,52 @@ bool ValidateUrl(const GURL& url) {
   const GURL reset_settings_url =
       settings_url.Resolve(chrome::kResetProfileSettingsSubPage);
   url_points_to_an_approved_settings_page = url == reset_settings_url;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, also allow a hash for the Chrome Cleanup Tool.
   const GURL reset_settings_url_with_cct_hash = reset_settings_url.Resolve(
       std::string("#") + settings::ResetSettingsHandler::kCctResetSettingsHash);
   url_points_to_an_approved_settings_page =
       url_points_to_an_approved_settings_page ||
       url == reset_settings_url_with_cct_hash;
-#endif  // defined(OS_WIN)
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
   return policy->IsWebSafeScheme(url.scheme()) ||
          url.SchemeIs(url::kFileScheme) ||
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+         url.SchemeIs(content::kChromeUIScheme) ||
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
          url_points_to_an_approved_settings_page ||
          url.spec() == url::kAboutBlankURL;
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+// Returns whether |extension_registry| contains an extension which has a URL
+// override for the new tab URL.
+bool HasExtensionNtpOverride(
+    extensions::ExtensionRegistry* extension_registry) {
+  for (const auto& extension : extension_registry->enabled_extensions()) {
+    const auto& overrides =
+        extensions::URLOverrides::GetChromeURLOverrides(extension.get());
+    if (overrides.find(chrome::kChromeUINewTabHost) != overrides.end()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Returns whether |url| is an NTP controlled entirely by Chrome.
+bool IsChromeControlledNtpUrl(const GURL& url) {
+  // Convert to origins for comparison, as any appended paths are irrelevant.
+  const auto ntp_origin = url::Origin::Create(url);
+
+  return ntp_origin ==
+             url::Origin::Create(GURL(chrome::kChromeUINewTabPageURL)) ||
+         ntp_origin == url::Origin::Create(
+                           GURL(chrome::kChromeUINewTabPageThirdPartyURL));
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
@@ -131,7 +175,7 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 StartupTabs StartupTabProviderImpl::GetWelcomeBackTabs(
     Profile* profile,
     StartupBrowserCreator* browser_creator,
@@ -148,7 +192,7 @@ StartupTabs StartupTabProviderImpl::GetWelcomeBackTabs(
   }
   return tabs;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 StartupTabs StartupTabProviderImpl::GetDistributionFirstRunTabs(
     StartupBrowserCreator* browser_creator) const {
@@ -241,7 +285,7 @@ CommandLineTabsPresent StartupTabProviderImpl::HasCommandLineTabs(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 StartupTabs StartupTabProviderImpl::GetCrosapiTabs() const {
-  auto* init_params = chromeos::LacrosService::Get()->init_params();
+  auto* init_params = chromeos::BrowserInitParams::Get();
   if (init_params->initial_browser_action !=
           crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls ||
       !init_params->startup_urls.has_value()) {
@@ -257,12 +301,21 @@ StartupTabs StartupTabProviderImpl::GetCrosapiTabs() const {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 StartupTabs StartupTabProviderImpl::GetNewFeaturesTabs(
     bool whats_new_enabled) const {
   return GetNewFeaturesTabsForState(whats_new_enabled);
 }
-#endif  // !defined(OS_ANDROID)
+
+StartupTabs StartupTabProviderImpl::GetPrivacySandboxTabs(
+    Profile* profile,
+    const StartupTabs& other_startup_tabs) const {
+  return GetPrivacySandboxTabsForState(
+      extensions::ExtensionRegistry::Get(profile),
+      search::GetNewTabPageURL(profile), other_startup_tabs);
+}
+
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 // static
 bool StartupTabProviderImpl::CanShowWelcome(bool is_signin_allowed,
@@ -340,8 +393,11 @@ StartupTabs StartupTabProviderImpl::GetPreferencesTabsForState(
   StartupTabs tabs;
   if (pref.ShouldOpenUrls() && !pref.urls.empty() &&
       !profile_has_other_tabbed_browser) {
-    for (const auto& url : pref.urls)
-      tabs.emplace_back(url);
+    for (const auto& url : pref.urls) {
+      tabs.emplace_back(url, pref.type == SessionStartupPref::LAST_AND_URLS
+                                 ? StartupTab::Type::kFromLastAndUrlsStartupPref
+                                 : StartupTab::Type::kNormal);
+    }
   }
   return tabs;
 }
@@ -364,7 +420,7 @@ StartupTabs StartupTabProviderImpl::GetPostCrashTabsForState(
   return tabs;
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // static
 StartupTabs StartupTabProviderImpl::GetNewFeaturesTabsForState(
     bool whats_new_enabled) {
@@ -373,6 +429,42 @@ StartupTabs StartupTabProviderImpl::GetNewFeaturesTabsForState(
     tabs.emplace_back(whats_new::GetWebUIStartupURL());
   return tabs;
 }
+
+// static
+StartupTabs StartupTabProviderImpl::GetPrivacySandboxTabsForState(
+    extensions::ExtensionRegistry* extension_registry,
+    const GURL& ntp_url,
+    const StartupTabs& other_startup_tabs) {
+  // There may already be a tab appropriate for the Privacy Sandbox dialog
+  // available in |other_startup_tabs|.
+  StartupTabs tabs;
+  const bool suitable_tab_available =
+      base::ranges::any_of(other_startup_tabs, [&](const StartupTab& tab) {
+        // The generic new tab URL is only suitable if the user has a Chrome
+        // controlled New Tab Page.
+        if (tab.url.host() == chrome::kChromeUINewTabHost) {
+          return !HasExtensionNtpOverride(extension_registry) &&
+                 IsChromeControlledNtpUrl(ntp_url);
+        }
+        return PrivacySandboxService::IsUrlSuitableForDialog(tab.url);
+      });
+
+  if (suitable_tab_available)
+    return tabs;
+
+  // Fallback to using about:blank if the user has customized the NTP.
+  // TODO(crbug.com/1306352): Stop using about:blank and create a dedicated
+  // Privacy Sandbox WebUI page for this scenario.
+  if (HasExtensionNtpOverride(extension_registry) ||
+      !IsChromeControlledNtpUrl(ntp_url)) {
+    tabs.emplace_back(GURL(url::kAboutBlankURL));
+  } else {
+    tabs.emplace_back(GURL(chrome::kChromeUINewTabURL));
+  }
+
+  return tabs;
+}
+
 #endif
 
 // static
@@ -385,11 +477,11 @@ GURL StartupTabProviderImpl::GetWelcomePageUrl(bool use_later_run_variant) {
 
 // static
 void StartupTabProviderImpl::AddIncompatibleApplicationsUrl(StartupTabs* tabs) {
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   UMA_HISTOGRAM_BOOLEAN("IncompatibleApplicationsPage.AddedPostCrash", true);
   GURL url(chrome::kChromeUISettingsURL);
   tabs->emplace_back(url.Resolve("incompatibleApplications"));
-#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 // static

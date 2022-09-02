@@ -8,9 +8,11 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/navigator_concurrent_hardware.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-#if !defined(OS_MAC) && !defined(OS_WIN)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
 #include <sys/utsname.h>
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -36,15 +38,22 @@ String NavigatorBase::platform() const {
   if (execution_context)
     execution_context->ReportNavigatorUserAgentAccess();
 
+  // If the User-Agent string is opted into the SendFullUserAgentAfterReduction,
+  // platform should be a full value.
+  if (RuntimeEnabledFeatures::SendFullUserAgentAfterReductionEnabled(
+          execution_context)) {
+    return NavigatorID::platform();
+  }
+
   // If the User-Agent string is frozen, platform should be a value
   // matching the frozen string per https://github.com/WICG/ua-client-hints.
   // See content::frozen_user_agent_strings.
   if (RuntimeEnabledFeatures::UserAgentReductionEnabled(execution_context)) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     return "Linux armv81";
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
     return "MacIntel";
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
     return "Win32";
 #else
     return "Linux x86_64";
@@ -59,6 +68,15 @@ void NavigatorBase::Trace(Visitor* visitor) const {
   NavigatorLanguage::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   Supplementable<NavigatorBase>::Trace(visitor);
+}
+
+unsigned int NavigatorBase::hardwareConcurrency() const {
+  unsigned int hardware_concurrency =
+      NavigatorConcurrentHardware::hardwareConcurrency();
+
+  probe::ApplyHardwareConcurrencyOverride(
+      probe::ToCoreProbeSink(GetExecutionContext()), hardware_concurrency);
+  return hardware_concurrency;
 }
 
 ExecutionContext* NavigatorBase::GetUAExecutionContext() const {

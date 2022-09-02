@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPT_LOADER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPT_LOADER_H_
 
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_installed_script_reader.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -77,7 +78,6 @@ class ServiceWorkerInstalledScriptLoader
   std::unique_ptr<ServiceWorkerInstalledScriptReader> reader_;
 
   std::string encoding_;
-  mojo::ScopedDataPipeConsumerHandle body_handle_;
   uint64_t body_size_ = 0;
   std::unique_ptr<mojo::DataPipeDrainer> metadata_drainer_;
 };

@@ -15,7 +15,7 @@ import './passwords_list_handler.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import '../settings_shared_css.js';
 import './avatar_icon.js';
-import './passwords_shared_css.js';
+import './passwords_shared.css.js';
 import './password_list_item.js';
 import './password_move_multiple_passwords_to_account_dialog.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
@@ -26,7 +26,8 @@ import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.j
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {GlobalScrollTargetMixin} from '../global_scroll_target_mixin.js';
 import {loadTimeData} from '../i18n_setup.js';
@@ -38,6 +39,7 @@ import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '..
 import {MergePasswordsStoreCopiesMixin, MergePasswordsStoreCopiesMixinInterface} from './merge_passwords_store_copies_mixin.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {AccountStorageOptInStateChangedListener, PasswordManagerImpl} from './password_manager_proxy.js';
+import {getTemplate} from './passwords_device_section.html.js';
 import {PasswordsListHandlerElement} from './passwords_list_handler.js';
 
 /**
@@ -53,10 +55,13 @@ function isEditable(element: Element): boolean {
             (element as HTMLInputElement).type)));
 }
 
-interface PasswordsDeviceSectionElement {
+export interface PasswordsDeviceSectionElement {
   $: {
-    toast: CrToastElement,
+    deviceAndAccountPasswordList: IronListElement,
+    deviceOnlyPasswordList: IronListElement,
+    moveMultiplePasswordsBanner: HTMLElement,
     passwordsListHandler: PasswordsListHandlerElement,
+    toast: CrToastElement,
   };
 }
 
@@ -69,16 +74,17 @@ const PasswordsDeviceSectionElementBase =
         RouteObserverMixin(PolymerElement) as unknown as
         Constructor<PolymerElement>))) as {
       new (): PolymerElement & WebUIListenerMixinInterface &
-      MergePasswordsStoreCopiesMixinInterface & RouteObserverMixinInterface
+          MergePasswordsStoreCopiesMixinInterface & RouteObserverMixinInterface,
     };
 
-class PasswordsDeviceSectionElement extends PasswordsDeviceSectionElementBase {
+export class PasswordsDeviceSectionElement extends
+    PasswordsDeviceSectionElementBase {
   static get is() {
     return 'passwords-device-section';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -186,6 +192,14 @@ class PasswordsDeviceSectionElement extends PasswordsDeviceSectionElementBase {
         type: String,
         value: '',
       },
+
+      isPasswordViewPageEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enablePasswordViewPage');
+        },
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -211,10 +225,11 @@ class PasswordsDeviceSectionElement extends PasswordsDeviceSectionElementBase {
   private showMoveMultiplePasswordsDialog_: boolean;
   private currentRoute_: Route|null;
   private devicePasswordsLabel_: string;
+  private isPasswordViewPageEnabled_: boolean;
   private accountStorageOptInStateListener_:
       AccountStorageOptInStateChangedListener|null = null;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.addListenersForAccountStorageRequirements_();
@@ -229,7 +244,7 @@ class PasswordsDeviceSectionElement extends PasswordsDeviceSectionElementBase {
         'stored-accounts-updated', extractFirstStoredAccountEmail);
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     document.addEventListener('keydown', keyboardEvent => {
@@ -246,7 +261,7 @@ class PasswordsDeviceSectionElement extends PasswordsDeviceSectionElementBase {
     });
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     PasswordManagerImpl.getInstance().removeAccountStorageOptInStateListener(
@@ -307,7 +322,7 @@ class PasswordsDeviceSectionElement extends PasswordsDeviceSectionElementBase {
   /**
    * From RouteObserverMixin.
    */
-  currentRouteChanged(route: Route) {
+  override currentRouteChanged(route: Route) {
     super.currentRouteChanged(route);
     this.currentRoute_ = route || null;
   }
@@ -394,6 +409,12 @@ class PasswordsDeviceSectionElement extends PasswordsDeviceSectionElementBase {
         this.currentRoute_ === routes.DEVICE_PASSWORDS) {
       Router.getInstance().navigateTo(routes.PASSWORDS);
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'passwords-device-section': PasswordsDeviceSectionElement;
   }
 }
 

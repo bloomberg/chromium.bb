@@ -21,12 +21,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -63,7 +63,6 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
-#include "net/base/escape.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -153,9 +152,8 @@ void MaybeAppendAuthUserParameter(const std::string& authuser, GURL* url) {
   // TODO(rockot): Share this duplicated code with the extension updater.
   // See http://crbug.com/371398.
   std::string new_query_string = old_query + authuser_param;
-  url::Component new_query(0, new_query_string.length());
-  url::Replacements<char> replacements;
-  replacements.SetQuery(new_query_string.c_str(), new_query);
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(new_query_string);
   *url = url->ReplaceComponents(replacements);
 }
 
@@ -207,11 +205,11 @@ GURL WebstoreInstaller::GetWebstoreInstallURL(
   params.push_back("uc");
   std::string url_string = extension_urls::GetWebstoreUpdateUrl().spec();
 
-  GURL url(url_string + "?response=redirect&" +
-           update_client::UpdateQueryParams::Get(
-               update_client::UpdateQueryParams::CRX) +
-           "&x=" + net::EscapeQueryParamValue(base::JoinString(params, "&"),
-                                              true));
+  GURL url(
+      url_string + "?response=redirect&" +
+      update_client::UpdateQueryParams::Get(
+          update_client::UpdateQueryParams::CRX) +
+      "&x=" + base::EscapeQueryParamValue(base::JoinString(params, "&"), true));
   DCHECK(url.is_valid());
 
   return url;
@@ -598,11 +596,13 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!web_contents_->GetMainFrame()->GetRenderViewHost()) {
+  if (!web_contents_->GetPrimaryMainFrame()->GetRenderViewHost()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!web_contents_->GetMainFrame()->GetRenderViewHost()->GetProcess()) {
+  if (!web_contents_->GetPrimaryMainFrame()
+           ->GetRenderViewHost()
+           ->GetProcess()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
@@ -620,10 +620,13 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   // The download url for the given extension is contained in |download_url_|.
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
-  int render_process_host_id =
-      web_contents_->GetMainFrame()->GetRenderViewHost()->GetProcess()->GetID();
+  int render_process_host_id = web_contents_->GetPrimaryMainFrame()
+                                   ->GetRenderViewHost()
+                                   ->GetProcess()
+                                   ->GetID();
 
-  content::RenderFrameHost* render_frame_host = web_contents_->GetMainFrame();
+  content::RenderFrameHost* render_frame_host =
+      web_contents_->GetPrimaryMainFrame();
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("webstore_installer", R"(
         semantics {

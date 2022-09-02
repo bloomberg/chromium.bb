@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -45,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(DictionarySyncPerfTest, P0) {
   ASSERT_TRUE(
       dictionary_helper::DictionaryChecker(/*expected_words=*/{}).Wait());
 
-  auto reporter = SetUpReporter(
+  perf_test::PerfResultReporter reporter = SetUpReporter(
       base::NumberToString(spellcheck::kMaxSyncableDictionaryWords) + "_words");
   base::TimeDelta dt;
   for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords; ++i) {
