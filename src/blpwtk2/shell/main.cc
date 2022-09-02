@@ -74,6 +74,9 @@ std::string g_webScriptContextSecurityOrigin;
 #define FIND_LABEL_WIDTH (BUTTON_WIDTH*3/4)
 #define FIND_ENTRY_WIDTH (BUTTON_WIDTH*6/4)
 #define FIND_BUTTON_WIDTH (BUTTON_WIDTH/4)
+#define TIMEZONE_LABEL_WIDTH (BUTTON_WIDTH*5/4)
+#define TIMEZONE_ENTRY_WIDTH (BUTTON_WIDTH*10/4)
+#define TIMEZONE_BUTTON_WIDTH (BUTTON_WIDTH)
 #define URLBAR_HEIGHT  24
 
 
@@ -86,8 +89,10 @@ enum {
     IDC_RELOAD,
     IDC_STOP,
     IDC_FIND_ENTRY,
+    IDC_TIMEZONE_ENTRY,
     IDC_FIND_PREV,
     IDC_FIND_NEXT,
+    IDC_UPDATE_TZ,
 };
 
 // menu ids
@@ -319,6 +324,7 @@ public:
 
 
     // patch section: custom timezone
+    HWND d_timezoneEntryHwnd;
 
 
 
@@ -352,6 +358,7 @@ public:
 
 
           // patch section: custom timezone
+          HWND timezoneEntryHwnd,
 
 
 
@@ -368,6 +375,7 @@ public:
 
 
         // patch section: custom timezone
+        , d_timezoneEntryHwnd(timezoneEntryHwnd)
 
 
 
@@ -471,7 +479,10 @@ public:
         int x = (4 * BUTTON_WIDTH) +
             FIND_LABEL_WIDTH +
             FIND_ENTRY_WIDTH +
-            (2 * FIND_BUTTON_WIDTH);
+            (2 * FIND_BUTTON_WIDTH) +
+            TIMEZONE_LABEL_WIDTH +
+            TIMEZONE_ENTRY_WIDTH +
+            TIMEZONE_BUTTON_WIDTH;
         MoveWindow(d_urlEntryWnd, x, 0, width - x, URLBAR_HEIGHT, TRUE);
     }
 
@@ -689,6 +700,13 @@ public:
         if (!d_findText.empty()) {
             webView()->find(blpwtk2::StringRef(d_findText), false, forward);
         }
+    }
+
+     void updateTz()
+    {
+        char buf[200];
+        int len = ::GetWindowTextA(d_timezoneEntryHwnd, buf, sizeof(buf));
+        g_toolkit->setTimeZone(std::string(buf, len));
     }
 
     void findState(blpwtk2::WebView* source, int numberOfMatches, int activeMatchOrdinal, bool finalUpdate) override
@@ -1308,6 +1326,14 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
         case IDC_FIND_NEXT:
             shell->findNext(wmId == IDC_FIND_NEXT);
             return 0;
+        case IDC_TIMEZONE_ENTRY:
+            if (HIWORD(wParam) == EN_CHANGE) {
+                shell->find();
+            }
+            return 0;
+        case IDC_UPDATE_TZ:
+            shell->updateTz();
+            return 0;
         case IDC_STOP:
             shell->webView()->stop();
             return 0;
@@ -1657,6 +1683,25 @@ Shell* createShell(blpwtk2::Profile* profile, bool forDevTools)
     assert(hwnd);
     x += FIND_BUTTON_WIDTH;
 
+    hwnd = CreateWindow(L"STATIC", L"Time Zone: ",
+                        WS_CHILD | WS_VISIBLE | SS_RIGHT | SS_CENTERIMAGE,
+                        x, 0, TIMEZONE_LABEL_WIDTH, URLBAR_HEIGHT,
+                        mainWnd, 0, g_instance, 0);
+    assert(hwnd);
+    x += TIMEZONE_LABEL_WIDTH;
+     HWND timezoneEntryHwnd = CreateWindow(L"EDIT", 0,
+                        WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT |
+                        ES_AUTOVSCROLL | ES_AUTOHSCROLL,  x, 0, TIMEZONE_ENTRY_WIDTH,
+                        URLBAR_HEIGHT, mainWnd, (HMENU) NULL, g_instance, 0);
+    assert(timezoneEntryHwnd);
+    x += TIMEZONE_ENTRY_WIDTH;
+     hwnd = CreateWindow(L"BUTTON", L"Update",
+                        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                        x, 0, TIMEZONE_BUTTON_WIDTH, URLBAR_HEIGHT,
+                        mainWnd, (HMENU)IDC_UPDATE_TZ, g_instance, 0);
+    assert(hwnd);
+    x += TIMEZONE_BUTTON_WIDTH;
+
     // This control is positioned by resizeSubViews.
     HWND urlEntryWnd = CreateWindow(L"EDIT", 0,
                                     WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT |
@@ -1679,6 +1724,7 @@ Shell* createShell(blpwtk2::Profile* profile, bool forDevTools)
 
 
                      // patch section: custom timezone
+                     timezoneEntryHwnd,
 
 
 
