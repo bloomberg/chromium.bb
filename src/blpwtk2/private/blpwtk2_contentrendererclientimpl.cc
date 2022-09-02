@@ -37,6 +37,8 @@
 
 
 #include <base/strings/utf_string_conversions.h>
+#include <components/spellcheck/renderer/spellcheck.h>
+#include <components/spellcheck/renderer/spellcheck_provider.h>
 #include <content/child/font_warmup_win.h>
 #include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_thread.h>
@@ -73,13 +75,18 @@ ContentRendererClientImpl::~ContentRendererClientImpl()
     RenderCompositorFactory::Terminate();
 }
 
-void ContentRendererClientImpl::RenderThreadStarted() {
-    d_browser_interface_broker = blink::Platform::Current()->GetBrowserInterfaceBroker();
-}
-
 blink::ThreadSafeBrowserInterfaceBrokerProxy* ContentRendererClientImpl::GetInterfaceBroker() const
 {
     return d_browser_interface_broker.get();
+}
+
+void ContentRendererClientImpl::RenderThreadStarted()
+{
+    if (!d_spellcheck) {
+        d_spellcheck.reset(new SpellCheck(this));
+    }
+
+    d_browser_interface_broker = blink::Platform::Current()->GetBrowserInterfaceBroker();
 }
 
 void ContentRendererClientImpl::RenderFrameCreated(
@@ -89,6 +96,9 @@ void ContentRendererClientImpl::RenderFrameCreated(
 
 
     // patch section: spellcheck
+
+    // Create an instance of SpellCheckProvider.
+    new SpellCheckProvider(render_frame, d_spellcheck.get(), this);
 
 
     // patch section: printing
@@ -156,6 +166,16 @@ bool ContentRendererClientImpl::OverrideCreatePlugin(
 void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
 {
     // blpwtk2: expose services to browser
+    auto task_runner = base::SequencedTaskRunnerHandle::Get();
+
+    binders->Add(
+        base::BindRepeating(
+            [](SpellCheck* spellcheck,
+                mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver) {
+                    spellcheck->BindReceiver(std::move(receiver));
+                },
+                base::Unretained(d_spellcheck.get())),
+        task_runner);
 }
 
 bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
@@ -180,7 +200,13 @@ void ContentRendererClientImpl::OnStart()
 void ContentRendererClientImpl::GetInterface(
         const std::string& interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
-
+    // `SpellCheckProvider` is the only consumer of this.
+    // `ContentRendererClientImpl::RenderFrameCreated` passes `this` object to the `SpellCheckProvider`
+    // and `SpellCheckProvider::GetSpellCheckHost()` would call back to this `GetInterface` function.
+    // This function would trigger the creation of `SpellCheckHostChromeImpl` in the browser
+    // process and bind it to `SpellCheckProvider`
+    content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(
+        interface_name, std::move(interface_pipe)));
 }
 
 service_manager::Connector* ContentRendererClientImpl::GetConnector()

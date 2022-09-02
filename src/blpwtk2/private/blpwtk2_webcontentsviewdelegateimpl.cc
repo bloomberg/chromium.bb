@@ -93,6 +93,16 @@ void convertItem(const blink::mojom::CustomContextMenuItemPtr&  item1,
     convertSubmenus(item1, item2Impl);
 }
 
+void convertSpellcheck(const content::ContextMenuParams&  params,
+                       blpwtk2::mojom::ContextMenuParams *params2Impl)
+{
+    params2Impl->misspelledWord = base::UTF16ToUTF8(params.misspelled_word);
+    params2Impl->spellSuggestions.resize(params.dictionary_suggestions.size());
+    for (std::size_t i = 0; i < params.dictionary_suggestions.size(); ++i) {
+        params2Impl->spellSuggestions[i] = base::UTF16ToUTF8(params.dictionary_suggestions[i]);
+    }
+}
+
 } // close unnamed namespace
 
 namespace blpwtk2 {
@@ -140,6 +150,7 @@ void WebContentsViewDelegateImpl::ShowContextMenu(
         params.is_editable && (params.edit_flags & blink::ContextMenuDataEditFlags::kCanDelete);
 
     convertCustomItems(params, &params2Impl);
+    convertSpellcheck(params, &params2Impl);
 
     ContextMenuParams params2(&params2Impl);
     webViewImpl->showContextMenu(params2);

@@ -130,13 +130,18 @@ void SpellCheckHostChromeImpl::CallSpellingServiceDone(
     return;
   }
 
+  // blpwtk2: Remove dependency on CustomDictionary
+#if 0
   std::vector<SpellCheckResult> results = FilterCustomWordResults(
       base::UTF16ToUTF8(text), *spellcheck->GetCustomDictionary(),
       service_results);
+#endif
 
-  std::move(callback).Run(success, results);
+  std::move(callback).Run(success, service_results);
 }
 
+// blpwtk2: Remove dependency on CustomDictionary
+#if 0
 // static
 std::vector<SpellCheckResult> SpellCheckHostChromeImpl::FilterCustomWordResults(
     const std::string& text,
@@ -151,6 +156,7 @@ std::vector<SpellCheckResult> SpellCheckHostChromeImpl::FilterCustomWordResults(
 
   return results;
 }
+#endif
 #endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && BUILDFLAG(ENABLE_SPELLING_SERVICE)
@@ -164,9 +170,27 @@ void SpellCheckHostChromeImpl::CheckSpelling(const std::u16string& word,
 void SpellCheckHostChromeImpl::FillSuggestionList(
     const std::u16string& word,
     FillSuggestionListCallback callback) {
-  std::vector<std::u16string> suggestions;
-  spellcheck_platform::FillSuggestionList(word, &suggestions);
-  std::move(callback).Run(suggestions);
+
+  SpellcheckService* spellcheck_service = GetSpellcheckService();
+
+  if (!spellcheck_service) {  // Teardown.
+    std::move(callback).Run({});
+    return;
+  }
+
+  spellcheck_platform::GetPerLanguageSuggestions(
+      spellcheck_service->platform_spell_checker(), word,
+      base::BindOnce(&SpellCheckHostChromeImpl::OnSuggestionsComplete,
+                  weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SpellCheckHostChromeImpl::OnSuggestionsComplete(
+    FillSuggestionListCallback callback,
+    const spellcheck::PerLanguageSuggestions& platform_per_language_suggestions
+) const {
+  std::vector<std::u16string> combined_suggestions;
+  spellcheck::FillSuggestions(platform_per_language_suggestions, &combined_suggestions);
+  std::move(callback).Run(combined_suggestions);
 }
 
 void SpellCheckHostChromeImpl::RequestTextCheck(
@@ -248,10 +272,13 @@ void SpellCheckHostChromeImpl::OnDictionariesInitialized() {
           hunspell_dictionary->GetLanguage()));
     }
 
+  // blpwtk2: Remove dependency on CustomDictionary
+#if 0
     SpellcheckCustomDictionary* custom_dictionary =
         spellcheck->GetCustomDictionary();
     custom_words.assign(custom_dictionary->GetWords().begin(),
                         custom_dictionary->GetWords().end());
+#endif
   }
 
   std::move(dictionaries_loaded_callback_)

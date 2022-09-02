@@ -12,6 +12,7 @@
 #include "components/spellcheck/browser/spell_check_host_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 
 #if BUILDFLAG(ENABLE_SPELLING_SERVICE)
 #include "components/spellcheck/browser/spelling_service_client.h"
@@ -64,12 +65,15 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
       const std::u16string& text,
       const std::vector<SpellCheckResult>& service_results) const;
 
+  // blpwtk2: Remove dependency on CustomDictionary
+#if 0
   // Filter out spelling corrections of custom dictionary words from the
   // Spelling service results.
   static std::vector<SpellCheckResult> FilterCustomWordResults(
       const std::string& text,
       const SpellcheckCustomDictionary& custom_dictionary,
       const std::vector<SpellCheckResult>& service_results);
+#endif
 #endif
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && BUILDFLAG(ENABLE_SPELLING_SERVICE)
@@ -80,6 +84,9 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
                      CheckSpellingCallback callback) override;
   void FillSuggestionList(const std::u16string& word,
                           FillSuggestionListCallback callback) override;
+  void OnSuggestionsComplete(
+    FillSuggestionListCallback callback,
+    const spellcheck::PerLanguageSuggestions& platform_per_language_suggestions) const;
   void RequestTextCheck(const std::u16string& text,
                         int route_id,
                         RequestTextCheckCallback callback) override;

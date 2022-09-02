@@ -57,6 +57,7 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 
 namespace blpwtk2 {
 
@@ -143,6 +144,16 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
+}
+
+void ContentBrowserClientImpl::BindHostReceiverForRenderer(
+        content::RenderProcessHost* render_process_host,
+        mojo::GenericPendingReceiver receiver)
+{
+    if (auto host_receiver = receiver.As<spellcheck::mojom::SpellCheckHost>()) {
+        SpellCheckHostChromeImpl::Create(render_process_host->GetID(),
+                                         std::move(host_receiver));
+    }
 }
 
 void ContentBrowserClientImpl::RegisterAssociatedInterfaceBindersForRenderFrameHost(
@@ -232,4 +243,3 @@ void ContentBrowserClientImpl::RegisterNonNetworkSubresourceURLLoaderFactories(
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-

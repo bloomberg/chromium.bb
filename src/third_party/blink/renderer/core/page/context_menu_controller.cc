@@ -696,6 +696,20 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
                        suggestions.begin(),
                        [](const WebString& s) { return s.Utf16(); });
         data.dictionary_suggestions = suggestions.ReleaseVector();
+
+        if (data.dictionary_suggestions.size() == 0) {
+          WebVector<WebString> web_suggestions;
+
+          spell_checker.GetTextCheckerClient()->RequestSuggestionsFromBrowser(
+            WebString::FromUTF16(data.misspelled_word),
+            &web_suggestions
+          );
+          WebVector<std::u16string> suggestions(web_suggestions.size());
+          std::transform(web_suggestions.begin(), web_suggestions.end(),
+                        suggestions.begin(),
+                        [](const WebString& s) { return s.Utf16(); });
+          data.dictionary_suggestions = suggestions.ReleaseVector();
+        }
       }
     }
   }

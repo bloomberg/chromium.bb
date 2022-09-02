@@ -117,6 +117,9 @@ class ContentBrowserClientImpl final : public content::ContentBrowserClient {
       content::RenderFrameHost& render_frame_host,
       blink::AssociatedInterfaceRegistry& associated_registry) override;
 
+    void BindHostReceiverForRenderer(
+        content::RenderProcessHost* render_process_host,
+        mojo::GenericPendingReceiver receiver) override;
     // Start the in-process renderer thread.  This will only ever be called if
     // SupportsInProcessRenderer() returns true.
     void StartInProcessRendererThread(
