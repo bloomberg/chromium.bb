@@ -370,6 +370,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
       const display::ScreenInfos& screen_infos,
+      int view_id,
       const cc::LayerTreeSettings* settings) override;
   void SetCompositorVisible(bool visible) override;
   gfx::Size Size() override;

@@ -214,7 +214,7 @@ class LayerTreeViewWithFrameSinkTrackingTest : public testing::Test {
     settings.single_thread_proxy_scheduler = false;
     layer_tree_view_.Initialize(
         settings, blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        /*compositor_thread=*/nullptr, &test_task_graph_runner_);
+        /*compositor_thread=*/nullptr, &test_task_graph_runner_, 0);
   }
   LayerTreeViewWithFrameSinkTrackingTest(
       const LayerTreeViewWithFrameSinkTrackingTest&) = delete;
@@ -335,7 +335,7 @@ TEST(LayerTreeViewTest, VisibilityTest) {
   layer_tree_view.Initialize(
       cc::LayerTreeSettings(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      /*compositor_thread=*/nullptr, &test_task_graph_runner);
+      /*compositor_thread=*/nullptr, &test_task_graph_runner, 0);
 
   {
     // Make one request and stop immediately while invisible.
@@ -380,7 +380,7 @@ TEST(LayerTreeViewTest, RunPresentationCallbackOnSuccess) {
   layer_tree_view.Initialize(
       cc::LayerTreeSettings(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      /*compositor_thread=*/nullptr, &test_task_graph_runner);
+      /*compositor_thread=*/nullptr, &test_task_graph_runner, 0);
 
   // Register a callback for frame 1.
   base::TimeTicks callback_timestamp;

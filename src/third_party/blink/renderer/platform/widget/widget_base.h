@@ -95,6 +95,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
       const display::ScreenInfos& screen_infos,
+      int view_id,
       const cc::LayerTreeSettings* settings,
       base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
           frame_widget_input_handler);
