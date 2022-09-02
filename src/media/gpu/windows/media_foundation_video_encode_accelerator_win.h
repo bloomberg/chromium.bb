@@ -18,10 +18,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_preferences.h"
 #include "media/base/bitrate.h"
 #include "media/base/video_codecs.h"
 #include "media/base/win/dxgi_device_manager.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {
@@ -36,10 +39,9 @@ namespace media {
 class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
     : public VideoEncodeAccelerator {
  public:
-  // If |compatible_with_win7| is true, MediaFoundationVideoEncoderAccelerator
-  // works on Windows 7. Some attributes of the encoder are not supported on old
-  // systems, which may impact the performance or quality of the output.
-  explicit MediaFoundationVideoEncodeAccelerator(bool compatible_with_win7);
+  explicit MediaFoundationVideoEncodeAccelerator(
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& gpu_workarounds);
 
   MediaFoundationVideoEncodeAccelerator(
       const MediaFoundationVideoEncodeAccelerator&) = delete;
@@ -50,10 +52,12 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfilesLight()
       override;
-  bool Initialize(const Config& config, Client* client) override;
+  bool Initialize(const Config& config,
+                  Client* client,
+                  std::unique_ptr<MediaLog> media_log) override;
   void Encode(scoped_refptr<VideoFrame> frame, bool force_keyframe) override;
   void UseOutputBitstreamBuffer(BitstreamBuffer buffer) override;
-  void RequestEncodingParametersChange(const media::Bitrate& bitrate,
+  void RequestEncodingParametersChange(const Bitrate& bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
   bool IsGpuFrameResizeSupported() override;
@@ -86,7 +90,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // Activates the asynchronous encoder instance |encoder_| according to codec
   // merit.
-  bool ActivateAsyncEncoder(IMFActivate** pp_activate, uint32_t activate_count);
+  bool ActivateAsyncEncoder(IMFActivate** pp_activate,
+                            uint32_t activate_count,
+                            bool is_constrained_h264);
 
   // Initializes and allocates memory for input and output parameters.
   bool InitializeInputOutputParameters(VideoCodecProfile output_profile,
@@ -99,7 +105,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // |main_client_task_runner_|.
   void NotifyError(VideoEncodeAccelerator::Error error);
 
-  // Encoding task to be run on |encoder_thread_|.
+  // Encoding task to be run on |encoder_thread_task_runner_|.
   void EncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
 
   // Processes the input video frame for the encoder.
@@ -109,13 +115,21 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   HRESULT PopulateInputSampleBuffer(scoped_refptr<VideoFrame> frame);
   HRESULT PopulateInputSampleBufferGpu(scoped_refptr<VideoFrame> frame);
 
-  int AssignTemporalId(bool keyframe);
+  // Assign TemporalID by bitstream or external state machine(based on SVC
+  // Spec).
+  bool AssignTemporalId(Microsoft::WRL::ComPtr<IMFMediaBuffer> output_buffer,
+                        size_t size,
+                        int* temporal_id,
+                        bool keyframe);
+
+  int AssignTemporalIdBySvcSpec(bool keyframe);
+
   bool temporalScalableCoding() { return num_temporal_layers_ > 1; }
 
-  // Checks for and copies encoded output on |encoder_thread_|.
+  // Checks for and copies encoded output on |encoder_thread_task_runner_|.
   void ProcessOutput();
 
-  // Drains pending output samples on |encoder_thread_|.
+  // Drains pending output samples on |encoder_thread_task_runner_|.
   void DrainPendingOutputs();
 
   // Tries to deliver the input frame to the encoder.
@@ -125,15 +139,15 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Tries to return a bitstream buffer to the client.
   void TryToReturnBitstreamBuffer();
 
-  // Inserts the output buffers for reuse on |encoder_thread_|.
+  // Inserts the output buffers for reuse on |encoder_thread_task_runner_|.
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
 
-  // Changes encode parameters on |encoder_thread_|.
+  // Changes encode parameters on |encoder_thread_task_runner_|.
   void RequestEncodingParametersChangeTask(const Bitrate& bitrate,
                                            uint32_t framerate);
 
-  // Destroys encode session on |encoder_thread_|.
+  // Destroys encode session on |encoder_thread_task_runner_|.
   void DestroyTask();
 
   // Releases resources encoder holds.
@@ -146,6 +160,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   HRESULT PerformD3DScaling(ID3D11Texture2D* input_texture);
 
   const bool compatible_with_win7_;
+  const bool disable_dynamic_framerate_update_;
 
   // Bitstream buffers ready to be used to return encoded output as a FIFO.
   base::circular_deque<std::unique_ptr<BitstreamBufferRef>>
@@ -157,6 +172,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Counter of outputs which is used to assign temporal layer indexes
   // according to the corresponding layer pattern. Reset for every key frame.
   uint32_t outputs_since_keyframe_count_ = 0;
+
+  // This parser is used to assign temporalId.
+  H264Parser h264_parser_;
 
   gfx::Size input_visible_size_;
   size_t bitstream_buffer_size_;
@@ -173,7 +191,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // Group of picture length for encoded output stream, indicates the
   // distance between two key frames.
-  absl::optional<uint32_t> gop_length_;
+  uint32_t gop_length_;
 
   Microsoft::WRL::ComPtr<IMFActivate> activate_;
   Microsoft::WRL::ComPtr<IMFTransform> encoder_;
@@ -212,6 +230,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // DXGI device manager for handling hardware input textures
   scoped_refptr<DXGIDeviceManager> dxgi_device_manager_;
+
+  // A buffer used as a scratch space for I420 to NV12 conversion
+  std::vector<uint8_t> resize_buffer_;
 
   // Declared last to ensure that all weak pointers are invalidated before
   // other destructors run.

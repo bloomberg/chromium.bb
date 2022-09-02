@@ -50,9 +50,9 @@ document, here are two suggestions. If you are already running a web proxy, you
 use [stunnel](http://www.stunnel.org/) to convert it into a secure web proxy.
 For example:**
 
-**```none
+```none
 stunnel -f -d 443 -r localhost:8080 -p cert.pem 
-```**
+```
 
 **This would cause stunnel to listen for SSL connections on port 443 and send
 any HTTP requests to the web proxy running on port 8080.**

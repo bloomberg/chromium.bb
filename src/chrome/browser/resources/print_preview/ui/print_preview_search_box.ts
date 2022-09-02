@@ -6,13 +6,15 @@ import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import './print_preview_shared_css.js';
+import './print_preview_shared.css.js';
 
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import {CrSearchFieldBehavior} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.js';
+import {CrSearchFieldMixin} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field_mixin.js';
 import {stripDiacritics} from 'chrome://resources/js/search_highlight_utils.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {getTemplate} from './print_preview_search_box.html.js';
 
 declare global {
   interface HTMLElementEventMap {
@@ -29,11 +31,7 @@ export interface PrintPreviewSearchBoxElement {
 }
 
 const PrintPreviewSearchBoxElementBase =
-    mixinBehaviors(
-        [CrSearchFieldBehavior], WebUIListenerMixin(PolymerElement)) as {
-      new ():
-          PolymerElement & WebUIListenerMixinInterface & CrSearchFieldBehavior
-    };
+    CrSearchFieldMixin(WebUIListenerMixin(PolymerElement));
 
 export class PrintPreviewSearchBoxElement extends
     PrintPreviewSearchBoxElementBase {
@@ -42,7 +40,7 @@ export class PrintPreviewSearchBoxElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -56,21 +54,21 @@ export class PrintPreviewSearchBoxElement extends
     };
   }
 
-  autofocus: boolean;
+  override autofocus: boolean;
   searchQuery: RegExp|null;
   private lastQuery_: string = '';
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addEventListener('search-changed', e => this.onSearchChanged_(e));
   }
 
-  getSearchInput(): CrInputElement {
+  override getSearchInput(): CrInputElement {
     return this.$.searchInput;
   }
 
-  focus() {
+  override focus() {
     this.$.searchInput.focus();
   }
 

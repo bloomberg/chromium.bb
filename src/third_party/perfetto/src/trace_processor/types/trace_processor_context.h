@@ -27,6 +27,7 @@ namespace perfetto {
 namespace trace_processor {
 
 class ArgsTracker;
+class ArgsTranslationTable;
 class AsyncTrackSetTracker;
 class AndroidProbesTracker;
 class ChunkedTraceReader;
@@ -43,6 +44,7 @@ class MetadataTracker;
 class ProtoImporterModule;
 class ProcessTracker;
 class SliceTracker;
+class SliceTranslationTable;
 class FlowTracker;
 class TraceParser;
 class TraceSorter;
@@ -67,10 +69,12 @@ class TraceProcessorContext {
   // trackers, as they may own ArgsTrackers themselves.
   std::unique_ptr<GlobalArgsTracker> global_args_tracker;
   std::unique_ptr<ArgsTracker> args_tracker;
+  std::unique_ptr<ArgsTranslationTable> args_translation_table;
 
   std::unique_ptr<TrackTracker> track_tracker;
   std::unique_ptr<AsyncTrackSetTracker> async_track_set_tracker;
   std::unique_ptr<SliceTracker> slice_tracker;
+  std::unique_ptr<SliceTranslationTable> slice_translation_table;
   std::unique_ptr<FlowTracker> flow_tracker;
   std::unique_ptr<ProcessTracker> process_tracker;
   std::unique_ptr<EventTracker> event_tracker;
@@ -86,12 +90,13 @@ class TraceProcessorContext {
   // the GetOrCreate() method on their subclass type, e.g.
   // SyscallTracker::GetOrCreate(context)
   std::unique_ptr<Destructible> android_probes_tracker;  // AndroidProbesTracker
-  std::unique_ptr<Destructible> syscall_tracker;         // SyscallTracker
-  std::unique_ptr<Destructible> sched_tracker;           // SchedEventTracker
   std::unique_ptr<Destructible> binder_tracker;          // BinderTracker
-  std::unique_ptr<Destructible> systrace_parser;         // SystraceParser
   std::unique_ptr<Destructible> heap_graph_tracker;      // HeapGraphTracker
+  std::unique_ptr<Destructible> sched_tracker;           // SchedEventTracker
+  std::unique_ptr<Destructible> syscall_tracker;         // SyscallTracker
   std::unique_ptr<Destructible> system_info_tracker;     // SystemInfoTracker
+  std::unique_ptr<Destructible> systrace_parser;         // SystraceParser
+  std::unique_ptr<Destructible> thread_state_tracker;    // ThreadStateTracker
 
   // These fields are trace readers which will be called by |forwarding_parser|
   // once the format of the trace is discovered. They are placed here as they

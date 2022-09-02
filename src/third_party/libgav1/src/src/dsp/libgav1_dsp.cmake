@@ -113,6 +113,7 @@ list(APPEND libgav1_dsp_sources_neon
             "${libgav1_source}/dsp/arm/inverse_transform_10bit_neon.cc"
             "${libgav1_source}/dsp/arm/inverse_transform_neon.cc"
             "${libgav1_source}/dsp/arm/inverse_transform_neon.h"
+            "${libgav1_source}/dsp/arm/loop_filter_10bit_neon.cc"
             "${libgav1_source}/dsp/arm/loop_filter_neon.cc"
             "${libgav1_source}/dsp/arm/loop_filter_neon.h"
             "${libgav1_source}/dsp/arm/loop_restoration_10bit_neon.cc"

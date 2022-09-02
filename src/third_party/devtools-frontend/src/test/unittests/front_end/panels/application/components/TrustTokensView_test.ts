@@ -6,8 +6,15 @@ import * as ApplicationComponents from '../../../../../../front_end/panels/appli
 import * as DataGrid from '../../../../../../front_end/ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../../../../front_end/ui/components/render_coordinator/render_coordinator.js';
 import type * as Protocol from '../../../../../../front_end/generated/protocol.js';
-import {assertElement, assertShadowRoot, dispatchClickEvent, getElementWithinComponent, renderElementIntoDOM} from '../../../helpers/DOMHelpers.js';
+import {
+  assertElement,
+  assertShadowRoot,
+  dispatchClickEvent,
+  getElementWithinComponent,
+  renderElementIntoDOM,
+} from '../../../helpers/DOMHelpers.js';
 import {getCellByIndexes, getValuesOfAllBodyRows} from '../../../ui/components/DataGridHelpers.js';
+import {describeWithLocale} from '../../../helpers/EnvironmentHelpers.js';
 
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 
@@ -35,7 +42,7 @@ function getInternalDataGridShadowRoot(component: ApplicationComponents.TrustTok
   return dataGrid.shadowRoot;
 }
 
-describe('TrustTokensView', () => {
+describeWithLocale('TrustTokensView', () => {
   it('renders trust token data', async () => {
     const component = await renderTrustTokensView([
       {issuerOrigin: 'foo.com', count: 42},

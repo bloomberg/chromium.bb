@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_page_visuals.h"
 #include "components/offline_pages/task/task.h"
@@ -20,7 +21,7 @@ class CleanupVisualsTask : public Task {
  public:
   struct Result {
     bool success = false;
-    int removed_rows = 0;
+    int64_t removed_rows = 0;
   };
 
   CleanupVisualsTask(OfflinePageMetadataStore* store,

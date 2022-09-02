@@ -39,12 +39,7 @@ AudioNodeOutput::AudioNodeOutput(AudioHandler* handler,
                                  unsigned number_of_channels)
     : handler_(*handler),
       number_of_channels_(number_of_channels),
-      desired_number_of_channels_(number_of_channels),
-      is_in_place_(false),
-      is_enabled_(true),
-      did_call_dispose_(false),
-      rendering_fan_out_count_(0),
-      rendering_param_fan_out_count_(0) {
+      desired_number_of_channels_(number_of_channels) {
   DCHECK_LE(number_of_channels, BaseAudioContext::MaxNumberOfChannels());
 
   internal_bus_ = AudioBus::Create(
@@ -79,8 +74,9 @@ void AudioNodeOutput::SetNumberOfChannels(unsigned number_of_channels) {
 }
 
 void AudioNodeOutput::UpdateInternalBus() {
-  if (NumberOfChannels() == internal_bus_->NumberOfChannels())
+  if (NumberOfChannels() == internal_bus_->NumberOfChannels()) {
     return;
+  }
 
   internal_bus_ = AudioBus::Create(
       NumberOfChannels(), GetDeferredTaskHandler().RenderQuantumFrames());
@@ -110,8 +106,9 @@ void AudioNodeOutput::PropagateChannelCount() {
   if (IsChannelCountKnown()) {
     // Announce to any nodes we're connected to that we changed our channel
     // count for its input.
-    for (AudioNodeInput* i : inputs_)
+    for (AudioNodeInput* i : inputs_) {
       i->Handler().CheckNumberOfChannelsForInput(i);
+    }
   }
 }
 
@@ -163,8 +160,9 @@ void AudioNodeOutput::DisconnectAllInputs() {
   // Disconnect changes inputs_, so we can't iterate directly over the hash set.
   Vector<AudioNodeInput*, 4> inputs;
   CopyToVector(inputs_, inputs);
-  for (AudioNodeInput* input : inputs)
+  for (AudioNodeInput* input : inputs) {
     AudioNodeWiring::Disconnect(*this, *input);
+  }
   DCHECK(inputs_.IsEmpty());
 }
 
@@ -174,8 +172,9 @@ void AudioNodeOutput::DisconnectAllParams() {
   // Disconnect changes params_, so we can't iterate directly over the hash set.
   Vector<AudioParamHandler*, 4> params;
   CopyToVector(params_, params);
-  for (AudioParamHandler* param : params)
+  for (AudioParamHandler* param : params) {
     AudioNodeWiring::Disconnect(*this, *param);
+  }
   DCHECK(params_.IsEmpty());
 }
 
@@ -189,8 +188,9 @@ void AudioNodeOutput::Disable() {
 
   if (is_enabled_) {
     is_enabled_ = false;
-    for (AudioNodeInput* input : inputs_)
+    for (AudioNodeInput* input : inputs_) {
       AudioNodeWiring::Disable(*this, *input);
+    }
   }
 }
 
@@ -199,8 +199,9 @@ void AudioNodeOutput::Enable() {
 
   if (!is_enabled_) {
     is_enabled_ = true;
-    for (AudioNodeInput* input : inputs_)
+    for (AudioNodeInput* input : inputs_) {
       AudioNodeWiring::Enable(*this, *input);
+    }
   }
 }
 

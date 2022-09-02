@@ -30,16 +30,8 @@ function ScanningAppBrowserTest() {}
 
 ScanningAppBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
-
   browsePreload: 'chrome://scanning/test_loader.html?module=chromeos/' +
       'scanning/scanning_app_unified_test.js',
-
-  featureList: {
-    enabled: [
-      'chromeos::features::kScanAppMultiPageScan',
-      'chromeos::features::kScanAppSearchablePdf',
-    ]
-  },
 };
 
 // List of names of suites in unified test to register for individual debugging.
@@ -52,7 +44,8 @@ const debug_suites_list = [
   'SourceSelect'
 ];
 
-TEST_F('ScanningAppBrowserTest', 'All', function() {
+// Flaky. See crbug.com/1334465
+TEST_F('ScanningAppBrowserTest', 'DISABLED_All', function() {
   assertDeepEquals(
       debug_suites_list, test_suites_list,
       'List of registered tests suites and debug suites do not match.\n' +

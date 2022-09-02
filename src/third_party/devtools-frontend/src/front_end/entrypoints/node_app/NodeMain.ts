@@ -6,6 +6,7 @@ import type * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
+import type * as Platform from '../../core/platform/platform.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
 
@@ -37,38 +38,38 @@ export class NodeMainImpl implements Common.Runnable.Runnable {
   }
   async run(): Promise<void> {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSFromFrontend);
-    SDK.Connections.initMainConnection(async () => {
+    void SDK.Connections.initMainConnection(async () => {
       const target = SDK.TargetManager.TargetManager.instance().createTarget(
           'main', i18nString(UIStrings.main), SDK.Target.Type.Browser, null);
-      target.setInspectedURL('Node.js');
+      target.setInspectedURL('Node.js' as Platform.DevToolsPath.UrlString);
     }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
   }
 }
 
 export class NodeChildTargetManager extends SDK.SDKModel.SDKModel<void> implements ProtocolProxyApi.TargetDispatcher {
-  private readonly targetManager: SDK.TargetManager.TargetManager;
-  private readonly parentTarget: SDK.Target.Target;
-  private readonly targetAgent: ProtocolProxyApi.TargetApi;
-  private readonly childTargets: Map<Protocol.Target.SessionID, SDK.Target.Target>;
-  private readonly childConnections: Map<string, NodeConnection>;
+  readonly #targetManager: SDK.TargetManager.TargetManager;
+  readonly #parentTarget: SDK.Target.Target;
+  readonly #targetAgent: ProtocolProxyApi.TargetApi;
+  readonly #childTargets: Map<Protocol.Target.SessionID, SDK.Target.Target>;
+  readonly #childConnections: Map<string, NodeConnection>;
   constructor(parentTarget: SDK.Target.Target) {
     super(parentTarget);
-    this.targetManager = parentTarget.targetManager();
-    this.parentTarget = parentTarget;
-    this.targetAgent = parentTarget.targetAgent();
-    this.childTargets = new Map();
-    this.childConnections = new Map();
+    this.#targetManager = parentTarget.targetManager();
+    this.#parentTarget = parentTarget;
+    this.#targetAgent = parentTarget.targetAgent();
+    this.#childTargets = new Map();
+    this.#childConnections = new Map();
 
     parentTarget.registerTargetDispatcher(this);
-    this.targetAgent.invoke_setDiscoverTargets({discover: true});
+    void this.#targetAgent.invoke_setDiscoverTargets({discover: true});
 
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
-        Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.devicesDiscoveryConfigChanged, this);
+        Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(false);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(true);
   }
 
-  private devicesDiscoveryConfigChanged({data: config}: Common.EventTarget.EventTargetEvent<Adb.Config>): void {
+  #devicesDiscoveryConfigChanged({data: config}: Common.EventTarget.EventTargetEvent<Adb.Config>): void {
     const locations = [];
     for (const address of config.networkDiscoveryConfig) {
       const parts = address.split(':');
@@ -77,21 +78,21 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel<void> implemen
         locations.push({host: parts[0], port: port});
       }
     }
-    this.targetAgent.invoke_setRemoteLocations({locations});
+    void this.#targetAgent.invoke_setRemoteLocations({locations});
   }
 
   dispose(): void {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(
-        Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.devicesDiscoveryConfigChanged, this);
+        Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);
 
-    for (const sessionId of this.childTargets.keys()) {
+    for (const sessionId of this.#childTargets.keys()) {
       this.detachedFromTarget({sessionId});
     }
   }
 
   targetCreated({targetInfo}: Protocol.Target.TargetCreatedEvent): void {
     if (targetInfo.type === 'node' && !targetInfo.attached) {
-      this.targetAgent.invoke_attachToTarget({targetId: targetInfo.targetId, flatten: false});
+      void this.#targetAgent.invoke_attachToTarget({targetId: targetInfo.targetId, flatten: false});
     }
   }
 
@@ -103,25 +104,25 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel<void> implemen
 
   attachedToTarget({sessionId, targetInfo}: Protocol.Target.AttachedToTargetEvent): void {
     const name = i18nString(UIStrings.nodejsS, {PH1: targetInfo.url});
-    const connection = new NodeConnection(this.targetAgent, sessionId);
-    this.childConnections.set(sessionId, connection);
-    const target = this.targetManager.createTarget(
-        targetInfo.targetId, name, SDK.Target.Type.Node, this.parentTarget, undefined, undefined, connection);
-    this.childTargets.set(sessionId, target);
-    target.runtimeAgent().invoke_runIfWaitingForDebugger();
+    const connection = new NodeConnection(this.#targetAgent, sessionId);
+    this.#childConnections.set(sessionId, connection);
+    const target = this.#targetManager.createTarget(
+        targetInfo.targetId, name, SDK.Target.Type.Node, this.#parentTarget, undefined, undefined, connection);
+    this.#childTargets.set(sessionId, target);
+    void target.runtimeAgent().invoke_runIfWaitingForDebugger();
   }
 
   detachedFromTarget({sessionId}: Protocol.Target.DetachedFromTargetEvent): void {
-    const childTarget = this.childTargets.get(sessionId);
+    const childTarget = this.#childTargets.get(sessionId);
     if (childTarget) {
       childTarget.dispose('target terminated');
     }
-    this.childTargets.delete(sessionId);
-    this.childConnections.delete(sessionId);
+    this.#childTargets.delete(sessionId);
+    this.#childConnections.delete(sessionId);
   }
 
   receivedMessageFromTarget({sessionId, message}: Protocol.Target.ReceivedMessageFromTargetEvent): void {
-    const connection = this.childConnections.get(sessionId);
+    const connection = this.#childConnections.get(sessionId);
     const onMessage = connection ? connection.onMessage : null;
     if (onMessage) {
       onMessage.call(null, message);
@@ -133,15 +134,15 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel<void> implemen
 }
 
 export class NodeConnection implements ProtocolClient.InspectorBackend.Connection {
-  private readonly targetAgent: ProtocolProxyApi.TargetApi;
-  private readonly sessionId: Protocol.Target.SessionID;
+  readonly #targetAgent: ProtocolProxyApi.TargetApi;
+  readonly #sessionId: Protocol.Target.SessionID;
   onMessage: ((arg0: (Object|string)) => void)|null;
-  private onDisconnect: ((arg0: string) => void)|null;
+  #onDisconnect: ((arg0: string) => void)|null;
   constructor(targetAgent: ProtocolProxyApi.TargetApi, sessionId: Protocol.Target.SessionID) {
-    this.targetAgent = targetAgent;
-    this.sessionId = sessionId;
+    this.#targetAgent = targetAgent;
+    this.#sessionId = sessionId;
     this.onMessage = null;
-    this.onDisconnect = null;
+    this.#onDisconnect = null;
   }
 
   setOnMessage(onMessage: (arg0: (Object|string)) => void): void {
@@ -149,20 +150,20 @@ export class NodeConnection implements ProtocolClient.InspectorBackend.Connectio
   }
 
   setOnDisconnect(onDisconnect: (arg0: string) => void): void {
-    this.onDisconnect = onDisconnect;
+    this.#onDisconnect = onDisconnect;
   }
 
   sendRawMessage(message: string): void {
-    this.targetAgent.invoke_sendMessageToTarget({message, sessionId: this.sessionId});
+    void this.#targetAgent.invoke_sendMessageToTarget({message, sessionId: this.#sessionId});
   }
 
   async disconnect(): Promise<void> {
-    if (this.onDisconnect) {
-      this.onDisconnect.call(null, 'force disconnect');
+    if (this.#onDisconnect) {
+      this.#onDisconnect.call(null, 'force disconnect');
     }
-    this.onDisconnect = null;
+    this.#onDisconnect = null;
     this.onMessage = null;
-    await this.targetAgent.invoke_detachFromTarget({sessionId: this.sessionId});
+    await this.#targetAgent.invoke_detachFromTarget({sessionId: this.#sessionId});
   }
 }
 

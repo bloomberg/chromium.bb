@@ -35,9 +35,9 @@
 #include "extensions/browser/management_policy.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser_list_observer.h"
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 class PrefService;
 class Profile;
@@ -60,9 +60,9 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 class Browser;
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 // This class handles all the information related to a given supervised profile
 // (e.g. the default URL filtering behavior, or manual allowlist/denylist
@@ -73,7 +73,7 @@ class SupervisedUserService : public KeyedService,
                               public extensions::ManagementPolicy::Provider,
 #endif
                               public syncer::SyncTypePreferenceProvider,
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
                               public BrowserListObserver,
 #endif
                               public SupervisedUserURLFilter::Observer {
@@ -94,7 +94,7 @@ class SupervisedUserService : public KeyedService,
   enum class DenylistSource {
     kNoSource = 0,
     kDenylist = 1,
-    kOldDenylist = 2,
+    kOldDenylist = 2,  // Deprecated.
     // Used for UMA. Update kMaxValue to the last value. Add future entries
     // above this comment. Sync with enums.xml.
     kMaxValue = kOldDenylist,
@@ -121,7 +121,7 @@ class SupervisedUserService : public KeyedService,
 
   static const char* GetDenylistSourceHistogramForTesting();
 
-  static base::FilePath GetDenylistPathForTesting(bool isOldPath);
+  static base::FilePath GetDenylistPathForTesting();
 
   WebApprovalsManager& web_approvals_manager() {
     return web_approvals_manager_;
@@ -189,22 +189,22 @@ class SupervisedUserService : public KeyedService,
   // SyncTypePreferenceProvider implementation:
   bool IsCustomPassphraseAllowed() const override;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // BrowserListObserver implementation:
   void OnBrowserSetLastActive(Browser* browser) override;
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // SupervisedUserURLFilter::Observer implementation:
   void OnSiteListUpdated() override;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   bool signout_required_after_supervision_enabled() {
     return signout_required_after_supervision_enabled_;
   }
   void set_signout_required_after_supervision_enabled() {
     signout_required_after_supervision_enabled_ = true;
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Updates the set of approved extensions to add approval for |extension|.
@@ -230,11 +230,11 @@ class SupervisedUserService : public KeyedService,
   void RecordExtensionEnablementUmaMetrics(bool enabled) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Reports FamilyUser.WebFilterType and FamilyUser.ManagedSiteList metrics.
-  // Igores reporting when AreWebFilterPrefsDefault() is true.
+  // TODO(https://crbug.com/1288986): Enable web filter metrics reporting in
+  // LaCrOS.
+  // Reports FamilyUser.WebFilterType and FamilyUser.ManagedSiteList
+  // metrics. Ignores reporting when AreWebFilterPrefsDefault() is true.
   void ReportNonDefaultWebFilterValue() const;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
  private:
   friend class SupervisedUserServiceExtensionTestBase;
@@ -409,11 +409,12 @@ class SupervisedUserService : public KeyedService,
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   bool signout_required_after_supervision_enabled_ = false;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(https://crbug.com/1288986): Enable web filter metrics reporting in
+  // LaCrOS.
   // When there is change between WebFilterType::kTryToBlockMatureSites and
   // WebFilterType::kCertainSites, both
   // prefs::kDefaultSupervisedUserFilteringBehavior and
@@ -421,7 +422,6 @@ class SupervisedUserService : public KeyedService,
   // reports. Initialized in the SetActive().
   SupervisedUserURLFilter::WebFilterType current_web_filter_type_ =
       SupervisedUserURLFilter::WebFilterType::kMaxValue;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_{this};
 };

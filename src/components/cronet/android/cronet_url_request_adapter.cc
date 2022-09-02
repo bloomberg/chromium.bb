@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "components/cronet/android/cronet_context_adapter.h"
 #include "components/cronet/android/cronet_jni_headers/CronetUrlRequest_jni.h"
-#include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "components/cronet/android/io_buffer_with_byte_buffer.h"
 #include "components/cronet/android/url_request_error.h"
 #include "components/cronet/metrics_util.h"
@@ -28,7 +28,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 
@@ -71,10 +71,10 @@ static jlong JNI_CronetUrlRequest_CreateRequestAdapter(
     jint jtraffic_stats_tag,
     jboolean jtraffic_stats_uid_set,
     jint jtraffic_stats_uid,
-    jint jidempotency) {
-  CronetURLRequestContextAdapter* context_adapter =
-      reinterpret_cast<CronetURLRequestContextAdapter*>(
-          jurl_request_context_adapter);
+    jint jidempotency,
+    jlong jnetwork_handle) {
+  CronetContextAdapter* context_adapter =
+      reinterpret_cast<CronetContextAdapter*>(jurl_request_context_adapter);
   DCHECK(context_adapter);
 
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl_string));
@@ -87,13 +87,13 @@ static jlong JNI_CronetUrlRequest_CreateRequestAdapter(
       static_cast<net::RequestPriority>(jpriority), jdisable_cache,
       jdisable_connection_migration, jenable_metrics, jtraffic_stats_tag_set,
       jtraffic_stats_tag, jtraffic_stats_uid_set, jtraffic_stats_uid,
-      static_cast<net::Idempotency>(jidempotency));
+      static_cast<net::Idempotency>(jidempotency), jnetwork_handle);
 
   return reinterpret_cast<jlong>(adapter);
 }
 
 CronetURLRequestAdapter::CronetURLRequestAdapter(
-    CronetURLRequestContextAdapter* context,
+    CronetContextAdapter* context,
     JNIEnv* env,
     jobject jurl_request,
     const GURL& url,
@@ -105,7 +105,8 @@ CronetURLRequestAdapter::CronetURLRequestAdapter(
     jint jtraffic_stats_tag,
     jboolean jtraffic_stats_uid_set,
     jint jtraffic_stats_uid,
-    net::Idempotency idempotency)
+    net::Idempotency idempotency,
+    jlong network)
     : request_(
           new CronetURLRequest(context->cronet_url_request_context(),
                                std::unique_ptr<CronetURLRequestAdapter>(this),
@@ -118,7 +119,8 @@ CronetURLRequestAdapter::CronetURLRequestAdapter(
                                jtraffic_stats_tag,
                                jtraffic_stats_uid_set == JNI_TRUE,
                                jtraffic_stats_uid,
-                               idempotency)) {
+                               idempotency,
+                               network)) {
   owner_.Reset(env, jurl_request);
 }
 

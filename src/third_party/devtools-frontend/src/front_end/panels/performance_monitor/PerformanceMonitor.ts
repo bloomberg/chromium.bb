@@ -89,8 +89,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox implements
     this.scaleHeight = 16;
     /** @const */
     this.graphHeight = 90;
-    this.gridColor = ThemeSupport.ThemeSupport.instance().patchColorText(
-        'rgba(0, 0, 0, 0.08)', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    this.gridColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--divider-line');
     this.controlPane = new ControlPane(this.contentElement);
     const chartContainer = this.contentElement.createChild('div', 'perfmon-chart-container');
     this.canvas = chartContainer.createChild('canvas') as HTMLCanvasElement;
@@ -116,9 +115,10 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox implements
       return;
     }
     this.registerCSSFiles([performanceMonitorStyles]);
+    this.controlPane.instantiateMetricData();
     SDK.TargetManager.TargetManager.instance().addEventListener(
         SDK.TargetManager.Events.SuspendStateChanged, this.suspendStateChanged, this);
-    this.model.enable();
+    void this.model.enable();
     this.suspendStateChanged();
   }
 
@@ -129,7 +129,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox implements
     SDK.TargetManager.TargetManager.instance().removeEventListener(
         SDK.TargetManager.Events.SuspendStateChanged, this.suspendStateChanged, this);
     this.stopPolling();
-    this.model.disable();
+    void this.model.disable();
   }
 
   modelAdded(model: SDK.PerformanceMetricsModel.PerformanceMetricsModel): void {
@@ -220,11 +220,9 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox implements
 
   private drawHorizontalGrid(ctx: CanvasRenderingContext2D): void {
     const labelDistanceSeconds = 10;
-    const lightGray = ThemeSupport.ThemeSupport.instance().patchColorText(
-        'rgba(0, 0, 0, 0.02)', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    const lightGray = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-inverted-opacity-2');
     ctx.font = '10px ' + Host.Platform.fontFamily();
-    ctx.fillStyle = ThemeSupport.ThemeSupport.instance().patchColorText(
-        'rgba(0, 0, 0, 0.55)', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    ctx.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-inverted-opacity-50');
     const currentTime = Date.now() / 1000;
     for (let sec = Math.ceil(currentTime);; --sec) {
       const x = this.width - ((currentTime - sec) * 1000 - this.pollIntervalMs) * this.pixelsPerMs;
@@ -259,7 +257,8 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox implements
         color: metricInfo.color,
       });
     }
-    const backgroundColor = Common.Color.Color.parse(UI.Utils.getThemeColorValue('--color-background'));
+    const backgroundColor =
+        Common.Color.Color.parse(ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background'));
 
     if (backgroundColor) {
       for (const path of paths.reverse()) {
@@ -277,8 +276,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox implements
         ctx.restore();
       }
     }
-    ctx.fillStyle = ThemeSupport.ThemeSupport.instance().patchColorText(
-        'rgba(0, 0, 0, 0.55)', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    ctx.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-inverted-opacity-50');
     ctx.font = `10px  ${Host.Platform.fontFamily()}`;
     ctx.fillText(chartInfo.title, 8, 10);
     this.drawVerticalGrid(ctx, height - bottomPadding, max, chartInfo);
@@ -327,8 +325,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox implements
     const span = max;
     const topPadding = 18;
     const visibleHeight = height - topPadding;
-    ctx.fillStyle = ThemeSupport.ThemeSupport.instance().patchColorText(
-        'rgba(0, 0, 0, 0.55)', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    ctx.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-inverted-opacity-50');
     ctx.strokeStyle = this.gridColor;
     ctx.beginPath();
     for (let i = 0; i < 2; ++i) {
@@ -345,8 +342,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox implements
     ctx.beginPath();
     ctx.moveTo(0, height + 0.5);
     ctx.lineTo(this.width, height + 0.5);
-    ctx.strokeStyle = ThemeSupport.ThemeSupport.instance().patchColorText(
-        'rgba(0, 0, 0, 0.2)', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    ctx.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-inverted-opacity-2');
     ctx.stroke();
     function calcY(value: number): number {
       return Math.round(height - visibleHeight * value / span) + 0.5;
@@ -443,8 +439,9 @@ export class ControlPane extends Common.ObjectWrapper.ObjectWrapper<EventTypes> 
   element: Element;
   private readonly enabledChartsSetting: Common.Settings.Setting<string[]>;
   private readonly enabledCharts: Set<string>;
-  private readonly chartsInfo: ChartInfo[];
-  private readonly indicators: Map<string, MetricIndicator>;
+
+  private chartsInfo: ChartInfo[] = [];
+  private indicators: Map<string, MetricIndicator> = new Map();
 
   constructor(parent: Element) {
     super();
@@ -453,7 +450,9 @@ export class ControlPane extends Common.ObjectWrapper.ObjectWrapper<EventTypes> 
     this.enabledChartsSetting = Common.Settings.Settings.instance().createSetting(
         'perfmonActiveIndicators2', ['TaskDuration', 'JSHeapTotalSize', 'Nodes']);
     this.enabledCharts = new Set(this.enabledChartsSetting.get());
+  }
 
+  instantiateMetricData(): void {
     const defaults = {
       color: undefined,
       format: undefined,
@@ -463,55 +462,112 @@ export class ControlPane extends Common.ObjectWrapper.ObjectWrapper<EventTypes> 
       stacked: undefined,
     };
 
+    // Get ThemeSupport instance here just to make things a little less verbose.
+    const themeSupport = ThemeSupport.ThemeSupport.instance();
     this.chartsInfo = [
       {
         ...defaults,
         title: i18nString(UIStrings.cpuUsage),
         metrics: [
-          {name: 'TaskDuration', color: '#999'},
-          {name: 'ScriptDuration', color: 'orange'},
-          {name: 'LayoutDuration', color: 'blueviolet'},
-          {name: 'RecalcStyleDuration', color: 'violet'},
+          {
+            name: 'TaskDuration',
+            color: themeSupport.getComputedValue('--override-color-perf-monitor-cpu-task-duration', this.element),
+          },
+          {
+            name: 'ScriptDuration',
+            color: themeSupport.getComputedValue('--override-color-perf-monitor-cpu-script-duration', this.element),
+          },
+          {
+            name: 'LayoutDuration',
+            color: themeSupport.getComputedValue('--override-color-perf-monitor-cpu-layout-duration', this.element),
+          },
+          {
+            name: 'RecalcStyleDuration',
+            color:
+                themeSupport.getComputedValue('--override-color-perf-monitor-cpu-recalc-style-duration', this.element),
+          },
         ],
         format: Format.Percent,
         smooth: true,
         stacked: true,
-        color: 'red',
+        color: themeSupport.getComputedValue('--override-color-perf-monitor-cpu', this.element),
         max: 1,
         currentMax: undefined,
       },
       {
         ...defaults,
         title: i18nString(UIStrings.jsHeapSize),
-        metrics: [{name: 'JSHeapTotalSize', color: '#99f'}, {name: 'JSHeapUsedSize', color: 'blue'}],
+        metrics: [
+          {
+            name: 'JSHeapTotalSize',
+            color: themeSupport.getComputedValue('--override-color-perf-monitor-jsheap-total-size', this.element),
+          },
+          {
+            name: 'JSHeapUsedSize',
+            color: themeSupport.getComputedValue('--override-color-perf-monitor-jsheap-used-size', this.element),
+          },
+        ],
         format: Format.Bytes,
-        color: 'blue',
+        color: themeSupport.getComputedValue('--override-color-perf-monitor-jsheap'),
       },
-      {...defaults, title: i18nString(UIStrings.domNodes), metrics: [{name: 'Nodes', color: 'green'}]},
+      {
+        ...defaults,
+        title: i18nString(UIStrings.domNodes),
+        metrics: [
+          {
+            name: 'Nodes',
+            color: themeSupport.getComputedValue('--override-color-perf-monitor-dom-nodes', this.element),
+          },
+        ],
+      },
       {
         ...defaults,
         title: i18nString(UIStrings.jsEventListeners),
-        metrics: [{name: 'JSEventListeners', color: 'yellowgreen'}],
+        metrics: [
+          {
+            name: 'JSEventListeners',
+            color: themeSupport.getComputedValue('--override-color-perf-monitor-js-event-listeners', this.element),
+          },
+        ],
       },
-      {...defaults, title: i18nString(UIStrings.documents), metrics: [{name: 'Documents', color: 'darkblue'}]},
-      {...defaults, title: i18nString(UIStrings.documentFrames), metrics: [{name: 'Frames', color: 'darkcyan'}]},
-      {...defaults, title: i18nString(UIStrings.layoutsSec), metrics: [{name: 'LayoutCount', color: 'hotpink'}]},
+      {
+        ...defaults,
+        title: i18nString(UIStrings.documents),
+        metrics: [{
+          name: 'Documents',
+          color: themeSupport.getComputedValue('--override-color-perf-monitor-documents', this.element),
+        }],
+      },
+      {
+        ...defaults,
+        title: i18nString(UIStrings.documentFrames),
+        metrics: [{
+          name: 'Frames',
+          color: themeSupport.getComputedValue('--override-color-perf-monitor-document-frames', this.element),
+        }],
+      },
+      {
+        ...defaults,
+        title: i18nString(UIStrings.layoutsSec),
+        metrics: [{
+          name: 'LayoutCount',
+          color: themeSupport.getComputedValue('--override-color-perf-monitor-layout-count', this.element),
+        }],
+      },
       {
         ...defaults,
         title: i18nString(UIStrings.styleRecalcsSec),
-        metrics: [{name: 'RecalcStyleCount', color: 'deeppink'}],
+        metrics: [
+          {
+            name: 'RecalcStyleCount',
+            color: themeSupport.getComputedValue('--override-color-perf-monitor-recalc-style-count', this.element),
+          },
+        ],
       },
     ];
-    for (const info of this.chartsInfo) {
-      if (info.color) {
-        info.color = ThemeSupport.ThemeSupport.instance().patchColorText(
-            info.color, ThemeSupport.ThemeSupport.ColorUsage.Foreground);
-      }
-      for (const metric of info.metrics) {
-        metric.color = ThemeSupport.ThemeSupport.instance().patchColorText(
-            metric.color, ThemeSupport.ThemeSupport.ColorUsage.Foreground);
-      }
-    }
+
+    // Clear any existing child elements.
+    this.element.removeChildren();
 
     this.indicators = new Map();
     for (const chartInfo of this.chartsInfo) {

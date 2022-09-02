@@ -21,7 +21,7 @@
 // Deal with i387 extended precision
 #if EIGEN_ARCH_i386 && !(EIGEN_ARCH_x86_64)
 
-#if EIGEN_COMP_GNUC_STRICT && EIGEN_GNUC_AT_LEAST(4,4)
+#if EIGEN_COMP_GNUC_STRICT
 #pragma GCC optimize ("-ffloat-store")
 #else
 #undef VERIFY_IS_EQUAL
@@ -204,7 +204,7 @@ void ref_vector_fixed_sizes()
 template<typename PlainObjectType> void check_const_correctness(const PlainObjectType&)
 {
   // verify that ref-to-const don't have LvalueBit
-  typedef typename internal::add_const<PlainObjectType>::type ConstPlainObjectType;
+  typedef std::add_const_t<PlainObjectType> ConstPlainObjectType;
   VERIFY( !(internal::traits<Ref<ConstPlainObjectType> >::Flags & LvalueBit) );
   VERIFY( !(internal::traits<Ref<ConstPlainObjectType, Aligned> >::Flags & LvalueBit) );
   VERIFY( !(Ref<ConstPlainObjectType>::Flags & LvalueBit) );

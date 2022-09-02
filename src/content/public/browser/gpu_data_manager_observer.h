@@ -26,7 +26,7 @@ class CONTENT_EXPORT GpuDataManagerObserver {
   virtual void OnGpuExtraInfoUpdate() {}
 
   // Called for any observer when the GPU process crashed.
-  virtual void OnGpuProcessCrashed(base::TerminationStatus exit_code) {}
+  virtual void OnGpuProcessCrashed() {}
 
   // Called for any observers whenever there is a log message added to the GPU data.
   virtual void OnAddLogMessage(int level, const std::string& header, const std::string& message) {}

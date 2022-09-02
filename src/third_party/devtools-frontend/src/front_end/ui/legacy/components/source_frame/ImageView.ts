@@ -84,7 +84,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/source_frame/ImageView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ImageView extends UI.View.SimpleView {
-  private url: string;
+  private url: Platform.DevToolsPath.UrlString;
   private parsedURL: Common.ParsedURL.ParsedURL;
   private readonly mimeType: string;
   private readonly contentProvider: TextUtils.ContentProvider.ContentProvider;
@@ -98,7 +98,6 @@ export class ImageView extends UI.View.SimpleView {
   private cachedContent?: string|null;
   constructor(mimeType: string, contentProvider: TextUtils.ContentProvider.ContentProvider) {
     super(i18nString(UIStrings.image));
-    // eslint-disable-next-line no-restricted-syntax -- Should import styles https://crbug.com/1106746
     this.registerRequiredCSS(imageViewStyles);
     this.element.tabIndex = -1;
     this.element.classList.add('image-view');
@@ -139,7 +138,7 @@ export class ImageView extends UI.View.SimpleView {
   }
 
   wasShown(): void {
-    this.updateContentIfNeeded();
+    void this.updateContentIfNeeded();
   }
 
   disposeView(): void {
@@ -150,7 +149,7 @@ export class ImageView extends UI.View.SimpleView {
   }
 
   private workingCopyCommitted(): void {
-    this.updateContentIfNeeded();
+    void this.updateContentIfNeeded();
   }
 
   private async updateContentIfNeeded(): Promise<void> {
@@ -192,7 +191,7 @@ export class ImageView extends UI.View.SimpleView {
       await this.saveImage();
     });
 
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private copyImageAsDataURL(): void {

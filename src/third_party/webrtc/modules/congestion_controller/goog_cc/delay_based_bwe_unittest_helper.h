@@ -22,7 +22,6 @@
 #include "api/transport/network_types.h"
 #include "modules/congestion_controller/goog_cc/acknowledged_bitrate_estimator.h"
 #include "modules/congestion_controller/goog_cc/delay_based_bwe.h"
-#include "rtc_base/constructor_magic.h"
 #include "system_wrappers/include/clock.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
@@ -54,6 +53,9 @@ class RtpStream {
 
   RtpStream(int fps, int bitrate_bps);
 
+  RtpStream(const RtpStream&) = delete;
+  RtpStream& operator=(const RtpStream&) = delete;
+
   // Generates a new frame for this stream. If called too soon after the
   // previous frame, no frame will be generated. The frame is split into
   // packets.
@@ -74,14 +76,15 @@ class RtpStream {
   int fps_;
   int bitrate_bps_;
   int64_t next_rtp_time_;
-
-  RTC_DISALLOW_COPY_AND_ASSIGN(RtpStream);
 };
 
 class StreamGenerator {
  public:
   StreamGenerator(int capacity, int64_t time_now);
   ~StreamGenerator();
+
+  StreamGenerator(const StreamGenerator&) = delete;
+  StreamGenerator& operator=(const StreamGenerator&) = delete;
 
   // Add a new stream.
   void AddStream(RtpStream* stream);
@@ -108,14 +111,13 @@ class StreamGenerator {
   int64_t prev_arrival_time_us_;
   // All streams being transmitted on this simulated channel.
   std::vector<std::unique_ptr<RtpStream>> streams_;
-
-  RTC_DISALLOW_COPY_AND_ASSIGN(StreamGenerator);
 };
 }  // namespace test
 
-class DelayBasedBweTest : public ::testing::TestWithParam<std::string> {
+class DelayBasedBweTest : public ::testing::Test {
  public:
   DelayBasedBweTest();
+  explicit DelayBasedBweTest(const std::string& field_trial_string);
   ~DelayBasedBweTest() override;
 
  protected:
@@ -127,6 +129,10 @@ class DelayBasedBweTest : public ::testing::TestWithParam<std::string> {
                         size_t payload_size);
   void IncomingFeedback(int64_t arrival_time_ms,
                         int64_t send_time_ms,
+                        size_t payload_size,
+                        const PacedPacketInfo& pacing_info);
+  void IncomingFeedback(Timestamp receive_time,
+                        Timestamp send_time,
                         size_t payload_size,
                         const PacedPacketInfo& pacing_info);
 

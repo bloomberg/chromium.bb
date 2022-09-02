@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/scoped_observation.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
@@ -83,7 +84,9 @@ constexpr float kFrameTimestampToleranceSec = 0.1f;
 
 class TestAnimationObserver : public AnimationObserver {
  public:
-  TestAnimationObserver() = default;
+  explicit TestAnimationObserver(Animation* animation) {
+    observation_.Observe(animation);
+  }
   ~TestAnimationObserver() override = default;
   TestAnimationObserver(const TestAnimationObserver&) = delete;
   TestAnimationObserver& operator=(const TestAnimationObserver&) = delete;
@@ -113,6 +116,7 @@ class TestAnimationObserver : public AnimationObserver {
   bool animation_resuming() const { return animation_resuming_; }
 
  private:
+  base::ScopedObservation<Animation, AnimationObserver> observation_{this};
   bool animation_cycle_ended_ = false;
   bool animation_will_start_playing_ = false;
   bool animation_resuming_ = false;
@@ -126,16 +130,13 @@ class TestSkottieFrameDataProvider : public cc::SkottieFrameDataProvider {
     ImageAssetImpl(const ImageAssetImpl& other) = delete;
     ImageAssetImpl& operator=(const ImageAssetImpl& other) = delete;
 
-    absl::optional<cc::SkottieFrameData> GetFrameData(
-        float t,
-        float scale_factor) override {
+    cc::SkottieFrameData GetFrameData(float t, float scale_factor) override {
       last_frame_t_ = t;
       last_frame_scale_factor_ = scale_factor;
       return current_frame_data_;
     }
 
-    void set_current_frame_data(
-        absl::optional<cc::SkottieFrameData> current_frame_data) {
+    void set_current_frame_data(cc::SkottieFrameData current_frame_data) {
       current_frame_data_ = std::move(current_frame_data);
     }
 
@@ -149,7 +150,7 @@ class TestSkottieFrameDataProvider : public cc::SkottieFrameDataProvider {
 
     ~ImageAssetImpl() override = default;
 
-    absl::optional<cc::SkottieFrameData> current_frame_data_;
+    cc::SkottieFrameData current_frame_data_;
     absl::optional<float> last_frame_t_;
     absl::optional<float> last_frame_scale_factor_;
   };
@@ -162,7 +163,8 @@ class TestSkottieFrameDataProvider : public cc::SkottieFrameDataProvider {
 
   scoped_refptr<ImageAsset> LoadImageAsset(
       base::StringPiece resource_id,
-      const base::FilePath& resource_path) override {
+      const base::FilePath& resource_path,
+      const absl::optional<gfx::Size>& size) override {
     auto new_asset = base::MakeRefCounted<ImageAssetImpl>();
     CHECK(current_assets_.emplace(std::string(resource_id), new_asset).second);
     return new_asset;
@@ -292,7 +294,8 @@ class AnimationWithImageAssetsTest : public AnimationTest {
   void SetUp() override {
     canvas_ = std::make_unique<gfx::Canvas>(&record_canvas_, kCanvasImageScale);
     skottie_ = cc::CreateSkottieFromString(cc::kLottieDataWith2Assets);
-    animation_ = std::make_unique<Animation>(skottie_, &frame_data_provider_);
+    animation_ = std::make_unique<Animation>(skottie_, cc::SkottieColorMap(),
+                                             &frame_data_provider_);
     asset_0_ = frame_data_provider_.GetLoadedImageAsset("image_0");
     asset_1_ = frame_data_provider_.GetLoadedImageAsset("image_1");
     ASSERT_THAT(asset_0_, NotNull());
@@ -331,8 +334,7 @@ TEST_F(AnimationTest, InitializationAndLoadingData) {
 }
 
 TEST_F(AnimationTest, PlayLinearAnimation) {
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(300));
 
@@ -349,6 +351,7 @@ TEST_F(AnimationTest, PlayLinearAnimation) {
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0);
   EXPECT_FLOAT_EQ(GetTimerStartOffset(), 0);
   EXPECT_FLOAT_EQ(GetTimerEndOffset(), 1.f);
+  IsAllSameColor(SK_ColorGREEN, canvas()->GetBitmap());
 
   EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
@@ -360,6 +363,7 @@ TEST_F(AnimationTest, PlayLinearAnimation) {
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
                   kAdvance / kAnimationDuration);
   EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()), base::TimeDelta());
+  IsAllSameColor(SK_ColorGREEN, canvas()->GetBitmap());
 
   // Advance the clock to the end of the animation.
   constexpr auto kAdvanceToEnd =
@@ -370,11 +374,11 @@ TEST_F(AnimationTest, PlayLinearAnimation) {
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 1.f);
   EXPECT_TRUE(HasAnimationEnded());
   EXPECT_TRUE(observer.animation_cycle_ended());
+  IsAllSameColor(SK_ColorBLUE, canvas()->GetBitmap());
 }
 
 TEST_F(AnimationTest, StopLinearAnimation) {
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(300));
 
@@ -399,9 +403,7 @@ TEST_F(AnimationTest, PlaySubsectionOfLinearAnimation) {
   constexpr auto kStartTime = base::Milliseconds(400);
   constexpr auto kDuration = base::Milliseconds(1000);
 
-  TestAnimationObserver observer;
-
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(300));
 
@@ -459,8 +461,7 @@ TEST_F(AnimationTest, PausingLinearAnimation) {
   constexpr auto kStartTime = base::Milliseconds(400);
   constexpr auto kDuration = base::Milliseconds(1000);
 
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(200));
 
@@ -505,8 +506,7 @@ TEST_F(AnimationTest, PausingLinearAnimation) {
 }
 
 TEST_F(AnimationTest, PlayLoopAnimation) {
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(300));
 
@@ -551,8 +551,7 @@ TEST_F(AnimationTest, PlaySubsectionOfLoopAnimation) {
   constexpr auto kStartTime = base::Milliseconds(400);
   constexpr auto kDuration = base::Milliseconds(1000);
 
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(300));
 
@@ -610,8 +609,7 @@ TEST_F(AnimationTest, PausingLoopAnimation) {
   constexpr auto kStartTime = base::Milliseconds(400);
   constexpr auto kDuration = base::Milliseconds(1000);
 
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(200));
 
@@ -663,8 +661,7 @@ TEST_F(AnimationTest, PausingLoopAnimation) {
 }
 
 TEST_F(AnimationTest, PlayThrobbingAnimation) {
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(300));
 
@@ -719,8 +716,7 @@ TEST_F(AnimationTest, PlaySubsectionOfThrobbingAnimation) {
   constexpr auto kStartTime = base::Milliseconds(400);
   constexpr auto kDuration = base::Milliseconds(1000);
 
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(300));
 
@@ -890,8 +886,7 @@ TEST_F(AnimationTest, PausingThrobbingAnimation) {
 // Test to see if the race condition is handled correctly. It may happen that we
 // pause the video before it even starts playing.
 TEST_F(AnimationTest, PauseBeforePlay) {
-  TestAnimationObserver observer;
-  animation_->SetAnimationObserver(&observer);
+  TestAnimationObserver observer(animation_.get());
 
   AdvanceClock(base::Milliseconds(300));
 
@@ -947,6 +942,36 @@ TEST_F(AnimationTest, PaintTest) {
   IsAllSameColor(SK_ColorBLUE, canvas.GetBitmap());
 }
 
+TEST_F(AnimationTest, SetsPlaybackSpeed) {
+  TestAnimationObserver observer(animation_.get());
+
+  AdvanceClock(base::Milliseconds(300));
+
+  animation_->SetPlaybackSpeed(2);
+  animation_->Start(Animation::Style::kLinear);
+
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0);
+
+  AdvanceClock(kAnimationDuration / 8);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 1.f / 4);
+
+  AdvanceClock(kAnimationDuration / 8);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 1.f / 2);
+
+  animation_->SetPlaybackSpeed(0.5f);
+
+  AdvanceClock(kAnimationDuration / 4);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), (1.f / 2) + (1.f / 8));
+
+  AdvanceClock(kAnimationDuration / 4);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 3.f / 4);
+}
+
 TEST_F(AnimationWithImageAssetsTest, PaintsAnimationImagesToCanvas) {
   AdvanceClock(base::Milliseconds(300));
 
@@ -992,32 +1017,24 @@ TEST_F(AnimationWithImageAssetsTest, PaintsAnimationImagesToCanvas) {
                               cc::HashSkottieResourceId("image_1"), frame_1)));
 }
 
-TEST_F(AnimationWithImageAssetsTest, SkipsNullAnimationImages) {
+TEST_F(AnimationWithImageAssetsTest, GracefullyHandlesNullImages) {
   AdvanceClock(base::Milliseconds(300));
 
   animation_->Start(Animation::Style::kLoop);
 
-  asset_0_->set_current_frame_data(CreateHighQualityTestFrameData());
-
   display_list_->StartPaint();
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
   display_list_->EndPaintOfUnpaired(gfx::Rect(animation_->GetOriginalSize()));
-  display_list_->ReleaseAsRecord();
 
-  AdvanceClock(animation_->GetAnimationDuration() / 4);
-
-  asset_0_->set_current_frame_data(absl::nullopt);
-
-  display_list_->StartPaint();
-  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  display_list_->EndPaintOfUnpaired(gfx::Rect(animation_->GetOriginalSize()));
   sk_sp<cc::PaintRecord> paint_record = display_list_->ReleaseAsRecord();
   ASSERT_THAT(paint_record, NotNull());
   ASSERT_THAT(paint_record->size(), Eq(1u));
   const cc::DrawSkottieOp* op =
       paint_record->GetOpAtForTesting<cc::DrawSkottieOp>(0);
   ASSERT_THAT(op, NotNull());
-  EXPECT_THAT(op->images, IsEmpty());
+  EXPECT_THAT(op->images,
+              UnorderedElementsAre(Pair(cc::HashSkottieResourceId("image_0"),
+                                        cc::SkottieFrameData())));
 }
 
 TEST_F(AnimationWithImageAssetsTest, LoadsCorrectFrameTimestamp) {
@@ -1081,6 +1098,69 @@ TEST_F(AnimationWithImageAssetsTest, LoadsCorrectImageScale) {
   ASSERT_TRUE(asset_0_->last_frame_scale_factor().has_value());
   EXPECT_THAT(asset_0_->last_frame_scale_factor().value(),
               FloatEq(kCanvasImageScale));
+}
+
+TEST_F(AnimationTest, HandlesTimeStepGreaterThanAnimationDuration) {
+  AdvanceClock(base::Milliseconds(300));
+
+  animation_->Start(Animation::Style::kLoop);
+
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+
+  ASSERT_FLOAT_EQ(animation_->GetCurrentProgress(), 0);
+
+  AdvanceClock(kAnimationDuration / 2);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0.5f);
+
+  AdvanceClock(kAnimationDuration * 5);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0.5f);
+}
+
+class AnimationRestarter : public AnimationObserver {
+ public:
+  explicit AnimationRestarter(Animation* animation) : animation_(animation) {
+    observation_.Observe(animation);
+  }
+  AnimationRestarter(const AnimationRestarter&) = delete;
+  AnimationRestarter& operator=(const AnimationRestarter&) = delete;
+  ~AnimationRestarter() override = default;
+
+  void AnimationCycleEnded(const Animation* animation) override {
+    animation_->Stop();
+    animation_->Start(Animation::Style::kLinear);
+  }
+
+ private:
+  const base::raw_ptr<Animation> animation_;
+  base::ScopedObservation<Animation, AnimationObserver> observation_{this};
+};
+
+TEST_F(AnimationTest, HandlesChangingAnimationStateWithinObserverCall) {
+  AnimationRestarter observer(animation_.get());
+
+  AdvanceClock(base::Milliseconds(300));
+
+  animation_->Start(Animation::Style::kLinear);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+
+  // Advance the clock to the end of the animation.
+  constexpr auto kAdvanceToEnd = kAnimationDuration + base::Milliseconds(1);
+  AdvanceClock(kAdvanceToEnd);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+
+  // The AnimationRestarter should have restarted the animation again from the
+  // beginning.
+  constexpr auto kAdvance = base::Milliseconds(50);
+  AdvanceClock(kAdvance);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0.f);
+
+  AdvanceClock(kAdvance);
+  animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(),
+                  kAdvance / kAnimationDuration);
 }
 
 }  // namespace lottie

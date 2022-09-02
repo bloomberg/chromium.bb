@@ -15,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -56,7 +56,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
-#include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/mock_host_resolver.h"
@@ -511,7 +510,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
 
     GURL request_url = request.GetURL();
     std::string dest =
-        net::UnescapeBinaryURLComponent(request_url.query_piece());
+        base::UnescapeBinaryURLComponent(request_url.query_piece());
 
     auto http_response =
         std::make_unique<net::test_server::BasicHttpResponse>();
@@ -872,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
         host_url.host(), network_isolation_key));
   }
   // 2 connections to the main frame host + 1 connection per host for others.
-  const size_t expected_connections = base::size(kHtmlSubresourcesHosts) + 1;
+  const size_t expected_connections = std::size(kHtmlSubresourcesHosts) + 1;
   connection_tracker()->WaitForAcceptedConnections(expected_connections);
   EXPECT_EQ(expected_connections,
             connection_tracker()->GetAcceptedSocketCount());
@@ -1080,7 +1079,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
     EXPECT_EQ(200, EvalJs(browser()
                               ->tab_strip_model()
                               ->GetActiveWebContents()
-                              ->GetMainFrame(),
+                              ->GetPrimaryMainFrame(),
                           fetch_resource));
 
     EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
@@ -1124,11 +1123,11 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
       "  var resp = (await fetch('%s'));"
       "  return resp.status; })();",
       embedded_test_server()->GetURL("/echo").spec().c_str());
-  EXPECT_EQ(
-      200,
-      EvalJs(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
-          fetch_resource));
+  EXPECT_EQ(200, EvalJs(browser()
+                            ->tab_strip_model()
+                            ->GetActiveWebContents()
+                            ->GetPrimaryMainFrame(),
+                        fetch_resource));
 
   EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
   EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
@@ -1226,7 +1225,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
       "link.href = '%s';"
       "document.head.appendChild(link);",
       preconnect_url.spec().c_str());
-  content::ExecuteScriptAsync(tab1->GetMainFrame(), start_preconnect);
+  content::ExecuteScriptAsync(tab1->GetPrimaryMainFrame(), start_preconnect);
   connection_tracker()->WaitForAcceptedConnections(1u);
   EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
   EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
@@ -1239,7 +1238,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
       "  return resp.status; })();",
       preconnect_url.spec().c_str());
   // Fetch a resource from the test server from tab 2, without CORS.
-  EXPECT_EQ(0, EvalJs(tab2->GetMainFrame(), fetch_resource));
+  EXPECT_EQ(0, EvalJs(tab2->GetPrimaryMainFrame(), fetch_resource));
   if (GetParam() == NetworkIsolationKeyMode::kDisabled) {
     // When not using NetworkIsolationKeys, the preconnected socket from a tab
     // at one site is usable by a request from another site.
@@ -1252,7 +1251,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
   }
 
   // Now try fetching a resource from tab 1.
-  EXPECT_EQ(0, EvalJs(tab1->GetMainFrame(), fetch_resource));
+  EXPECT_EQ(0, EvalJs(tab1->GetPrimaryMainFrame(), fetch_resource));
   // If the preconnected socket was not used before, it should now be used. If
   // it was used before, a new socket will be used.
   EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
@@ -1273,7 +1272,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
                      kHost1, GetPathWithPortReplacement(
                                  "/predictors/two_iframes.html",
                                  preconnecting_test_server()->port()))));
-  content::RenderFrameHost* main_frame = tab1->GetMainFrame();
+  content::RenderFrameHost* main_frame = tab1->GetPrimaryMainFrame();
   ASSERT_EQ(kHost1, main_frame->GetLastCommittedOrigin().host());
   content::RenderFrameHost* iframe_1 = ChildFrameAt(main_frame, 0);
   ASSERT_TRUE(iframe_1);
@@ -1311,7 +1310,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
       preconnect_url.spec().c_str());
 
   // Fetch a resource from the test server from tab 2 iframe, without CORS.
-  EXPECT_EQ(0, EvalJs(tab2->GetMainFrame(), fetch_resource));
+  EXPECT_EQ(0, EvalJs(tab2->GetPrimaryMainFrame(), fetch_resource));
   if (GetParam() == NetworkIsolationKeyMode::kDisabled) {
     // When not using NetworkIsolationKeys, the preconnected socket from the
     // iframe from the first tab can be used.
@@ -1453,7 +1452,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
         host_url, network_isolation_key));
   }
   // 2 connections to the main frame host + 1 connection per host for others.
-  const size_t expected_connections = base::size(kHtmlSubresourcesHosts) + 1;
+  const size_t expected_connections = std::size(kHtmlSubresourcesHosts) + 1;
   connection_tracker()->WaitForAcceptedConnections(expected_connections);
   EXPECT_EQ(expected_connections,
             connection_tracker()->GetAcceptedSocketCount());
@@ -1594,7 +1593,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
   size_t expected_connections;
   if (IsLocalPredictionEnabled()) {
     // 2 connections to the main frame host  + 1 connection per host for others.
-    expected_connections = base::size(kHtmlSubresourcesHosts) + 1;
+    expected_connections = std::size(kHtmlSubresourcesHosts) + 1;
   } else {
     // There should always be 2 connections to the main frame host.
     expected_connections = 2;

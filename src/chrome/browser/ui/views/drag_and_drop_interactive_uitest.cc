@@ -12,11 +12,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -49,7 +51,6 @@
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -191,7 +192,12 @@ class DragAndDropSimulator {
     active_drag_event_->set_root_location_f(event_root_location);
 
     delegate->OnDragUpdated(*active_drag_event_);
-    delegate->OnPerformDrop(*active_drag_event_, std::move(os_exchange_data_));
+    auto drop_cb = delegate->GetDropCallback(*active_drag_event_);
+    // 'drop_cb' should have a value because WebContentsViewAura
+    // (DragDropDelegate) doesn't return NullCallback.
+    DCHECK(drop_cb);
+    ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
+    std::move(drop_cb).Run(std::move(os_exchange_data_), output_drag_op);
     return true;
   }
 
@@ -213,7 +219,9 @@ class DragAndDropSimulator {
     active_drag_event_->set_root_location_f(gfx::PointF(location));
 
     delegate->OnDragUpdated(*active_drag_event_);
-    delegate->OnPerformDrop(*active_drag_event_, std::move(os_exchange_data_));
+    auto drop_cb = delegate->GetDropCallback(*active_drag_event_);
+    ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
+    std::move(drop_cb).Run(std::move(os_exchange_data_), output_drag_op);
     return true;
   }
 
@@ -462,7 +470,7 @@ class DOMDragEventWaiter {
   // and properties that |found_event| is expected to have.
   //
   // Returns true upon success.  It is okay if |response| is null.
-  bool WaitForNextMatchingEvent(std::string* found_event) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool WaitForNextMatchingEvent(std::string* found_event) {
     std::string candidate_event;
     bool got_right_event_type = false;
     bool got_right_window_name = false;
@@ -1016,7 +1024,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropValidUrlFromOutside) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::NavigationController& controller = web_contents->GetController();
   int initial_history_count = controller.GetEntryCount();
-  GURL initial_url = web_contents->GetMainFrame()->GetLastCommittedURL();
+  GURL initial_url = web_contents->GetPrimaryMainFrame()->GetLastCommittedURL();
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Focus the omnibox.
@@ -1041,10 +1049,11 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropValidUrlFromOutside) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver(new_web_contents, 1).Wait();
   EXPECT_EQ(dragged_url,
-            new_web_contents->GetMainFrame()->GetLastCommittedURL());
+            new_web_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
 
   // Verify that the initial tab didn't navigate.
-  EXPECT_EQ(initial_url, web_contents->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(initial_url,
+            web_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
   EXPECT_EQ(initial_history_count, controller.GetEntryCount());
 
   // Verify that the focus moved from the omnibox to the tab contents.
@@ -1060,7 +1069,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropUrlIntoOmnibox) {
   ASSERT_TRUE(NavigateRightFrame(frame_site, "title1.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL initial_url = web_contents->GetMainFrame()->GetLastCommittedURL();
+  GURL initial_url = web_contents->GetPrimaryMainFrame()->GetLastCommittedURL();
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Focus the omnibox.
@@ -1121,7 +1130,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropFileFromOutside) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::NavigationController& controller = web_contents->GetController();
   int initial_history_count = controller.GetEntryCount();
-  GURL initial_url = web_contents->GetMainFrame()->GetLastCommittedURL();
+  GURL initial_url = web_contents->GetPrimaryMainFrame()->GetLastCommittedURL();
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Focus the omnibox.
@@ -1147,10 +1156,11 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropFileFromOutside) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver(new_web_contents, 1).Wait();
   EXPECT_EQ(net::FilePathToFileURL(dragged_file),
-            new_web_contents->GetMainFrame()->GetLastCommittedURL());
+            new_web_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
 
   // Verify that the initial tab didn't navigate.
-  EXPECT_EQ(initial_url, web_contents->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(initial_url,
+            web_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
   EXPECT_EQ(initial_history_count, controller.GetEntryCount());
 
   // Verify that the focus moved from the omnibox to the tab contents.
@@ -1158,17 +1168,10 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropFileFromOutside) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 }
 
-#if defined(THREAD_SANITIZER)
-// TSAN Race condition: crbug.com/1005095
-#define MAYBE_DropForbiddenUrlFromOutside DISABLED_DropForbiddenUrlFromOutside
-#else
-#define MAYBE_DropForbiddenUrlFromOutside DropForbiddenUrlFromOutside
-#endif
 // Scenario: drag URL from outside the browser and drop to the right frame.
 // Mostly focuses on covering the navigation path (the dragover and/or drop DOM
 // events are already covered via the DropTextFromOutside test above).
-IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
-                       MAYBE_DropForbiddenUrlFromOutside) {
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropForbiddenUrlFromOutside) {
   std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
   ASSERT_TRUE(NavigateToTestPage("a.com"));
   ASSERT_TRUE(NavigateRightFrame(frame_site, "title1.html"));
@@ -1196,7 +1199,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
   EXPECT_EQ(123, content::EvalJs(GetRightFrame(), "123"));
 
   // Verify that the history remains unchanged.
-  EXPECT_NE(dragged_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_NE(dragged_url,
+            web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL());
   EXPECT_EQ(initial_history_count, controller.GetEntryCount());
 }
 
@@ -1265,12 +1269,12 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragStartInFrame) {
   SimulateMouseUp();
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
 #define MAYBE_DragSameOriginImageBetweenFrames \
   DISABLED_DragSameOriginImageBetweenFrames
-#elif defined(OS_LINUX)
+#elif BUILDFLAG(IS_LINUX)
 // Failing to receive final drop event on linux crbug.com/1268407.
 #define MAYBE_DragSameOriginImageBetweenFrames \
   DISABLED_DragSameOriginImageBetweenFrames
@@ -1298,10 +1302,10 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
                                /*image_crossorigin_attr=*/false);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_DragCorsSameOriginImageBetweenFrames \
   DISABLED_DragCorsSameOriginImageBetweenFrames
-#elif defined(OS_LINUX)
+#elif BUILDFLAG(IS_LINUX)
 #define MAYBE_DragCorsSameOriginImageBetweenFrames \
   DISABLED_DragCorsSameOriginImageBetweenFrames
 #else
@@ -1319,10 +1323,10 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
                                /*image_crossorigin_attr=*/true);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_DragCrossOriginImageBetweenFrames \
   DISABLED_DragCrossOriginImageBetweenFrames
-#elif defined(OS_LINUX)
+#elif BUILDFLAG(IS_LINUX)
 #define MAYBE_DragCrossOriginImageBetweenFrames \
   DISABLED_DragCrossOriginImageBetweenFrames
 #else
@@ -1561,7 +1565,7 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
 
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
 // Also disable the test on Linux due to flaky: crbug.com/1164442
@@ -1620,7 +1624,7 @@ void DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step2(
     DragAndDropBrowserTest::DragImageFromDisappearingFrame_TestState* state) {
   // Delete the left frame in an attempt to repro https://crbug.com/670123.
   content::RenderFrameDeletedObserver frame_deleted_observer(GetLeftFrame());
-  ASSERT_TRUE(ExecuteScript(web_contents()->GetMainFrame(),
+  ASSERT_TRUE(ExecuteScript(web_contents()->GetPrimaryMainFrame(),
                             "frame = document.getElementById('left');\n"
                             "frame.parentNode.removeChild(frame);\n"));
   frame_deleted_observer.WaitUntilDeleted();
@@ -1681,7 +1685,7 @@ void DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step3(
 
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_CrossSiteDrag DISABLED_CrossSiteDrag
 #else
 #define MAYBE_CrossSiteDrag CrossSiteDrag
@@ -1749,7 +1753,8 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step2(
     std::string expected_response = base::StringPrintf("\"i%d\"", i);
     GetRightFrame()->ExecuteJavaScriptWithUserGestureForTests(
         base::UTF8ToUTF16(base::StringPrintf(
-            "domAutomationController.send(%s);", expected_response.c_str())));
+            "domAutomationController.send(%s);", expected_response.c_str())),
+        base::NullCallback());
 
     // Wait until our response comes back (it might be mixed with responses
     // carrying events that are sent by event_monitoring.js).
@@ -1789,7 +1794,7 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step3(
 
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_CrossTabDrag DISABLED_CrossTabDrag
 #else
 #define MAYBE_CrossTabDrag CrossTabDrag
@@ -2055,7 +2060,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragUpdateScreenCoordinates) {
 // navigation.
 
 // Injecting input with scaling works as expected on Chromeos.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 constexpr std::initializer_list<double> ui_scaling_factors = {1.0, 1.25, 2.0};
 #else
 // Injecting input with non-1x scaling doesn't work correctly with x11 ozone or
@@ -2074,5 +2079,79 @@ INSTANTIATE_TEST_SUITE_P(
     DragAndDropBrowserTest,
     ::testing::Combine(::testing::Values(true),
                        ::testing::ValuesIn(ui_scaling_factors)));
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class DragAndDropBrowserTestNoParam : public InProcessBrowserTest {
+ protected:
+  void SimulateDragFromOmniboxToWebContents(base::OnceClosure quit) {
+    chrome::FocusLocationBar(browser());
+
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
+    OmniboxViewViews* omnibox_view =
+        browser_view->toolbar()->location_bar()->omnibox_view();
+
+    // Simulate mouse move to omnibox.
+    gfx::Point point;
+    views::View::ConvertPointToScreen(omnibox_view, &point);
+    EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        point.x(), point.y(),
+        base::BindOnce(&DragAndDropBrowserTestNoParam::Step2,
+                       base::Unretained(this), std::move(quit))));
+  }
+
+  void Step2(base::OnceClosure quit) {
+    // Simulate mouse down.
+    EXPECT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
+        ui_controls::LEFT, ui_controls::DOWN,
+        base::BindOnce(&DragAndDropBrowserTestNoParam::Step3,
+                       base::Unretained(this), std::move(quit))));
+  }
+
+  void Step3(base::OnceClosure quit) {
+    // Simulate mouse move to WebContents.
+    // Keep sending mouse move until the current tab is closed.
+    // After the current tab is closed, send mouse up to end drag and drop.
+    if (browser()->tab_strip_model()->count() == 1) {
+      EXPECT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
+          ui_controls::LEFT, ui_controls::UP, std::move(quit)));
+      return;
+    }
+
+    gfx::Rect bounds = browser()
+                           ->tab_strip_model()
+                           ->GetActiveWebContents()
+                           ->GetContainerBounds();
+    EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        bounds.CenterPoint().x(), bounds.CenterPoint().y(),
+        base::BindOnce(&DragAndDropBrowserTestNoParam::Step3,
+                       base::Unretained(this), std::move(quit))));
+  }
+};
+
+// https://crbug.com/1312505
+IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTestNoParam, CloseTabDuringDrag) {
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  ui_test_utils::TabAddedWaiter wait_for_new_tab(browser());
+
+  // Create a new tab that closes itself on dragover event.
+  ASSERT_TRUE(ExecuteScript(browser()
+                                ->tab_strip_model()
+                                ->GetActiveWebContents()
+                                ->GetPrimaryMainFrame(),
+                            "window.open('javascript:document.addEventListener("
+                            "\"dragover\", () => {window.close(); })');"));
+
+  wait_for_new_tab.Wait();
+
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  base::RunLoop loop;
+  SimulateDragFromOmniboxToWebContents(loop.QuitClosure());
+  loop.Run();
+
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace chrome

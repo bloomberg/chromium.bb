@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -64,7 +65,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "components/viz/common/gpu/context_provider.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #endif
 
@@ -90,7 +91,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        bool enable_pixel_canvas,
                        bool use_external_begin_frame_control,
                        bool force_software_compositor,
-                       bool enable_compositing_based_throttling)
+                       bool enable_compositing_based_throttling,
+                       size_t memory_limit_when_visible_mb)
     : context_factory_(context_factory),
       frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
@@ -117,6 +119,10 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   // Use occlusion to allow more overlapping windows to take less memory.
   settings.use_occlusion_for_tile_prioritization = true;
   settings.main_frame_before_activation_enabled = false;
+
+  settings.release_tile_resources_for_hidden_layers =
+      base::FeatureList::IsEnabled(
+          features::kUiCompositorReleaseTileResourcesForHiddenLayers);
 
   // Disable edge anti-aliasing in order to increase support for HW overlays.
   settings.enable_edge_anti_aliasing = false;
@@ -182,7 +188,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.use_rgba_4444 =
       command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Using CoreAnimation to composite requires using GpuMemoryBuffers, which
   // require zero copy.
   settings.resource_settings.use_gpu_memory_buffer_resources =
@@ -204,23 +210,17 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
     settings.resource_settings.use_gpu_memory_buffer_resources = false;
   }
 
-  settings.memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
+  settings.memory_policy.bytes_limit_when_visible =
+      (memory_limit_when_visible_mb > 0 ? memory_limit_when_visible_mb : 512) *
+      1024 * 1024;
 
-  // Used to configure ui compositor memory limit for chromeos devices.
-  // See crbug.com/923141.
-  if (command_line->HasSwitch(
-          switches::kUiCompositorMemoryLimitWhenVisibleMB)) {
-    std::string value_str = command_line->GetSwitchValueASCII(
-        switches::kUiCompositorMemoryLimitWhenVisibleMB);
-    unsigned value_in_mb;
-    if (base::StringToUint(value_str, &value_in_mb)) {
-      settings.memory_policy.bytes_limit_when_visible =
-          1024 * 1024 * value_in_mb;
-    }
+  if (base::FeatureList::IsEnabled(features::kUiCompositorRequiredTilesOnly)) {
+    settings.memory_policy.priority_cutoff_when_visible =
+        gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
+  } else {
+    settings.memory_policy.priority_cutoff_when_visible =
+        gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
   }
-
-  settings.memory_policy.priority_cutoff_when_visible =
-      gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 
   settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
@@ -233,7 +233,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
     settings.compositor_threaded_scrollbar_scrolling = true;
   }
 
-  if (base::FeatureList::IsEnabled(features::kPercentBasedScrolling)) {
+  if (features::IsPercentBasedScrollingEnabled()) {
     settings.percent_based_scrolling = true;
   }
 
@@ -324,22 +324,17 @@ void Compositor::AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
       frame_sink_id_, frame_sink_id);
 
   auto result = child_frame_sinks_.insert(frame_sink_id);
-
-  // TODO(crbug.com/1196413): Remove this after some investigation.
-  CHECK(result.second);
+  DCHECK(result.second);
 }
 
 void Compositor::RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
   auto it = child_frame_sinks_.find(frame_sink_id);
-  if (it != child_frame_sinks_.end()) {
-    DCHECK(it->is_valid());
-    context_factory_->GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
-        frame_sink_id_, *it);
-    child_frame_sinks_.erase(it);
-  } else {
-    // TODO(crbug.com/1196413): Remove this after some investigation.
-    NOTREACHED();
-  }
+  DCHECK(it != child_frame_sinks_.end());
+  DCHECK(it->is_valid());
+
+  context_factory_->GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
+      frame_sink_id_, *it);
+  child_frame_sinks_.erase(it);
 }
 
 void Compositor::SetLayerTreeFrameSink(
@@ -399,11 +394,23 @@ void Compositor::SetRootLayer(Layer* root_layer) {
     root_layer_->SetCompositor(this, root_web_layer_);
 }
 
+void Compositor::DisableAnimations() {
+  DCHECK(animations_are_enabled_);
+  animations_are_enabled_ = false;
+  root_layer_->ResetCompositorForAnimatorsInTree(this);
+}
+
+void Compositor::EnableAnimations() {
+  DCHECK(!animations_are_enabled_);
+  animations_are_enabled_ = true;
+  root_layer_->SetCompositorForAnimatorsInTree(this);
+}
+
 cc::AnimationTimeline* Compositor::GetAnimationTimeline() const {
   return animation_timeline_.get();
 }
 
-void Compositor::SetDisplayColorMatrix(const skia::Matrix44& matrix) {
+void Compositor::SetDisplayColorMatrix(const SkM44& matrix) {
   display_color_matrix_ = matrix;
   if (display_private_)
     display_private_->SetDisplayColorMatrix(gfx::Transform(matrix));
@@ -424,7 +431,7 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
   host_->SetNeedsCommit();
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void Compositor::SetShouldDisableSwapUntilResize(bool should) {
   should_disable_swap_until_resize_ = should;
 }
@@ -670,6 +677,12 @@ uint32_t Compositor::GetAverageThroughput() const {
   return host_->GetAverageThroughput();
 }
 
+std::unique_ptr<cc::EventsMetricsManager::ScopedMonitor>
+Compositor::GetScopedEventMetricsMonitor(
+    cc::EventsMetricsManager::ScopedMonitor::DoneCallback done_callback) {
+  return host_->GetScopedEventMetricsMonitor(std::move(done_callback));
+}
+
 void Compositor::DidUpdateLayers() {
   // Dump property trees and layers if run with:
   //   --vmodule=*ui/compositor*=3
@@ -771,6 +784,11 @@ void Compositor::NotifyThroughputTrackerResults(
     ReportMetricsForTracker(pair.first, std::move(pair.second));
 }
 
+void Compositor::ReportEventLatency(
+    std::vector<cc::EventLatencyTracker::LatencyData> latencies) {
+  // TODO(crbug.com/1321193): Report EventLatency as appropriate.
+}
+
 void Compositor::DidReceiveCompositorFrameAck() {
   ++activated_frame_count_;
   for (auto& observer : observer_list_)
@@ -868,7 +886,7 @@ void Compositor::OnResume() {
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void Compositor::OnCompleteSwapWithNewSize(const gfx::Size& size) {
   for (auto& observer : observer_list_)
     observer.OnCompositingCompleteSwapWithNewSize(this, size);
@@ -920,6 +938,10 @@ void Compositor::SetDelegatedInkPointRenderer(
     mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver) {
   if (display_private_)
     display_private_->SetDelegatedInkPointRenderer(std::move(receiver));
+}
+
+const cc::LayerTreeSettings& Compositor::GetLayerTreeSettings() const {
+  return host_->GetSettings();
 }
 
 }  // namespace ui

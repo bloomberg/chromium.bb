@@ -267,6 +267,8 @@ int main(int argc, char **argv) {
   unsigned char **frames =
       (unsigned char **)malloc(num_frames * sizeof(unsigned char *));
   size_t *frame_sizes = (size_t *)malloc(num_frames * sizeof(size_t));
+  if (!(frames && frame_sizes)) die("Failed to allocate frame data.");
+
   // Seek to the first camera image.
   fseeko(infile, camera_frame_pos, SEEK_SET);
   for (int f = 0; f < num_frames; ++f) {
@@ -275,6 +277,7 @@ int main(int argc, char **argv) {
     const unsigned char *frame =
         aom_video_reader_get_frame(reader, &frame_size);
     frames[f] = (unsigned char *)malloc(frame_size * sizeof(unsigned char));
+    if (!frames[f]) die("Failed to allocate frame data.");
     memcpy(frames[f], frame, frame_size);
     frame_sizes[f] = frame_size;
   }

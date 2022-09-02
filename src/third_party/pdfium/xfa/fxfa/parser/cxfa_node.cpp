@@ -32,7 +32,6 @@
 #include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/compiler_specific.h"
 #include "third_party/base/containers/contains.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/span.h"
@@ -654,23 +653,21 @@ WideString FormatNumStr(const WideString& wsValue, LocaleIface* pLocale) {
     wsSrcNum.Delete(0, 1);
   }
 
-  auto dot_index = wsSrcNum.Find('.');
-  dot_index = !dot_index.has_value() ? wsSrcNum.GetLength() : dot_index;
-
-  if (dot_index.value() < 1)
+  size_t dot_index = wsSrcNum.Find('.').value_or(wsSrcNum.GetLength());
+  if (dot_index == 0)
     return WideString();
 
-  size_t nPos = dot_index.value() % 3;
+  size_t nPos = dot_index % 3;
   WideString wsOutput;
-  for (size_t i = 0; i < dot_index.value(); i++) {
+  for (size_t i = 0; i < dot_index; i++) {
     if (i % 3 == nPos && i != 0)
       wsOutput += wsGroupSymbol;
 
     wsOutput += wsSrcNum[i];
   }
-  if (dot_index.value() < wsSrcNum.GetLength()) {
+  if (dot_index < wsSrcNum.GetLength()) {
     wsOutput += pLocale->GetDecimalSymbol();
-    wsOutput += wsSrcNum.Last(wsSrcNum.GetLength() - dot_index.value() - 1);
+    wsOutput += wsSrcNum.Last(wsSrcNum.GetLength() - dot_index - 1);
   }
   if (bNeg)
     return pLocale->GetMinusSymbol() + wsOutput;
@@ -2887,7 +2884,6 @@ CXFA_Node::CreateChildUIAndValueNodesIfNeeded() {
         widget_type = XFA_FFWidgetType::kRectangle;
         break;
       default:
-        NOTREACHED();
         break;
     }
   }
@@ -3108,7 +3104,7 @@ void CXFA_Node::ResetData() {
     }
     case XFA_FFWidgetType::kChoiceList:
       ClearAllSelections();
-      FALLTHROUGH;
+      [[fallthrough]];
     default: {
       CXFA_Value* defValue = GetDefaultValueIfExists();
       if (defValue)
@@ -3587,6 +3583,9 @@ CFX_SizeF CXFA_Node::CalculateAccWidthAndHeight(CXFA_FFDoc* doc, float fWidth) {
 absl::optional<float> CXFA_Node::FindSplitPos(CXFA_FFDocView* pDocView,
                                               size_t szBlockIndex,
                                               float fCalcHeight) {
+  if (!HasCreatedUIWidget())
+    return absl::nullopt;
+
   if (GetFFWidgetType() == XFA_FFWidgetType::kSubform)
     return absl::nullopt;
 
@@ -3935,8 +3934,7 @@ RetainPtr<CFGAS_GEFont> CXFA_Node::GetFGASFont(CXFA_FFDoc* doc) {
 
     wsFontName = font->GetTypeface();
   }
-  return doc->GetApp()->GetXFAFontMgr()->GetFont(doc, wsFontName.AsStringView(),
-                                                 dwFontStyle);
+  return doc->GetApp()->GetXFAFontMgr()->GetFont(doc, wsFontName, dwFontStyle);
 }
 
 bool CXFA_Node::HasButtonRollover() const {
@@ -4188,7 +4186,7 @@ bool CXFA_Node::IsListBox() {
          attr == XFA_AttributeValue::MultiSelect;
 }
 
-int32_t CXFA_Node::CountChoiceListItems(bool bSaveValue) {
+size_t CXFA_Node::CountChoiceListItems(bool bSaveValue) {
   std::vector<CXFA_Node*> pItems;
   int32_t iCount = 0;
   for (CXFA_Node* pNode = GetFirstChild(); pNode;
@@ -4302,7 +4300,9 @@ int32_t CXFA_Node::GetSelectedItem(int32_t nIndex) {
   std::vector<WideString> wsSaveTextArray = GetChoiceListItems(true);
   auto it = std::find(wsSaveTextArray.begin(), wsSaveTextArray.end(),
                       wsValueArray[nIndex]);
-  return it != wsSaveTextArray.end() ? it - wsSaveTextArray.begin() : -1;
+  return it != wsSaveTextArray.end()
+             ? pdfium::base::checked_cast<int32_t>(it - wsSaveTextArray.begin())
+             : -1;
 }
 
 std::vector<int32_t> CXFA_Node::GetSelectedItems() {
@@ -4311,8 +4311,10 @@ std::vector<int32_t> CXFA_Node::GetSelectedItems() {
   std::vector<WideString> wsSaveTextArray = GetChoiceListItems(true);
   for (const auto& value : wsValueArray) {
     auto it = std::find(wsSaveTextArray.begin(), wsSaveTextArray.end(), value);
-    if (it != wsSaveTextArray.end())
-      iSelArray.push_back(it - wsSaveTextArray.begin());
+    if (it != wsSaveTextArray.end()) {
+      iSelArray.push_back(
+          pdfium::base::checked_cast<int32_t>(it - wsSaveTextArray.begin()));
+    }
   }
   return iSelArray;
 }
@@ -4336,8 +4338,7 @@ bool CXFA_Node::GetItemState(int32_t nIndex) {
 void CXFA_Node::SetItemState(int32_t nIndex,
                              bool bSelected,
                              bool bNotify,
-                             bool bScriptModify,
-                             bool bSyncData) {
+                             bool bScriptModify) {
   std::vector<WideString> wsSaveTextArray = GetChoiceListItems(true);
   if (!fxcrt::IndexInBounds(wsSaveTextArray, nIndex))
     return;
@@ -4346,9 +4347,10 @@ void CXFA_Node::SetItemState(int32_t nIndex,
   std::vector<WideString> wsValueArray = GetSelectedItemsValue();
   auto value_iter = std::find(wsValueArray.begin(), wsValueArray.end(),
                               wsSaveTextArray[nIndex]);
-  if (value_iter != wsValueArray.end())
-    iSel = value_iter - wsValueArray.begin();
-
+  if (value_iter != wsValueArray.end()) {
+    iSel =
+        pdfium::base::checked_cast<int32_t>(value_iter - wsValueArray.begin());
+  }
   if (IsChoiceListMultiSelect()) {
     if (bSelected) {
       if (iSel < 0) {
@@ -4357,8 +4359,7 @@ void CXFA_Node::SetItemState(int32_t nIndex,
           wsValue += L"\n";
         }
         wsValue += wsSaveTextArray[nIndex];
-        JSObject()->SetContent(wsValue, wsValue, bNotify, bScriptModify,
-                               bSyncData);
+        JSObject()->SetContent(wsValue, wsValue, bNotify, bScriptModify, true);
       }
     } else if (iSel >= 0) {
       std::vector<int32_t> iSelArray = GetSelectedItems();
@@ -4366,18 +4367,18 @@ void CXFA_Node::SetItemState(int32_t nIndex,
           std::find(iSelArray.begin(), iSelArray.end(), nIndex);
       if (selected_iter != iSelArray.end())
         iSelArray.erase(selected_iter);
-      SetSelectedItems(iSelArray, bNotify, bScriptModify, bSyncData);
+      SetSelectedItems(iSelArray, bNotify, bScriptModify, true);
     }
   } else {
     if (bSelected) {
       if (iSel < 0) {
         WideString wsSaveText = wsSaveTextArray[nIndex];
         JSObject()->SetContent(wsSaveText, GetFormatDataValue(wsSaveText),
-                               bNotify, bScriptModify, bSyncData);
+                               bNotify, bScriptModify, true);
       }
     } else if (iSel >= 0) {
       JSObject()->SetContent(WideString(), WideString(), bNotify, bScriptModify,
-                             bSyncData);
+                             true);
     }
   }
 }
@@ -4567,7 +4568,7 @@ bool CXFA_Node::DeleteItem(int32_t nIndex, bool bNotify, bool bScriptModify) {
       }
     } else {
       if (!bSetValue && pItems->JSObject()->GetBoolean(XFA_Attribute::Save)) {
-        SetItemState(nIndex, false, true, bScriptModify, true);
+        SetItemState(nIndex, false, true, bScriptModify);
         bSetValue = true;
       }
       int32_t i = 0;
@@ -4982,7 +4983,7 @@ WideString CXFA_Node::NumericLimit(const WideString& wsValue) {
   if (iLead == -1 && iTread == -1)
     return wsValue;
 
-  int32_t iCount = wsValue.GetLength();
+  int32_t iCount = pdfium::base::checked_cast<int32_t>(wsValue.GetLength());
   if (iCount == 0)
     return wsValue;
 
@@ -6325,8 +6326,27 @@ CXFA_Node* CXFA_Node::Create(CXFA_Document* doc,
       node = cppgc::MakeGarbageCollected<CXFA_Items>(
           doc->GetHeap()->GetAllocationHandle(), doc, packet);
       break;
-    default:
-      NOTREACHED();
+    case XFA_Element::DataWindow:
+    case XFA_Element::Deltas:
+    case XFA_Element::EventPseudoModel:
+    case XFA_Element::HostPseudoModel:
+    case XFA_Element::LayoutPseudoModel:
+    case XFA_Element::List:
+    case XFA_Element::ListDuplicate:
+    case XFA_Element::LogPseudoModel:
+    case XFA_Element::Model:
+    case XFA_Element::Node:
+    case XFA_Element::NodeWithDesc:
+    case XFA_Element::NodeWithUse:
+    case XFA_Element::NodeWithValue:
+    case XFA_Element::Object:
+    case XFA_Element::SignaturePseudoModel:
+    case XFA_Element::Tree:
+    case XFA_Element::TreeList:
+    case XFA_Element::Unknown:
+      // These defined elements can not be made from an XML parse. Some are
+      // not CXFA_Node sub-classes, some are only used as intermediate classes,
+      // and so forth.
       return nullptr;
   }
   if (!node || !node->IsValidInPacket(packet))

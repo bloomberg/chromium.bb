@@ -7,7 +7,14 @@ import * as LitHtml from '../../../lit-html/lit-html.js';
 import cssAngleStyles from './cssAngle.css.js';
 
 import type {Angle} from './CSSAngleUtils.js';
-import {AngleUnit, convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAngleByUnit} from './CSSAngleUtils.js';
+import {
+  AngleUnit,
+  convertAngleUnit,
+  getNewAngleFromEvent,
+  getNextUnit,
+  parseText,
+  roundAngleByUnit,
+} from './CSSAngleUtils.js';
 import {ValueChangedEvent} from './InlineEditorUtils.js';
 
 import type {CSSAngleEditorData} from './CSSAngleEditor.js';
@@ -66,7 +73,6 @@ export class CSSAngle extends HTMLElement {
   private popoverStyleTop = '';
   private popoverStyleLeft = '';
   private onMinifyingAction = this.minify.bind(this);
-  private onAngleUpdate = this.updateAngle.bind(this);
 
   connectedCallback(): void {
     this.shadow.adoptedStyleSheets = [cssAngleStyles];
@@ -113,15 +119,8 @@ export class CSSAngle extends HTMLElement {
     const miniIconBottom = this.swatchElement.getBoundingClientRect().bottom;
     const miniIconLeft = this.swatchElement.getBoundingClientRect().left;
     if (miniIconBottom && miniIconLeft) {
-      // We offset mini icon's X and Y positions with the containing styles
-      // pane's positions because DevTools' root SplitWidget's
-      // insertion-point-sidebar slot, where most of the DevTools content lives,
-      // has an offset of positions, which makes all of its children's DOMRect
-      // positions to have this offset.
-      const offsetTop = this.containingPane.getBoundingClientRect().top;
-      const offsetLeft = this.containingPane.getBoundingClientRect().left;
-      this.popoverStyleTop = `${miniIconBottom - offsetTop}px`;
-      this.popoverStyleLeft = `${miniIconLeft - offsetLeft}px`;
+      this.popoverStyleTop = `${miniIconBottom}px`;
+      this.popoverStyleLeft = `${miniIconLeft}px`;
     }
 
     this.popoverOpen = true;
@@ -247,7 +246,9 @@ export class CSSAngle extends HTMLElement {
       style=${styleMap({top: this.popoverStyleTop, left: this.popoverStyleLeft})}
       .data=${{
         angle: this.angle,
-        onAngleUpdate: this.onAngleUpdate,
+        onAngleUpdate: (angle: Angle):void => {
+          this.updateAngle(angle);
+        },
         background: contextualBackground,
       } as CSSAngleEditorData}
     ></${CSSAngleEditor.litTagName}>

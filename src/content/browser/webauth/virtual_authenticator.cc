@@ -28,6 +28,7 @@ VirtualAuthenticator::VirtualAuthenticator(
       has_user_verification_(options.has_user_verification),
       has_large_blob_(options.has_large_blob),
       has_cred_blob_(options.has_cred_blob),
+      has_min_pin_length_(options.has_min_pin_length),
       unique_id_(base::GenerateGUID()),
       state_(base::MakeRefCounted<device::VirtualFidoDevice::State>()) {
   state_->transport = options.transport;
@@ -101,7 +102,8 @@ void VirtualAuthenticator::SetUserPresence(bool is_user_present) {
       is_user_present);
 }
 
-std::unique_ptr<device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
+std::unique_ptr<device::VirtualFidoDevice>
+VirtualAuthenticator::ConstructDevice() {
   switch (protocol_) {
     case device::ProtocolVersion::kU2f:
       return std::make_unique<device::VirtualU2fDevice>(state_);
@@ -120,6 +122,7 @@ std::unique_ptr<device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
       config.resident_key_support = has_resident_key_;
       config.large_blob_support = has_large_blob_;
       config.cred_protect_support = config.cred_blob_support = has_cred_blob_;
+      config.min_pin_length_extension_support = has_min_pin_length_;
       if (has_large_blob_ && has_user_verification_) {
         // Writing a large blob requires obtaining a PinUvAuthToken with
         // permissions if the authenticator is protected by user verification.
@@ -144,14 +147,14 @@ void VirtualAuthenticator::GetLargeBlob(const std::vector<uint8_t>& key_handle,
     std::move(callback).Run(absl::nullopt);
     return;
   }
-  absl::optional<std::vector<uint8_t>> blob =
+  absl::optional<device::LargeBlob> blob =
       state_->GetLargeBlob(registration->second);
   if (!blob) {
     std::move(callback).Run(absl::nullopt);
     return;
   }
-  data_decoder_.GzipUncompress(
-      std::move(*blob),
+  data_decoder_.Inflate(
+      std::move(blob->compressed_data), blob->original_size,
       base::BindOnce(&VirtualAuthenticator::OnLargeBlobUncompressed,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -159,9 +162,9 @@ void VirtualAuthenticator::GetLargeBlob(const std::vector<uint8_t>& key_handle,
 void VirtualAuthenticator::SetLargeBlob(const std::vector<uint8_t>& key_handle,
                                         const std::vector<uint8_t>& blob,
                                         SetLargeBlobCallback callback) {
-  data_decoder_.GzipCompress(
+  data_decoder_.Deflate(
       blob, base::BindOnce(&VirtualAuthenticator::OnLargeBlobCompressed,
-                           weak_factory_.GetWeakPtr(), key_handle,
+                           weak_factory_.GetWeakPtr(), key_handle, blob.size(),
                            std::move(callback)));
 }
 
@@ -219,6 +222,7 @@ void VirtualAuthenticator::OnLargeBlobUncompressed(
 
 void VirtualAuthenticator::OnLargeBlobCompressed(
     base::span<const uint8_t> key_handle,
+    uint64_t original_size,
     SetLargeBlobCallback callback,
     data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result) {
   auto registration = state_->registrations.find(key_handle);
@@ -230,7 +234,10 @@ void VirtualAuthenticator::OnLargeBlobCompressed(
     std::move(callback).Run(false);
     return;
   }
-  state_->InjectLargeBlob(&registration->second, *result.value);
+  state_->InjectLargeBlob(
+      &registration->second,
+      device::LargeBlob(device::fido_parsing_utils::Materialize(*result.value),
+                        original_size));
   std::move(callback).Run(true);
 }
 

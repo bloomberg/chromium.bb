@@ -20,6 +20,7 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "ash/constants/ash_features.h"');
+GEN('#include "build/build_config.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 const dxTestSuites = 'chromeos/diagnostics/diagnostics_app_unified_test.js';
@@ -31,13 +32,7 @@ this.DiagnosticsApp = class extends PolymerTest {
   }
 
   /** @override */
-  get featureList() {
-    return {
-      enabled: [
-        'chromeos::features::kDiagnosticsApp',
-      ],
-    };
-  }
+  get featureList() {}
 };
 
 this.DiagnosticsAppWithNetwork = class extends PolymerTest {
@@ -50,9 +45,7 @@ this.DiagnosticsAppWithNetwork = class extends PolymerTest {
   get featureList() {
     return {
       enabled: [
-        'chromeos::features::kDiagnosticsApp',
         'chromeos::features::kEnableNetworkingInDiagnosticsApp',
-        'chromeos::features::kDiagnosticsAppNavigation',
       ],
     };
   }
@@ -68,8 +61,9 @@ this.DiagnosticsAppWithInput = class extends PolymerTest {
   get featureList() {
     return {
       enabled: [
-        'chromeos::features::kDiagnosticsApp',
         'chromeos::features::kEnableInputInDiagnosticsApp',
+        'chromeos::features::kEnableTouchpadsInDiagnosticsApp',
+        'chromeos::features::kEnableTouchscreensInDiagnosticsApp',
       ],
     };
   }
@@ -80,6 +74,7 @@ this.DiagnosticsAppWithInput = class extends PolymerTest {
 // although technically is not necessary.
 const debug_suites_list = [
   'App',
+  'AppForInputHiding',
   'BatteryStatusCard',
   'CellularInfo',
   'ConnectivityCard',
@@ -97,6 +92,7 @@ const debug_suites_list = [
   'InputCard',
   'InputList',
   'IpConfigInfoDrawer',
+  'KeyboardTester',
   'MemoryCard',
   'NetworkCard',
   'NetworkInfo',
@@ -115,7 +111,16 @@ const debug_suites_list = [
   'WifiInfo',
 ];
 
-TEST_F('DiagnosticsApp', 'BrowserTest', function() {
+// TODO(crbug.com/1288529): DiagnosticsApp.BrowserTest and
+// DiagnosticsAppWithNetwork.BrowserTest and
+// DiagnosticsAppWithInput.BrowserTest are flaky on ChromeOS.
+GEN('#if BUILDFLAG(IS_CHROMEOS)');
+GEN('# define MAYBE_BrowserTest DISABLED_BrowserTest');
+GEN('#else');
+GEN('# define MAYBE_BrowserTest BrowserTest');
+GEN('#endif');
+
+TEST_F('DiagnosticsApp', 'MAYBE_BrowserTest', function() {
   assertDeepEquals(
       debug_suites_list, Object.keys(test_suites_list),
       'List of registered tests suites and debug suites do not match.\n' +
@@ -124,11 +129,11 @@ TEST_F('DiagnosticsApp', 'BrowserTest', function() {
   mocha.run();
 });
 
-TEST_F('DiagnosticsAppWithNetwork', 'BrowserTest', function() {
+TEST_F('DiagnosticsAppWithNetwork', 'MAYBE_BrowserTest', function() {
   mocha.run();
 });
 
-TEST_F('DiagnosticsAppWithInput', 'BrowserTest', function() {
+TEST_F('DiagnosticsAppWithInput', 'MAYBE_BrowserTest', function() {
   mocha.run();
 });
 

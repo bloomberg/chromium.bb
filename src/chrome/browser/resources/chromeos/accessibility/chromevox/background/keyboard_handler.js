@@ -5,16 +5,12 @@
 /**
  * @fileoverview ChromeVox keyboard handler.
  */
-
-goog.provide('BackgroundKeyboardHandler');
-
-goog.require('ChromeVoxState');
-goog.require('EventSourceState');
-goog.require('KeyCode');
-goog.require('MathHandler');
-goog.require('Output');
-goog.require('ChromeVoxKbHandler');
-goog.require('ChromeVoxPrefs');
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
+import {EventSourceState} from '/chromevox/background/event_source.js';
+import {MathHandler} from '/chromevox/background/math_handler.js';
+import {Output} from '/chromevox/background/output/output.js';
+import {EventSourceType} from '/chromevox/common/event_source_type.js';
+import {ChromeVoxKbHandler} from '/chromevox/common/keyboard_handler.js';
 
 /**
  * @enum {string}
@@ -34,7 +30,8 @@ const KeyboardPassThroughState_ = {
   PENDING_SHORTCUT_KEYUPS: 'pending_shortcut_keyups'
 };
 
-BackgroundKeyboardHandler = class {
+export class BackgroundKeyboardHandler {
+  /** @private */
   constructor() {
     /** @private {!KeyboardPassThroughState_} */
     this.passThroughState_ = KeyboardPassThroughState_.NO_PASS_THROUGH;
@@ -50,6 +47,13 @@ BackgroundKeyboardHandler = class {
 
     chrome.accessibilityPrivate.setKeyboardListener(
         true, ChromeVox.isStickyPrefOn);
+  }
+
+  static init() {
+    if (BackgroundKeyboardHandler.instance) {
+      throw 'Error: trying to create two instances of singleton BackgroundKeyboardHandler.';
+    }
+    BackgroundKeyboardHandler.instance = new BackgroundKeyboardHandler();
   }
 
   /**
@@ -136,4 +140,7 @@ BackgroundKeyboardHandler = class {
 
     return false;
   }
-};
+}
+
+/** @type {BackgroundKeyboardHandler} */
+BackgroundKeyboardHandler.instance;

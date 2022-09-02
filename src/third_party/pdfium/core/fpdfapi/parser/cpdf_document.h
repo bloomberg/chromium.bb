@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "core/fpdfapi/parser/cpdf_parser.h"
+#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -111,6 +112,12 @@ class CPDF_Document : public Observable,
     m_pLinksContext = std::move(pContext);
   }
 
+  // Behaves like NewIndirect<CPDF_Stream>(), but keeps track of the new stream.
+  CPDF_Stream* CreateModifiedAPStream();
+
+  // Returns whether CreateModifiedAPStream() created `stream`.
+  bool IsModifiedAPStream(const CPDF_Stream* stream) const;
+
   // CPDF_Parser::ParsedObjectsHolder:
   bool TryInit() override;
   RetainPtr<CPDF_Object> ParseIndirectObject(uint32_t objnum) override;
@@ -141,6 +148,8 @@ class CPDF_Document : public Observable,
  private:
   class StockFontClearer {
    public:
+    FX_STACK_ALLOCATED();
+
     explicit StockFontClearer(CPDF_Document::PageDataIface* pPageData);
     ~StockFontClearer();
 
@@ -188,6 +197,7 @@ class CPDF_Document : public Observable,
   std::unique_ptr<PageDataIface> m_pDocPage;  // Must be after |m_pDocRender|.
   std::unique_ptr<JBig2_DocumentContext> m_pCodecContext;
   std::unique_ptr<LinkListIface> m_pLinksContext;
+  std::set<uint32_t> m_ModifiedAPStreamIDs;
   std::vector<uint32_t> m_PageList;  // Page number to page's dict objnum.
 
   // Must be second to last.

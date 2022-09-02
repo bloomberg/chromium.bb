@@ -33,6 +33,7 @@
 
 #include <base/compiler_specific.h>
 #include <ipc/ipc_sender.h>
+#include <mojo/public/cpp/bindings/remote.h>
 #include <ui/gfx/geometry/rect.h>
 
 #include <cstdint>
@@ -60,7 +61,7 @@ class WebViewClientImpl final : public WebViewClient
                               , public mojom::WebViewClient
 {
     // DATA
-    mojom::WebViewHostPtr d_hostPtr;
+    mojo::Remote<mojom::WebViewHost> d_hostPtr;
     WebViewClientDelegate *d_delegate;
     ncHitTestCallback d_ncHitTestCallback;
     NativeView d_nativeView;
@@ -181,7 +182,7 @@ class WebViewClientImpl final : public WebViewClient
         // Notify the client if setParent call succeed by value of status
 
   public:
-    WebViewClientImpl(mojom::WebViewHostPtr  hostPtr,
+    WebViewClientImpl(mojo::Remote<mojom::WebViewHost> hostPtr,
                       WebViewClientDelegate *delegate);
     ~WebViewClientImpl() override;
     WebViewClientImpl(const WebViewClientImpl&) = delete;

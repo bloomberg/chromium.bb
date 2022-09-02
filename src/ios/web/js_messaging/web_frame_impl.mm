@@ -16,13 +16,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "crypto/aead.h"
 #include "crypto/random.h"
 #import "ios/web/js_messaging/java_script_content_world.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -122,7 +122,7 @@ BrowserState* WebFrameImpl::GetBrowserState() {
 }
 
 const std::string WebFrameImpl::EncryptPayload(
-    base::DictionaryValue payload,
+    base::Value payload,
     const std::string& additiona_data) {
   crypto::Aead aead(crypto::Aead::AES_256_GCM);
   aead.Init(&frame_key_->key());
@@ -144,7 +144,7 @@ const std::string WebFrameImpl::EncryptPayload(
   base::Base64Encode(payload_ciphertext, &encoded_payload);
 
   std::string payload_string;
-  base::DictionaryValue payload_dict;
+  base::Value payload_dict(base::Value::Type::DICTIONARY);
   payload_dict.SetKey("payload", base::Value(encoded_payload));
   payload_dict.SetKey("iv", base::Value(encoded_payload_iv));
   base::JSONWriter::Write(payload_dict, &payload_string);
@@ -159,14 +159,10 @@ bool WebFrameImpl::CallJavaScriptFunctionInContentWorld(
   int message_id = next_message_id_;
   next_message_id_++;
 
-#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
-  if (@available(iOS 14, *)) {
-    if (content_world && content_world->GetWKContentWorld()) {
-      return ExecuteJavaScriptFunction(content_world, name, parameters,
-                                       message_id, reply_with_result);
-    }
+  if (content_world && content_world->GetWKContentWorld()) {
+    return ExecuteJavaScriptFunction(content_world, name, parameters,
+                                     message_id, reply_with_result);
   }
-#endif  // defined(__IPHONE14_0)
 
   if (!CanCallJavaScriptFunction()) {
     return false;
@@ -177,13 +173,13 @@ bool WebFrameImpl::CallJavaScriptFunctionInContentWorld(
                                      reply_with_result);
   }
 
-  base::DictionaryValue message_payload;
+  base::Value message_payload(base::Value::Type::DICTIONARY);
   message_payload.SetKey("messageId", base::Value(message_id));
   message_payload.SetKey("replyWithResult", base::Value(reply_with_result));
   const std::string& encrypted_message_json =
       EncryptPayload(std::move(message_payload), std::string());
 
-  base::DictionaryValue function_payload;
+  base::Value function_payload(base::Value::Type::DICTIONARY);
   function_payload.SetKey("functionName", base::Value(name));
   base::ListValue parameters_value(parameters);
   function_payload.SetKey("parameters", std::move(parameters_value));
@@ -244,9 +240,9 @@ bool WebFrameImpl::CallJavaScriptFunctionInContentWorld(
       std::move(callback), std::move(timeout_callback));
   pending_requests_[message_id] = std::move(callbacks);
 
-  base::PostDelayedTask(
-      FROM_HERE, {web::WebThread::UI},
-      pending_requests_[message_id]->timeout_callback->callback(), timeout);
+  web::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, pending_requests_[message_id]->timeout_callback->callback(),
+      timeout);
   bool called =
       CallJavaScriptFunctionInContentWorld(name, parameters, content_world,
                                            /*reply_with_result=*/true);
@@ -260,6 +256,68 @@ bool WebFrameImpl::CallJavaScriptFunctionInContentWorld(
   return called;
 }
 
+bool WebFrameImpl::ExecuteJavaScript(const std::u16string& script) {
+  return ExecuteJavaScript(script,
+                           base::DoNothingAs<void(const base::Value*)>());
+}
+
+bool WebFrameImpl::ExecuteJavaScript(
+    const std::u16string& script,
+    base::OnceCallback<void(const base::Value*)> callback) {
+  ExecuteJavaScriptCallbackWithError callback_with_error =
+      ExecuteJavaScriptCallbackAdapter(std::move(callback));
+
+  return ExecuteJavaScript(script, std::move(callback_with_error));
+}
+
+bool WebFrameImpl::ExecuteJavaScript(
+    const std::u16string& script,
+    ExecuteJavaScriptCallbackWithError callback) {
+  DCHECK(frame_info_);
+
+  if (!IsMainFrame()) {
+    return false;
+  }
+
+  NSString* ns_script = base::SysUTF16ToNSString(script);
+  __block auto internal_callback = std::move(callback);
+  void (^completion_handler)(id, NSError*) = ^void(id value, NSError* error) {
+    if (error) {
+      LogScriptWarning(ns_script, error);
+      std::move(internal_callback).Run(nullptr, true);
+    } else {
+      std::move(internal_callback)
+          .Run(ValueResultFromWKResult(value).get(), false);
+    }
+  };
+
+  web::ExecuteJavaScript(frame_info_.webView, WKContentWorld.pageWorld,
+                         frame_info_, ns_script, completion_handler);
+  return true;
+}
+
+WebFrame::ExecuteJavaScriptCallbackWithError
+WebFrameImpl::ExecuteJavaScriptCallbackAdapter(
+    base::OnceCallback<void(const base::Value*)> callback) {
+  // Because blocks treat scoped-variables
+  // as const, we have to redefine the callback with the
+  // __block keyword to be able to run the callback inside
+  // the completion handler.
+  __block auto internal_callback = std::move(callback);
+  return base::BindOnce(^(const base::Value* value, bool error) {
+    if (!error) {
+      std::move(internal_callback).Run(value);
+    }
+  });
+}
+
+void WebFrameImpl::LogScriptWarning(NSString* script, NSError* error) {
+  DLOG(WARNING) << "Script execution of:" << base::SysNSStringToUTF16(script)
+                << "\nfailed with error: "
+                << base::SysNSStringToUTF16(
+                       error.userInfo[NSLocalizedDescriptionKey]);
+}
+
 bool WebFrameImpl::ExecuteJavaScriptFunction(
     JavaScriptContentWorld* content_world,
     const std::string& name,
@@ -267,7 +325,6 @@ bool WebFrameImpl::ExecuteJavaScriptFunction(
     int message_id,
     bool reply_with_result) {
   DCHECK(content_world);
-  DCHECK(base::ios::IsRunningOnIOS14OrLater());
   DCHECK(frame_info_);
 
   NSString* script = CreateFunctionCallWithParamaters(name, parameters);
@@ -290,18 +347,12 @@ bool WebFrameImpl::ExecuteJavaScriptFunction(
     };
   }
 
-#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
-  if (@available(iOS 14.0, *)) {
-    WKContentWorld* world = content_world->GetWKContentWorld();
-    DCHECK(world);
+  WKContentWorld* world = content_world->GetWKContentWorld();
+  DCHECK(world);
 
-    web::ExecuteJavaScript(frame_info_.webView, world, frame_info_, script,
-                           completion_handler);
-    return true;
-  }
-#endif  // defined(__IPHONE14_0)
-
-  return false;
+  web::ExecuteJavaScript(frame_info_.webView, world, frame_info_, script,
+                         completion_handler);
+  return true;
 }
 
 bool WebFrameImpl::ExecuteJavaScriptFunction(

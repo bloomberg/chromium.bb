@@ -18,6 +18,17 @@ class Profile;
 
 namespace crostini {
 
+// web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
+//     GURL("chrome-untrusted://terminal/html/terminal.html"))
+extern const char kCrostiniTerminalSystemAppId[];
+
+extern const char kTerminalHomePath[];
+
+extern const char kShortcutKey[];
+extern const char kShortcutValueSSH[];
+extern const char kShortcutValueTerminal[];
+extern const char kProfileIdKey[];
+
 // Settings items that can be user-modified for terminal.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -98,6 +109,19 @@ enum class TerminalSetting {
   kMaxValue = kThemeVariations,
 };
 
+// Remove Terminal app id from crostini.registry.<terminal-app-id>.
+void RemoveTerminalFromRegistry(PrefService* prefs);
+
+const std::string& GetTerminalHomeUrl();
+
+// Generate URL to launch terminal.
+GURL GenerateTerminalURL(
+    Profile* profile,
+    const std::string& setings_profile,
+    const ContainerId& container_id = ContainerId::GetDefault(),
+    const std::string& cwd = "",
+    const std::vector<std::string>& terminal_args = {});
+
 // Launches the terminal tabbed app.
 void LaunchTerminal(Profile* profile,
                     int64_t display_id = display::kInvalidDisplayId,
@@ -105,7 +129,7 @@ void LaunchTerminal(Profile* profile,
                     const std::string& cwd = "",
                     const std::vector<std::string>& terminal_args = {});
 
-void LaunchTerminalForSSH(Profile* profile, int64_t display_id);
+void LaunchTerminalHome(Profile* profile, int64_t display_id);
 
 void LaunchTerminalWithUrl(Profile* profile,
                            int64_t display_id,
@@ -123,11 +147,25 @@ void LaunchTerminalSettings(Profile* profile,
 // Record which terminal settings have been changed by users.
 void RecordTerminalSettingsChangesUMAs(Profile* profile);
 
-// Returns terminal setting 'background-color'.
-std::string GetTerminalSettingBackgroundColor(Profile* profile);
+// Returns terminal setting 'background-color' to use for |url|.
+std::string GetTerminalSettingBackgroundColor(
+    Profile* profile,
+    GURL url,
+    absl::optional<SkColor> opener_background_color);
 
 // Returns terminal setting 'pass-ctrl-w'.
 bool GetTerminalSettingPassCtrlW(Profile* profile);
+
+// Menu shortcut ID for SSH with specified nassh profile-id.
+std::string ShortcutIdForSSH(const std::string& profileId);
+
+// Menu shortcut ID for Linux container.
+std::string ShortcutIdFromContainerId(Profile* profile,
+                                      const crostini::ContainerId& id);
+
+// Returns list of SSH connections {<profile-id>, <description>}.
+std::vector<std::pair<std::string, std::string>> GetSSHConnections(
+    Profile* profile);
 
 // Add terminal menu items (Settings, Shut down Linux).
 void AddTerminalMenuItems(Profile* profile,

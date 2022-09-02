@@ -5,7 +5,6 @@
 #ifndef SANDBOX_WIN_SRC_BROKER_SERVICES_H_
 #define SANDBOX_WIN_SRC_BROKER_SERVICES_H_
 
-#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -43,10 +42,10 @@ class BrokerServicesBase final : public BrokerServices,
 
   // BrokerServices interface.
   ResultCode Init() override;
-  scoped_refptr<TargetPolicy> CreatePolicy() override;
+  std::unique_ptr<TargetPolicy> CreatePolicy() override;
   ResultCode SpawnTarget(const wchar_t* exe_path,
                          const wchar_t* command_line,
-                         scoped_refptr<TargetPolicy> policy,
+                         std::unique_ptr<TargetPolicy> policy,
                          ResultCode* last_warning,
                          DWORD* last_error,
                          PROCESS_INFORMATION* target) override;

@@ -162,9 +162,9 @@ static uint32_t sad_64width_msa(const uint8_t *src, int32_t src_stride,
 }
 
 static void sad_4width_x4d_msa(const uint8_t *src_ptr, int32_t src_stride,
-                               const uint8_t *const aref_ptr[],
+                               const uint8_t *const aref_ptr[4],
                                int32_t ref_stride, int32_t height,
-                               uint32_t *sad_array) {
+                               uint32_t sad_array[4]) {
   const uint8_t *ref0_ptr, *ref1_ptr, *ref2_ptr, *ref3_ptr;
   int32_t ht_cnt;
   uint32_t src0, src1, src2, src3;
@@ -223,9 +223,9 @@ static void sad_4width_x4d_msa(const uint8_t *src_ptr, int32_t src_stride,
 }
 
 static void sad_8width_x4d_msa(const uint8_t *src_ptr, int32_t src_stride,
-                               const uint8_t *const aref_ptr[],
+                               const uint8_t *const aref_ptr[4],
                                int32_t ref_stride, int32_t height,
-                               uint32_t *sad_array) {
+                               uint32_t sad_array[4]) {
   int32_t ht_cnt;
   const uint8_t *ref0_ptr, *ref1_ptr, *ref2_ptr, *ref3_ptr;
   v16u8 src0, src1, src2, src3;
@@ -274,9 +274,9 @@ static void sad_8width_x4d_msa(const uint8_t *src_ptr, int32_t src_stride,
 }
 
 static void sad_16width_x4d_msa(const uint8_t *src_ptr, int32_t src_stride,
-                                const uint8_t *const aref_ptr[],
+                                const uint8_t *const aref_ptr[4],
                                 int32_t ref_stride, int32_t height,
-                                uint32_t *sad_array) {
+                                uint32_t sad_array[4]) {
   int32_t ht_cnt;
   const uint8_t *ref0_ptr, *ref1_ptr, *ref2_ptr, *ref3_ptr;
   v16u8 src, ref0, ref1, ref2, ref3, diff;
@@ -339,9 +339,9 @@ static void sad_16width_x4d_msa(const uint8_t *src_ptr, int32_t src_stride,
 }
 
 static void sad_32width_x4d_msa(const uint8_t *src, int32_t src_stride,
-                                const uint8_t *const aref_ptr[],
+                                const uint8_t *const aref_ptr[4],
                                 int32_t ref_stride, int32_t height,
-                                uint32_t *sad_array) {
+                                uint32_t sad_array[4]) {
   const uint8_t *ref0_ptr, *ref1_ptr, *ref2_ptr, *ref3_ptr;
   int32_t ht_cnt;
   v16u8 src0, src1, ref0, ref1;
@@ -383,9 +383,9 @@ static void sad_32width_x4d_msa(const uint8_t *src, int32_t src_stride,
 }
 
 static void sad_64width_x4d_msa(const uint8_t *src, int32_t src_stride,
-                                const uint8_t *const aref_ptr[],
+                                const uint8_t *const aref_ptr[4],
                                 int32_t ref_stride, int32_t height,
-                                uint32_t *sad_array) {
+                                uint32_t sad_array[4]) {
   const uint8_t *ref0_ptr, *ref1_ptr, *ref2_ptr, *ref3_ptr;
   int32_t ht_cnt;
   v16u8 src0, src1, src2, src3;
@@ -659,36 +659,36 @@ static uint32_t avgsad_64width_msa(const uint8_t *src, int32_t src_stride,
 
 #define AOM_SAD_4xHEIGHTx4D_MSA(height)                                   \
   void aom_sad4x##height##x4d_msa(const uint8_t *src, int32_t src_stride, \
-                                  const uint8_t *const refs[],            \
-                                  int32_t ref_stride, uint32_t *sads) {   \
+                                  const uint8_t *const refs[4],           \
+                                  int32_t ref_stride, uint32_t sads[4]) { \
     sad_4width_x4d_msa(src, src_stride, refs, ref_stride, height, sads);  \
   }
 
 #define AOM_SAD_8xHEIGHTx4D_MSA(height)                                   \
   void aom_sad8x##height##x4d_msa(const uint8_t *src, int32_t src_stride, \
-                                  const uint8_t *const refs[],            \
-                                  int32_t ref_stride, uint32_t *sads) {   \
+                                  const uint8_t *const refs[4],           \
+                                  int32_t ref_stride, uint32_t sads[4]) { \
     sad_8width_x4d_msa(src, src_stride, refs, ref_stride, height, sads);  \
   }
 
 #define AOM_SAD_16xHEIGHTx4D_MSA(height)                                   \
   void aom_sad16x##height##x4d_msa(const uint8_t *src, int32_t src_stride, \
-                                   const uint8_t *const refs[],            \
-                                   int32_t ref_stride, uint32_t *sads) {   \
+                                   const uint8_t *const refs[4],           \
+                                   int32_t ref_stride, uint32_t sads[4]) { \
     sad_16width_x4d_msa(src, src_stride, refs, ref_stride, height, sads);  \
   }
 
 #define AOM_SAD_32xHEIGHTx4D_MSA(height)                                   \
   void aom_sad32x##height##x4d_msa(const uint8_t *src, int32_t src_stride, \
-                                   const uint8_t *const refs[],            \
-                                   int32_t ref_stride, uint32_t *sads) {   \
+                                   const uint8_t *const refs[4],           \
+                                   int32_t ref_stride, uint32_t sads[4]) { \
     sad_32width_x4d_msa(src, src_stride, refs, ref_stride, height, sads);  \
   }
 
 #define AOM_SAD_64xHEIGHTx4D_MSA(height)                                   \
   void aom_sad64x##height##x4d_msa(const uint8_t *src, int32_t src_stride, \
-                                   const uint8_t *const refs[],            \
-                                   int32_t ref_stride, uint32_t *sads) {   \
+                                   const uint8_t *const refs[4],           \
+                                   int32_t ref_stride, uint32_t sads[4]) { \
     sad_64width_x4d_msa(src, src_stride, refs, ref_stride, height, sads);  \
   }
 

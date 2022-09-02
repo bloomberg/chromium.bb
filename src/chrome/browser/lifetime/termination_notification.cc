@@ -5,6 +5,7 @@
 #include "chrome/browser/lifetime/termination_notification.h"
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -14,6 +15,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/login/session/session_termination_manager.h"
+#include "chrome/browser/lifetime/application_lifetime_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"  // nogncheck
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -21,12 +23,29 @@
 #endif
 
 namespace browser_shutdown {
+namespace {
 
+base::OnceClosureList& GetAppTerminatingCallbackList() {
+  static base::NoDestructor<base::OnceClosureList> callback_list;
+  return *callback_list;
+}
+
+}  // namespace
+
+base::CallbackListSubscription AddAppTerminatingCallback(
+    base::OnceClosure app_terminating_callback) {
+  return GetAppTerminatingCallbackList().Add(
+      std::move(app_terminating_callback));
+}
 void NotifyAppTerminating() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   static bool notified = false;
   if (notified)
     return;
   notified = true;
+  GetAppTerminatingCallbackList().Notify();
+
+  // TODO(https://crbug.com/1174781): Remove.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources(),
@@ -34,10 +53,7 @@ void NotifyAppTerminating() {
 }
 
 void NotifyAndTerminate(bool fast_path) {
-  NotifyAndTerminate(fast_path, RebootPolicy::kOptionalReboot);
-}
-
-void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   static bool notified = false;
   // Return if a shutdown request has already been sent.
@@ -53,29 +69,16 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
   if (chromeos::PowerPolicyController::IsInitialized())
     chromeos::PowerPolicyController::Get()->NotifyChromeIsExiting();
 
-  if (chromeos::DBusThreadManager::IsInitialized() &&
-      !chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
-    // If we're on a ChromeOS device, reboot if an update has been applied,
-    // or else signal the session manager to log out.
-    chromeos::UpdateEngineClient* update_engine_client =
-        chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
-    if (update_engine_client->GetLastStatus().current_operation() ==
-            update_engine::Operation::UPDATED_NEED_REBOOT ||
-        reboot_policy == RebootPolicy::kForceReboot) {
-      update_engine_client->RebootAfterUpdate();
-    } else if (chrome::IsAttemptingShutdown()) {
-      // Don't ask SessionManager to stop session if the shutdown request comes
-      // from session manager.
-      ash::SessionTerminationManager::Get()->StopSession(
-          login_manager::SessionStopReason::REQUEST_FROM_SESSION_MANAGER);
-    }
-  } else {
-    if (chrome::IsAttemptingShutdown()) {
-      // If running the Chrome OS build, but we're not on the device, act
-      // as if we received signal from SessionManager.
-      content::GetUIThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
-    }
+  if (chrome::UpdatePending()) {
+    chrome::RelaunchForUpdate();
+    return;
+  }
+
+  // Signal session manager to stop the session if Chrome has initiated an
+  // attempt to do so.
+  if (chrome::IsAttemptingShutdown() && ash::SessionTerminationManager::Get()) {
+    ash::SessionTerminationManager::Get()->StopSession(
+        login_manager::SessionStopReason::REQUEST_FROM_SESSION_MANAGER);
   }
 #endif
 }

@@ -131,6 +131,8 @@ struct ConfigHelper {
           EXPECT_THAT(codecs, ::testing::IsEmpty());
         }));
     EXPECT_CALL(*channel_receive_, SetSourceTracker(_));
+    EXPECT_CALL(*channel_receive_, GetLocalSsrc())
+        .WillRepeatedly(Return(kLocalSsrc));
 
     stream_config_.rtp.local_ssrc = kLocalSsrc;
     stream_config_.rtp.remote_ssrc = kRemoteSsrc;
@@ -144,8 +146,8 @@ struct ConfigHelper {
         rtc::make_ref_counted<MockAudioDecoderFactory>();
   }
 
-  std::unique_ptr<internal::AudioReceiveStream> CreateAudioReceiveStream() {
-    auto ret = std::make_unique<internal::AudioReceiveStream>(
+  std::unique_ptr<AudioReceiveStreamImpl> CreateAudioReceiveStream() {
+    auto ret = std::make_unique<AudioReceiveStreamImpl>(
         Clock::GetRealTimeClock(), &packet_router_, stream_config_,
         audio_state_, &event_log_,
         std::unique_ptr<voe::ChannelReceiveInterface>(channel_receive_));
@@ -153,7 +155,7 @@ struct ConfigHelper {
     return ret;
   }
 
-  AudioReceiveStream::Config& config() { return stream_config_; }
+  AudioReceiveStreamInterface::Config& config() { return stream_config_; }
   rtc::scoped_refptr<MockAudioMixer> audio_mixer() { return audio_mixer_; }
   MockChannelReceive* channel_receive() { return channel_receive_; }
 
@@ -187,7 +189,7 @@ struct ConfigHelper {
   MockRtcEventLog event_log_;
   rtc::scoped_refptr<AudioState> audio_state_;
   rtc::scoped_refptr<MockAudioMixer> audio_mixer_;
-  AudioReceiveStream::Config stream_config_;
+  AudioReceiveStreamInterface::Config stream_config_;
   ::testing::StrictMock<MockChannelReceive>* channel_receive_ = nullptr;
   RtpStreamReceiverController rtp_stream_receiver_controller_;
   MockTransport rtcp_send_transport_;
@@ -207,7 +209,7 @@ const std::vector<uint8_t> CreateRtcpSenderReport() {
 }  // namespace
 
 TEST(AudioReceiveStreamTest, ConfigToString) {
-  AudioReceiveStream::Config config;
+  AudioReceiveStreamInterface::Config config;
   config.rtp.remote_ssrc = kRemoteSsrc;
   config.rtp.local_ssrc = kLocalSsrc;
   config.rtp.extensions.push_back(
@@ -247,7 +249,7 @@ TEST(AudioReceiveStreamTest, GetStats) {
     ConfigHelper helper(use_null_audio_processing);
     auto recv_stream = helper.CreateAudioReceiveStream();
     helper.SetupMockForGetStats();
-    AudioReceiveStream::Stats stats =
+    AudioReceiveStreamInterface::Stats stats =
         recv_stream->GetStats(/*get_and_clear_legacy_stats=*/true);
     EXPECT_EQ(kRemoteSsrc, stats.remote_ssrc);
     EXPECT_EQ(kCallStats.payload_bytes_rcvd, stats.payload_bytes_rcvd);
@@ -397,8 +399,8 @@ TEST(AudioReceiveStreamTest, ReconfigureWithUpdatedConfig) {
     recv_stream->SetDecoderMap(new_config.decoder_map);
 
     EXPECT_CALL(channel_receive, SetNACKStatus(true, 15 + 1)).Times(1);
-    recv_stream->SetUseTransportCcAndNackHistory(new_config.rtp.transport_cc,
-                                                 300 + 20);
+    recv_stream->SetTransportCc(new_config.rtp.transport_cc);
+    recv_stream->SetNackHistory(300 + 20);
 
     recv_stream->UnregisterFromTransport();
   }

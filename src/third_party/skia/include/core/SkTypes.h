@@ -236,7 +236,7 @@
 #  define SK_SUPPORT_GPU 1
 #endif
 
-#if SK_SUPPORT_GPU || SK_GRAPHITE_ENABLED
+#if SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
 #  if !defined(SK_ENABLE_SKSL)
 #    define SK_ENABLE_SKSL
 #  endif
@@ -263,8 +263,10 @@
 
 #if defined(SK_BUILD_FOR_GOOGLE3)
     void SkDebugfForDumpStackTrace(const char* data, void* unused);
-    void DumpStackTrace(int skip_count, void w(const char*, void*), void* arg);
-#  define SK_DUMP_GOOGLE3_STACK() DumpStackTrace(0, SkDebugfForDumpStackTrace, nullptr)
+    namespace base {
+        void DumpStackTrace(int skip_count, void w(const char*, void*), void* arg);
+    }
+#  define SK_DUMP_GOOGLE3_STACK() ::base::DumpStackTrace(0, SkDebugfForDumpStackTrace, nullptr)
 #else
 #  define SK_DUMP_GOOGLE3_STACK()
 #endif
@@ -372,14 +374,6 @@
 #  endif
 #endif
 
-#if SK_CPU_SSE_LEVEL >= SK_CPU_SSE_LEVEL_SSE1
-    #define SK_PREFETCH(ptr) _mm_prefetch(reinterpret_cast<const char*>(ptr), _MM_HINT_T0)
-#elif defined(__GNUC__)
-    #define SK_PREFETCH(ptr) __builtin_prefetch(ptr)
-#else
-    #define SK_PREFETCH(ptr)
-#endif
-
 #ifndef SK_PRINTF_LIKE
 #  if defined(__clang__) || defined(__GNUC__)
 #    define SK_PRINTF_LIKE(A, B) __attribute__((format(printf, (A), (B))))
@@ -400,8 +394,10 @@
 #  define GR_TEST_UTILS 0
 #endif
 
-#ifndef SK_GPU_V1
-#  define SK_GPU_V1 1
+#if !SK_SUPPORT_GPU
+   #define SK_GPU_V1 0 // always false if Ganesh is disabled
+#elif !defined(SK_GPU_V1)
+#  define SK_GPU_V1 1   // otherwise default to v1 enabled
 #endif
 
 #if defined(SK_HISTOGRAM_ENUMERATION)  || \
@@ -508,7 +504,7 @@ typedef unsigned U16CPU;
 /** @return false or true based on the condition
 */
 template <typename T> static constexpr bool SkToBool(const T& x) {
-    return 0 != x;  // NOLINT(modernize-use-nullptr)
+    return (bool)x;
 }
 
 static constexpr int16_t SK_MaxS16 = INT16_MAX;
