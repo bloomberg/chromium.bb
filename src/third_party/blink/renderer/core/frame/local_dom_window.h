@@ -116,9 +116,14 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     virtual void DidRemoveAllEventListeners(LocalDOMWindow*) = 0;
   };
 
+  static LocalDOMWindow* Create(WindowAgent *agent) {
+    return MakeGarbageCollected<LocalDOMWindow>(agent);
+  }
+
   static LocalDOMWindow* From(const ScriptState*);
 
   LocalDOMWindow(LocalFrame&, WindowAgent*, bool anonymous);
+  explicit LocalDOMWindow(WindowAgent*);
   ~LocalDOMWindow() override;
 
   // Returns the token identifying the frame that this ExecutionContext was
@@ -213,6 +218,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
       UseCounterImpl::PermissionsPolicyUsageType type);
 
   Document* InstallNewDocument(const DocumentInit&);
+
+  Document* InstallNewUnintializedDocument(const DocumentInit&);
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;

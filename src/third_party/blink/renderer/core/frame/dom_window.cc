@@ -50,6 +50,9 @@ DOMWindow::DOMWindow(Frame& frame)
       window_proxy_manager_(frame.GetWindowProxyManager()),
       window_is_closing_(false) {}
 
+DOMWindow::DOMWindow()
+    : window_is_closing_(false) {}
+
 DOMWindow::~DOMWindow() {
   // The frame must be disconnected before finalization.
   DCHECK(!frame_);
@@ -752,7 +755,8 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   KURL target_url = local_dom_window
                         ? local_dom_window->Url()
                         : KURL(NullURL(), target_security_origin->ToString());
-  if (!source->GetContentSecurityPolicy()->AllowConnectToSource(
+  ContentSecurityPolicy *csp = source->GetContentSecurityPolicy();
+  if (csp && !csp->AllowConnectToSource(
           target_url, target_url, RedirectStatus::kNoRedirect,
           ReportingDisposition::kSuppressReporting)) {
     UseCounter::Count(

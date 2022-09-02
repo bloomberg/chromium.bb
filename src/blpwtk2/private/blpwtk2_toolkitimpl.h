@@ -164,6 +164,8 @@ class ToolkitImpl : public Toolkit {
     Profile *getProfile(int pid, bool launchDevToolsServer) override;
     bool preHandleMessage(const NativeMsg *msg) override;
     void postHandleMessage(const NativeMsg *msg) override;
+    v8::Local<v8::Context> createWebScriptContext(const StringRef& originString) override;
+    void disposeWebScriptContext(v8::Local<v8::Context> context) override;
     void setWebViewHostObserver(WebViewHostObserver* observer) override;
     void onTerminating() override;
     void setTraceThreshold(unsigned int timeoutMS) override;

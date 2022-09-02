@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
 #include "third_party/blink/renderer/platform/bindings/binding_security_for_platform.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -34,6 +35,10 @@ CallbackFunctionBase::CallbackFunctionBase(
             ThreadScheduler::Current()->GetTaskAttributionTracker()) {
       parent_task_id_ = tracker->RunningTaskId(callback_relevant_script_state_);
     }
+  } else {
+    const String& message = "callback created in invalid context";
+    V8ThrowException::ThrowAccessError(v8::Isolate::GetCurrent(), message);
+    return;
   }
 }
 
