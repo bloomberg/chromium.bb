@@ -27,6 +27,9 @@ const size_t kNTDevicePrefixLen = std::size(kNTDevicePrefix) - 1;
 // List of handles mapped to their kernel object type name.
 using ProcessHandleMap = std::map<std::wstring, std::vector<HANDLE>>;
 
+void AddOnExitHandler(_onexit_t func);
+void CallOnExitHandlers();
+
 // Basic implementation of a singleton which calls the destructor
 // when the exe is shutting down or the DLL is being unloaded.
 template <typename Derived>
@@ -36,9 +39,7 @@ class SingletonBase {
     static Derived* instance = nullptr;
     if (!instance) {
       instance = new Derived();
-      // Microsoft CRT extension. In an exe this this called after
-      // winmain returns, in a dll is called in DLL_PROCESS_DETACH
-      _onexit(OnExit);
+      AddOnExitHandler(OnExit);
     }
     return instance;
   }

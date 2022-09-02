@@ -6210,6 +6210,10 @@ void v8::V8::InitializeExternalStartupDataFromFile(const char* snapshot_blob) {
   i::InitializeExternalStartupDataFromFile(snapshot_blob);
 }
 
+intptr_t v8::V8::GetHeapHandle() {
+  return _get_heap_handle();
+}
+
 const char* v8::V8::GetVersion() { return i::Version::GetVersion(); }
 
 #ifdef V8_ENABLE_SANDBOX
