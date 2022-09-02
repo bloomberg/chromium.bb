@@ -174,10 +174,14 @@ public:
 
     std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController> CreateGpuDependency(
       bool gpu_compositing,
-      gpu::SurfaceHandle surface_handle,
-      const viz::RendererSettings& renderer_settings) override;
+      gpu::SurfaceHandle surface_handle) override;
 };
 
+// TODO(m104): Support for GLRenderer-based output surface has been removed
+// upstream:
+// https://chromium.googlesource.com/chromium/src/+/5746714f208c79e9755e62af101ebf1845e65abd
+// Figure out another solution for this.
+#if 0
 class GpuOutputSurface : public viz::OutputSurface {
 public:
     GpuOutputSurface(scoped_refptr<viz::ContextProvider> context_provider,
@@ -261,6 +265,7 @@ private:
 
     base::WeakPtrFactory<GpuOutputSurface> weak_ptr_factory_{this};
 };
+#endif
 
 class RenderCompositorFrameSinkImpl : public viz::mojom::CompositorFrameSink
                                      , private viz::HostFrameSinkClient {
@@ -621,6 +626,11 @@ std::unique_ptr<viz::OutputSurface> RenderFrameSinkProviderImpl::CreateOutputSur
     }
 
     if (gpu_compositing) {
+        // TODO(m104): Support for GLRenderer-based output surface has been
+        // removed upstream:
+        // https://chromium.googlesource.com/chromium/src/+/5746714f208c79e9755e62af101ebf1845e65abd
+        // Figure out another solution for this.
+#if 0
         constexpr bool automatic_flushes = false;
         constexpr bool support_locking   = false;
         constexpr bool support_gles2_interface = true;
@@ -659,7 +669,9 @@ std::unique_ptr<viz::OutputSurface> RenderFrameSinkProviderImpl::CreateOutputSur
         if (result == gpu::ContextResult::kSuccess) {
             output_surface = std::make_unique<GpuOutputSurface>(context_provider, surface_handle);
         }
-        else {
+        else
+#endif
+        {
             LOG(ERROR) << "failed to bind GL context, falling back to software compositing";
 
             d_main_task_runner->
@@ -682,8 +694,7 @@ std::unique_ptr<viz::OutputSurface> RenderFrameSinkProviderImpl::CreateOutputSur
 
 std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController> RenderFrameSinkProviderImpl::CreateGpuDependency(
       bool gpu_compositing,
-      gpu::SurfaceHandle surface_handle,
-      const viz::RendererSettings& renderer_settings)
+      gpu::SurfaceHandle surface_handle)
 {
     return nullptr;
 }
@@ -751,7 +762,11 @@ void RenderFrameSinkProviderImpl::DelegateToDefaultFrameSinkProviderOnMain(
         std::move(compositor_frame_sink_client));
 }
 
-//
+// TODO(m104): Support for GLRenderer-based output surface has been removed
+// upstream:
+// https://chromium.googlesource.com/chromium/src/+/5746714f208c79e9755e62af101ebf1845e65abd
+// Figure out another solution for this.
+#if 0
 GpuOutputSurface::GpuOutputSurface(scoped_refptr<viz::ContextProvider> context_provider,
                                    gpu::SurfaceHandle surface_handle)
 : OutputSurface(context_provider)
@@ -1004,6 +1019,7 @@ gpu::SurfaceHandle GpuOutputSurface::GetSurfaceHandle() const
 {
     return surface_handle_;
 }
+#endif
 
 //
 RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(

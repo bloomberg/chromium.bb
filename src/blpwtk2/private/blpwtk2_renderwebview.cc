@@ -29,6 +29,7 @@
 #include <blpwtk2_webviewproxy.h>
 #include <base/run_loop.h>
 #include <cc/trees/layer_tree_host.h>
+#include <content/browser/blob_storage/chrome_blob_storage_context.h>
 #include <content/browser/renderer_host/data_transfer_util.h>
 #include <content/public/browser/browser_task_traits.h>
 #include <content/renderer/render_thread_impl.h>
@@ -36,6 +37,7 @@
 #include <content/renderer/render_frame_impl.h>
 #include <third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h>
 #include <third_party/blink/public/mojom/frame/frame.mojom.h>
+#include <third_party/blink/public/mojom/input/input_handler.mojom.h>
 #include <third_party/blink/public/web/web_frame_widget.h>
 #include <third_party/blink/public/web/web_local_frame.h>
 #include <third_party/blink/public/web/web_widget.h>
@@ -826,12 +828,14 @@ void RenderWebView::initializeBrowserLike()
     int width   = 1;
     int height  = 1;
 
+#if defined(BLPWTK2_FEATURE_FOCUS)
     if (d_properties.width > 0) {
         width = d_properties.width;
     }
     if (d_properties.height > 0) {
         height = d_properties.height;
     }
+#endif
 
     d_hwnd.reset(CreateWindowEx(
 #if defined(BLPWTK2_FEATURE_FOCUS)
@@ -1048,7 +1052,7 @@ void RenderWebView::updateFocus()
     }
 
     if (d_focused) {
-        d_widgetInputHandler->SetFocus(d_focused);
+        d_widgetInputHandler->SetFocus(blink::mojom::FocusState::kFocused);
         if (blink_frame_widget_) {
             blink_frame_widget_->SetActive(d_focused);
         }
@@ -1057,7 +1061,7 @@ void RenderWebView::updateFocus()
         if (blink_frame_widget_) {
             blink_frame_widget_->SetActive(d_focused);
         }
-        d_widgetInputHandler->SetFocus(d_focused);
+        d_widgetInputHandler->SetFocus(blink::mojom::FocusState::kNotFocusedAndNotActive);
     }
 }
 
@@ -2261,7 +2265,7 @@ void RenderWebView::DragTargetDrop(const content::DropData& drop_data,
   }
   if (blink_frame_widget_) {
     int processID = ::GetCurrentProcessId();
-    blink_frame_widget_->DragTargetDrop(content::DropDataToDragData(drop_data, nullptr, processID),
+    blink_frame_widget_->DragTargetDrop(content::DropDataToDragData(drop_data, nullptr, processID, nullptr),
                                         ConvertWindowPointToViewport(client_pt),
                                         screen_pt, key_modifiers,
                                         base::DoNothing());

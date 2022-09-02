@@ -35,6 +35,7 @@
 #include <ui/base/dragdrop/os_exchange_data.h>
 #include <ui/base/dragdrop/os_exchange_data_provider_factory.h>
 #include <ui/base/dragdrop/os_exchange_data_provider_win.h>
+#include <ui/gfx/image/image_skia_rep_default.h>
 
 namespace blpwtk2 {
 
