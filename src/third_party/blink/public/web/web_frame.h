@@ -39,7 +39,7 @@
 #include "third_party/blink/public/web/web_node.h"
 #include "v8/include/v8-forward.h"
 #include "ui/gfx/geometry/rect.h"
-
+#include "cc/paint/paint_canvas.h"
 
 namespace blink {
 
