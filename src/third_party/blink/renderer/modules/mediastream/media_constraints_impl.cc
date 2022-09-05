@@ -321,8 +321,7 @@ static void ParseOldStyleNames(
         Deprecation::CountDeprecation(
             context, WebFeature::kRTCConstraintEnableDtlsSrtpFalse);
       }
-#if 1 || BUILDFLAG(IS_FUCHSIA)
-      // blpwtk2: Still need this for webRTC to work
+#if BUILDFLAG(IS_FUCHSIA)
       // Special dispensation for Fuchsia to run SDES in 2022
       // TODO(crbug.com/804275): Delete when Fuchsia no longer depends on it.
       result.enable_dtls_srtp.SetExact(ToBoolean(constraint.value_));
