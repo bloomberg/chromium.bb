@@ -136,6 +136,7 @@ void PdfPrintManager::PrintToPdf(
 }
 
 void PdfPrintManager::GetDefaultPrintSettings(
+    uint32_t owner_wnd,
     GetDefaultPrintSettingsCallback callback) {
   DLOG(ERROR) << "Scripted print is not supported";
   std::move(callback).Run(printing::mojom::PrintParams::New());

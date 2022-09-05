@@ -307,6 +307,7 @@ void PrintJobWorkerOop::InvokeUseDefaultSettings(SettingsCallback callback) {
 }
 
 void PrintJobWorkerOop::InvokeGetSettingsWithUI(uint32_t document_page_count,
+                                                HWND hwnd,
                                                 bool has_selection,
                                                 bool is_scripted,
                                                 SettingsCallback callback) {
@@ -326,7 +327,7 @@ void PrintJobWorkerOop::InvokeGetSettingsWithUI(uint32_t document_page_count,
   //       browser process.
   //   - Other platforms don't have a system print UI or do not use OOP
   //     printing, so this does not matter.
-  PrintJobWorker::InvokeGetSettingsWithUI(document_page_count, has_selection,
+  PrintJobWorker::InvokeGetSettingsWithUI(document_page_count, hwnd, has_selection,
                                           is_scripted, std::move(callback));
 #endif
 }
