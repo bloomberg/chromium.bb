@@ -248,7 +248,7 @@ DOMRectReadOnly* BBWindowHooks::getAbsoluteCaretRectAtOffset(Node* node, long of
 {
     VisiblePosition visiblePos = CreateVisiblePosition(Position(node, offset));
     gfx::Rect rc = AbsoluteCaretBoundsOf(visiblePos.ToPositionWithAffinity());
-    return DOMRectReadOnly::FromIntRect(rc);
+    return DOMRectReadOnly::FromRect(rc);
 }
 
 void BBWindowHooks::Trace(Visitor* visitor) const {
