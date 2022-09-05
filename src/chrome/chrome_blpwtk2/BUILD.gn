@@ -48,6 +48,13 @@ group("chrome_blpwtk2_docprinter") {
 
 
 # patch section: renderer-ui
+group("chrome_blpwtk2_renderer_ui") {
+  deps = [
+     "//chrome/browser:browser",
+     "//components/printing/browser",
+     "//components/printing/renderer",
+  ]
+}
 
 
 group("chrome_blpwtk2") {
@@ -66,6 +73,7 @@ group("chrome_blpwtk2") {
 
 
      # patch section: renderer-ui
+     ":chrome_blpwtk2_renderer_ui",
 
 
      "//base:base",

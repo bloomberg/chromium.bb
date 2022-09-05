@@ -1095,6 +1095,7 @@ void PrintViewManagerBase::CompleteScriptedPrint(
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetSettingsFromUser(
       params->expected_pages_count, params->has_selection, params->margin_type,
+      reinterpret_cast<HWND>(static_cast<intptr_t>(params->owner_wnd)),
       params->is_scripted, !render_process_host->IsPdf(),
       base::BindOnce(&OnDidScriptedPrint, queue_, std::move(printer_query),
                      std::move(callback_wrapper)));

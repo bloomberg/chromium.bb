@@ -70,6 +70,7 @@ class PrintJobWorkerOop : public PrintJobWorker {
   void OnDocumentDone() override;
   void InvokeUseDefaultSettings(SettingsCallback callback) override;
   void InvokeGetSettingsWithUI(uint32_t document_page_count,
+                               HWND hwnd,
                                bool has_selection,
                                bool is_scripted,
                                SettingsCallback callback) override;
