@@ -74,7 +74,7 @@ class ProfileImpl final : public Profile, public mojom::ProcessClient {
 
     mojo::Receiver<mojom::ProcessClient> d_receiver;
     ProcessClientDelegate *d_ipcDelegate;
-    void onBindProcessDone(mojom::ProcessClientRequest processClientRequest);
+    void onBindProcessDone(mojo::PendingReceiver<mojom::ProcessClient> receiver);
 
   public:
     static Profile *anyInstance();

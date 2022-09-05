@@ -57,7 +57,7 @@ interface ProcessHost {
         // initialize the toolkit.  This will allow the toolkit to establish
         // a Mojo connection so the process can issue Mojo requests.
 
-    bindProcess(uint32 pid, bool launchDevToolsServer) => (ProcessClient& client);
+    bindProcess(uint32 pid, bool launchDevToolsServer) => (pending_receiver<ProcessClient> client);
         // Once a child process establishes a Mojo connection given a channel
         // info, it must call bindProcess with its pid to signal the browser
         // to associate the connection of the incoming request with the
