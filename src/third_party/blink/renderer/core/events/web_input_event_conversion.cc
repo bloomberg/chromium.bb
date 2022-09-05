@@ -47,6 +47,8 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
+#include <windows.h>
+
 namespace blink {
 
 namespace {
