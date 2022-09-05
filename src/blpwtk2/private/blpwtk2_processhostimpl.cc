@@ -421,7 +421,7 @@ void ProcessHostImpl::bindProcess(unsigned int pid,
     }
   }
 
-  std::move(callback).Run(mojo::MakeRequest(&processClientPtr));
+  std::move(callback).Run(processClientPtr.BindNewPipeAndPassReceiver());
   s_boundedHosts[pid] = this;
 }
 

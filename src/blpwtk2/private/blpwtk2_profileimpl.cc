@@ -460,10 +460,8 @@ std::string ProfileImpl::getGpuInfo()
 
 // patch section: embedder ipc
 void ProfileImpl::onBindProcessDone(
-    mojom::ProcessClientRequest processClientRequest)
+    mojo::PendingReceiver<mojom::ProcessClient> receiver)
 {
-    mojo::PendingReceiver<mojom::ProcessClient> receiver =
-        std::move(processClientRequest);
     d_receiver.Bind(std::move(receiver));
 }
 

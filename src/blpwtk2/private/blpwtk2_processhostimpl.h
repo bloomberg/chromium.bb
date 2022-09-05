@@ -32,6 +32,7 @@
 #include <base/process/process_handle.h>
 #include <base/memory/ref_counted.h>
 #include <ipc/ipc_listener.h>
+#include <mojo/public/cpp/bindings/remote.h>
 #include <mojo/public/cpp/platform/platform_channel.h>
 #include <third_party/blink/public/platform/interface_registry.h>
 #include <services/service_manager/public/cpp/binder_registry.h>
@@ -61,7 +62,7 @@ class ProcessHostImpl final : public mojom::ProcessHost
     // DATA
     scoped_refptr<Impl> d_impl;
     scoped_refptr<base::SingleThreadTaskRunner> d_runner;
-    mojom::ProcessClientPtr processClientPtr;
+    mojo::Remote<mojom::ProcessClient> processClientPtr;
 
     static std::map<base::ProcessId,scoped_refptr<Impl> > s_unboundHosts;
 
