@@ -16,8 +16,11 @@
 #include "base/notreached.h"
 #include "components/exo/data_source.h"
 #include "components/exo/surface.h"
+#include "components/exo/surface_observer.h"
+#include "components/exo/wm_helper.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -48,7 +51,8 @@ ExtendedDragSource* ExtendedDragSource::instance_ = nullptr;
 // well as newly created ones (i.e: not added to a root window yet), in which
 // case OnDraggedWindowVisibilityChanged callback is called to notify when it
 // has just got visible.
-class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver {
+class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver,
+                                                public SurfaceObserver {
  public:
   DraggedWindowHolder(Surface* surface,
                       const gfx::Vector2d& drag_offset,
@@ -56,6 +60,7 @@ class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver {
       : surface_(surface), drag_offset_(drag_offset), source_(source) {
     DCHECK(surface_);
     DCHECK(surface_->window());
+    surface_->AddSurfaceObserver(this);
     if (!FindToplevelWindow()) {
       DVLOG(1) << "Dragged window not added to root window yet.";
       surface_->window()->AddObserver(this);
@@ -69,9 +74,12 @@ class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver {
     if (toplevel_window_) {
       toplevel_window_->RemoveObserver(this);
       toplevel_window_ = nullptr;
-    } else {
+    } else if (surface_) {
       surface_->window()->RemoveObserver(this);
     }
+
+    if (surface_)
+      surface_->RemoveSurfaceObserver(this);
   }
 
   aura::Window* toplevel_window() { return toplevel_window_; }
@@ -80,10 +88,19 @@ class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver {
  private:
   // aura::WindowObserver:
   void OnWindowAddedToRootWindow(aura::Window* window) override {
+    if (toplevel_window_)
+      return;
+
     DCHECK_EQ(window, surface_->window());
     FindToplevelWindow();
     DCHECK(toplevel_window_);
     surface_->window()->RemoveObserver(this);
+  }
+
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override {
+    DCHECK(window);
+    if (window == toplevel_window_)
+      source_->OnDraggedWindowVisibilityChanging(visible);
   }
 
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
@@ -92,16 +109,35 @@ class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver {
       source_->OnDraggedWindowVisibilityChanged(visible);
   }
 
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK(window);
+    if (window == toplevel_window_) {
+      toplevel_window_->RemoveObserver(this);
+      toplevel_window_ = nullptr;
+    }
+  }
+
+  // SurfaceObserver:
+  void OnSurfaceDestroying(Surface* surface) override {
+    if (surface_ == surface) {
+      surface_->RemoveSurfaceObserver(this);
+      surface_ = nullptr;
+    }
+  }
+
   bool FindToplevelWindow() {
     if (!surface_->window()->GetRootWindow())
       return false;
 
     toplevel_window_ = surface_->window()->GetToplevelWindow();
     toplevel_window_->AddObserver(this);
+
+    // Disable visibility change animations on the dragged window.
+    toplevel_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
     return true;
   }
 
-  Surface* const surface_;
+  Surface* surface_;
   gfx::Vector2d drag_offset_;
   ExtendedDragSource* const source_;
   aura::Window* toplevel_window_ = nullptr;
@@ -130,6 +166,9 @@ ExtendedDragSource::~ExtendedDragSource() {
 
   if (source_)
     source_->RemoveObserver(this);
+
+  if (drag_source_window_)
+    drag_source_window_->RemoveObserver(this);
 
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
@@ -181,10 +220,12 @@ void ExtendedDragSource::OnToplevelWindowDragStarted(
   drag_event_source_ = source;
   drag_source_window_ =
       drag_source_window ? drag_source_window->GetToplevelWindow() : nullptr;
+  if (drag_source_window_)
+    drag_source_window_->AddObserver(this);
   MaybeLockCursor();
 
   if (dragged_window_holder_ && dragged_window_holder_->toplevel_window())
-    StartDrag(dragged_window_holder_->toplevel_window(), start_location);
+    StartDrag(dragged_window_holder_->toplevel_window());
 }
 
 DragOperation ExtendedDragSource::OnToplevelWindowDragDropped() {
@@ -196,13 +237,17 @@ DragOperation ExtendedDragSource::OnToplevelWindowDragDropped() {
 
 void ExtendedDragSource::OnToplevelWindowDragCancelled() {
   DVLOG(1) << "OnDragCancelled()";
-  // TODO(crbug.com/1099418): Handle cancellation/revert.
+  auto* handler = ash::Shell::Get()->toplevel_window_event_handler();
+  handler->RevertDrag();
+
   Cleanup();
 }
 
 void ExtendedDragSource::OnToplevelWindowDragEvent(ui::LocatedEvent* event) {
   DCHECK(event);
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   pointer_location_ = event->root_location_f();
+  wm::ConvertPointToScreen(target->GetRootWindow(), &pointer_location_);
 
   if (!dragged_window_holder_)
     return;
@@ -227,6 +272,11 @@ void ExtendedDragSource::OnDataSourceDestroying(DataSource* source) {
   source_ = nullptr;
 }
 
+void ExtendedDragSource::OnWindowDestroyed(aura::Window* window) {
+  if (drag_source_window_ == window)
+    drag_source_window_ = nullptr;
+}
+
 void ExtendedDragSource::MaybeLockCursor() {
   if (delegate_->ShouldLockCursor()) {
     ash::Shell::Get()->cursor_manager()->LockCursor();
@@ -241,16 +291,12 @@ void ExtendedDragSource::UnlockCursor() {
   }
 }
 
-void ExtendedDragSource::StartDrag(aura::Window* toplevel,
-                                   const gfx::PointF& pointer_location) {
+void ExtendedDragSource::StartDrag(aura::Window* toplevel) {
   // Ensure |toplevel| window does skip events while it's being dragged.
   event_blocker_ =
       std::make_unique<aura::ScopedWindowEventTargetingBlocker>(toplevel);
 
-  // Disable visibility change animations on the dragged window.
-  toplevel->SetProperty(aura::client::kAnimationsDisabledKey, true);
-
-  DVLOG(1) << "Starting drag. pointer_loc=" << pointer_location.ToString();
+  DVLOG(1) << "Starting drag. pointer_loc=" << pointer_location_.ToString();
   auto* toplevel_handler = ash::Shell::Get()->toplevel_window_event_handler();
   auto move_source = drag_event_source_ == ui::mojom::DragEventSource::kTouch
                          ? ::wm::WINDOW_MOVE_SOURCE_TOUCH
@@ -264,17 +310,43 @@ void ExtendedDragSource::StartDrag(aura::Window* toplevel,
           toplevel->ClearProperty(ash::kIsDraggingTabsKey);
           toplevel->ClearProperty(ash::kTabDraggingSourceWindowKey);
         }
-        if (extended_drag_source)
+        if (extended_drag_source) {
           extended_drag_source->dragged_window_holder_.reset();
+          extended_drag_source->event_blocker_.reset();
+        }
       },
       base::Unretained(toplevel), weak_factory_.GetWeakPtr());
 
   // TODO(crbug.com/1167581): Experiment setting |update_gesture_target| back
   // to true when capture is removed from drag and drop.
-  toplevel_handler->AttemptToStartDrag(toplevel, pointer_location, HTCAPTION,
-                                       move_source, std::move(end_closure),
-                                       /*update_gesture_target=*/false,
-                                       /*grab_capture=*/false);
+
+  gfx::PointF pointer_location_in_parent(pointer_location_);
+  wm::ConvertPointFromScreen(toplevel->parent(), &pointer_location_in_parent);
+
+  toplevel_handler->AttemptToStartDrag(
+      toplevel, pointer_location_in_parent, HTCAPTION, move_source,
+      std::move(end_closure),
+      /*update_gesture_target=*/false,
+      /*grab_capture =*/
+      drag_event_source_ != ui::mojom::DragEventSource::kTouch);
+}
+
+void ExtendedDragSource::OnDraggedWindowVisibilityChanging(bool visible) {
+  DCHECK(dragged_window_holder_);
+  DVLOG(1) << "Dragged window visibility changing. visible=" << visible;
+
+  if (!visible) {
+    dragged_window_holder_.reset();
+    return;
+  }
+
+  aura::Window* toplevel = dragged_window_holder_->toplevel_window();
+  DCHECK(toplevel);
+  toplevel->SetProperty(ash::kIsDraggingTabsKey, true);
+  if (drag_source_window_ && drag_source_window_ != toplevel) {
+    toplevel->SetProperty(ash::kTabDraggingSourceWindowKey,
+                          drag_source_window_);
+  }
 }
 
 void ExtendedDragSource::OnDraggedWindowVisibilityChanged(bool visible) {
@@ -289,32 +361,30 @@ void ExtendedDragSource::OnDraggedWindowVisibilityChanged(bool visible) {
   aura::Window* toplevel = dragged_window_holder_->toplevel_window();
   DCHECK(toplevel);
 
-  DCHECK(drag_source_window_);
-  toplevel->SetProperty(ash::kIsDraggingTabsKey, true);
-  if (drag_source_window_ != toplevel) {
-    toplevel->SetProperty(ash::kTabDraggingSourceWindowKey,
-                          drag_source_window_);
-  }
-
   // The |toplevel| window for the dragged surface has just been created and
   // it's about to be mapped. Calculate and set its position based on
   // |drag_offset_| and |pointer_location_| before starting the actual drag.
-  auto screen_location = CalculateOrigin(toplevel);
-  toplevel->SetBounds({screen_location, toplevel->bounds().size()});
+  auto screen_location =
+      gfx::ToFlooredPoint(pointer_location_ - dragged_window_holder_->offset());
+
+  auto toplevel_bounds =
+      gfx::Rect({screen_location, toplevel->bounds().size()});
+  auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(
+      drag_source_window_ ? drag_source_window_ : toplevel);
+  toplevel->SetBoundsInScreen(toplevel_bounds, display);
+
+  if (WMHelper::GetInstance()->InTabletMode()) {
+    // The bounds that is stored in ash::kRestoreBoundsOverrideKey will be used
+    // by DragDetails to calculate the detached window bounds during dragging
+    // when detaching in tablet mode to ensure the detached window is correctly
+    // placed under the pointer/finger.
+    toplevel->SetProperty(ash::kRestoreBoundsOverrideKey, toplevel_bounds);
+  }
 
   DVLOG(1) << "Dragged window mapped. toplevel=" << toplevel
            << " origin=" << screen_location.ToString();
 
-  gfx::PointF pointer_location(screen_location +
-                               dragged_window_holder_->offset());
-  StartDrag(toplevel, pointer_location);
-}
-
-gfx::Point ExtendedDragSource::CalculateOrigin(aura::Window* target) const {
-  DCHECK(dragged_window_holder_);
-  gfx::Point screen_location = gfx::ToRoundedPoint(pointer_location_);
-  wm::ConvertPointToScreen(target->GetRootWindow(), &screen_location);
-  return screen_location - dragged_window_holder_->offset();
+  StartDrag(toplevel);
 }
 
 void ExtendedDragSource::Cleanup() {
@@ -323,6 +393,8 @@ void ExtendedDragSource::Cleanup() {
         aura::client::kAnimationsDisabledKey);
   }
   event_blocker_.reset();
+  if (drag_source_window_)
+    drag_source_window_->RemoveObserver(this);
   drag_source_window_ = nullptr;
   UnlockCursor();
 }
@@ -337,6 +409,10 @@ absl::optional<gfx::Vector2d> ExtendedDragSource::GetDragOffsetForTesting()
   return dragged_window_holder_
              ? absl::optional<gfx::Vector2d>(dragged_window_holder_->offset())
              : absl::nullopt;
+}
+
+aura::Window* ExtendedDragSource::GetDragSourceWindowForTesting() {
+  return drag_source_window_;
 }
 
 }  // namespace exo

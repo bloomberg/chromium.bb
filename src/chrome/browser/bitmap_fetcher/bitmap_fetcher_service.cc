@@ -36,7 +36,7 @@ const size_t kMaxRequests = 25;  // Maximum number of inflight requests allowed.
 // 16kb (64x64 @ 32bpp).  With 16, the total memory consumed would be ~256kb.
 // 16 is double the default number of maximum suggestions so this can
 // accommodate one match image plus one answer image for each result.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Android caches the images in the java layer.
 const int kMaxCacheEntries = 0;
 #else
@@ -109,19 +109,16 @@ BitmapFetcherRequest::BitmapFetcherRequest(
     BitmapFetcherService::BitmapFetchedCallback callback)
     : request_id_(request_id), callback_(std::move(callback)) {}
 
-BitmapFetcherRequest::~BitmapFetcherRequest() {
-}
+BitmapFetcherRequest::~BitmapFetcherRequest() = default;
 
 void BitmapFetcherRequest::NotifyImageChanged(const SkBitmap* bitmap) {
   if (bitmap && !bitmap->empty())
     std::move(callback_).Run(*bitmap);
 }
 
-BitmapFetcherService::CacheEntry::CacheEntry() {
-}
+BitmapFetcherService::CacheEntry::CacheEntry() = default;
 
-BitmapFetcherService::CacheEntry::~CacheEntry() {
-}
+BitmapFetcherService::CacheEntry::~CacheEntry() = default;
 
 BitmapFetcherService::BitmapFetcherService(content::BrowserContext* context)
     : shared_data_decoder_(
@@ -136,12 +133,6 @@ BitmapFetcherService::~BitmapFetcherService() {
   // latter.
   requests_.clear();
   active_fetchers_.clear();
-
-  // Need to delete |shared_data_decoder_| in the same IO thread in which it is
-  // used. This avoids the possibility of deleting it prior to decoding requests
-  // using it completing.
-  content::GetIOThreadTaskRunner({})->DeleteSoon(
-      FROM_HERE, std::move(shared_data_decoder_));
 }
 
 void BitmapFetcherService::CancelRequest(int request_id) {
@@ -212,7 +203,6 @@ std::unique_ptr<BitmapFetcher> BitmapFetcherService::CreateFetcher(
       url, this, traffic_annotation, shared_data_decoder_.get());
 
   new_fetcher->Init(
-      std::string(),
       net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
       network::mojom::CredentialsMode::kInclude);
   new_fetcher->Start(context_->GetDefaultStoragePartition()

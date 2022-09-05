@@ -7,7 +7,7 @@
 
 #include "net/quic/quic_test_packet_printer.h"
 #include "net/socket/socket_test_util.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
 
 namespace net {
 namespace test {
@@ -68,7 +68,7 @@ class MockQuicData {
   std::unique_ptr<MockConnect> connect_;
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
-  size_t sequence_number_;
+  size_t sequence_number_ = 0;
   std::unique_ptr<SequencedSocketData> socket_data_;
   QuicPacketPrinter printer_;
 };

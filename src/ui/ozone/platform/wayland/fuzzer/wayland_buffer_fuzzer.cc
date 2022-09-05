@@ -141,9 +141,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       std::make_unique<ui::WaylandConnection>();
   CHECK(connection->Initialize());
 
-  // See |use_dedicated_polling_thread| in WaylandEventWatcher.
-  connection->event_source()->UseSingleThreadedPollingForTesting();
-
   // Wait until everything is initialised.
   env.task_environment.RunUntilIdle();
 
@@ -225,7 +222,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     env.SetTerminateGpuCallback(manager_host);
   }
 
-  manager_host->DestroyBuffer(widget, kBufferId);
+  manager_host->DestroyBuffer(kBufferId);
 
   // Wait until the buffers are destroyed.
   SyncServer(&server, &env.task_environment);

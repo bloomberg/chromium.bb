@@ -25,7 +25,7 @@ class UpdateServiceImplInactive : public UpdateService {
 
   // Overrides for updater::UpdateService.
   void GetVersion(
-      base::OnceCallback<void(const base::Version&)> callback) const override {
+      base::OnceCallback<void(const base::Version&)> callback) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::Version()));
   }
@@ -39,7 +39,7 @@ class UpdateServiceImplInactive : public UpdateService {
   }
 
   void GetAppStates(base::OnceCallback<void(const std::vector<AppState>&)>
-                        callback) const override {
+                        callback) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::vector<AppState>()));
@@ -55,11 +55,24 @@ class UpdateServiceImplInactive : public UpdateService {
         base::BindOnce(std::move(callback), UpdateService::Result::kInactive));
   }
 
-  void Update(const std::string& app_id,
+  void Update(const std::string& /*app_id*/,
+              const std::string& /*install_data_index*/,
               Priority /*priority*/,
               PolicySameVersionUpdate /*policy_same_version_update*/,
               StateChangeCallback /*state_update*/,
               Callback callback) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), UpdateService::Result::kInactive));
+  }
+
+  void RunInstaller(const std::string& /*app_id*/,
+                    const base::FilePath& /*installer_path*/,
+                    const std::string& /*install_args*/,
+                    const std::string& /*install_data*/,
+                    const std::string& /*install_settings*/,
+                    StateChangeCallback /*state_update*/,
+                    Callback callback) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), UpdateService::Result::kInactive));

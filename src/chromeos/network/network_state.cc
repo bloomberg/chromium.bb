@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/network/cellular_utils.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_event_log.h"
@@ -22,7 +23,6 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "chromeos/network/tether_constants.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -379,7 +379,6 @@ std::string NetworkState::connection_state() const {
          connection_state_ == shill::kStateAssociation ||
          connection_state_ == shill::kStateConfiguration ||
          connection_state_ == shill::kStateReady ||
-         connection_state_ == shill::kStatePortal ||
          connection_state_ == shill::kStateNoConnectivity ||
          connection_state_ == shill::kStateRedirectFound ||
          connection_state_ == shill::kStatePortalSuspected ||
@@ -506,7 +505,7 @@ std::string NetworkState::GetDnsServersAsString() const {
   if (!listv)
     return std::string();
   std::string result;
-  for (const auto& v : listv->GetList()) {
+  for (const auto& v : listv->GetListDeprecated()) {
     if (!result.empty())
       result += ",";
     result += v.GetString();
@@ -606,8 +605,7 @@ bool NetworkState::StateIsConnecting(const std::string& connection_state) {
 
 // static
 bool NetworkState::StateIsPortalled(const std::string& connection_state) {
-  return (connection_state == shill::kStatePortal ||
-          connection_state == shill::kStateNoConnectivity ||
+  return (connection_state == shill::kStateNoConnectivity ||
           connection_state == shill::kStateRedirectFound ||
           connection_state == shill::kStatePortalSuspected);
 }
@@ -622,6 +620,7 @@ std::unique_ptr<NetworkState> NetworkState::CreateNonShillCellularNetwork(
     const std::string& iccid,
     const std::string& eid,
     const std::string& guid,
+    bool is_managed,
     const DeviceState* cellular_device) {
   std::string path = GenerateStubCellularServicePath(iccid);
   auto new_state = std::make_unique<NetworkState>(path);
@@ -632,6 +631,9 @@ std::unique_ptr<NetworkState> NetworkState::CreateNonShillCellularNetwork(
   new_state->iccid_ = iccid;
   new_state->eid_ = eid;
   new_state->guid_ = guid;
+  if (is_managed) {
+    new_state->onc_source_ = ::onc::ONCSource::ONC_SOURCE_DEVICE_POLICY;
+  }
   new_state->activation_state_ = shill::kActivationStateActivated;
   return new_state;
 }
@@ -654,8 +656,7 @@ void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
           .value_or(0);
   if (connection_state_ == shill::kStateNoConnectivity) {
     portal_state_ = PortalState::kNoInternet;
-  } else if (connection_state_ == shill::kStatePortal ||
-             connection_state_ == shill::kStateRedirectFound) {
+  } else if (connection_state_ == shill::kStateRedirectFound) {
     portal_state_ = status_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED
                         ? PortalState::kProxyAuthRequired
                         : PortalState::kPortal;
@@ -667,13 +668,10 @@ void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
 
   UMA_HISTOGRAM_ENUMERATION("CaptivePortal.NetworkStateResult", portal_state_);
   if (portal_state_ != PortalState::kOnline) {
-    portal_status_code_ = status_code;
     NET_LOG(EVENT) << "Network is in captive portal state: " << NetworkId(this)
-                   << " status_code=" << portal_status_code_;
+                   << " status_code=" << status_code;
     base::UmaHistogramSparse("CaptivePortal.NetworkStateStatusCode",
-                             std::abs(portal_status_code_));
-  } else {
-    portal_status_code_ = 0;
+                             std::abs(status_code));
   }
 }
 

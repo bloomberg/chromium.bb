@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/containers/lru_cache.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -139,7 +140,6 @@ class PrefetchProxyCanaryChecker {
   void ProcessFailure(int net_error);
   void ProcessSuccess();
   void RecordResult(bool success);
-  std::string GetCacheKeyForCurrentNetwork() const;
   std::string AppendNameToHistogram(const std::string& histogram) const;
   absl::optional<bool> LookupAndRunChecksIfNeeded();
   // Sends a check now if the checker is currently inactive. If the check is
@@ -151,8 +151,18 @@ class PrefetchProxyCanaryChecker {
   // stops the probing.
   void OnCheckEnd(bool success);
 
+  // Updates the cache with the given entry and key. The arguments are in an
+  // unusual order to make BindOnce calls easier, as this method is used as a
+  // callback since generating the cache key happens asynchronously.
+  void UpdateCacheEntry(PrefetchProxyCanaryChecker::CacheEntry entry,
+                        std::string key);
+
+  // Simply sets |latest_cache_key_| to |key|. This method is used as a
+  // callback since generating the cache key happens asynchronously.
+  void UpdateCacheKey(std::string key);
+
   // The current profile, not owned.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Pipe to allow cancelling an ongoing DNS resolution request. This is set
   // when we fire off a DNS request to the network service. We send the
@@ -189,21 +199,27 @@ class PrefetchProxyCanaryChecker {
   std::unique_ptr<base::OneShotTimer> timeout_timer_;
 
   // The tick clock used within this class.
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   // The time clock used within this class.
-  const base::Clock* clock_;
+  raw_ptr<const base::Clock> clock_;
 
   // Remembers the last time the checker became active.
   absl::optional<base::Time> time_when_set_active_;
 
   // This reference is kept around for unregistering |this| as an observer on
   // any thread.
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 
   // Small LRU cache holding the result of canary checks made for different
   // networks. This cache is not persisted across browser restarts.
   base::LRUCache<std::string, PrefetchProxyCanaryChecker::CacheEntry> cache_;
+
+  // Keeps track of that latest key used to cache the canary checks. This key
+  // changes if the user's network changes. Evaluating the cache key requires
+  // an OS lookup which is slow on android, so we store the latest cache key
+  // evaluation (and use this stale cache keys for lookups).
+  std::string latest_cache_key_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

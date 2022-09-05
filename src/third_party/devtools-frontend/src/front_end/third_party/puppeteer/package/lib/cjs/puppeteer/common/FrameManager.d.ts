@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Protocol } from 'devtools-protocol';
-
-import { CDPSession } from './Connection.js';
-import { DOMWorld, WaitForSelectorOptions } from './DOMWorld.js';
-import { EvaluateFn, EvaluateFnReturnType, EvaluateHandleFn, SerializableOrJSHandle, UnwrapPromiseLike , WrapElementHandle} from './EvalTypes.js';
 import { EventEmitter } from './EventEmitter.js';
 import { ExecutionContext } from './ExecutionContext.js';
-import { HTTPResponse } from './HTTPResponse.js';
-import { MouseButton } from './Input.js';
-import { ElementHandle , JSHandle} from './JSHandle.js';
 import { PuppeteerLifeCycleEvent } from './LifecycleWatcher.js';
+import { DOMWorld, WaitForSelectorOptions } from './DOMWorld.js';
 import { NetworkManager } from './NetworkManager.js';
-import { Page } from './Page.js';
 import { TimeoutSettings } from './TimeoutSettings.js';
-
+import { CDPSession } from './Connection.js';
+import { JSHandle, ElementHandle } from './JSHandle.js';
+import { MouseButton } from './Input.js';
+import { Page } from './Page.js';
+import { HTTPResponse } from './HTTPResponse.js';
+import { Protocol } from 'devtools-protocol';
+import { SerializableOrJSHandle, EvaluateHandleFn, WrapElementHandle, EvaluateFn, EvaluateFnReturnType, UnwrapPromiseLike } from './EvalTypes.js';
 /**
  * We use symbols to prevent external parties listening to these events.
  * They are internal to Puppeteer.
@@ -38,6 +36,7 @@ export declare const FrameManagerEmittedEvents: {
     FrameAttached: symbol;
     FrameNavigated: symbol;
     FrameDetached: symbol;
+    FrameSwapped: symbol;
     LifecycleEvent: symbol;
     FrameNavigatedWithinDocument: symbol;
     ExecutionContextCreated: symbol;
@@ -55,7 +54,6 @@ export declare class FrameManager extends EventEmitter {
     private _contextIdToContext;
     private _isolatedWorlds;
     private _mainFrame;
-    private _disconnectPromise?;
     constructor(client: CDPSession, page: Page, ignoreHTTPSErrors: boolean, timeoutSettings: TimeoutSettings);
     private setupEventListeners;
     initialize(client?: CDPSession): Promise<void>;
@@ -72,6 +70,7 @@ export declare class FrameManager extends EventEmitter {
     private _onAttachedToTarget;
     private _onDetachedFromTarget;
     _onLifecycleEvent(event: Protocol.Page.LifecycleEventEvent): void;
+    _onFrameStartedLoading(frameId: string): void;
     _onFrameStoppedLoading(frameId: string): void;
     _handleFrameTree(session: CDPSession, frameTree: Protocol.Page.FrameTree): void;
     page(): Page;
@@ -229,6 +228,10 @@ export declare class Frame {
     /**
      * @internal
      */
+    _hasStartedLoading: boolean;
+    /**
+     * @internal
+     */
     _lifecycleEvents: Set<string>;
     /**
      * @internal
@@ -254,6 +257,11 @@ export declare class Frame {
      * @internal
      */
     _updateClient(client: CDPSession): void;
+    /**
+     * @remarks
+     *
+     * @returns `true` if the frame is an OOP frame, or `false` otherwise.
+     */
     isOOPFrame(): boolean;
     /**
      * @remarks
@@ -324,6 +332,10 @@ export declare class Frame {
         waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
     }): Promise<HTTPResponse | null>;
     /**
+     * @internal
+     */
+    client(): CDPSession;
+    /**
      * @returns a promise that resolves to the frame's default execution context.
      */
     executionContext(): Promise<ExecutionContext>;
@@ -382,7 +394,7 @@ export declare class Frame {
      *
      * @param selector - the selector to query for
      * @param pageFunction - the function to be evaluated in the frame's context
-     * @param args - additional arguments to pass to `pageFuncton`
+     * @param args - additional arguments to pass to `pageFunction`
      */
     $eval<ReturnType>(selector: string, pageFunction: (element: Element, ...args: unknown[]) => ReturnType | Promise<ReturnType>, ...args: SerializableOrJSHandle[]): Promise<WrapElementHandle<ReturnType>>;
     /**
@@ -402,7 +414,7 @@ export declare class Frame {
      *
      * @param selector - the selector to query for
      * @param pageFunction - the function to be evaluated in the frame's context
-     * @param args - additional arguments to pass to `pageFuncton`
+     * @param args - additional arguments to pass to `pageFunction`
      */
     $$eval<ReturnType>(selector: string, pageFunction: (elements: Element[], ...args: unknown[]) => ReturnType | Promise<ReturnType>, ...args: SerializableOrJSHandle[]): Promise<WrapElementHandle<ReturnType>>;
     /**
@@ -739,6 +751,10 @@ export declare class Frame {
      * @internal
      */
     _onLoadingStopped(): void;
+    /**
+     * @internal
+     */
+    _onLoadingStarted(): void;
     /**
      * @internal
      */

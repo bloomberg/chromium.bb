@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/at_exit.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
@@ -69,6 +68,7 @@ class ExtensionServiceTestBase : public testing::Test {
     bool extensions_enabled = true;
     bool is_first_run = true;
     bool profile_is_supervised = false;
+    bool profile_is_guest = false;
     bool enable_bookmark_model = false;
 
     raw_ptr<policy::PolicyService> policy_service = nullptr;
@@ -112,7 +112,9 @@ class ExtensionServiceTestBase : public testing::Test {
   // |source_install_dir|.
   void InitializeInstalledExtensionService(
       const base::FilePath& prefs_file,
-      const base::FilePath& source_install_dir);
+      const base::FilePath& source_install_dir,
+      const ExtensionServiceInitParams& additional_params =
+          ExtensionServiceInitParams{});
 
   // Initialize an ExtensionService with a few already-installed extensions.
   void InitializeGoodInstalledExtensionService();
@@ -170,10 +172,6 @@ class ExtensionServiceTestBase : public testing::Test {
   // Must be declared before anything that may make use of the
   // directory so as to ensure files are closed before cleanup.
   base::ScopedTempDir temp_dir_;
-
-  // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
-  // after task_environment_ in the destruction order.
-  base::ShadowingAtExitManager at_exit_manager_;
 
   // The MessageLoop is used by RenderViewHostTestEnabler, so this must be
   // created before it.

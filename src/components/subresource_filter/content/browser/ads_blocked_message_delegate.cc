@@ -63,9 +63,9 @@ void AdsBlockedMessageDelegate::ShowMessage() {
 
   message->SetSecondaryIconResourceId(
       message_dispatcher_bridge->MapToJavaDrawableId(IDR_ANDROID_SETTINGS));
-  message->SetSecondaryActionCallback(
-      base::BindOnce(&AdsBlockedMessageDelegate::HandleMessageManageClicked,
-                     base::Unretained(this)));
+  message->SetSecondaryActionCallback(base::BindRepeating(
+      &AdsBlockedMessageDelegate::HandleMessageManageClicked,
+      base::Unretained(this)));
 
   // TODO(crbug.com/1223078): On rare occasions, such as the moment when
   // activity is being recreated or destroyed, ads blocked message will not be
@@ -83,6 +83,11 @@ void AdsBlockedMessageDelegate::DismissMessage(
     messages::MessageDispatcherBridge::Get()->DismissMessage(message_.get(),
                                                              dismiss_reason);
   }
+}
+
+void AdsBlockedMessageDelegate::DismissMessageForTesting(
+    messages::DismissReason dismiss_reason) {
+  HandleMessageDismissed(dismiss_reason);
 }
 
 AdsBlockedMessageDelegate::AdsBlockedMessageDelegate(

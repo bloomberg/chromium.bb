@@ -13,15 +13,16 @@
 #include "base/containers/contains.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "components/webapps/browser/install_result_code.h"
 
 namespace web_app {
 
 ExternallyManagedAppManager::InstallResult::InstallResult() = default;
 
 ExternallyManagedAppManager::InstallResult::InstallResult(
-    InstallResultCode code,
+    webapps::InstallResultCode code,
     absl::optional<AppId> app_id,
     bool did_uninstall_and_replace)
     : code(code),
@@ -66,15 +67,15 @@ ExternallyManagedAppManager::~ExternallyManagedAppManager() {
 
 void ExternallyManagedAppManager::SetSubsystems(
     WebAppRegistrar* registrar,
-    OsIntegrationManager* os_integration_manager,
     WebAppUiManager* ui_manager,
     WebAppInstallFinalizer* finalizer,
-    WebAppInstallManager* install_manager) {
+    WebAppCommandManager* command_manager,
+    WebAppSyncBridge* sync_bridge) {
   registrar_ = registrar;
-  os_integration_manager_ = os_integration_manager;
   ui_manager_ = ui_manager;
   finalizer_ = finalizer;
-  install_manager_ = install_manager;
+  command_manager_ = command_manager;
+  sync_bridge_ = sync_bridge;
 }
 
 void ExternallyManagedAppManager::SynchronizeInstalledApps(
@@ -92,12 +93,26 @@ void ExternallyManagedAppManager::SynchronizeInstalledApps(
   DCHECK(!base::Contains(synchronize_requests_, install_source));
 
   std::vector<GURL> installed_urls;
-  for (auto apps_it : registrar_->GetExternallyInstalledApps(install_source))
-    installed_urls.push_back(apps_it.second);
+  for (const auto& apps_it :
+       registrar_->GetExternallyInstalledApps(install_source)) {
+    // TODO: Remove this check once we cleanup ExternallyInstalledWebAppPrefs on
+    // external app uninstall.
+    // https://crbug.com/1300382
+    bool has_same_external_source =
+        registrar_->GetAppById(apps_it.first)
+            ->GetSources()
+            .test(ConvertExternalInstallSourceToSource(install_source));
+    if (has_same_external_source) {
+      for (const GURL& url : apps_it.second) {
+        installed_urls.push_back(url);
+      }
+    }
+  }
 
   std::sort(installed_urls.begin(), installed_urls.end());
 
   std::vector<GURL> desired_urls;
+  desired_urls.reserve(desired_apps_install_options.size());
   for (const auto& info : desired_apps_install_options)
     desired_urls.push_back(info.install_url);
 
@@ -136,7 +151,7 @@ void ExternallyManagedAppManager::SynchronizeInstalledApps(
 
 void ExternallyManagedAppManager::SetRegistrationCallbackForTesting(
     RegistrationCallback callback) {
-  registration_callback_ = callback;
+  registration_callback_ = std::move(callback);
 }
 
 void ExternallyManagedAppManager::ClearRegistrationCallbackForTesting() {
@@ -168,7 +183,7 @@ void ExternallyManagedAppManager::InstallForSynchronizeCallback(
   auto source_and_request = synchronize_requests_.find(source);
   DCHECK(source_and_request != synchronize_requests_.end());
   SynchronizeRequest& request = source_and_request->second;
-  request.install_results[app_url] = result;
+  request.install_results[app_url] = std::move(result);
   --request.remaining_install_requests;
   DCHECK_GE(request.remaining_install_requests, 0);
 

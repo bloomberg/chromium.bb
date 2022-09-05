@@ -130,6 +130,7 @@ int TrustAndKeyIdentifierMatchToOrder(const ParsedCertificate* target,
   KeyIdentifierMatch key_id_match = CalculateKeyIdentifierMatch(target, issuer);
   switch (issuer_trust.type) {
     case CertificateTrustType::TRUSTED_ANCHOR:
+    case CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION:
     case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
       switch (key_id_match) {
         case kMatch:
@@ -405,6 +406,9 @@ class CertIssuerIterPath {
   // Returns the last CertIssuersIter in the path.
   CertIssuersIter* back() { return cur_path_.back().get(); }
 
+  // Returns the length of the path.
+  size_t Length() const { return cur_path_.size(); }
+
   std::string PathDebugString() {
     std::string s;
     for (const auto& node : cur_path_) {
@@ -446,6 +450,7 @@ const ParsedCertificate* CertPathBuilderResultPath::GetTrustedCert() const {
 
   switch (last_cert_trust.type) {
     case CertificateTrustType::TRUSTED_ANCHOR:
+    case CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION:
     case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
       return certs.back().get();
     case CertificateTrustType::UNSPECIFIED:
@@ -476,14 +481,20 @@ class CertPathIter {
 
   // Gets the next candidate path, and fills it into |out_certs| and
   // |out_last_cert_trust|. Note that the returned path is unverified and must
-  // still be run through a chain validator. Once all paths have been exhausted
-  // returns false. If deadline or iteration limit is exceeded, sets
-  // |out_certs| to the current path being explored and returns false.
+  // still be run through a chain validator. If a candidate path could not be
+  // built, a partial path will be returned and |out_errors| will have an error
+  // added.
+  // If the return value is true, GetNextPath may be called again to backtrack
+  // and continue path building. Once all paths have been exhausted returns
+  // false. If deadline or iteration limit is exceeded, sets |out_certs| to the
+  // current path being explored and returns false.
   bool GetNextPath(ParsedCertificateList* out_certs,
                    CertificateTrust* out_last_cert_trust,
+                   CertPathErrors* out_errors,
                    const base::TimeTicks deadline,
                    uint32_t* iteration_count,
-                   const uint32_t max_iteration_count);
+                   const uint32_t max_iteration_count,
+                   const uint32_t max_path_building_depth);
 
  private:
   // Stores the next candidate issuer, until it is used during the
@@ -517,9 +528,11 @@ void CertPathIter::AddCertIssuerSource(CertIssuerSource* cert_issuer_source) {
 
 bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
                                CertificateTrust* out_last_cert_trust,
+                               CertPathErrors* out_errors,
                                const base::TimeTicks deadline,
                                uint32_t* iteration_count,
-                               const uint32_t max_iteration_count) {
+                               const uint32_t max_iteration_count,
+                               const uint32_t max_path_building_depth) {
   out_certs->clear();
   *out_last_cert_trust = CertificateTrust::ForUnspecified();
 
@@ -534,7 +547,21 @@ bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
       } else {
         cur_path_.CopyPath(out_certs);
       }
+      out_errors->GetOtherErrors()->AddError(cert_errors::kDeadlineExceeded);
       return false;
+    }
+
+    // We are not done yet, so if the current path is at the depth limit then
+    // we must backtrack to find an acceptable solution.
+    if (max_path_building_depth > 0 &&
+        cur_path_.Length() >= max_path_building_depth) {
+      cur_path_.CopyPath(out_certs);
+      out_errors->GetOtherErrors()->AddError(cert_errors::kDepthLimitExceeded);
+      DVLOG(1) << "CertPathIter reached depth limit. Returning partial path "
+                  "and backtracking:\n"
+               << PathDebugString(*out_certs);
+      cur_path_.Pop();
+      return true;
     }
 
     if (!next_issuer_.cert) {
@@ -546,6 +573,8 @@ bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
       (*iteration_count)++;
       if (max_iteration_count > 0 && *iteration_count > max_iteration_count) {
         cur_path_.CopyPath(out_certs);
+        out_errors->GetOtherErrors()->AddError(
+            cert_errors::kIterationLimitExceeded);
         return false;
       }
 
@@ -555,6 +584,8 @@ bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
           // If the end of a path was reached without finding an anchor, return
           // the partial path before backtracking.
           cur_path_.CopyPath(out_certs);
+          out_errors->GetErrorsForCert(out_certs->size() - 1)
+              ->AddError(cert_errors::kNoIssuersFound);
           DVLOG(1) << "CertPathIter returning partial path and backtracking:\n"
                    << PathDebugString(*out_certs);
           cur_path_.Pop();
@@ -574,6 +605,7 @@ bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
     // (or to the same cert if it's self-signed).
     switch (next_issuer_.trust.type) {
       case CertificateTrustType::TRUSTED_ANCHOR:
+      case CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION:
       case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
         if (cur_path_.Empty()) {
           DVLOG(1) << "Leaf is a trust anchor, considering as UNSPECIFIED";
@@ -592,6 +624,7 @@ bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
       // path.
       case CertificateTrustType::DISTRUSTED:
       case CertificateTrustType::TRUSTED_ANCHOR:
+      case CertificateTrustType::TRUSTED_ANCHOR_WITH_EXPIRATION:
       case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS: {
         // If the issuer has a known trust level, can stop building the path.
         DVLOG(2) << "CertPathIter got anchor: "
@@ -712,6 +745,10 @@ void CertPathBuilder::SetDeadline(base::TimeTicks deadline) {
   deadline_ = deadline;
 }
 
+void CertPathBuilder::SetDepthLimit(uint32_t limit) {
+  max_path_building_depth_ = limit;
+}
+
 void CertPathBuilder::SetExploreAllPaths(bool explore_all_paths) {
   explore_all_paths_ = explore_all_paths;
 }
@@ -723,19 +760,17 @@ CertPathBuilder::Result CertPathBuilder::Run() {
     std::unique_ptr<CertPathBuilderResultPath> result_path =
         std::make_unique<CertPathBuilderResultPath>();
 
-    if (!cert_path_iter_->GetNextPath(&result_path->certs,
-                                      &result_path->last_cert_trust, deadline_,
-                                      &iteration_count, max_iteration_count_)) {
-      // No more paths to check.
-      if (max_iteration_count_ > 0 && iteration_count > max_iteration_count_) {
+    if (!cert_path_iter_->GetNextPath(
+            &result_path->certs, &result_path->last_cert_trust,
+            &result_path->errors, deadline_, &iteration_count,
+            max_iteration_count_, max_path_building_depth_)) {
+      // There are no more paths to check or limits were exceeded.
+      if (result_path->errors.ContainsError(
+              cert_errors::kIterationLimitExceeded)) {
         out_result_.exceeded_iteration_limit = true;
-        result_path->errors.GetOtherErrors()->AddError(
-            cert_errors::kIterationLimitExceeded);
       }
-      if (!deadline_.is_null() && base::TimeTicks::Now() > deadline_) {
+      if (result_path->errors.ContainsError(cert_errors::kDeadlineExceeded)) {
         out_result_.exceeded_deadline = true;
-        result_path->errors.GetOtherErrors()->AddError(
-            cert_errors::kDeadlineExceeded);
       }
       if (!result_path->certs.empty()) {
         // It shouldn't be possible to get here without adding one of the
@@ -752,10 +787,12 @@ CertPathBuilder::Result CertPathBuilder::Run() {
     }
 
     if (result_path->last_cert_trust.HasUnspecifiedTrust()) {
-      // Partial path, don't attempt to verify, just mark it with an error and
-      // move on.
-      result_path->errors.GetErrorsForCert(result_path->certs.size() - 1)
-          ->AddError(cert_errors::kNoIssuersFound);
+      // Partial path, don't attempt to verify. Just double check that it is
+      // marked with an error, and move on.
+      if (!result_path->errors.ContainsHighSeverityErrors()) {
+        result_path->errors.GetOtherErrors()->AddError(
+            cert_errors::kInternalError);
+      }
     } else {
       // Verify the entire certificate chain.
       VerifyCertificateChain(

@@ -40,15 +40,16 @@ devtools_module("platform") {
   sources = [
     "DevToolsPath.ts",
     "UIString.ts",
+    "UserVisibleError.ts",
     "array-utilities.ts",
     "date-utilities.ts",
+    "dom-utilities.ts",
     "keyboard-utilities.ts",
     "map-utilities.ts",
     "number-utilities.ts",
     "set-utilities.ts",
     "string-utilities.ts",
     "typescript-utilities.ts",
-    "utilities.ts",
   ]
 
   deps = [ ":dcheck" ]

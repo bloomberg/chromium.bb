@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.password_check;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.password_manager.PasswordCheckReferrer;
 
 /**
  * Helper class for recording password check metrics.
@@ -15,6 +16,9 @@ public final class PasswordCheckMetricsRecorder {
             @PasswordCheckReferrer int passwordCheckReferrer) {
         RecordHistogram.recordEnumeratedHistogram(
                 "PasswordManager.BulkCheck.PasswordCheckReferrerAndroid", passwordCheckReferrer,
+                PasswordCheckReferrer.COUNT);
+        RecordHistogram.recordEnumeratedHistogram(
+                "PasswordManager.BulkCheck.PasswordCheckReferrerAndroid2", passwordCheckReferrer,
                 PasswordCheckReferrer.COUNT);
     }
 

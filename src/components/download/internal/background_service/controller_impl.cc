@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -1085,7 +1086,12 @@ void ControllerImpl::OnDownloadReadyToStart(
     return;
   }
 
-  DCHECK(!driver_->Find(guid).has_value());
+  auto driver_entry = driver_->Find(guid);
+  if (driver_entry.has_value()) {
+    DVLOG(1) << "Download already exists.";
+    return;
+  }
+
   driver_->Start(entry->request_params, entry->guid, entry->target_file_path,
                  post_body,
                  net::NetworkTrafficAnnotationTag(entry->traffic_annotation));
@@ -1196,6 +1202,7 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
                                    entry->url_chain, entry->response_headers);
     completion_info.blob_handle = driver_entry->blob_handle;
     completion_info.hash256 = driver_entry->hash256;
+    completion_info.custom_data = entry->custom_data;
 
     entry->last_cleanup_check_time = driver_entry->completion_time;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1208,6 +1215,7 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     CompletionInfo completion_info;
     completion_info.url_chain = entry->url_chain;
     completion_info.response_headers = entry->response_headers;
+    completion_info.custom_data = entry->custom_data;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

@@ -34,10 +34,9 @@ class SqlStatsTable : public SqliteTable {
  public:
   enum Column {
     kQuery = 0,
-    kTimeQueued = 1,
-    kTimeStarted = 2,
-    kTimeFirstNext = 3,
-    kTimeEnded = 4,
+    kTimeStarted = 1,
+    kTimeFirstNext = 2,
+    kTimeEnded = 3,
   };
 
   // Implementation of the SQLite cursor interface.
@@ -72,7 +71,7 @@ class SqlStatsTable : public SqliteTable {
   static void RegisterTable(sqlite3* db, const TraceStorage* storage);
 
   // Table implementation.
-  util::Status Init(int, const char* const*, Schema*) override;
+  base::Status Init(int, const char* const*, Schema*) override;
   std::unique_ptr<SqliteTable::Cursor> CreateCursor() override;
   int BestIndex(const QueryConstraints&, BestIndexInfo*) override;
 

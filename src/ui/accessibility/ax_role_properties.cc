@@ -12,11 +12,11 @@ namespace ui {
 
 namespace {
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr bool kExposeLayoutTableAsDataTable = true;
 #else
 constexpr bool kExposeLayoutTableAsDataTable = false;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
 
@@ -103,6 +103,17 @@ bool IsCellOrTableHeader(const ax::mojom::Role role) {
   }
 }
 
+bool IsChildTreeOwner(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kIframe:
+    case ax::mojom::Role::kIframePresentational:
+    case ax::mojom::Role::kPortal:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsClickable(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kButton:
@@ -160,6 +171,18 @@ bool IsComboBox(const ax::mojom::Role role) {
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kComboBoxGrouping:
     case ax::mojom::Role::kTextFieldWithComboBox:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsComboBoxContainer(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kDialog:
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kTree:
       return true;
     default:
       return false;
@@ -265,6 +288,18 @@ bool IsDialog(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kAlertDialog:
     case ax::mojom::Role::kDialog:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsGridLike(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kListGrid:
+    case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kTreeGrid:
       return true;
     default:
       return false;
@@ -691,6 +726,7 @@ bool IsSetLike(const ax::mojom::Role role) {
     case ax::mojom::Role::kRadioGroup:
     case ax::mojom::Role::kTabList:
     case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kTreeGrid:
       return true;
     default:
       return false;
@@ -772,6 +808,36 @@ bool IsTableHeader(ax::mojom::Role role) {
   }
 }
 
+bool IsTableItem(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kDescriptionListTerm:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kTreeItem:
+      return true;
+    default:
+      return IsCellOrTableHeader(role);
+  }
+}
+
+#if BUILDFLAG(IS_ANDROID)
+bool IsTableLike(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kDescriptionList:
+    case ax::mojom::Role::kDirectory:
+    case ax::mojom::Role::kList:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kListGrid:
+    case ax::mojom::Role::kTable:
+    case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kTreeGrid:
+      return true;
+    default:
+      return false;
+  }
+}
+#else
 bool IsTableLike(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kGrid:
@@ -785,6 +851,7 @@ bool IsTableLike(const ax::mojom::Role role) {
       return false;
   }
 }
+#endif
 
 bool IsTableRow(ax::mojom::Role role) {
   switch (role) {
@@ -897,6 +964,29 @@ bool IsUIAEmbeddedObject(ax::mojom::Role role) {
       return true;
     case ax::mojom::Role::kLayoutTableCell:
       return kExposeLayoutTableAsDataTable;
+    default:
+      return false;
+  }
+}
+
+bool IsUIATableLike(ax::mojom::Role role) {
+  if (role == ax::mojom::Role::kLayoutTable)
+    return false;
+
+  return IsTableLike(role);
+}
+
+bool IsUIACellOrTableHeader(ax::mojom::Role role) {
+  if (role == ax::mojom::Role::kLayoutTableCell)
+    return false;
+
+  return IsCellOrTableHeader(role);
+}
+
+bool IsWindow(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kWindow:
+      return true;
     default:
       return false;
   }

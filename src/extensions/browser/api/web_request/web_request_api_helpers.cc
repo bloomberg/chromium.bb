@@ -19,7 +19,6 @@
 #include "base/containers/fixed_flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -56,7 +55,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"  // nogncheck
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
 
 // TODO(battre): move all static functions into an anonymous namespace at the
@@ -545,26 +544,26 @@ bool ExtraInfoSpec::InitFromValue(content::BrowserContext* browser_context,
   *extra_info_spec = 0;
   if (!value.is_list())
     return false;
-  base::Value::ConstListView value_list = value.GetList();
-  for (size_t i = 0; i < value_list.size(); ++i) {
-    const std::string* str = value_list[i].GetIfString();
+  for (const auto& item : value.GetList()) {
+    const std::string* str = item.GetIfString();
     if (!str)
       return false;
 
-    if (*str == "requestHeaders")
+    if (*str == "requestHeaders") {
       *extra_info_spec |= REQUEST_HEADERS;
-    else if (*str == "responseHeaders")
+    } else if (*str == "responseHeaders") {
       *extra_info_spec |= RESPONSE_HEADERS;
-    else if (*str == "blocking")
+    } else if (*str == "blocking") {
       *extra_info_spec |= BLOCKING;
-    else if (*str == "asyncBlocking")
+    } else if (*str == "asyncBlocking") {
       *extra_info_spec |= ASYNC_BLOCKING;
-    else if (*str == "requestBody")
+    } else if (*str == "requestBody") {
       *extra_info_spec |= REQUEST_BODY;
-    else if (*str == "extraHeaders")
+    } else if (*str == "extraHeaders") {
       *extra_info_spec |= EXTRA_HEADERS;
-    else
+    } else {
       return false;
+    }
   }
   // BLOCKING and ASYNC_BLOCKING are mutually exclusive.
   if ((*extra_info_spec & BLOCKING) && (*extra_info_spec & ASYNC_BLOCKING))
@@ -717,7 +716,7 @@ base::Value StringToCharList(const std::string& s) {
   return result;
 }
 
-bool CharListToString(base::Value::ConstListView list, std::string* out) {
+bool CharListToString(const base::Value::List& list, std::string* out) {
   const size_t list_length = list.size();
   out->resize(list_length);
   int value = 0;
@@ -819,10 +818,9 @@ EventResponseDelta CalculateOnHeadersReceivedDelta(
         continue;
       if (ShouldHideResponseHeader(extra_info_spec, name))
         continue;
-      std::string name_lowercase = base::ToLowerASCII(name);
       bool header_found = false;
       for (const auto& i : *new_response_headers) {
-        if (base::LowerCaseEqualsASCII(i.first, name_lowercase) &&
+        if (base::EqualsCaseInsensitiveASCII(i.first, name) &&
             value == i.second) {
           header_found = true;
           break;
@@ -840,13 +838,12 @@ EventResponseDelta CalculateOnHeadersReceivedDelta(
         continue;
       if (ShouldHideResponseHeader(extra_info_spec, i.first))
         continue;
-      std::string name_lowercase = base::ToLowerASCII(i.first);
       size_t iter = 0;
       std::string name;
       std::string value;
       bool header_found = false;
       while (old_response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
-        if (base::LowerCaseEqualsASCII(name, name_lowercase) &&
+        if (base::EqualsCaseInsensitiveASCII(name, i.first) &&
             value == i.second) {
           header_found = true;
           break;
@@ -1717,16 +1714,14 @@ void ClearCacheOnNavigation() {
 
 // Converts the |name|, |value| pair of a http header to a HttpHeaders
 // dictionary.
-std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
-    const std::string& name,
-    const std::string& value) {
-  auto header = std::make_unique<base::DictionaryValue>();
-  header->SetString(keys::kHeaderNameKey, name);
+base::Value::Dict CreateHeaderDictionary(const std::string& name,
+                                         const std::string& value) {
+  base::Value::Dict header;
+  header.Set(keys::kHeaderNameKey, name);
   if (base::IsStringUTF8(value)) {
-    header->SetString(keys::kHeaderValueKey, value);
+    header.Set(keys::kHeaderValueKey, value);
   } else {
-    header->Set(keys::kHeaderBinaryValueKey,
-                std::make_unique<base::Value>(StringToCharList(value)));
+    header.Set(keys::kHeaderBinaryValueKey, StringToCharList(value));
   }
   return header;
 }
@@ -1744,7 +1739,7 @@ bool ShouldHideRequestHeader(content::BrowserContext* browser_context,
 
 bool ShouldHideResponseHeader(int extra_info_spec, const std::string& name) {
   return !(extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) &&
-         base::LowerCaseEqualsASCII(name, "set-cookie");
+         base::EqualsCaseInsensitiveASCII(name, "set-cookie");
 }
 
 bool ArePublicSessionRestrictionsEnabled() {
@@ -1752,8 +1747,7 @@ bool ArePublicSessionRestrictionsEnabled() {
   return chromeos::LoginState::IsInitialized() &&
          chromeos::LoginState::Get()->ArePublicSessionRestrictionsEnabled();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  DCHECK(chromeos::LacrosService::Get());
-  return chromeos::LacrosService::Get()->init_params()->session_type ==
+  return chromeos::BrowserInitParams::Get()->session_type ==
          crosapi::mojom::SessionType::kPublicSession;
 #else
   return false;

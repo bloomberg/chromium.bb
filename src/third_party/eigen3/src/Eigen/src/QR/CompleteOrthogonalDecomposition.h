@@ -32,7 +32,7 @@ struct traits<CompleteOrthogonalDecomposition<MatrixType_> >
   *
   * \brief Complete orthogonal decomposition (COD) of a matrix.
   *
-  * \param MatrixType the type of the matrix of which we are computing the COD.
+  * \tparam MatrixType_ the type of the matrix of which we are computing the COD.
   *
   * This class performs a rank-revealing complete orthogonal decomposition of a
   * matrix  \b A into matrices \b P, \b Q, \b T, and \b Z such that
@@ -73,8 +73,8 @@ template <typename MatrixType_> class CompleteOrthogonalDecomposition
   typedef typename internal::plain_row_type<MatrixType, RealScalar>::type
       RealRowVectorType;
   typedef HouseholderSequence<
-      MatrixType, typename internal::remove_all<
-                      typename HCoeffsType::ConjugateReturnType>::type>
+      MatrixType, internal::remove_all_t<
+                      typename HCoeffsType::ConjugateReturnType>>
       HouseholderSequenceType;
   typedef typename MatrixType::PlainObject PlainObject;
 
@@ -179,7 +179,7 @@ template <typename MatrixType_> class CompleteOrthogonalDecomposition
    * \code matrixT().template triangularView<Upper>() \endcode
    * For rank-deficient matrices, use
    * \code
-   * matrixR().topLeftCorner(rank(), rank()).template triangularView<Upper>()
+   * matrixT().topLeftCorner(rank(), rank()).template triangularView<Upper>()
    * \endcode
    */
   const MatrixType& matrixT() const { return m_cpqr.matrixQR(); }

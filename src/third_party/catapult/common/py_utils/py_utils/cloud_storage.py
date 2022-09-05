@@ -144,13 +144,9 @@ def _RunCommand(args):
   elif _IsRunningOnSwarming():
     gsutil_env = os.environ.copy()
 
-  if os.name == 'nt':
-    # If Windows, prepend python. Python scripts aren't directly executable.
-    args = [sys.executable, _GSUTIL_PATH] + args
-  else:
-    # Don't do it on POSIX, in case someone is using a shell script to redirect.
-    args = [_GSUTIL_PATH] + args
-    _EnsureExecutable(_GSUTIL_PATH)
+  # Always prepend executable to take advantage of vpython following advice of:
+  # https://chromium.googlesource.com/infra/infra/+/main/doc/users/vpython.md
+  args = [sys.executable, _GSUTIL_PATH] + args
 
   if args[0] not in ('help', 'hash', 'version') and not IsNetworkIOEnabled():
     raise CloudStorageIODisabled(
@@ -227,6 +223,39 @@ def List(bucket, prefix=None):
   return [url[len(bucket_prefix):] for url in stdout.splitlines()]
 
 
+def ListFiles(bucket, path='', sort_by='name'):
+  """Returns files matching the given path in bucket.
+
+  Args:
+    bucket: Name of cloud storage bucket to look at.
+    path: Path within the bucket to filter to. Path can include wildcards.
+    sort_by: 'name' (default), 'time' or 'size'.
+
+  Returns:
+    A sorted list of files.
+  """
+  bucket_prefix = 'gs://%s' % bucket
+  full_path = '%s/%s' % (bucket_prefix, path)
+  stdout = _RunCommand(['ls', '-l', '-d', full_path])
+
+  # Filter out directories and the summary line.
+  file_infos = [line.split(None, 2) for line in stdout.splitlines()
+                if len(line) > 0 and not line.startswith("TOTAL")
+                and not line.endswith('/')]
+
+  # The first field in the info is size, the second is time, the third is name.
+  if sort_by == 'size':
+    file_infos.sort(key=lambda info: int(info[0]))
+  elif sort_by == 'time':
+    file_infos.sort(key=lambda info: info[1])
+  elif sort_by == 'name':
+    file_infos.sort(key=lambda info: info[2])
+  else:
+    raise ValueError("Wrong sort_by value: %s" % sort_by)
+
+  return [url[len(bucket_prefix):] for _, _, url in file_infos]
+
+
 def ListDirs(bucket, path=''):
   """Returns only directories matching the given path in bucket.
 
@@ -257,6 +286,7 @@ def ListDirs(bucket, path=''):
     if url[-1] == '/':
       dirs.append(url[len(bucket_prefix):])
   return dirs
+
 
 def Exists(bucket, remote_path):
   try:
@@ -446,7 +476,7 @@ class CloudFilepath():
   @property
   def view_url(self):
     """Get a human viewable url for the cloud file."""
-    return 'https://console.developers.google.com/m/cloudstorage/b/%s/o/%s' % (
+    return 'https://storage.cloud.google.com/%s/%s' % (
         self.bucket, self.remote_path)
 
   @property

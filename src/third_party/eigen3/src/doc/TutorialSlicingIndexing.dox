@@ -72,7 +72,7 @@ Here are some examples for a 2D array/matrix \c A and a 1D array/vector \c v.
 </tr>
 <tr>
   <td>%Block starting at \c i,j having \c m rows, and \c n columns</td>
-  <td>\code A(seqN(i,m), seqN(i,n) \endcode</td>
+  <td>\code A(seqN(i,m), seqN(i,n)) \endcode</td>
   <td>\code A.block(i,j,m,n) \endcode</td>
 </tr>
 <tr>

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# for py2/py3 compatibility
-from __future__ import print_function
 from functools import reduce
 
 from collections import OrderedDict, namedtuple
@@ -15,14 +13,7 @@ import shlex
 import sys
 import traceback
 
-
-
-# Add testrunner to the path.
-sys.path.insert(
-  0,
-  os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))))
-
+from os.path import dirname as up
 
 from testrunner.local import command
 from testrunner.local import testsuite
@@ -35,12 +26,6 @@ from testrunner.testproc.sigproc import SignalProc
 from testrunner.testproc.timeout import TimeoutProc
 from testrunner.testproc import util
 
-
-BASE_DIR = (
-    os.path.dirname(
-      os.path.dirname(
-        os.path.dirname(
-          os.path.abspath(__file__)))))
 
 DEFAULT_OUT_GN = 'out.gn'
 
@@ -192,7 +177,8 @@ class BuildConfig(object):
     self.lite_mode = build_config['v8_enable_lite_mode']
     self.pointer_compression = build_config['v8_enable_pointer_compression']
     self.pointer_compression_shared_cage = build_config['v8_enable_pointer_compression_shared_cage']
-    self.virtual_memory_cage = build_config['v8_enable_virtual_memory_cage']
+    self.shared_ro_heap = build_config['v8_enable_shared_ro_heap']
+    self.sandbox = build_config['v8_enable_sandbox']
     self.third_party_heap = build_config['v8_enable_third_party_heap']
     self.webassembly = build_config['v8_enable_webassembly']
     self.dict_property_const_tracking = build_config['v8_dict_property_const_tracking']
@@ -237,8 +223,8 @@ class BuildConfig(object):
       detected_options.append('pointer_compression')
     if self.pointer_compression_shared_cage:
       detected_options.append('pointer_compression_shared_cage')
-    if self.virtual_memory_cage:
-      detected_options.append('virtual_memory_cage')
+    if self.sandbox:
+      detected_options.append('sandbox')
     if self.third_party_heap:
       detected_options.append('third_party_heap')
     if self.webassembly:
@@ -269,7 +255,8 @@ def _do_load_build_config(outdir, verbose=False):
 
 class BaseTestRunner(object):
   def __init__(self, basedir=None):
-    self.basedir = basedir or BASE_DIR
+    self.v8_root = up(up(up(__file__)))
+    self.basedir = basedir or self.v8_root
     self.outdir = None
     self.build_config = None
     self.mode_options = None
@@ -668,7 +655,7 @@ class BaseTestRunner(object):
 
     no_simd_hardware = any(
         i in options.extra_flags for i in ['--noenable-sse3',
-                                           '--no-enable-sse3'
+                                           '--no-enable-sse3',
                                            '--noenable-ssse3',
                                            '--no-enable-ssse3',
                                            '--noenable-sse4-1',
@@ -677,26 +664,22 @@ class BaseTestRunner(object):
     # Set no_simd_hardware on architectures without Simd enabled.
     if self.build_config.arch == 'mips64el' or \
        self.build_config.arch == 'mipsel':
-       no_simd_hardware = not simd_mips
+      no_simd_hardware = not simd_mips
 
     if self.build_config.arch == 'loong64':
-       no_simd_hardware = True
+      no_simd_hardware = True
 
     # S390 hosts without VEF1 do not support Simd.
     if self.build_config.arch == 's390x' and \
        not self.build_config.simulator_run and \
        not utils.IsS390SimdSupported():
-       no_simd_hardware = True
+      no_simd_hardware = True
 
     # Ppc64 processors earlier than POWER9 do not support Simd instructions
     if self.build_config.arch == 'ppc64' and \
        not self.build_config.simulator_run and \
        utils.GuessPowerProcessorVersion() < 9:
-       no_simd_hardware = True
-
-    # riscv64 do not support Simd instructions
-    if self.build_config.arch == 'riscv64':
-       no_simd_hardware = True
+      no_simd_hardware = True
 
     return {
       "arch": self.build_config.arch,
@@ -736,7 +719,10 @@ class BaseTestRunner(object):
       "lite_mode": self.build_config.lite_mode,
       "pointer_compression": self.build_config.pointer_compression,
       "pointer_compression_shared_cage": self.build_config.pointer_compression_shared_cage,
-      "virtual_memory_cage": self.build_config.virtual_memory_cage,
+      "no_js_shared_memory": (not self.build_config.shared_ro_heap) or
+                             (self.build_config.pointer_compression and
+                              not self.build_config.pointer_compression_shared_cage),
+      "sandbox": self.build_config.sandbox,
       "dict_property_const_tracking": self.build_config.dict_property_const_tracking,
     }
 

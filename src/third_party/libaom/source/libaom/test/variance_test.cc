@@ -34,6 +34,9 @@ typedef uint64_t (*MseWxH16bitFunc)(uint8_t *dst, int dstride, uint16_t *src,
 typedef unsigned int (*VarianceMxNFunc)(const uint8_t *a, int a_stride,
                                         const uint8_t *b, int b_stride,
                                         unsigned int *sse);
+typedef void (*GetSseSum8x8QuadFunc)(const uint8_t *a, int a_stride,
+                                     const uint8_t *b, int b_stride,
+                                     unsigned int *sse, int *sum);
 typedef unsigned int (*SubpixVarMxNFunc)(const uint8_t *a, int a_stride,
                                          int xoffset, int yoffset,
                                          const uint8_t *b, int b_stride,
@@ -424,8 +427,8 @@ class MseWxHTestClass
         aom_memalign(16, block_size() * sizeof(src_)));
     dst_ = reinterpret_cast<uint8_t *>(
         aom_memalign(16, block_size() * sizeof(dst_)));
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(dst_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(dst_, nullptr);
   }
 
   virtual void TearDown() {
@@ -523,8 +526,10 @@ class MainTestClass
         use_high_bit_depth() ? sizeof(uint16_t) : sizeof(uint8_t);
     src_ = reinterpret_cast<uint8_t *>(aom_memalign(16, block_size() * unit));
     ref_ = new uint8_t[block_size() * unit];
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(ref_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(ref_, nullptr);
+    memset(src_, 0, block_size() * sizeof(src_[0]));
+    memset(ref_, 0, block_size() * sizeof(ref_[0]));
     if (use_high_bit_depth()) {
       // TODO(skal): remove!
       src_ = CONVERT_TO_BYTEPTR(src_);
@@ -557,6 +562,12 @@ class MainTestClass
   void RefStrideTest();
   void OneQuarterTest();
   void SpeedTest();
+
+  // SSE&SUM tests
+  void RefTestSseSum();
+  void MinTestSseSum();
+  void MaxTestSseSum();
+  void SseSum_SpeedTest();
 
   // MSE/SSE tests
   void RefTestMse();
@@ -699,11 +710,150 @@ void MainTestClass<VarianceFunctionType>::SpeedTest() {
   }
 
   aom_usec_timer_mark(&timer);
-  const double elapsed_time =
-      static_cast<double>(aom_usec_timer_elapsed(&timer));
-  printf("Variance %dx%d : %7.2fns\n", width(), height(), elapsed_time);
+  const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+  printf("Variance %dx%d : %d us\n", width(), height(), elapsed_time);
 }
 
+template <typename GetSseSum8x8QuadFuncType>
+void MainTestClass<GetSseSum8x8QuadFuncType>::RefTestSseSum() {
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 0; j < block_size(); ++j) {
+      src_[j] = rnd_.Rand8();
+      ref_[j] = rnd_.Rand8();
+    }
+    unsigned int sse1[256] = { 0 };
+    unsigned int sse2[256] = { 0 };
+    int sum1[256] = { 0 };
+    int sum2[256] = { 0 };
+    const int stride = width();
+    int k = 0;
+
+    for (int i = 0; i < height(); i += 8) {
+      for (int j = 0; j < width(); j += 32) {
+        API_REGISTER_STATE_CHECK(params_.func(src_ + stride * i + j, stride,
+                                              ref_ + stride * i + j, stride,
+                                              &sse1[k], &sum1[k]));
+        aom_get_sse_sum_8x8_quad_c(src_ + stride * i + j, stride,
+                                   ref_ + stride * i + j, stride, &sse2[k],
+                                   &sum2[k]);
+        k += 4;
+      }
+    }
+
+    for (int p = 0; p < 256; p++) {
+      EXPECT_EQ(sse1[p], sse2[p]);
+      EXPECT_EQ(sum1[p], sum2[p]);
+    }
+  }
+}
+
+template <typename GetSseSum8x8QuadFuncType>
+void MainTestClass<GetSseSum8x8QuadFuncType>::MinTestSseSum() {
+  memset(src_, 0, block_size());
+  memset(ref_, 255, block_size());
+  unsigned int sse1[256] = { 0 };
+  unsigned int sse2[256] = { 0 };
+  int sum1[256] = { 0 };
+  int sum2[256] = { 0 };
+  const int stride = width();
+  int k = 0;
+
+  for (int i = 0; i < height(); i += 8) {
+    for (int j = 0; j < width(); j += 32) {
+      API_REGISTER_STATE_CHECK(params_.func(src_ + stride * i + j, stride,
+                                            ref_ + stride * i + j, stride,
+                                            &sse1[k], &sum1[k]));
+      aom_get_sse_sum_8x8_quad_c(src_ + stride * i + j, stride,
+                                 ref_ + stride * i + j, stride, &sse2[k],
+                                 &sum2[k]);
+      k += 4;
+    }
+  }
+
+  for (int p = 0; p < 256; p++) {
+    EXPECT_EQ(sse1[p], sse2[p]);
+    EXPECT_EQ(sum1[p], sum2[p]);
+  }
+}
+
+template <typename GetSseSum8x8QuadFuncType>
+void MainTestClass<GetSseSum8x8QuadFuncType>::MaxTestSseSum() {
+  memset(src_, 255, block_size());
+  memset(ref_, 0, block_size());
+  unsigned int sse1[256] = { 0 };
+  unsigned int sse2[256] = { 0 };
+  int sum1[256] = { 0 };
+  int sum2[256] = { 0 };
+  const int stride = width();
+  int k = 0;
+
+  for (int i = 0; i < height(); i += 8) {
+    for (int j = 0; j < width(); j += 32) {
+      API_REGISTER_STATE_CHECK(params_.func(src_ + stride * i + j, stride,
+                                            ref_ + stride * i + j, stride,
+                                            &sse1[k], &sum1[k]));
+      aom_get_sse_sum_8x8_quad_c(src_ + stride * i + j, stride,
+                                 ref_ + stride * i + j, stride, &sse2[k],
+                                 &sum2[k]);
+      k += 4;
+    }
+  }
+
+  for (int p = 0; p < 256; p++) {
+    EXPECT_EQ(sse1[p], sse2[p]);
+    EXPECT_EQ(sum1[p], sum2[p]);
+  }
+}
+
+template <typename GetSseSum8x8QuadFuncType>
+void MainTestClass<GetSseSum8x8QuadFuncType>::SseSum_SpeedTest() {
+  const int loop_count = 1000000000 / block_size();
+  for (int j = 0; j < block_size(); ++j) {
+    src_[j] = rnd_.Rand8();
+    ref_[j] = rnd_.Rand8();
+  }
+
+  unsigned int sse1[4] = { 0 };
+  unsigned int sse2[4] = { 0 };
+  int sum1[4] = { 0 };
+  int sum2[4] = { 0 };
+  const int stride = width();
+  const int k = 0;
+
+  aom_usec_timer timer;
+  aom_usec_timer_start(&timer);
+  for (int r = 0; r < loop_count; ++r) {
+    for (int i = 0; i < height(); i += 8) {
+      for (int j = 0; j < width(); j += 32) {
+        aom_get_sse_sum_8x8_quad_c(src_ + stride * i + j, stride,
+                                   ref_ + stride * i + j, stride, &sse2[k],
+                                   &sum2[k]);
+      }
+    }
+  }
+  aom_usec_timer_mark(&timer);
+  const double elapsed_time_ref =
+      static_cast<double>(aom_usec_timer_elapsed(&timer));
+
+  aom_usec_timer_start(&timer);
+  for (int r = 0; r < loop_count; ++r) {
+    for (int i = 0; i < height(); i += 8) {
+      for (int j = 0; j < width(); j += 32) {
+        params_.func(src_ + stride * i + j, stride, ref_ + stride * i + j,
+                     stride, &sse1[k], &sum1[k]);
+      }
+    }
+  }
+  aom_usec_timer_mark(&timer);
+  const double elapsed_time_simd =
+      static_cast<double>(aom_usec_timer_elapsed(&timer));
+
+  printf(
+      "aom_getvar_8x8_quad for block=%dx%d : ref_time=%lf \t simd_time=%lf \t "
+      "gain=%lf \n",
+      width(), height(), elapsed_time_ref, elapsed_time_simd,
+      elapsed_time_ref / elapsed_time_simd);
+}
 ////////////////////////////////////////////////////////////////////////////////
 // Tests related to MSE / SSE.
 
@@ -787,9 +937,9 @@ class SubpelVarianceTest
       ref_ = CONVERT_TO_BYTEPTR(aom_memalign(
           32, (block_size() + width() + height() + 1) * sizeof(uint16_t)));
     }
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(sec_ != NULL);
-    ASSERT_TRUE(ref_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(sec_, nullptr);
+    ASSERT_NE(ref_, nullptr);
   }
 
   virtual void TearDown() {
@@ -1043,9 +1193,9 @@ class ObmcVarianceTest
         aom_memalign(32, block_size() * sizeof(uint32_t)));
     mask_ = reinterpret_cast<int32_t *>(
         aom_memalign(32, block_size() * sizeof(uint32_t)));
-    ASSERT_TRUE(pre_ != NULL);
-    ASSERT_TRUE(wsrc_ != NULL);
-    ASSERT_TRUE(mask_ != NULL);
+    ASSERT_NE(pre_, nullptr);
+    ASSERT_NE(wsrc_, nullptr);
+    ASSERT_NE(mask_, nullptr);
   }
 
   virtual void TearDown() {
@@ -1180,6 +1330,7 @@ typedef MseWxHTestClass<MseWxH16bitFunc> MseWxHTest;
 typedef MainTestClass<Get4x4SseFunc> AvxSseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxMseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxVarianceTest;
+typedef MainTestClass<GetSseSum8x8QuadFunc> GetSseSum8x8QuadTest;
 typedef SubpelVarianceTest<SubpixVarMxNFunc> AvxSubpelVarianceTest;
 typedef SubpelVarianceTest<SubpixAvgVarMxNFunc> AvxSubpelAvgVarianceTest;
 typedef SubpelVarianceTest<DistWtdSubpixAvgVarMxNFunc>
@@ -1200,6 +1351,10 @@ TEST_P(AvxVarianceTest, Ref) { RefTest(); }
 TEST_P(AvxVarianceTest, RefStride) { RefStrideTest(); }
 TEST_P(AvxVarianceTest, OneQuarter) { OneQuarterTest(); }
 TEST_P(AvxVarianceTest, DISABLED_Speed) { SpeedTest(); }
+TEST_P(GetSseSum8x8QuadTest, RefMseSum) { RefTestSseSum(); }
+TEST_P(GetSseSum8x8QuadTest, MinSseSum) { MinTestSseSum(); }
+TEST_P(GetSseSum8x8QuadTest, MaxMseSum) { MaxTestSseSum(); }
+TEST_P(GetSseSum8x8QuadTest, DISABLED_Speed) { SseSum_SpeedTest(); }
 TEST_P(SumOfSquaresTest, Const) { ConstTest(); }
 TEST_P(SumOfSquaresTest, Ref) { RefTest(); }
 TEST_P(AvxSubpelVarianceTest, Ref) { RefTest(); }
@@ -1264,6 +1419,16 @@ const VarianceParams kArrayVariance_c[] = {
 };
 INSTANTIATE_TEST_SUITE_P(C, AvxVarianceTest,
                          ::testing::ValuesIn(kArrayVariance_c));
+
+typedef TestParams<GetSseSum8x8QuadFunc> GetSseSumParams;
+const GetSseSumParams kArrayGetSseSum8x8Quad_c[] = {
+  GetSseSumParams(7, 7, &aom_get_sse_sum_8x8_quad_c, 0),
+  GetSseSumParams(6, 6, &aom_get_sse_sum_8x8_quad_c, 0),
+  GetSseSumParams(5, 5, &aom_get_sse_sum_8x8_quad_c, 0),
+  GetSseSumParams(5, 4, &aom_get_sse_sum_8x8_quad_c, 0)
+};
+INSTANTIATE_TEST_SUITE_P(C, GetSseSum8x8QuadTest,
+                         ::testing::ValuesIn(kArrayGetSseSum8x8Quad_c));
 
 typedef TestParams<SubpixVarMxNFunc> SubpelVarianceParams;
 const SubpelVarianceParams kArraySubpelVariance_c[] = {
@@ -1419,8 +1584,8 @@ class MseHBDWxHTestClass
         aom_memalign(16, block_size() * sizeof(src_)));
     dst_ = reinterpret_cast<uint16_t *>(
         aom_memalign(16, block_size() * sizeof(dst_)));
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(dst_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(dst_, nullptr);
   }
 
   virtual void TearDown() {
@@ -1989,6 +2154,15 @@ const VarianceParams kArrayVariance_sse2[] = {
 };
 INSTANTIATE_TEST_SUITE_P(SSE2, AvxVarianceTest,
                          ::testing::ValuesIn(kArrayVariance_sse2));
+
+const GetSseSumParams kArrayGetSseSum8x8Quad_sse2[] = {
+  GetSseSumParams(7, 7, &aom_get_sse_sum_8x8_quad_sse2, 0),
+  GetSseSumParams(6, 6, &aom_get_sse_sum_8x8_quad_sse2, 0),
+  GetSseSumParams(5, 5, &aom_get_sse_sum_8x8_quad_sse2, 0),
+  GetSseSumParams(5, 4, &aom_get_sse_sum_8x8_quad_sse2, 0)
+};
+INSTANTIATE_TEST_SUITE_P(SSE2, GetSseSum8x8QuadTest,
+                         ::testing::ValuesIn(kArrayGetSseSum8x8Quad_sse2));
 
 const SubpelVarianceParams kArraySubpelVariance_sse2[] = {
   SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_sse2, 0),
@@ -2592,6 +2766,15 @@ const VarianceParams kArrayVariance_avx2[] = {
 INSTANTIATE_TEST_SUITE_P(AVX2, AvxVarianceTest,
                          ::testing::ValuesIn(kArrayVariance_avx2));
 
+const GetSseSumParams kArrayGetSseSum8x8Quad_avx2[] = {
+  GetSseSumParams(7, 7, &aom_get_sse_sum_8x8_quad_avx2, 0),
+  GetSseSumParams(6, 6, &aom_get_sse_sum_8x8_quad_avx2, 0),
+  GetSseSumParams(5, 5, &aom_get_sse_sum_8x8_quad_avx2, 0),
+  GetSseSumParams(5, 4, &aom_get_sse_sum_8x8_quad_avx2, 0)
+};
+INSTANTIATE_TEST_SUITE_P(AVX2, GetSseSum8x8QuadTest,
+                         ::testing::ValuesIn(kArrayGetSseSum8x8Quad_avx2));
+
 const SubpelVarianceParams kArraySubpelVariance_avx2[] = {
   SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_avx2, 0),
   SubpelVarianceParams(7, 6, &aom_sub_pixel_variance128x64_avx2, 0),
@@ -2687,6 +2870,48 @@ const SubpelVarianceParams kArraySubpelVariance_neon[] = {
 };
 INSTANTIATE_TEST_SUITE_P(NEON, AvxSubpelVarianceTest,
                          ::testing::ValuesIn(kArraySubpelVariance_neon));
+
+const GetSseSumParams kArrayGetSseSum8x8Quad_neon[] = {
+  GetSseSumParams(7, 7, &aom_get_sse_sum_8x8_quad_neon, 0),
+  GetSseSumParams(6, 6, &aom_get_sse_sum_8x8_quad_neon, 0),
+  GetSseSumParams(5, 5, &aom_get_sse_sum_8x8_quad_neon, 0),
+  GetSseSumParams(5, 4, &aom_get_sse_sum_8x8_quad_neon, 0)
+};
+INSTANTIATE_TEST_SUITE_P(NEON, GetSseSum8x8QuadTest,
+                         ::testing::ValuesIn(kArrayGetSseSum8x8Quad_neon));
+
+#if CONFIG_AV1_HIGHBITDEPTH
+const VarianceParams kArrayHBDVariance_neon[] = {
+  VarianceParams(7, 7, &aom_highbd_10_variance128x128_neon, 10),
+  VarianceParams(7, 6, &aom_highbd_10_variance128x64_neon, 10),
+  VarianceParams(6, 7, &aom_highbd_10_variance64x128_neon, 10),
+  VarianceParams(6, 6, &aom_highbd_10_variance64x64_neon, 10),
+  VarianceParams(6, 5, &aom_highbd_10_variance64x32_neon, 10),
+  VarianceParams(5, 6, &aom_highbd_10_variance32x64_neon, 10),
+  VarianceParams(5, 5, &aom_highbd_10_variance32x32_neon, 10),
+  VarianceParams(5, 4, &aom_highbd_10_variance32x16_neon, 10),
+  VarianceParams(4, 5, &aom_highbd_10_variance16x32_neon, 10),
+  VarianceParams(4, 4, &aom_highbd_10_variance16x16_neon, 10),
+  VarianceParams(4, 3, &aom_highbd_10_variance16x8_neon, 10),
+  VarianceParams(3, 4, &aom_highbd_10_variance8x16_neon, 10),
+  VarianceParams(3, 3, &aom_highbd_10_variance8x8_neon, 10),
+  VarianceParams(3, 2, &aom_highbd_10_variance8x4_neon, 10),
+  VarianceParams(2, 3, &aom_highbd_10_variance4x8_neon, 10),
+  VarianceParams(2, 2, &aom_highbd_10_variance4x4_neon, 10),
+#if !CONFIG_REALTIME_ONLY
+  VarianceParams(6, 4, &aom_highbd_10_variance64x16_neon, 10),
+  VarianceParams(4, 6, &aom_highbd_10_variance16x64_neon, 10),
+  VarianceParams(5, 3, &aom_highbd_10_variance32x8_neon, 10),
+  VarianceParams(3, 5, &aom_highbd_10_variance8x32_neon, 10),
+  VarianceParams(4, 2, &aom_highbd_10_variance16x4_neon, 10),
+  VarianceParams(2, 4, &aom_highbd_10_variance4x16_neon, 10),
+#endif
+};
+
+INSTANTIATE_TEST_SUITE_P(NEON, AvxHBDVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDVariance_neon));
+#endif  // CONFIG_AV1_HIGHBITDEPTH
+
 #endif  // HAVE_NEON
 
 #if HAVE_MSA

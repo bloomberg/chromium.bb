@@ -360,8 +360,8 @@ TEST(PrinterTranslatorTest, GetCupsPrinterStatusTwoReasons) {
   const base::Value* status_reasons =
       printer_status_dict.FindListPath("statusReasons");
 
-  auto status_reasons_list = status_reasons->GetList();
-  EXPECT_EQ(2u, status_reasons_list.size());
+  const auto& status_reasons_list = status_reasons->GetList();
+  ASSERT_EQ(2u, status_reasons_list.size());
   EXPECT_EQ(static_cast<int>(CupsPrinterStatusReason::Reason::kLowOnPaper),
             status_reasons_list[0].FindIntPath("reason"));
   EXPECT_EQ(static_cast<int>(CupsPrinterStatusReason::Severity::kWarning),

@@ -11,7 +11,7 @@
 namespace content_capture {
 namespace features {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const base::Feature kContentCapture{"ContentCapture",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -25,8 +25,8 @@ const base::Feature kContentCaptureTriggeringForExperiment{
     "ContentCaptureTriggeringForExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-const base::Feature kContentCaptureInWebLayer{
-    "ContentCaptureInWebLayer", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kContentCaptureInWebLayer{"ContentCaptureInWebLayer",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsContentCaptureEnabled() {
   return base::FeatureList::IsEnabled(kContentCapture);

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/web_bundle/script_web_bundle.h"
 
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
@@ -40,47 +40,47 @@ class ScriptWebBundle::ReleaseResourceTask {
   Persistent<ScriptWebBundle> script_web_bundle_;
 };
 
-ScriptWebBundle* ScriptWebBundle::CreateOrReuseInline(
-    ScriptElementBase& element,
-    const String& source_text) {
+absl::variant<ScriptWebBundle*, ScriptWebBundleError>
+ScriptWebBundle::CreateOrReuseInline(ScriptElementBase& element,
+                                     const String& source_text) {
   Document& document = element.GetDocument();
-  auto rule = ScriptWebBundleRule::ParseJson(source_text, document.BaseURL());
-  if (!rule) {
-    return nullptr;
-  }
+  auto rule_or_error = ScriptWebBundleRule::ParseJson(
+      source_text, document.BaseURL(), document.GetExecutionContext());
+  if (absl::holds_alternative<ScriptWebBundleError>(rule_or_error))
+    return absl::get<ScriptWebBundleError>(rule_or_error);
+  auto& rule = absl::get<ScriptWebBundleRule>(rule_or_error);
 
   ResourceFetcher* resource_fetcher = document.Fetcher();
   if (!resource_fetcher) {
-    return nullptr;
+    return ScriptWebBundleError(ScriptWebBundleError::Type::kSystemError,
+                                "Missing resource fetcher.");
   }
   SubresourceWebBundleList* active_bundles =
       resource_fetcher->GetOrCreateSubresourceWebBundleList();
-  if (active_bundles->GetMatchingBundle(rule->source_url())) {
+  if (active_bundles->GetMatchingBundle(rule.source_url())) {
     ExecutionContext* context = document.GetExecutionContext();
-    if (!context)
-      return nullptr;
-    context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kOther,
-        mojom::blink::ConsoleMessageLevel::kWarning,
-        "A nested bundle is not supported: " +
-            rule->source_url().ElidedString()));
-    document.GetTaskRunner(TaskType::kDOMManipulation)
-        ->PostTask(FROM_HERE, WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
-                                        WrapPersistent(&element)));
-    return nullptr;
+    if (context) {
+      context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kOther,
+          mojom::blink::ConsoleMessageLevel::kWarning,
+          "A nested bundle is not supported: " +
+              rule.source_url().ElidedString()));
+    }
+    return ScriptWebBundleError(ScriptWebBundleError::Type::kSystemError,
+                                "A nested bundle is not supported.");
   }
 
   if (SubresourceWebBundle* found =
           active_bundles->FindSubresourceWebBundleWhichWillBeReleased(
-              rule->source_url(), rule->credentials_mode())) {
+              rule.source_url(), rule.credentials_mode())) {
     // Re-use the ScriptWebBundle if it has the same bundle URL and is being
     // released.
     DCHECK(found->IsScriptWebBundle());
     ScriptWebBundle* reused_script_web_bundle = To<ScriptWebBundle>(found);
-    reused_script_web_bundle->ReusedWith(element, std::move(*rule));
+    reused_script_web_bundle->ReusedWith(element, std::move(rule));
     return reused_script_web_bundle;
   }
-  return MakeGarbageCollected<ScriptWebBundle>(element, document, *rule);
+  return MakeGarbageCollected<ScriptWebBundle>(element, document, rule);
 }
 
 ScriptWebBundle::ScriptWebBundle(ScriptElementBase& element,
@@ -105,7 +105,7 @@ bool ScriptWebBundle::CanHandleRequest(const KURL& url) const {
     return false;
   if (!rule_.ResourcesOrScopesMatch(url))
     return false;
-  if (url.Protocol() == "urn" || url.Protocol() == "uuid-in-package")
+  if (url.Protocol() == "uuid-in-package")
     return true;
   DCHECK(bundle_loader_);
   if (!bundle_loader_->GetSecurityOrigin()->IsSameOriginWith(

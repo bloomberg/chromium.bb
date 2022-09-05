@@ -12,10 +12,11 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 namespace web_app {
 
@@ -31,7 +32,7 @@ std::set<int> TestSizesToGenerate() {
       icon_size::k128,
   };
   return std::set<int>(kIconSizesToGenerate,
-                       kIconSizesToGenerate + base::size(kIconSizesToGenerate));
+                       kIconSizesToGenerate + std::size(kIconSizesToGenerate));
 }
 
 void ValidateAllIconsWithURLsArePresent(
@@ -86,11 +87,12 @@ std::vector<SkBitmap>::const_iterator FindEqualOrLargerSkBitmapVector(
   return bitmap_vector.end();
 }
 
-void ValidateIconsGeneratedAndResizedCorrectly(std::vector<SkBitmap> downloaded,
-                                               SizeToBitmap size_map,
-                                               std::set<int> sizes_to_generate,
-                                               int expected_generated,
-                                               int expected_resized) {
+void ValidateIconsGeneratedAndResizedCorrectly(
+    const std::vector<SkBitmap>& downloaded,
+    const SizeToBitmap& size_map,
+    const std::set<int>& sizes_to_generate,
+    int expected_generated,
+    int expected_resized) {
   GURL empty_url("");
   int number_generated = 0;
   int number_resized = 0;
@@ -133,7 +135,9 @@ void ValidateIconsGeneratedAndResizedCorrectly(std::vector<SkBitmap> downloaded,
   EXPECT_EQ(expected_resized, number_resized);
 }
 
-void ValidateBitmapSizeAndColor(SkBitmap bitmap, int size, SkColor color) {
+void ValidateBitmapSizeAndColor(const SkBitmap& bitmap,
+                                int size,
+                                SkColor color) {
   // Obtain pixel lock to access pixels.
   EXPECT_EQ(color, bitmap.getColor(0, 0));
   EXPECT_EQ(size, bitmap.width());
@@ -395,7 +399,7 @@ TEST_F(WebAppIconGeneratorTest, GenerateIcons) {
     // Only for large icons with a sharp letter: Peek a pixel at the center of
     // icon. This is tested on Linux and ChromeOS only because different OSes
     // use different text shaping engines.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     const SkColor letter_color = color_utils::GetColorWithMaxContrast(bg_color);
     if (size >= icon_size::k256) {
       SkColor center_color = bitmap.getColor(center_x, center_y);
@@ -403,7 +407,7 @@ TEST_F(WebAppIconGeneratorTest, GenerateIcons) {
       SCOPED_TRACE(center_color);
       EXPECT_TRUE(AreColorsEqual(letter_color, center_color, /*threshold=*/50));
     }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     sizes.erase(size);
   }
 

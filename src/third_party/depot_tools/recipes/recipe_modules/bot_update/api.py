@@ -42,7 +42,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
           self.m.buildbucket.build.id)
     with self.m.context(env=env):
       with self.m.depot_tools.on_path():
-        return self.m.python(name, bot_update_path, cmd, **kwargs)
+        return self.m.step(name,
+                           ['vpython3', '-u', bot_update_path] + cmd,
+                           **kwargs)
 
   @property
   def last_returned_properties(self):
@@ -86,24 +88,18 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       with_tags=False,
                       no_fetch_tags=False,
                       refs=None,
-                      patch_oauth2=None,
-                      oauth2_json=None,
-                      use_site_config_creds=None,
                       clobber=False,
                       root_solution_revision=None,
-                      rietveld=None,
-                      issue=None,
-                      patchset=None,
                       gerrit_no_reset=False,
                       gerrit_no_rebase_patch_ref=False,
                       assert_one_gerrit_change=True,
-                      disable_syntax_validation=False,
                       patch_refs=None,
                       ignore_input_commit=False,
                       add_blamelists=False,
                       set_output_commit=False,
                       step_test_data=None,
                       enforce_fetch=False,
+                      download_topics=False,
                       **kwargs):
     """
     Args:
@@ -113,9 +109,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
         fetch any tags referenced from the references being fetched. When a repo
         has many references, it can become a performance bottleneck, so avoid
         tags if the checkout will not need them present.
-      * disable_syntax_validation: (legacy) Disables syntax validation for DEPS.
-        Needed as migration paths for recipes dealing with older revisions,
-        such as bisect.
       * ignore_input_commit: if True, ignore api.buildbucket.gitiles_commit.
         Exists for historical reasons. Please do not use.
       * add_blamelists: if True, add blamelist pins for all of the repos that had
@@ -135,13 +128,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
         change in self.m.buildbucket.build.input.gerrit_changes, because
         bot_update module ONLY supports one change. Users may specify a change
         via tryserver.set_change() and explicitly set this flag False.
+      * download_topics: If True, gclient downloads and patches locally from all
+        open Gerrit CLs that have the same topic as the tested patch ref.
     """
-    assert use_site_config_creds is None, "use_site_config_creds is deprecated"
-    assert rietveld is None, "rietveld is deprecated"
-    assert issue is None, "issue is deprecated"
-    assert patchset is None, "patchset is deprecated"
-    assert patch_oauth2 is None, "patch_oauth2 is deprecated"
-    assert oauth2_json is None, "oauth2_json is deprecated"
     assert not (ignore_input_commit and set_output_commit)
     if assert_one_gerrit_change:
       assert len(self.m.buildbucket.build.input.gerrit_changes) <= 1, (
@@ -288,14 +277,14 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--with_tags')
     if gerrit_no_reset:
       cmd.append('--gerrit_no_reset')
+    if download_topics:
+      cmd.append('--download_topics')
     if enforce_fetch:
       cmd.append('--enforce_fetch')
     if no_fetch_tags:
       cmd.append('--no_fetch_tags')
     if gerrit_no_rebase_patch_ref:
       cmd.append('--gerrit_no_rebase_patch_ref')
-    if disable_syntax_validation or cfg.disable_syntax_validation:
-      cmd.append('--disable-syntax-validation')
     if self.m.properties.get('bot_update_experiments'):
       cmd.append('--experiments=%s' %
           ','.join(self.m.properties['bot_update_experiments']))
@@ -322,7 +311,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
       step_result = f.result
       raise
     finally:
-      if step_result and step_result.json.output:
+      # The step_result can be missing the json attribute if the build
+      # is shutting down and the bot_update script is not able to finish
+      # writing the json output.
+      # An AttributeError occuring in this finally block swallows any
+      # StepFailure that may bubble up.
+      if (step_result and hasattr(step_result, 'json')
+          and step_result.json.output):
         result = step_result.json.output
         self._last_returned_properties = result.get('properties', {})
 
@@ -360,7 +355,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
         if add_blamelists and 'manifest' in result:
           blamelist_pins = []
-          for name in revisions:
+          for name in sorted(revisions):
             m = result['manifest'][name]
             pin = {'id': m['revision']}
             pin['host'], pin['project'] = (
@@ -372,7 +367,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
         # Set output commit of the build.
         if (set_output_commit and
-            'got_revision' in self._last_returned_properties):
+            'got_revision' in self._last_returned_properties and
+            'got_revision' in reverse_rev_map):
           # As of April 2019, got_revision describes the output commit,
           # the same commit that Build.output.gitiles_commit describes.
           # In particular, users tend to set got_revision to make Milo display

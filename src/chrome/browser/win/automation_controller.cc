@@ -15,7 +15,6 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_variant.h"
@@ -198,7 +197,7 @@ void AutomationController::Context::EventHandler::Initialize(
   ref_counted_delegate_ = std::move(ref_counted_delegate);
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP
+STDMETHODIMP
 AutomationController::Context::EventHandler::HandleAutomationEvent(
     IUIAutomationElement* sender,
     EVENTID event_id) {
@@ -222,7 +221,7 @@ AutomationController::Context::EventHandler::HandleAutomationEvent(
   return S_OK;
 }
 
-COM_DECLSPEC_NOTHROW STDMETHODIMP
+STDMETHODIMP
 AutomationController::Context::EventHandler::HandleFocusChangedEvent(
     IUIAutomationElement* sender) {
   DVLOG(1)

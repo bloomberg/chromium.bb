@@ -143,18 +143,11 @@
     },
     // Whether this style is related with :has() pseudo-class
     {
-      name: "AffectedByHas",
+      name: "AffectedBySubjectHas",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
-    },
-    {
-      name: "AncestorsAffectedByHas",
-      field_template: "primitive",
-      default_value: "false",
-      type_name: "bool",
-      inherited: true,
     },
     // A non-inherited property references a variable or @apply is used
     {
@@ -195,13 +188,12 @@
       default_value: "false",
     },
     // These are set if we used viewport or rem units when resolving a length.
-    // FIXME: HasViewportUnits should be a monotonic_flag.
     {
-      name: "HasViewportUnits",
+      name: "ViewportUnitFlags",
       field_template: "primitive",
-      default_value: "false",
-      type_name: "bool",
-      custom_compare: true,
+      field_size: 2,
+      default_value: "0",
+      type_name: "unsigned",
     },
     {
       name: "HasRemUnits",
@@ -257,6 +249,15 @@
       custom_copy: true,
       custom_compare: true,
       computed_style_custom_functions: ["getter", "setter"],
+    },
+    {
+      name: "HasNonUniversalHighlightPseudoStyles",
+      field_template: "primitive",
+      field_group: "*",
+      default_value: "false",
+      type_name: "bool",
+      custom_copy: true,
+      custom_compare: true,
     },
     // Used by ::highlight
     {
@@ -595,10 +596,10 @@
     {
       name: "PageSize",
       field_template: "external",
-      type_name: "FloatSize",
+      type_name: "gfx::SizeF",
       field_group: "*",
-      default_value: "FloatSize()",
-      include_paths: ["third_party/blink/renderer/platform/geometry/float_size.h"],
+      default_value: "gfx::SizeF()",
+      include_paths: ["ui/gfx/geometry/size_f.h"],
     },
     {
       name: "OutlineStyleIsAuto",
@@ -649,6 +650,27 @@
     },
     {
       name: "HasCurrentOpacityAnimation",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
+      name: "HasCurrentTranslateAnimation",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
+      name: "HasCurrentRotateAnimation",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
+      name: "HasCurrentScaleAnimation",
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
@@ -708,6 +730,36 @@
     },
     {
       name: "IsRunningTransformAnimationOnCompositor",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      // This field just affects how changes of animatable values are handled,
+      // so it doesn't contribute to style differences.
+      custom_compare: true,
+      default_value: "false",
+    },
+    {
+      name: "IsRunningScaleAnimationOnCompositor",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      // This field just affects how changes of animatable values are handled,
+      // so it doesn't contribute to style differences.
+      custom_compare: true,
+      default_value: "false",
+    },
+    {
+      name: "IsRunningRotateAnimationOnCompositor",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      // This field just affects how changes of animatable values are handled,
+      // so it doesn't contribute to style differences.
+      custom_compare: true,
+      default_value: "false",
+    },
+    {
+      name: "IsRunningTranslateAnimationOnCompositor",
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
@@ -786,6 +838,14 @@
       default_value: "false",
     },
     {
+      name: "ColorIsCurrentColor",
+      field_template: "primitive",
+      field_group: "inherited",
+      type_name: "bool",
+      default_value: "true",
+      inherited: true,
+    },
+    {
       name: "WillChangeProperties",
       field_template: "external",
       type_name: "Vector<CSSPropertyID>",
@@ -825,70 +885,6 @@
       computed_style_custom_functions: ["setter"],
     },
     {
-      name: "NamedGridColumnLines",
-      field_template: "external",
-      type_name: "NamedGridLinesMap",
-      field_group: "*->grid",
-      default_value: "NamedGridLinesMap()",
-      include_paths: ["third_party/blink/renderer/core/style/named_grid_lines_map.h"],
-    },
-    {
-      name: "NamedGridRowLines",
-      field_template: "external",
-      type_name: "NamedGridLinesMap",
-      field_group: "*->grid",
-      default_value: "NamedGridLinesMap()",
-      include_paths: ["third_party/blink/renderer/core/style/named_grid_lines_map.h"],
-    },
-    {
-      name: "OrderedNamedGridColumnLines",
-      field_template: "external",
-      type_name: "OrderedNamedGridLines",
-      field_group: "*->grid",
-      default_value: "OrderedNamedGridLines()",
-      include_paths: ["third_party/blink/renderer/core/style/ordered_named_grid_lines.h"],
-    },
-    {
-      name: "OrderedNamedGridRowLines",
-      field_template: "external",
-      type_name: "OrderedNamedGridLines",
-      field_group: "*->grid",
-      default_value: "OrderedNamedGridLines()",
-      include_paths: ["third_party/blink/renderer/core/style/ordered_named_grid_lines.h"],
-    },
-    {
-      name: "AutoRepeatNamedGridColumnLines",
-      field_template: "external",
-      type_name: "NamedGridLinesMap",
-      field_group: "*->grid",
-      default_value: "NamedGridLinesMap()",
-      include_paths: ["third_party/blink/renderer/core/style/named_grid_lines_map.h"],
-    },
-    {
-      name: "AutoRepeatNamedGridRowLines",
-      field_template: "external",
-      type_name: "NamedGridLinesMap",
-      field_group: "*->grid",
-      default_value: "NamedGridLinesMap()",
-      include_paths: ["third_party/blink/renderer/core/style/named_grid_lines_map.h"],
-    },
-    {
-      name: "AutoRepeatOrderedNamedGridColumnLines",
-      field_template: "external",
-      type_name: "OrderedNamedGridLines",
-      field_group: "*->grid",
-      default_value: "OrderedNamedGridLines()",
-      include_paths: ["third_party/blink/renderer/core/style/ordered_named_grid_lines.h"],
-    },
-    {
-      name: "AutoRepeatOrderedNamedGridRowLines",
-      field_template: "external",
-      type_name: "OrderedNamedGridLines",
-      field_group: "*->grid",
-      default_value: "OrderedNamedGridLines()",
-      include_paths: ["third_party/blink/renderer/core/style/ordered_named_grid_lines.h"],
-    },
-    {
       name: "ImplicitNamedGridColumnLines",
       field_template: "external",
       type_name: "NamedGridLinesMap",
@@ -925,70 +921,6 @@
       type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
-    },
-    {
-      name: "GridAutoRepeatColumns",
-      field_template: "external",
-      type_name: "Vector<GridTrackSize, 1>",
-      field_group: "*->grid",
-      default_value: "Vector<GridTrackSize, 1>()",
-      include_paths: ["third_party/blink/renderer/platform/wtf/vector.h",
-                      "third_party/blink/renderer/core/style/grid_track_size.h"],
-    },
-    {
-      name: "GridAutoRepeatRows",
-      field_template: "external",
-      type_name: "Vector<GridTrackSize, 1>",
-      field_group: "*->grid",
-      default_value: "Vector<GridTrackSize, 1>()",
-      include_paths: ["third_party/blink/renderer/platform/wtf/vector.h",
-                      "third_party/blink/renderer/core/style/grid_track_size.h"],
-    },
-    {
-      name: "GridAutoRepeatColumnsInsertionPoint",
-      field_template: "primitive",
-      type_name: "wtf_size_t",
-      field_group: "*->grid",
-      default_value: "0",
-    },
-    {
-      name: "GridAutoRepeatRowsInsertionPoint",
-      field_template: "primitive",
-      type_name: "wtf_size_t",
-      field_group: "*->grid",
-      default_value: "0",
-    },
-    {
-      name: "GridAutoRepeatColumnsType",
-      field_template: "keyword",
-      type_name: "AutoRepeatType",
-      field_group: "*->grid",
-      keywords: ["no-auto-repeat", "auto-fill", "auto-fit"],
-      default_value: "no-auto-repeat",
-    },
-    {
-      name: "GridAutoRepeatRowsType",
-      field_template: "keyword",
-      type_name: "AutoRepeatType",
-      field_group: "*->grid",
-      keywords: ["no-auto-repeat", "auto-fill", "auto-fit"],
-      default_value: "no-auto-repeat",
-    },
-    {
-      name: "GridColumnsAxisType",
-      field_template: "keyword",
-      type_name: "GridAxisType",
-      field_group: "*->grid",
-      keywords: ["standalone-axis", "subgridded-axis"],
-      default_value: "standalone-axis",
-    },
-    {
-      name: "GridRowsAxisType",
-      field_template: "keyword",
-      type_name: "GridAxisType",
-      field_group: "*->grid",
-      keywords: ["standalone-axis", "subgridded-axis"],
-      default_value: "standalone-axis",
     },
     // We only create and store ComputedStyle objects for elements in
     // display:none subtrees if we need it for e.g. getComputedStyle. This flag
@@ -1182,6 +1114,15 @@
       default_value: "false",
     },
     {
+      // Set to true if this ComputedStyle is for an element whose ::first-line
+      // style depends on size container queries.
+      name: "FirstLineDependsOnContainerQueries",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
       name: "BaseData",
       inherited: false,
       field_template: "external",
@@ -1200,22 +1141,48 @@
     },
     {
       // https://html.spec.whatwg.org/multipage/interaction.html#inert
-      // The inertness is represented with one of these values:
-      // - 'none' means that the node is not inert (the default).
-      // - 'overridable' means that the node is inert, and descendants will
-      //    inherit by default, but may change their inertness to e.g. 'none'.
-      // - 'forced' means that that the node is inert, and its decendants
-      //   won't be able to change their inertness to something else.
-      // ComputedStyle doesn't directly expose the inertness. Instead, use
-      // IsInert(), SetIsInert(bool), IsForcedInert() or SetIsForcedInert().
-      name: "Inertness",
+      name: "IsInert",
       inherited: true,
-      field_template: "keyword",
-      type_name: "Inertness",
-      keywords: ["none", "overridable", "forced"],
-      default_value: "none",
+      field_template: "primitive",
+      type_name: "bool",
+      default_value: "false",
       field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
     },
+    {
+      // We need to go through LayoutObject::SetStyle with
+      // ApplyStyleChanges::kYes if the body changes from being the first body
+      // element to a secondary one because the same style could lead to
+      // different need for scrollbars depending on whether the body element
+      // propagates its scrollbars to the viewport or not. This flag is merely
+      // for making the old and new ComputedStyles different in such a case.
+      name: "IsSecondaryBodyElement",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      field_group: "*",
+    },
+    {
+      name: "InlineStyleLostCascade",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+      custom_compare: true,
+    },
+    {
+      name: "HasExplicitOverflowXVisible",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+      computed_style_custom_functions: ["setter"],
+    },
+    {
+      name: "HasExplicitOverflowYVisible",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+      computed_style_custom_functions: ["setter"],
+    }
   ],
 }

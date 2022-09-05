@@ -47,8 +47,7 @@ class WebTestDevToolsBindings::SecondaryObserver : public WebContentsObserver {
   SecondaryObserver& operator=(const SecondaryObserver&) = delete;
 
   // WebContentsObserver implementation.
-  void DocumentAvailableInMainFrame(
-      RenderFrameHost* render_frame_host) override {
+  void PrimaryMainDocumentElementAvailable() override {
     if (bindings_)
       bindings_->NavigateDevToolsFrontend();
     bindings_ = nullptr;
@@ -71,7 +70,7 @@ GURL WebTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
     NOTREACHED();
     return GURL();
   }
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On Mac, the executable is in
   // out/Release/Content Shell.app/Contents/MacOS/Content Shell.
   // We need to go up 3 directories to get to out/Release.
@@ -116,8 +115,7 @@ WebTestDevToolsBindings::WebTestDevToolsBindings(
 
 WebTestDevToolsBindings::~WebTestDevToolsBindings() {}
 
-void WebTestDevToolsBindings::DocumentAvailableInMainFrame(
-    RenderFrameHost* render_frame_host) {
+void WebTestDevToolsBindings::PrimaryMainDocumentElementAvailable() {
   ShellDevToolsBindings::Attach();
 }
 

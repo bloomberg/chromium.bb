@@ -122,7 +122,7 @@ TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
   }
 
   split_view_controller_->OnWindowDragCanceled();
-  Shell::Get()->UpdateShelfVisibility();
+  Shelf::UpdateShelfVisibility();
 }
 
 void TabletModeWindowDragDelegate::StartWindowDrag(
@@ -286,6 +286,9 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
         ShouldDropWindowIntoOverview(snap_position, location_in_screen),
         snap_position != SplitViewController::NONE);
   }
+
+  WindowState::Get(dragged_window_)
+      ->set_snap_action_source(WindowSnapActionSource::kDragDownFromTopToSnap);
   split_view_controller_->OnWindowDragEnded(
       dragged_window_, snap_position, gfx::ToRoundedPoint(location_in_screen));
   split_view_drag_indicators_->SetWindowDraggingState(
@@ -325,7 +328,8 @@ void TabletModeWindowDragDelegate::FlingOrSwipe(ui::GestureEvent* event) {
           ->overview_controller()
           ->overview_session()
           ->AddItemInMruOrder(dragged_window_, /*reposition=*/true,
-                              /*animate=*/false, /*restack=*/true);
+                              /*animate=*/false, /*restack=*/true,
+                              /*use_spawn_animation=*/false);
     }
     StartFling(event);
   }

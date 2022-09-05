@@ -20,6 +20,8 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/capture_mode/capture_mode_camera_controller.h"
+#include "ash/capture_mode/capture_mode_camera_preview_view.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
@@ -43,7 +45,8 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/system/toast_catalog.h"
+#include "ash/public/cpp/system/toast_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
 #include "ash/shelf/home_button.h"
@@ -78,6 +81,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/wm_metrics.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -91,6 +95,9 @@
 #include "base/system/sys_info.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/ui/base/display_util.h"
+#include "chromeos/ui/wm/desks/chromeos_desks_histogram_enums.h"
+#include "chromeos/ui/wm/features.h"
+#include "chromeos/ui/wm/window_util.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
@@ -107,6 +114,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -134,7 +142,6 @@ using input_method::InputMethodManager;
 
 // Toast id and duration for Assistant shortcuts.
 constexpr char kAssistantErrorToastId[] = "assistant_error";
-constexpr int kToastDurationMs = 2500;
 
 constexpr char kVirtualDesksToastId[] = "virtual_desks_toast";
 
@@ -218,8 +225,10 @@ void NotifyShortcutChangesInRelease(PrefService* pref_service) {
   IncrementStartupNotificationCount(pref_service);
 }
 
-void ShowToast(std::string id, const std::u16string& text) {
-  ToastData toast(id, text, kToastDurationMs, absl::nullopt,
+void ShowToast(std::string id,
+               ToastCatalogName catalog_name,
+               const std::u16string& text) {
+  ToastData toast(id, catalog_name, text, ToastData::kDefaultToastDuration,
                   /*visible_on_lock_screen=*/true);
   Shell::Get()->toast_manager()->Show(toast);
 }
@@ -292,7 +301,7 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator, bool going_left) {
     window_to_move = window_util::GetActiveWindow();
   }
 
-  if (!window_to_move)
+  if (!window_to_move || !desks_util::BelongsToActiveDesk(window_to_move))
     return;
 
   Desk* target_desk = nullptr;
@@ -328,7 +337,7 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator, bool going_left) {
 void HandleNewDesk() {
   auto* desks_controller = DesksController::Get();
   if (!desks_controller->CanCreateDesks()) {
-    ShowToast(kVirtualDesksToastId,
+    ShowToast(kVirtualDesksToastId, ToastCatalogName::kVirtualDesksLimitMax,
               l10n_util::GetStringUTF16(IDS_ASH_DESKS_MAX_NUM_REACHED));
     return;
   }
@@ -350,7 +359,7 @@ void HandleRemoveCurrentDesk() {
 
   auto* desks_controller = DesksController::Get();
   if (!desks_controller->CanRemoveDesks()) {
-    ShowToast(kVirtualDesksToastId,
+    ShowToast(kVirtualDesksToastId, ToastCatalogName::kVirtualDesksLimitMin,
               l10n_util::GetStringUTF16(IDS_ASH_DESKS_MIN_NUM_REACHED));
     return;
   }
@@ -361,7 +370,8 @@ void HandleRemoveCurrentDesk() {
   // TODO(afakhry): Finalize the desk removal animation outside of overview with
   // UX. https://crbug.com/977434.
   desks_controller->RemoveDesk(desks_controller->active_desk(),
-                               DesksCreationRemovalSource::kKeyboard);
+                               DesksCreationRemovalSource::kKeyboard,
+                               DeskCloseType::kCombineDesks);
   base::RecordAction(base::UserMetricsAction("Accel_Desks_RemoveDesk"));
 }
 
@@ -390,13 +400,21 @@ void HandleToggleAssignToAllDesks() {
   if (!active_window)
     return;
 
+  // Only children of the desk container should have their assigned to all
+  // desks state toggled to avoid interfering with special windows like
+  // always-on-top windows, floated windows, etc.
   if (desks_util::IsActiveDeskContainer(active_window->parent())) {
-    // Only children of the desk container should have their assigned to all
-    // desks state toggled to avoid interfering with special windows like
-    // always-on-top windows, floated windows, etc.
+    const bool is_already_visible_on_all_desks =
+        desks_util::IsWindowVisibleOnAllWorkspaces(active_window);
+    if (!is_already_visible_on_all_desks) {
+      UMA_HISTOGRAM_ENUMERATION(
+          chromeos::kDesksAssignToAllDesksSourceHistogramName,
+          chromeos::DesksAssignToAllDesksSource::kKeyboardShortcut);
+    }
+
     active_window->SetProperty(
         aura::client::kWindowWorkspaceKey,
-        desks_util::IsWindowVisibleOnAllWorkspaces(active_window)
+        is_already_visible_on_all_desks
             ? aura::client::kWindowWorkspaceUnassignedWorkspace
             : aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
   }
@@ -444,6 +462,26 @@ views::Widget* FindPipWidget() {
       base::BindRepeating([](views::Widget* widget) {
         return WindowState::Get(widget->GetNativeWindow())->IsPip();
       }));
+}
+
+bool CanHandleFocusCameraPreview() {
+  auto* controller = CaptureModeController::Get();
+  // Only use the shortcut to focus the camera preview while video recording is
+  // in progress. As focus traversal of the camera preview in the capture
+  // session will be handled by CaptureModeSessionFocusCycler instead.
+  if (controller->IsActive() || !controller->is_recording_in_progress())
+    return false;
+
+  auto* camera_controller = controller->camera_controller();
+  auto* preview_widget =
+      camera_controller ? camera_controller->camera_preview_widget() : nullptr;
+  return preview_widget && preview_widget->IsVisible();
+}
+
+void HandleFocusCameraPreview() {
+  auto* camera_controller = CaptureModeController::Get()->camera_controller();
+  DCHECK(camera_controller);
+  camera_controller->PseudoFocusCameraPreview();
 }
 
 void HandleToggleMirrorMode() {
@@ -522,7 +560,7 @@ display::Display::Rotation GetNextRotationInTabletMode(
   Shell* shell = Shell::Get();
   DCHECK(shell->tablet_mode_controller()->InTabletMode());
 
-  if (!display::Display::HasInternalDisplay() ||
+  if (!display::HasInternalDisplay() ||
       display_id != display::Display::InternalDisplayId()) {
     return GetNextRotationInClamshell(current);
   }
@@ -572,7 +610,7 @@ display::Display::Rotation GetNextRotationInTabletMode(
 }
 
 bool ShouldLockRotation(int64_t display_id) {
-  return display::Display::HasInternalDisplay() &&
+  return display::HasInternalDisplay() &&
          display_id == display::Display::InternalDisplayId() &&
          Shell::Get()->screen_orientation_controller()->IsAutoRotationAllowed();
 }
@@ -678,7 +716,7 @@ bool CanHandleToggleResizeLockMenu() {
 }
 
 bool CanHandleToggleFloatingWindow() {
-  return features::IsWindowControlMenuEnabled() &&
+  return chromeos::wm::features::IsFloatWindowEnabled() &&
          !Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
@@ -732,7 +770,7 @@ void HandleToggleSystemTrayBubbleInternal(bool focus_message_center) {
     tray->ActivateBubble();
 
     if (focus_message_center)
-      tray->FocusFirstNotification();
+      tray->FocusMessageCenter(false, true);
   }
 }
 
@@ -778,7 +816,7 @@ bool CanHandleToggleAppList(
     // toggle the AppList in that case. Check for VKEY_SHIFT because this is
     // used to show fullscreen app list.
     if (key != ui::VKEY_LWIN && key != ui::VKEY_SHIFT &&
-        key != ui::VKEY_BROWSER_SEARCH) {
+        key != ui::VKEY_BROWSER_SEARCH && key != ui::VKEY_ALL_APPLICATIONS) {
       return false;
     }
   }
@@ -815,11 +853,13 @@ void HandleToggleAppList(const ui::Accelerator& accelerator,
 }
 
 void HandleToggleFloating() {
-  DCHECK(features::IsWindowControlMenuEnabled());
+  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
   // Floating is currently not supported for tablet mode, see timeline here:
   // https://crbug.com/1240411
   DCHECK(!Shell::Get()->tablet_mode_controller()->InTabletMode());
-  accelerators::ToggleFloating();
+  aura::Window* window = ash::window_util::GetActiveWindow();
+  if (window)
+    chromeos::ToggleFloating(window);
   base::RecordAction(UserMetricsAction("Accel_Toggle_Floating"));
 }
 
@@ -890,7 +930,11 @@ void HandleWindowSnap(AcceleratorAction action) {
                           : WM_EVENT_CYCLE_SNAP_SECONDARY);
   aura::Window* active_window = window_util::GetActiveWindow();
   DCHECK(active_window);
-  WindowState::Get(active_window)->OnWMEvent(&event);
+
+  auto* window_state = WindowState::Get(active_window);
+  window_state->set_snap_action_source(
+      WindowSnapActionSource::kKeyboardShortcutToSnap);
+  window_state->OnWMEvent(&event);
 }
 
 void HandleWindowMinimize() {
@@ -995,44 +1039,44 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
       AssistantAllowedState::ALLOWED)) {
     case AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
-      ShowToast(kAssistantErrorToastId,
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_SECONDARY_USER_TOAST_MESSAGE));
       return;
     case AssistantAllowedState::DISALLOWED_BY_LOCALE:
       // Show a toast if the Assistant is disabled due to unsupported
       // locales.
-      ShowToast(kAssistantErrorToastId,
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
       return;
     case AssistantAllowedState::DISALLOWED_BY_POLICY:
       // Show a toast if the Assistant is disabled due to enterprise policy.
-      ShowToast(kAssistantErrorToastId,
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_BY_POLICY_MESSAGE));
       return;
     case AssistantAllowedState::DISALLOWED_BY_DEMO_MODE:
       // Show a toast if the Assistant is disabled due to being in Demo
       // Mode.
-      ShowToast(kAssistantErrorToastId,
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_IN_DEMO_MODE_MESSAGE));
       return;
     case AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION:
       // Show a toast if the Assistant is disabled due to being in public
       // session.
-      ShowToast(kAssistantErrorToastId,
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_IN_PUBLIC_SESSION_MESSAGE));
       return;
     case AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
-      ShowToast(kAssistantErrorToastId,
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_IN_GUEST_MESSAGE));
       return;
     case AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
-      ShowToast(kAssistantErrorToastId,
+      ShowToast(kAssistantErrorToastId, ToastCatalogName::kAssistantError,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_BY_ACCOUNT_MESSAGE));
       return;
@@ -1122,13 +1166,9 @@ void HandleToggleCapsLock() {
   ime_controller->SetCapsLockEnabled(!ime_controller->IsCapsLockEnabled());
 }
 
-bool CanHandleToggleClipboardHistory() {
-  return chromeos::features::IsClipboardHistoryEnabled();
-}
-
 void HandleToggleClipboardHistory() {
   DCHECK(Shell::Get()->clipboard_history_controller());
-  Shell::Get()->clipboard_history_controller()->ShowMenuByAccelerator();
+  Shell::Get()->clipboard_history_controller()->ToggleMenuShownByAccelerator();
 }
 
 bool CanHandleToggleDictation() {
@@ -1847,6 +1887,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case DESKS_ACTIVATE_7:
     case DESKS_TOGGLE_ASSIGN_TO_ALL_DESKS:
       return true;
+    case DEBUG_DUMP_CALENDAR_MODEL:
     case DEBUG_KEYBOARD_BACKLIGHT_TOGGLE:
     case DEBUG_MICROPHONE_MUTE_TOGGLE:
     case DEBUG_PRINT_LAYER_HIERARCHY:
@@ -1911,12 +1952,14 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return CanHandleToggleAppList(
           accelerator, previous_accelerator,
           accelerator_history_->currently_pressed_keys());
+    case TOGGLE_CALENDAR:
+      return features::IsCalendarViewEnabled();
     case TOGGLE_CAPS_LOCK:
       return CanHandleToggleCapsLock(
           accelerator, previous_accelerator,
           accelerator_history_->currently_pressed_keys());
     case TOGGLE_CLIPBOARD_HISTORY:
-      return CanHandleToggleClipboardHistory();
+      return true;
     case TOGGLE_DICTATION:
       return CanHandleToggleDictation();
     case TOGGLE_DOCKED_MAGNIFIER:
@@ -1939,6 +1982,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return CanHandleWindowSnap();
     case FOCUS_PIP:
       return !!FindPipWidget();
+    case FOCUS_CAMERA_PREVIEW:
+      return CanHandleFocusCameraPreview();
     case MINIMIZE_TOP_WINDOW_ON_BACK:
       return window_util::ShouldMinimizeTopWindowOnBack();
     case TAKE_PARTIAL_SCREENSHOT:
@@ -2084,6 +2129,7 @@ void AcceleratorControllerImpl::PerformAction(
     case DESKS_TOGGLE_ASSIGN_TO_ALL_DESKS:
       HandleToggleAssignToAllDesks();
       break;
+    case DEBUG_DUMP_CALENDAR_MODEL:
     case DEBUG_KEYBOARD_BACKLIGHT_TOGGLE:
     case DEBUG_MICROPHONE_MUTE_TOGGLE:
     case DEBUG_PRINT_LAYER_HIERARCHY:
@@ -2135,13 +2181,18 @@ void AcceleratorControllerImpl::PerformAction(
     case FOCUS_SHELF:
       HandleFocusShelf();
       break;
+    case FOCUS_CAMERA_PREVIEW:
+      HandleFocusCameraPreview();
+      break;
     case FOCUS_PIP:
       base::RecordAction(base::UserMetricsAction("Accel_Focus_Pip"));
       accelerators::FocusPip();
       break;
     case KEYBOARD_BACKLIGHT_TOGGLE:
-      base::RecordAction(base::UserMetricsAction("Accel_Keyboard_Backlight"));
-      accelerators::ToggleKeyboardBacklight();
+      if (ash::features::IsKeyboardBacklightToggleEnabled()) {
+        base::RecordAction(base::UserMetricsAction("Accel_Keyboard_Backlight"));
+        accelerators::ToggleKeyboardBacklight();
+      }
       break;
     case KEYBOARD_BRIGHTNESS_DOWN: {
       KeyboardBrightnessControlDelegate* delegate =
@@ -2375,6 +2426,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case TOGGLE_APP_LIST_FULLSCREEN:
       HandleToggleAppList(accelerator, kSearchKeyFullscreen);
+      break;
+    case TOGGLE_CALENDAR:
+      accelerators::ToggleCalendar();
       break;
     case TOGGLE_CAPS_LOCK:
       HandleToggleCapsLock();
@@ -2663,10 +2717,14 @@ void AcceleratorControllerImpl::ParseSideVolumeButtonLocationInfo() {
                << location_info;
     return;
   }
-  info_in_dict->GetString(kVolumeButtonRegion,
-                          &side_volume_button_location_.region);
-  info_in_dict->GetString(kVolumeButtonSide,
-                          &side_volume_button_location_.side);
+
+  const std::string* region = info_in_dict->FindStringKey(kVolumeButtonRegion);
+  if (region)
+    side_volume_button_location_.region = *region;
+
+  const std::string* side = info_in_dict->FindStringKey(kVolumeButtonSide);
+  if (side)
+    side_volume_button_location_.side = *side;
 }
 
 void AcceleratorControllerImpl::UpdateTabletModeVolumeAdjustHistogram() {

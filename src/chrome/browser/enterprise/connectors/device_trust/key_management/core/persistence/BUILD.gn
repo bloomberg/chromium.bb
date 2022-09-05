@@ -37,6 +37,13 @@ source_set("persistence") {
       "linux_key_persistence_delegate.cc",
       "linux_key_persistence_delegate.h",
     ]
+    deps += [
+      "//build:branding_buildflags",
+      "//chrome/browser/enterprise/connectors/device_trust/key_management/core:constants",
+      "//third_party/abseil-cpp:absl",
+    ]
+
+    friend = [ ":unit_tests" ]
   }
 }
 
@@ -64,4 +71,18 @@ source_set("test_support") {
     "//chrome/browser/enterprise/connectors/device_trust/key_management/core",
     "//crypto",
   ]
+}
+
+if (is_linux) {
+  source_set("unit_tests") {
+    testonly = true
+    sources = [ "linux_key_persistence_delegate_unittest.cc" ]
+
+    deps = [
+      ":persistence",
+      "//base",
+      "//components/policy/proto",
+      "//testing/gtest",
+    ]
+  }
 }

@@ -54,6 +54,8 @@ typedef struct AudioNLMSContext {
 
     AVFrame *frame[2];
 
+    int anlmf;
+
     AVFloatDSPContext *fdsp;
 } AudioNLMSContext;
 
@@ -74,7 +76,7 @@ static const AVOption anlms_options[] = {
     { NULL }
 };
 
-AVFILTER_DEFINE_CLASS(anlms);
+AVFILTER_DEFINE_CLASS_EXT(anlms, "anlm(f|s)", anlms_options);
 
 static int query_formats(AVFilterContext *ctx)
 {
@@ -130,6 +132,8 @@ static float process_sample(AudioNLMSContext *s, float input, float desired,
 
     norm = s->eps + sum;
     b = mu * e / norm;
+    if (s->anlmf)
+        b *= 4.f * e * e;
 
     memcpy(tmp, delay + offset, order * sizeof(float));
 
@@ -152,8 +156,8 @@ static int process_channels(AVFilterContext *ctx, void *arg, int jobnr, int nb_j
 {
     AudioNLMSContext *s = ctx->priv;
     AVFrame *out = arg;
-    const int start = (out->channels * jobnr) / nb_jobs;
-    const int end = (out->channels * (jobnr+1)) / nb_jobs;
+    const int start = (out->ch_layout.nb_channels * jobnr) / nb_jobs;
+    const int end = (out->ch_layout.nb_channels * (jobnr+1)) / nb_jobs;
 
     for (int c = start; c < end; c++) {
         const float *input = (const float *)s->frame[0]->extended_data[c];
@@ -164,8 +168,11 @@ static int process_channels(AVFilterContext *ctx, void *arg, int jobnr, int nb_j
         int *offset = (int *)s->offset->extended_data[c];
         float *output = (float *)out->extended_data[c];
 
-        for (int n = 0; n < out->nb_samples; n++)
+        for (int n = 0; n < out->nb_samples; n++) {
             output[n] = process_sample(s, input[n], desired[n], delay, coeffs, tmp, offset);
+            if (ctx->is_disabled)
+                output[n] = input[n];
+        }
     }
 
     return 0;
@@ -204,7 +211,7 @@ static int activate(AVFilterContext *ctx)
         }
 
         ff_filter_execute(ctx, process_channels, out, NULL,
-                          FFMIN(ctx->outputs[0]->channels, ff_filter_get_nb_threads(ctx)));
+                          FFMIN(ctx->outputs[0]->ch_layout.nb_channels, ff_filter_get_nb_threads(ctx)));
 
         out->pts = s->frame[0]->pts;
 
@@ -241,6 +248,7 @@ static int config_output(AVFilterLink *outlink)
     AVFilterContext *ctx = outlink->src;
     AudioNLMSContext *s = ctx->priv;
 
+    s->anlmf = !strcmp(ctx->filter->name, "anlmf");
     s->kernel_size = FFALIGN(s->order, 16);
 
     if (!s->offset)
@@ -309,6 +317,23 @@ const AVFilter ff_af_anlms = {
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
     FILTER_QUERY_FUNC(query_formats),
-    .flags          = AVFILTER_FLAG_SLICE_THREADS,
+    .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
+                      AVFILTER_FLAG_SLICE_THREADS,
+    .process_command = ff_filter_process_command,
+};
+
+const AVFilter ff_af_anlmf = {
+    .name           = "anlmf",
+    .description    = NULL_IF_CONFIG_SMALL("Apply Normalized Least-Mean-Fourth algorithm to first audio stream."),
+    .priv_size      = sizeof(AudioNLMSContext),
+    .priv_class     = &anlms_class,
+    .init           = init,
+    .uninit         = uninit,
+    .activate       = activate,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
+    FILTER_QUERY_FUNC(query_formats),
+    .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
+                      AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

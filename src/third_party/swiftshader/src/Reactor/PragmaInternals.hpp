@@ -19,7 +19,8 @@
 
 namespace rr {
 
-bool getPragmaState(PragmaBooleanOption option);
+bool getPragmaState(BooleanPragmaOption option);
+int getPragmaState(IntegerPragmaOption option);
 
 }  // namespace rr
 

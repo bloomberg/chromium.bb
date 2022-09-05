@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -263,7 +264,7 @@ HostGpuMemoryBufferManager::CreateGpuMemoryBuffer(
       // TileManager can set to cancel this wait.
       base::WaitableEvent* waitables[] = {&wait_event, shutdown_event};
       size_t index =
-          base::WaitableEvent::WaitMany(waitables, base::size(waitables));
+          base::WaitableEvent::WaitMany(waitables, std::size(waitables));
       if (index == 1)
         cancelled->data = true;
     } else {

@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -41,6 +42,7 @@ const char kTraceBufferSizeInKb[] = "trace_buffer_size_in_kb";
 const char kEnableSystraceParam[] = "enable_systrace";
 const char kSystraceEventsParam[] = "enable_systrace_events";
 const char kEnableArgumentFilterParam[] = "enable_argument_filter";
+const char kEnableEventPackageNameFilterParam[] = "enable_package_name_filter";
 
 // String parameters that is used to parse memory dump config in trace config
 // string.
@@ -155,7 +157,7 @@ void TraceConfig::ProcessFilterConfig::InitializeFromConfigDict(
   const Value* value = dict.FindListKey(kIncludedProcessesParam);
   if (!value)
     return;
-  for (auto& pid_value : value->GetList()) {
+  for (auto& pid_value : value->GetListDeprecated()) {
     if (pid_value.is_int())
       included_process_ids_.insert(pid_value.GetInt());
   }
@@ -230,7 +232,7 @@ bool TraceConfig::EventFilterConfig::GetArgAsSet(
   const Value* list = args_.FindListPath(key);
   if (!list)
     return false;
-  for (const Value& item : list->GetList()) {
+  for (const Value& item : list->GetListDeprecated()) {
     if (item.is_string())
       out_set->insert(item.GetString());
   }
@@ -300,6 +302,7 @@ TraceConfig& TraceConfig::operator=(const TraceConfig& rhs) {
   enable_argument_filter_ = rhs.enable_argument_filter_;
   category_filter_ = rhs.category_filter_;
   process_filter_config_ = rhs.process_filter_config_;
+  enable_event_package_name_filter_ = rhs.enable_event_package_name_filter_;
   memory_dump_config_ = rhs.memory_dump_config_;
   event_filters_ = rhs.event_filters_;
   histogram_names_ = rhs.histogram_names_;
@@ -331,9 +334,11 @@ bool TraceConfig::IsCategoryGroupEnabled(
 }
 
 void TraceConfig::Merge(const TraceConfig& config) {
-  if (record_mode_ != config.record_mode_
-      || enable_systrace_ != config.enable_systrace_
-      || enable_argument_filter_ != config.enable_argument_filter_) {
+  if (record_mode_ != config.record_mode_ ||
+      enable_systrace_ != config.enable_systrace_ ||
+      enable_argument_filter_ != config.enable_argument_filter_ ||
+      enable_event_package_name_filter_ !=
+          config.enable_event_package_name_filter_) {
     DLOG(ERROR) << "Attempting to merge trace config with a different "
                 << "set of options.";
   }
@@ -356,6 +361,7 @@ void TraceConfig::Clear() {
   trace_buffer_size_in_kb_ = 0;
   enable_systrace_ = false;
   enable_argument_filter_ = false;
+  enable_event_package_name_filter_ = false;
   category_filter_.Clear();
   memory_dump_config_.Clear();
   process_filter_config_.Clear();
@@ -370,6 +376,7 @@ void TraceConfig::InitializeDefault() {
   trace_buffer_size_in_kb_ = 0;
   enable_systrace_ = false;
   enable_argument_filter_ = false;
+  enable_event_package_name_filter_ = false;
 }
 
 void TraceConfig::InitializeFromConfigDict(const Value& dict) {
@@ -393,6 +400,8 @@ void TraceConfig::InitializeFromConfigDict(const Value& dict) {
   enable_systrace_ = dict.FindBoolKey(kEnableSystraceParam).value_or(false);
   enable_argument_filter_ =
       dict.FindBoolKey(kEnableArgumentFilterParam).value_or(false);
+  enable_event_package_name_filter_ =
+      dict.FindBoolKey(kEnableEventPackageNameFilterParam).value_or(false);
 
   category_filter_.InitializeFromConfigDict(dict);
   process_filter_config_.InitializeFromConfigDict(dict);
@@ -418,7 +427,7 @@ void TraceConfig::InitializeFromConfigDict(const Value& dict) {
   if (enable_systrace_) {
     const Value* systrace_events = dict.FindListKey(kSystraceEventsParam);
     if (systrace_events) {
-      for (const Value& value : systrace_events->GetList())
+      for (const Value& value : systrace_events->GetListDeprecated())
         systrace_events_.insert(value.GetString());
     }
   }
@@ -443,6 +452,7 @@ void TraceConfig::InitializeFromStrings(StringPiece category_filter_string,
   enable_systrace_ = false;
   systrace_events_.clear();
   enable_argument_filter_ = false;
+  enable_event_package_name_filter_ = false;
   if (!trace_options_string.empty()) {
     std::vector<std::string> split =
         SplitString(trace_options_string, ",", TRIM_WHITESPACE, SPLIT_WANT_ALL);
@@ -494,7 +504,7 @@ void TraceConfig::SetMemoryDumpConfigFromConfigDict(
   const Value* allowed_modes_list =
       memory_dump_config.FindListKey(kAllowedDumpModesParam);
   if (allowed_modes_list) {
-    for (const Value& item : allowed_modes_list->GetList()) {
+    for (const Value& item : allowed_modes_list->GetListDeprecated()) {
       DCHECK(item.is_string());
       memory_dump_config_.allowed_dump_modes.insert(
           StringToMemoryDumpLevelOfDetail(item.GetString()));
@@ -508,7 +518,7 @@ void TraceConfig::SetMemoryDumpConfigFromConfigDict(
   memory_dump_config_.triggers.clear();
   const Value* trigger_list = memory_dump_config.FindListKey(kTriggersParam);
   if (trigger_list) {
-    for (const Value& trigger : trigger_list->GetList()) {
+    for (const Value& trigger : trigger_list->GetListDeprecated()) {
       if (!trigger.is_dict())
         continue;
 
@@ -567,7 +577,7 @@ void TraceConfig::SetProcessFilterConfig(const ProcessFilterConfig& config) {
 void TraceConfig::SetHistogramNamesFromConfigList(
     const Value& histogram_names) {
   histogram_names_.clear();
-  for (const Value& value : histogram_names.GetList())
+  for (const Value& value : histogram_names.GetListDeprecated())
     histogram_names_.insert(value.GetString());
 }
 
@@ -575,7 +585,7 @@ void TraceConfig::SetEventFiltersFromConfigList(
     const Value& category_event_filters) {
   event_filters_.clear();
 
-  for (const Value& event_filter : category_event_filters.GetList()) {
+  for (const Value& event_filter : category_event_filters.GetListDeprecated()) {
     if (!event_filter.is_dict())
       continue;
 
@@ -599,6 +609,9 @@ Value TraceConfig::ToValue() const {
     dict.SetIntKey(kTraceBufferSizeInEvents, trace_buffer_size_in_events_);
   if (trace_buffer_size_in_kb_ > 0)
     dict.SetIntKey(kTraceBufferSizeInKb, trace_buffer_size_in_kb_);
+
+  dict.SetBoolKey(kEnableEventPackageNameFilterParam,
+                  enable_event_package_name_filter_);
 
   category_filter_.ToDict(&dict);
   process_filter_config_.ToDict(&dict);

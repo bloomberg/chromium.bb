@@ -22,6 +22,8 @@ component("fido") {
     "cable/websocket_adapter.cc",
     "cable/websocket_adapter.h",
     "cbor_extract.cc",
+    "discoverable_credential_metadata.cc",
+    "discoverable_credential_metadata.h",
     "ed25519_public_key.cc",
     "ed25519_public_key.h",
     "features.cc",
@@ -195,6 +197,8 @@ component("fido") {
       "virtual_ctap2_device.h",
       "virtual_fido_device.cc",
       "virtual_fido_device.h",
+      "virtual_fido_device_authenticator.cc",
+      "virtual_fido_device_authenticator.h",
       "virtual_u2f_device.cc",
       "virtual_u2f_device.h",
     ]
@@ -256,10 +260,12 @@ component("fido") {
     ]
   }
 
-  if (is_chromeos_ash) {
+  if (is_chromeos) {
     sources += [
       "cros/authenticator.cc",
       "cros/authenticator.h",
+      "cros/credential_store.cc",
+      "cros/credential_store.h",
       "cros/discovery.cc",
       "cros/discovery.h",
     ]
@@ -299,6 +305,7 @@ static_library("cablev2_authenticator") {
     ":fido",
     "//components/cbor",
     "//components/device_event_log",
+    "//content/public/common",  # for authenticator.mojom
     "//services/network/public/mojom",
   ]
 }
@@ -313,7 +320,9 @@ static_library("cablev2_test_util") {
     ":cablev2_authenticator",
     ":fido",
     "//components/cbor",
+    "//content/public/common",  # for authenticator.mojom
     "//crypto",
+    "//net/traffic_annotation:test_support",
     "//services/network:test_support",
     "//services/network/public/mojom",
   ]

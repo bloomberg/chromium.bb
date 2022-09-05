@@ -25,6 +25,10 @@ class CreditCardCVCAuthenticatorTest;
 class CreditCard;
 class PersonalDataManager;
 
+namespace metrics {
+class AutofillMetricsBaseTest;
+}
+
 namespace payments {
 
 // Retrieves the full card details, including the pan and the cvc.
@@ -81,7 +85,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
     virtual void OnUnmaskVerificationResult(
         AutofillClient::PaymentsRpcResult result) = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Returns whether or not the user, while on the CVC prompt, should be
     // offered to switch to FIDO authentication for card unmasking. This will
     // always be false for Desktop since FIDO authentication is offered as a
@@ -130,9 +134,9 @@ class FullCardRequest final : public CardUnmaskDelegate {
   // Delegate::OnFullCardRequestFailed(). Only one request should be active at a
   // time. |last_committed_url_origin| is the full origin of the url where the
   // card retrieval happens. |context_token| is used for providing context of
-  // the request to the server to link related
-  // requests. |last_committed_url_origin| and |context_token| are populated if
-  // the full card request is for a virtual card.
+  // the request to the server to link related requests.
+  // |last_committed_url_origin| and |context_token| are populated if the full
+  // card request is for a virtual card.
   //
   // If the card is local, has a non-empty GUID, and the user has updated its
   // expiration date, then this function will write the new information to
@@ -162,6 +166,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
  private:
   friend class autofill::BrowserAutofillManagerTest;
   friend class autofill::AutofillMetricsTest;
+  friend class autofill::metrics::AutofillMetricsBaseTest;
   friend class autofill::CreditCardAccessManagerTest;
   friend class autofill::CreditCardCVCAuthenticatorTest;
 

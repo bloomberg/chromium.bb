@@ -9,6 +9,7 @@
 #include <ostream>
 
 #include "base/metrics/histogram.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/sync/engine/cancelation_signal.h"
 #include "components/sync/engine/net/url_translator.h"
@@ -142,7 +143,7 @@ void ServerConnectionManager::SetServerResponse(
 
 void ServerConnectionManager::NotifyStatusChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : listeners_) {
+  for (ServerConnectionEventListener& observer : listeners_) {
     observer.OnServerConnectionEvent(
         ServerConnectionEvent(server_response_.server_status));
   }
@@ -150,9 +151,11 @@ void ServerConnectionManager::NotifyStatusChanged() {
 
 HttpResponse ServerConnectionManager::PostBufferWithCachedAuth(
     const std::string& buffer_in,
+    bool allow_batching,
     std::string* buffer_out) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  HttpResponse http_response = PostBuffer(buffer_in, access_token_, buffer_out);
+  HttpResponse http_response =
+      PostBuffer(buffer_in, access_token_, allow_batching, buffer_out);
   SetServerResponse(http_response);
   return http_response;
 }

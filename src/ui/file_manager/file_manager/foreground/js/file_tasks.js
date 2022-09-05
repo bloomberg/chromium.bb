@@ -30,6 +30,17 @@ import {FileManagerUI} from './ui/file_manager_ui.js';
 import {FilesConfirmDialog} from './ui/files_confirm_dialog.js';
 
 /**
+ * Office file handlers UMA values (must be consistent with OfficeFileHandler in
+ * tools/metrics/histograms/enums.xml).
+ * @const @enum {number}
+ */
+const OfficeFileHandlersHistogramValues = {
+  OTHER: 0,
+  WEB_DRIVE_OFFICE: 1,
+  QUICK_OFFICE: 2,
+};
+
+/**
  * Represents a collection of available tasks to execute for a specific list
  * of entries.
  */
@@ -229,18 +240,6 @@ export class FileTasks {
   }
 
   /**
-   * Records UMA statistics for file types being shared in Share action.
-   * @param {!Array<!FileEntry>} entries File entries to be shared.
-   */
-  static recordSharingFileTypesUMA_(entries) {
-    for (const entry of entries) {
-      metrics.recordEnum(
-          'Share.FileType', FileTasks.getViewFileType(entry),
-          FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
-    }
-  }
-
-  /**
    * Records trial of opening file grouped by extensions.
    *
    * @param {!VolumeManager} volumeManager
@@ -269,6 +268,82 @@ export class FileTasks {
           volumeManager, 'ViewingRootType', rootType,
           VolumeManagerCommon.RootTypesForUMA);
     }
+  }
+
+  /**
+   * Records the elapsed time for mounting a ZIP file as a ZipMountTime
+   * histogram value.
+   *
+   * @param {?VolumeManagerCommon.RootType} rootType The type of the root where
+   *     the ZIP file has been mounted from.
+   * @param {number} time Time to be recorded in milliseconds.
+   */
+  static recordZipMountTimeUMA_(rootType, time) {
+    let root;
+    switch (rootType) {
+      case VolumeManagerCommon.RootType.MY_FILES:
+      case VolumeManagerCommon.RootType.DOWNLOADS:
+        root = 'MyFiles';
+        break;
+      case VolumeManagerCommon.RootType.DRIVE:
+        root = 'Drive';
+        break;
+      default:
+        root = 'Other';
+    }
+    metrics.recordTime(`ZipMountTime.${root}`, time);
+  }
+
+  /**
+   * Records trial of opening Office file grouped by file handlers.
+   *
+   * @param {!VolumeManager} volumeManager
+   * @param {!Array<!Entry>} entries The entries to be opened.
+   * @param {?VolumeManagerCommon.RootType} rootType The type of the root where
+   *     entries are being opened.
+   * @param {?chrome.fileManagerPrivate.FileTask} task FileTask.
+   * @private
+   */
+  static recordOfficeFileHandlerUMA_(volumeManager, entries, rootType, task) {
+    if (!task) {
+      return;
+    }
+
+    // This UMA is only applicable to Office files.
+    if (!entries.every(entry => hasOfficeExtension(entry))) {
+      return;
+    }
+
+    let histogramName = 'OfficeFiles.FileHandler';
+    switch (rootType) {
+      case VolumeManagerCommon.RootType.DRIVE:
+        histogramName += '.Drive';
+        break;
+      default:
+        histogramName += '.NotDrive';
+    }
+
+    if (FileTasks.isOffline_(volumeManager)) {
+      histogramName += '.Offline';
+    } else {
+      histogramName += '.Online';
+    }
+
+    let fileHandler = OfficeFileHandlersHistogramValues.OTHER;
+    switch (parseActionId(task.descriptor.actionId)) {
+      case 'open-web-drive-office-word':
+      case 'open-web-drive-office-excel':
+      case 'open-web-drive-office-powerpoint':
+        fileHandler = OfficeFileHandlersHistogramValues.WEB_DRIVE_OFFICE;
+        break;
+      case 'qo_documents':
+        fileHandler = OfficeFileHandlersHistogramValues.QUICK_OFFICE;
+        break;
+    }
+
+    metrics.recordEnum(
+        histogramName, fileHandler,
+        Object.keys(OfficeFileHandlersHistogramValues).length);
   }
 
   /**
@@ -351,15 +426,27 @@ export class FileTasks {
         } else if (parsedActionId === 'open-hosted-gdoc') {
           task.iconType = 'gdoc';
           task.title = loadTimeData.getString('TASK_OPEN_GDOC');
-          task.verb = undefined;
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
         } else if (parsedActionId === 'open-hosted-gsheet') {
           task.iconType = 'gsheet';
           task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
-          task.verb = undefined;
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
         } else if (parsedActionId === 'open-hosted-gslides') {
           task.iconType = 'gslides';
           task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
-          task.verb = undefined;
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
+        } else if (parsedActionId === 'open-web-drive-office-word') {
+          task.iconType = 'gdoc';
+          task.title = loadTimeData.getString('TASK_OPEN_GDOC');
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
+        } else if (parsedActionId === 'open-web-drive-office-excel') {
+          task.iconType = 'gsheet';
+          task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
+        } else if (parsedActionId === 'open-web-drive-office-powerpoint') {
+          task.iconType = 'gslides';
+          task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
         } else if (parsedActionId === 'install-linux-package') {
           task.iconType = 'crostini';
           task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
@@ -407,7 +494,7 @@ export class FileTasks {
             verbButtonLabel = 'OPEN_WITH_VERB_BUTTON_LABEL';
             break;
           default:
-            console.error('Invalid task verb: ' + task.verb + '.');
+            console.error('Invalid task verb: ' + task.verb);
         }
         if (verbButtonLabel) {
           task.label = loadTimeData.getStringF(verbButtonLabel, task.title);
@@ -467,7 +554,7 @@ export class FileTasks {
         isMyFiles ? 'CONFIRM_MOVE_BUTTON_LABEL' : 'CONFIRM_COPY_BUTTON_LABEL'));
     dialog.show(isMyFiles ? moveMessage : copyMessage, async () => {
       if (!fileTransferController) {
-        console.error('FileTransferController not set');
+        console.warn('FileTransferController not set');
         return;
       }
 
@@ -492,6 +579,9 @@ export class FileTasks {
     FileTasks.recordViewingFileTypeUMA_(this.volumeManager_, this.entries_);
     FileTasks.recordViewingRootTypeUMA_(
         this.volumeManager_, this.directoryModel_.getCurrentRootType());
+    FileTasks.recordOfficeFileHandlerUMA_(
+        this.volumeManager_, this.entries_,
+        this.directoryModel_.getCurrentRootType(), this.defaultTask_);
     this.executeDefaultInternal_(opt_callback);
   }
 
@@ -612,6 +702,9 @@ export class FileTasks {
     FileTasks.recordViewingFileTypeUMA_(this.volumeManager_, this.entries_);
     FileTasks.recordViewingRootTypeUMA_(
         this.volumeManager_, this.directoryModel_.getCurrentRootType());
+    FileTasks.recordOfficeFileHandlerUMA_(
+        this.volumeManager_, this.entries_,
+        this.directoryModel_.getCurrentRootType(), task);
     this.executeInternal_(task);
   }
 
@@ -624,7 +717,7 @@ export class FileTasks {
   executeInternal_(task) {
     const onFileManagerPrivateExecuteTask = result => {
       if (chrome.runtime.lastError) {
-        console.error(
+        console.warn(
             'Unable to execute task: ' + chrome.runtime.lastError.message);
         return;
       }
@@ -827,6 +920,20 @@ export class FileTasks {
     item.type = ProgressItemType.MOUNT_ARCHIVE;
     item.message = strf('ARCHIVE_MOUNT_MESSAGE', filename);
 
+    item.cancelCallback = async () => {
+      // Remove progress panel.
+      item.state = ProgressItemState.CANCELED;
+      this.progressCenter_.updateItem(item);
+
+      // Cancel archive mounting.
+      try {
+        await this.volumeManager_.cancelMounting(url);
+      } catch (error) {
+        console.warn('Cannot cancel archive (redacted):', error);
+        console.log(`Cannot cancel archive '${url}':`, error);
+      }
+    };
+
     // Display progress panel.
     item.state = ProgressItemState.PROGRESSING;
     this.progressCenter_.updateItem(item);
@@ -889,7 +996,11 @@ export class FileTasks {
    */
   async mountArchiveAndChangeDirectory_(tracker, url) {
     try {
+      const startTime = Date.now();
       const volumeInfo = await this.mountArchive_(url);
+      // On mountArchive_ success, record mount time UMA.
+      FileTasks.recordZipMountTimeUMA_(
+          this.directoryModel_.getCurrentRootType(), Date.now() - startTime);
 
       if (tracker.hasChanged) {
         return;
@@ -903,12 +1014,13 @@ export class FileTasks {
 
         this.directoryModel_.changeDirectoryEntry(displayRoot);
       } catch (error) {
-        console.error(`Cannot resolve display root after mounting: ${
-            error.stack || error}`);
+        console.error('Cannot resolve display root after mounting:', error);
       }
     } catch (error) {
-      // No need to display an error message if user canceled.
-      if (error === FilesPasswordDialog.USER_CANCELLED) {
+      // No need to display an error message if user canceled mounting or
+      // canceled the password prompt.
+      if (error === FilesPasswordDialog.USER_CANCELLED ||
+          error === VolumeManagerCommon.VolumeError.CANCELLED) {
         return;
       }
 
@@ -923,7 +1035,8 @@ export class FileTasks {
       item.state = ProgressItemState.ERROR;
       this.progressCenter_.updateItem(item);
 
-      console.error(`Cannot mount '${url}': ${error.stack || error}`);
+      console.warn('Cannot mount (redacted):', error);
+      console.debug(`Cannot mount '${url}':`, error);
     }
   }
 
@@ -935,6 +1048,12 @@ export class FileTasks {
     const tracker = this.directoryModel_.createDirectoryChangeTracker();
     tracker.start();
     try {
+      this.entries_.forEach(entry => entry.getMetadata(metadata => {
+        const extension = entry.name.split('.').pop().toLowerCase();
+        metrics.recordSmallCount(
+            `ArchiveSize.${extension}`,
+            Math.ceil(metadata.size / 104857600));  // Each unit = 100MiB
+      }));
       // TODO(mtomasz): Move conversion from entry to url to custom bindings.
       // crbug.com/345527.
       const urls = util.entriesToURLs(this.entries_);
@@ -1236,6 +1355,13 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
 ]);
 
 /**
+ * List of Office file extensions
+ * @const {Set<string>}
+ */
+const OFFICE_EXTENSIONS =
+    new Set(['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']);
+
+/**
  * The number of menu-item entries in the top level menu.
  * @const {number}
  */
@@ -1269,6 +1395,14 @@ FileTasks.ComboButtonItem;
  */
 function isFilesAppId(appId) {
   return appId === LEGACY_FILES_EXTENSION_ID || appId === SWA_APP_ID;
+}
+
+/**
+ * @param {!Entry} entry
+ * @return {boolean}
+ */
+function hasOfficeExtension(entry) {
+  return OFFICE_EXTENSIONS.has(FileType.getExtension(entry));
 }
 
 /**

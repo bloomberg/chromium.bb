@@ -4,10 +4,13 @@
 
 #include "ash/webui/eche_app_ui/eche_notification_click_handler.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
+#include "ash/system/eche/eche_tray.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace ash {
 namespace eche_app {
@@ -39,13 +42,14 @@ void EcheNotificationClickHandler::HandleNotificationClick(
     int64_t notification_id,
     const phonehub::Notification::AppMetadata& app_metadata) {
   const LaunchAppHelper::AppLaunchProhibitedReason prohibited_reason =
-      launch_app_helper_->checkAppLaunchProhibitedReason(
+      launch_app_helper_->CheckAppLaunchProhibitedReason(
           feature_status_provider_->GetStatus());
   switch (prohibited_reason) {
     case LaunchAppHelper::AppLaunchProhibitedReason::kNotProhibited:
       launch_app_helper_->LaunchEcheApp(
           notification_id, app_metadata.package_name,
-          app_metadata.visible_app_name, app_metadata.user_id);
+          app_metadata.visible_app_name, app_metadata.user_id,
+          app_metadata.icon);
       break;
     case LaunchAppHelper::AppLaunchProhibitedReason::kDisabledByScreenLock:
       launch_app_helper_->ShowNotification(
@@ -54,14 +58,6 @@ void EcheNotificationClickHandler::HandleNotificationClick(
               LaunchAppHelper::NotificationInfo::Category::kNative,
               LaunchAppHelper::NotificationInfo::NotificationType::
                   kScreenLock));
-      break;
-    case LaunchAppHelper::AppLaunchProhibitedReason::kDisabledByPhone:
-      launch_app_helper_->ShowNotification(
-          app_metadata.visible_app_name, /* message= */ absl::nullopt,
-          std::make_unique<LaunchAppHelper::NotificationInfo>(
-              LaunchAppHelper::NotificationInfo::Category::kNative,
-              LaunchAppHelper::NotificationInfo::NotificationType::
-                  kDisabledByPhone));
       break;
   }
 }
@@ -92,16 +88,14 @@ void EcheNotificationClickHandler::OnFeatureStatusChanged() {
 bool EcheNotificationClickHandler::IsClickable(FeatureStatus status) {
   return status == FeatureStatus::kDisconnected ||
          status == FeatureStatus::kConnecting ||
-         status == FeatureStatus::kConnected ||
-         status == FeatureStatus::kNotEnabledByPhone;
+         status == FeatureStatus::kConnected;
 }
 
 // Checks FeatureStatus that eche feature is not able to use.
 bool EcheNotificationClickHandler::NeedClose(FeatureStatus status) {
   return status == FeatureStatus::kIneligible ||
          status == FeatureStatus::kDisabled ||
-         status == FeatureStatus::kDependentFeature ||
-         status == FeatureStatus::kNotEnabledByPhone;
+         status == FeatureStatus::kDependentFeature;
 }
 }  // namespace eche_app
 }  // namespace ash

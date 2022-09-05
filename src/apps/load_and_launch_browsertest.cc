@@ -6,8 +6,10 @@
 // The two cases are when chrome is running and another process uses the switch
 // and when chrome is started from scratch.
 
+#include <iterator>
+
 #include "apps/switches.h"
-#include "base/cxx17_backports.h"
+#include "base/command_line.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_switches.h"
@@ -47,7 +49,7 @@ const char* kSwitchesToCopy[] = {
 
 // TODO(jackhou): Enable this test once it works on OSX. It currently does not
 // work for the same reason --app-id doesn't. See http://crbug.com/148465
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_LoadAndLaunchAppChromeRunning \
         DISABLED_LoadAndLaunchAppChromeRunning
 #else
@@ -57,12 +59,12 @@ const char* kSwitchesToCopy[] = {
 // Case where Chrome is already running.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_LoadAndLaunchAppChromeRunning) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
+  ExtensionTestMessageListener launched_listener("Launched");
 
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   base::CommandLine new_cmdline(cmdline.GetProgram());
   new_cmdline.CopySwitchesFrom(cmdline, kSwitchesToCopy,
-                               base::size(kSwitchesToCopy));
+                               std::size(kSwitchesToCopy));
 
   base::FilePath app_path = test_data_dir_
       .AppendASCII("platform_apps")
@@ -85,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
 // TODO(jackhou): Enable this test once it works on OSX. It currently does not
 // work for the same reason --app-id doesn't. See http://crbug.com/148465.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_LoadAndLaunchAppWithFile DISABLED_LoadAndLaunchAppWithFile
 #else
 #define MAYBE_LoadAndLaunchAppWithFile LoadAndLaunchAppWithFile
@@ -93,12 +95,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_LoadAndLaunchAppWithFile) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
+  ExtensionTestMessageListener launched_listener("Launched");
 
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   base::CommandLine new_cmdline(cmdline.GetProgram());
   new_cmdline.CopySwitchesFrom(cmdline, kSwitchesToCopy,
-                               base::size(kSwitchesToCopy));
+                               std::size(kSwitchesToCopy));
 
   base::FilePath app_path = test_data_dir_
       .AppendASCII("platform_apps")
@@ -147,12 +149,12 @@ class LoadAndLaunchPlatformAppBrowserTest : public PlatformAppBrowserTest {
   }
 
   void LoadAndLaunchApp() {
-    ExtensionTestMessageListener launched_listener("Launched", false);
+    ExtensionTestMessageListener launched_listener("Launched");
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
     // Start an actual browser because we can't shut down with just an app
     // window.
-    CreateBrowser(ProfileManager::GetActiveUserProfile());
+    CreateBrowser(profile());
   }
 };
 
@@ -192,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(LoadAndLaunchPlatformAppBrowserTest,
 }
 
 // TODO(https://crbug.com/988160): Test is flaky on Windows.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_LoadAndLaunchExtension DISABLED_LoadAndLaunchExtension
 #else
 #define MAYBE_LoadAndLaunchExtension LoadAndLaunchExtension

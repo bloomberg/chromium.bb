@@ -130,14 +130,18 @@ struct InstWrapper {
     InstWrapper& operator=(InstWrapper&&) noexcept;
 
     // Construct this VkInstance using googletest to assert if it succeeded
-    testing::AssertionResult CheckCreate(VkResult result_to_check = VK_SUCCESS);
+    void CheckCreate(VkResult result_to_check = VK_SUCCESS);
 
     // Convenience
     operator VkInstance() { return inst; }
     VulkanFunctions* operator->() { return functions; }
 
+    FromVoidStarFunc load(const char* func_name) { return FromVoidStarFunc(functions->vkGetInstanceProcAddr(inst, func_name)); }
+
     // Enumerate physical devices using googletest to assert if it succeeded
-    std::vector<VkPhysicalDevice> GetPhysDevs(uint32_t phys_dev_count, VkResult result_to_check = VK_SUCCESS);
+    std::vector<VkPhysicalDevice> GetPhysDevs(VkResult result_to_check = VK_SUCCESS);  // query all physical devices
+    std::vector<VkPhysicalDevice> GetPhysDevs(uint32_t phys_dev_count,
+                                              VkResult result_to_check = VK_SUCCESS);  // query only phys_dev_count devices
     // Enumerate a single physical device using googletest to assert if it succeeded
     VkPhysicalDevice GetPhysDev(VkResult result_to_check = VK_SUCCESS);
 
@@ -146,6 +150,8 @@ struct InstWrapper {
     VkAllocationCallbacks* callbacks = nullptr;
     InstanceCreateInfo create_info{};
 };
+
+std::vector<VkExtensionProperties> EnumerateDeviceExtensions(InstWrapper const& inst, VkPhysicalDevice physical_device);
 
 struct DeviceWrapper {
     DeviceWrapper(InstWrapper& inst_wrapper, VkAllocationCallbacks* callbacks = nullptr) noexcept;
@@ -164,6 +170,8 @@ struct DeviceWrapper {
     // Convenience
     operator VkDevice() { return dev; }
     VulkanFunctions* operator->() { return functions; }
+
+    FromVoidStarFunc load(const char* func_name) { return FromVoidStarFunc(functions->vkGetDeviceProcAddr(dev, func_name)); }
 
     VulkanFunctions* functions = nullptr;
     VkDevice dev = VK_NULL_HANDLE;
@@ -236,7 +244,7 @@ struct DebugUtilsWrapper {
     VkDebugUtilsMessengerCreateInfoEXT* get() noexcept { return logger.get(); }
 
     DebugUtilsLogger logger;
-    VkInstance inst;
+    VkInstance inst = VK_NULL_HANDLE;
     VkAllocationCallbacks* callbacks = nullptr;
     PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
     PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT = nullptr;
@@ -251,7 +259,7 @@ void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsLogg
 void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsWrapper& wrapper);
 
 struct PlatformShimWrapper {
-    PlatformShimWrapper(DebugMode debug_mode = DebugMode::none) noexcept;
+    PlatformShimWrapper() noexcept;
     ~PlatformShimWrapper() noexcept;
     PlatformShimWrapper(PlatformShimWrapper const&) = delete;
     PlatformShimWrapper& operator=(PlatformShimWrapper const&) = delete;
@@ -261,7 +269,6 @@ struct PlatformShimWrapper {
 
     LibraryWrapper shim_library;
     PlatformShim* platform_shim;
-    DebugMode debug_mode = DebugMode::none;
 };
 
 struct TestICDHandle {
@@ -270,91 +277,108 @@ struct TestICDHandle {
     TestICD& reset_icd() noexcept;
     TestICD& get_test_icd() noexcept;
     fs::path get_icd_full_path() noexcept;
+    fs::path get_icd_manifest_path() noexcept;
 
     // Must use statically
     LibraryWrapper icd_library;
-    GetTestICDFunc proc_addr_get_test_icd;
-    GetNewTestICDFunc proc_addr_reset_icd;
+    GetTestICDFunc proc_addr_get_test_icd = nullptr;
+    GetNewTestICDFunc proc_addr_reset_icd = nullptr;
+    fs::path manifest_path;
 };
 struct TestLayerHandle {
     TestLayerHandle() noexcept;
-    TestLayerHandle(fs::path const& icd_path) noexcept;
+    TestLayerHandle(fs::path const& layer_path) noexcept;
     TestLayer& reset_layer() noexcept;
     TestLayer& get_test_layer() noexcept;
     fs::path get_layer_full_path() noexcept;
+    fs::path get_layer_manifest_path() noexcept;
 
     // Must use statically
     LibraryWrapper layer_library;
-    GetTestLayerFunc proc_addr_get_test_layer;
-    GetNewTestLayerFunc proc_addr_reset_layer;
+    GetTestLayerFunc proc_addr_get_test_layer = nullptr;
+    GetNewTestLayerFunc proc_addr_reset_layer = nullptr;
+    fs::path manifest_path;
+};
+
+enum class ManifestDiscoveryType {
+    generic,          // put the manifest in the regular locations
+    none,             // don't add to regular locations - eg D3DKMT
+    env_var,          // use the corresponding env-var for it
+    add_env_var,      // use the corresponding add-env-var for it
+    override_folder,  // add to a special folder for the override layer to use
 };
 
 struct TestICDDetails {
-    TestICDDetails(const char* icd_path, uint32_t api_version = VK_MAKE_VERSION(1, 0, 0)) noexcept
-        : icd_path(icd_path), api_version(api_version) {}
-    const char* icd_path = nullptr;
-    uint32_t api_version = VK_MAKE_VERSION(1, 0, 0);
+    TestICDDetails(ManifestICD icd_manifest) noexcept : icd_manifest(icd_manifest) {}
+    TestICDDetails(fs::path icd_path, uint32_t api_version = VK_API_VERSION_1_0) noexcept {
+        icd_manifest.set_lib_path(icd_path.str()).set_api_version(api_version);
+    }
+    BUILDER_VALUE(TestICDDetails, ManifestICD, icd_manifest, {});
+    BUILDER_VALUE(TestICDDetails, std::string, json_name, "test_icd");
+    BUILDER_VALUE(TestICDDetails, ManifestDiscoveryType, discovery_type, ManifestDiscoveryType::generic);
+    BUILDER_VALUE(TestICDDetails, bool, is_fake, false);
 };
+
 struct TestLayerDetails {
-    TestLayerDetails(const char* layer_path, uint32_t api_version = VK_MAKE_VERSION(1, 0, 0)) noexcept
-        : layer_path(layer_path), api_version(api_version) {}
-    const char* layer_path = nullptr;
-    uint32_t api_version = VK_MAKE_VERSION(1, 0, 0);
+    TestLayerDetails(ManifestLayer layer_manifest, const std::string& json_name) noexcept
+        : layer_manifest(layer_manifest), json_name(json_name) {}
+    BUILDER_VALUE(TestLayerDetails, ManifestLayer, layer_manifest, {});
+    BUILDER_VALUE(TestLayerDetails, std::string, json_name, "test_layer");
+    BUILDER_VALUE(TestLayerDetails, ManifestDiscoveryType, discovery_type, ManifestDiscoveryType::generic);
+    BUILDER_VALUE(TestLayerDetails, bool, is_fake, false);
 };
 
 struct FrameworkEnvironment {
-    FrameworkEnvironment(DebugMode debug_mode = DebugMode::none) noexcept;
+    FrameworkEnvironment() noexcept;
 
-    void AddICD(TestICDDetails icd_details, const std::string& json_name) noexcept;
-    void AddImplicitLayer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
-    void AddExplicitLayer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
+    void add_icd(TestICDDetails icd_details) noexcept;
+    void add_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
+    void add_implicit_layer(TestLayerDetails layer_details) noexcept;
+    void add_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
+    void add_explicit_layer(TestLayerDetails layer_details) noexcept;
+    void add_fake_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
+    void add_fake_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
+
+    TestICD& get_test_icd(size_t index = 0) noexcept;
+    TestICD& reset_icd(size_t index = 0) noexcept;
+    fs::path get_test_icd_path(size_t index = 0) noexcept;
+    fs::path get_icd_manifest_path(size_t index = 0) noexcept;
+
+    TestLayer& get_test_layer(size_t index = 0) noexcept;
+    TestLayer& reset_layer(size_t index = 0) noexcept;
+    fs::path get_test_layer_path(size_t index = 0) noexcept;
+    fs::path get_layer_manifest_path(size_t index = 0) noexcept;
 
     PlatformShimWrapper platform_shim;
     fs::FolderManager null_folder;
     fs::FolderManager icd_folder;
+    fs::FolderManager icd_env_vars_folder;
     fs::FolderManager explicit_layer_folder;
+    fs::FolderManager explicit_env_var_layer_folder;
+    fs::FolderManager explicit_add_env_var_layer_folder;
     fs::FolderManager implicit_layer_folder;
+    fs::FolderManager override_layer_folder;
+
     DebugUtilsLogger debug_log;
     VulkanFunctions vulkan_functions;
-};
-
-struct EnvVarICDOverrideShim : public FrameworkEnvironment {
-    EnvVarICDOverrideShim(DebugMode debug_mode = DebugMode::none) noexcept;
-
-    void SetEnvOverrideICD(const char* icd_path, const char* manifest_name) noexcept;
-
-    LibraryWrapper driver_wrapper;
-    GetNewTestICDFunc reset_icd;
-};
-
-struct SingleICDShim : public FrameworkEnvironment {
-    SingleICDShim(TestICDDetails icd_details, DebugMode debug_mode = DebugMode::none) noexcept;
-
-    TestICD& get_test_icd() noexcept;
-    TestICD& reset_icd() noexcept;
-
-    fs::path get_test_icd_path() noexcept;
-
-    TestICDHandle icd_handle;
-};
-
-struct MultipleICDShim : public FrameworkEnvironment {
-    MultipleICDShim(std::vector<TestICDDetails> icd_details_vector, DebugMode debug_mode = DebugMode::none) noexcept;
-
-    TestICD& get_test_icd(int index) noexcept;
-    TestICD& reset_icd(int index) noexcept;
-    fs::path get_test_icd_path(int index) noexcept;
 
     std::vector<TestICDHandle> icds;
+    std::vector<TestLayerHandle> layers;
+
+    std::string env_var_vk_icd_filenames;
+    std::string add_env_var_vk_icd_filenames;
+
+    std::string env_var_vk_layer_paths;
+    std::string add_env_var_vk_layer_paths;
+
+   private:
+    void add_layer_impl(TestLayerDetails layer_details, ManifestCategory category);
 };
 
-struct FakeBinaryICDShim : public FrameworkEnvironment {
-    FakeBinaryICDShim(TestICDDetails read_icd_details, TestICDDetails fake_icd_details,
-                      DebugMode debug_mode = DebugMode::none) noexcept;
-
-    TestICD& get_test_icd() noexcept;
-    TestICD& reset_icd() noexcept;
-    fs::path get_test_icd_path() noexcept;
-
-    TestICDHandle real_icd;
-};
+// The following helpers setup an icd with the required extensions and setting to use with WSI
+// By default they use whatever the set VK_USE_PLATFORM_XXX macros define
+void setup_WSI_in_ICD(TestICD& icd);
+void setup_WSI_in_create_instance(InstWrapper& inst);
+// api_selection: optionally provide a VK_USE_PLATFORM_XXX string to select which API to create a surface with
+// Note: MUST provide api_selection on platforms with multiple viable API's, such as linux and MacOS
+VkSurfaceKHR create_surface(InstWrapper& inst, const char* api_selection = nullptr);

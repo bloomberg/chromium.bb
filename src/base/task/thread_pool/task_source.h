@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include "base/base_export.h"
-#include "base/compiler_specific.h"
 #include "base/containers/intrusive_heap.h"
+#include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_token.h"
@@ -34,7 +34,7 @@ enum class TaskSourceExecutionMode {
 
 struct BASE_EXPORT ExecutionEnvironment {
   SequenceToken token;
-  SequenceLocalStorageMap* sequence_local_storage;
+  raw_ptr<SequenceLocalStorageMap> sequence_local_storage;
 };
 
 // A TaskSource is a virtual class that provides a series of Tasks that must be
@@ -136,7 +136,7 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   // Begins a Transaction. This method cannot be called on a thread which has an
   // active TaskSource::Transaction.
-  Transaction BeginTransaction() WARN_UNUSED_RESULT;
+  [[nodiscard]] Transaction BeginTransaction();
 
   virtual ExecutionEnvironment GetExecutionEnvironment() = 0;
 
@@ -217,7 +217,10 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // derived class is responsible for calling AddRef() when a TaskSource from
   // which no Task is executing becomes non-empty and Release() when
   // it becomes empty again (e.g. when DidProcessTask() returns false).
-  raw_ptr<TaskRunner> task_runner_;
+  //
+  // In practise, this pointer is going to become dangling. See task_runner()
+  // comment.
+  raw_ptr<TaskRunner, DisableDanglingPtrDetection> task_runner_;
 
   TaskSourceExecutionMode execution_mode_;
 };
@@ -262,8 +265,7 @@ class BASE_EXPORT RegisteredTaskSource {
   // only after WillRunTask() returned RunStatus::kAllowed*. |transaction| is
   // optional and should only be provided if this operation is already part of
   // a transaction.
-  Task TakeTask(TaskSource::Transaction* transaction = nullptr)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] Task TakeTask(TaskSource::Transaction* transaction = nullptr);
 
   // Must be called after WillRunTask() or once the task was run if TakeTask()
   // was called. This resets this RegisteredTaskSource to its initial state so
@@ -275,7 +277,7 @@ class BASE_EXPORT RegisteredTaskSource {
   // Returns a task that clears this TaskSource to make it empty. |transaction|
   // is optional and should only be provided if this operation is already part
   // of a transaction.
-  Task Clear(TaskSource::Transaction* transaction = nullptr) WARN_UNUSED_RESULT;
+  [[nodiscard]] Task Clear(TaskSource::Transaction* transaction = nullptr);
 
  private:
   friend class TaskTracker;

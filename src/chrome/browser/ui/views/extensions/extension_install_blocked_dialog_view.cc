@@ -32,7 +32,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace chrome {
@@ -101,14 +100,15 @@ void ExtensionInstallBlockedDialogView::AddCustomMessageContents(
   const gfx::Insets content_insets = provider->GetDialogInsetsForContentType(
       views::DialogContentType::kText, views::DialogContentType::kText);
   extension_info_container->SetBorder(views::CreateEmptyBorder(
-      0, content_insets.left(), 0, content_insets.right()));
+      gfx::Insets::TLBR(0, content_insets.left(), 0, content_insets.right())));
   extension_info_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   const int content_width = GetPreferredSize().width() -
                             extension_info_container->GetInsets().width();
 
-  set_margins(gfx::Insets(content_insets.top(), 0, content_insets.bottom(), 0));
+  set_margins(
+      gfx::Insets::TLBR(content_insets.top(), 0, content_insets.bottom(), 0));
 
   auto* header_label =
       extension_info_container->AddChildView(std::make_unique<views::Label>(

@@ -7,14 +7,16 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 // TODO(gavinwill): Remove iron-dropdown dependency https://crbug.com/1082587.
 import 'chrome://resources/polymer/v3_0/iron-dropdown/iron-dropdown.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-
-import './print_preview_vars_css.js';
+import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
+import './print_preview_vars.css.js';
 
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Destination, DestinationOrigin} from '../data/destination.js';
+import {Destination} from '../data/destination.js';
 import {ERROR_STRING_KEY_MAP, getPrinterStatusIcon, PrinterStatusReason} from '../data/printer_status_cros.js';
+
+import {getTemplate} from './destination_dropdown_cros.html.js';
 
 
 declare global {
@@ -26,7 +28,7 @@ declare global {
 export interface PrintPreviewDestinationDropdownCrosElement {
   $: {
     destinationDropdown: HTMLDivElement,
-  }
+  };
 }
 
 const PrintPreviewDestinationDropdownCrosElementBase =
@@ -39,7 +41,7 @@ export class PrintPreviewDestinationDropdownCrosElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -68,6 +70,8 @@ export class PrintPreviewDestinationDropdownCrosElement extends
 
       destinationIcon: String,
 
+      isDarkModeActive_: Boolean,
+
       /**
        * Index of the highlighted item in the dropdown.
        */
@@ -92,25 +96,26 @@ export class PrintPreviewDestinationDropdownCrosElement extends
   pdfDestinationKey: string;
   pdfPrinterDisabled: boolean;
   destinationStatusText: string;
+  private isDarkModeActive_: boolean;
   private highlightedIndex_: number;
   private dropdownLength_: number;
 
   private opened_: boolean = false;
   private dropdownRefitPending_: boolean = false;
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addEventListener('mousemove', e => this.onMouseMove_(e));
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.updateTabIndex_();
   }
 
-  focus() {
+  override focus() {
     this.$.destinationDropdown.focus();
   }
 
@@ -337,7 +342,8 @@ export class PrintPreviewDestinationDropdownCrosElement extends
   private getPrinterStatusIcon_(
       printerStatusReason: PrinterStatusReason,
       isEnterprisePrinter: boolean): string {
-    return getPrinterStatusIcon(printerStatusReason, isEnterprisePrinter);
+    return getPrinterStatusIcon(
+        printerStatusReason, isEnterprisePrinter, this.isDarkModeActive_);
   }
 }
 

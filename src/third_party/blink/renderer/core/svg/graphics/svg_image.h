@@ -28,12 +28,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_H_
 
 #include "base/gtest_prod_util.h"
+#include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -115,6 +115,9 @@ class CORE_EXPORT SVGImage final : public Image {
 
   PaintImage PaintImageForCurrentFrame() override;
 
+  void SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme preferred_color_scheme);
+
  protected:
   // Whether or not size is available yet.
   bool IsSizeAvailable() override;
@@ -194,7 +197,6 @@ class CORE_EXPORT SVGImage final : public Image {
                     const gfx::RectF& unzoomed_src_rect);
   bool ApplyShader(cc::PaintFlags&,
                    const SkMatrix& local_matrix,
-                   const gfx::RectF& dst_rect,
                    const gfx::RectF& src_rect,
                    const ImageDrawOptions&) override;
   bool ApplyShaderForContainer(const DrawInfo&,

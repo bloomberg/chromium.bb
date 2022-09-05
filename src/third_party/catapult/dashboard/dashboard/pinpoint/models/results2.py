@@ -16,6 +16,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
 
 from apiclient.discovery import build
+from dashboard.common import utils
 from dashboard.pinpoint.models import job_state
 from dashboard.pinpoint.models.quest import read_value
 from dashboard.pinpoint.models.quest import run_test
@@ -55,7 +56,10 @@ _METRIC_MAP = {
         ("speedometer2", "Vanilla_ES2015_Babel_Webpack_TodoMVC"),
     "Vanilla-ES2015-TodoMVC": ("speedometer2", "Vanilla_ES2015_TodoMVC"),
     "VanillaJS-TodoMVC": ("speedometer2", "VanillaJS_TodoMVC"),
-    "VueJS-TodoMVC": ("speedometer2", "VueJS_TodoMVC")
+    "VueJS-TodoMVC": ("speedometer2", "VueJS_TodoMVC"),
+
+    # MotionMark
+    "motionmark": ("motionmark", "motionmark")
 }
 
 _PROJECT_ID = 'chromeperf'
@@ -101,6 +105,8 @@ class _GcsFileStream(object):
 
 
 def _GetCloudStorageName(job_id):
+  if utils.IsStagingEnvironment():
+    return '/chromeperf-staging-results2-public/%s.html' % job_id
   return '/results2-public/%s.html' % job_id
 
 
@@ -174,7 +180,7 @@ def _ReadVulcanizedHistogramsViewer():
   viewer_path = os.path.join(
       os.path.dirname(__file__), '..', '..', '..',
       'vulcanized_histograms_viewer', 'vulcanized_histograms_viewer.html')
-  with open(viewer_path, 'r') as f:
+  with open(viewer_path, 'rb') as f:
     return f.read()
 
 HistogramMetadata = collections.namedtuple(
@@ -309,6 +315,7 @@ def _GetEmptyMeasures():
   measures = {}
   measures["core_web_vitals"] = {}
   measures["speedometer2"] = {}
+  measures["motionmark"] = {}
   return measures
 
 

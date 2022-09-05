@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
@@ -17,7 +16,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
@@ -73,7 +71,7 @@ class CONTENT_EXPORT Navigator {
   //   then the renderer process is misbehaving and must be terminated.
   // TODO(nasko): Remove the is_renderer_initiated_check parameter when callers
   // of this method are migrated to use CHECK instead of DumpWithoutCrashing.
-  static WARN_UNUSED_RESULT bool CheckWebUIRendererDoesNotDisplayNormalURL(
+  [[nodiscard]] static bool CheckWebUIRendererDoesNotDisplayNormalURL(
       RenderFrameHostImpl* render_frame_host,
       const UrlInfo& url_info,
       bool is_renderer_initiated_check);
@@ -137,6 +135,8 @@ class CONTENT_EXPORT Navigator {
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
+      // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+      bool is_unfenced_top_navigation,
       blink::mojom::TriggeringEventInfo triggering_event_info,
       const std::string& href_translate,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
@@ -162,7 +162,9 @@ class CONTENT_EXPORT Navigator {
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       network::mojom::SourceLocationPtr source_location,
       bool has_user_gesture,
-      const absl::optional<blink::Impression>& impression);
+      const absl::optional<blink::Impression>& impression,
+      base::TimeTicks navigation_start_time,
+      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
 
   // Called after BeforeUnloadCompleted callback is invoked from the renderer.
   // If |frame_tree_node| has a NavigationRequest waiting for the renderer

@@ -70,7 +70,8 @@ IN_PROC_BROWSER_TEST_F(OverlayPopupAdViolationBrowserTest,
   // ad script is loaded and that the subresource filter UI doesn't show up.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
 
-  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+  EXPECT_TRUE(
+      WasParsedScriptElementLoaded(web_contents()->GetPrimaryMainFrame()));
   histogram_tester.ExpectBucketCount(
       "SubresourceFilter.Actions2",
       subresource_filter::SubresourceFilterAction::kUIShown, 0);
@@ -79,8 +80,16 @@ IN_PROC_BROWSER_TEST_F(OverlayPopupAdViolationBrowserTest,
       subresource_filter::mojom::AdsViolation::kOverlayPopupAd, 0);
 }
 
+// TODO(https://crbug.com/1287783): Fails on the linux and android.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
+#define MAYBE_OverlayPopupAd_AdInterventionTriggered \
+  DISABLED_OverlayPopupAd_AdInterventionTriggered
+#else
+#define MAYBE_OverlayPopupAd_AdInterventionTriggered \
+  OverlayPopupAd_AdInterventionTriggered
+#endif
 IN_PROC_BROWSER_TEST_F(OverlayPopupAdViolationBrowserTest,
-                       OverlayPopupAd_AdInterventionTriggered) {
+                       MAYBE_OverlayPopupAd_AdInterventionTriggered) {
   base::HistogramTester histogram_tester;
 
   GURL url = embedded_test_server()->GetURL(
@@ -96,7 +105,8 @@ IN_PROC_BROWSER_TEST_F(OverlayPopupAdViolationBrowserTest,
   // shows up.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
 
-  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+  EXPECT_FALSE(
+      WasParsedScriptElementLoaded(web_contents()->GetPrimaryMainFrame()));
   histogram_tester.ExpectBucketCount(
       "SubresourceFilter.Actions2",
       subresource_filter::SubresourceFilterAction::kUIShown, 1);
@@ -142,7 +152,8 @@ IN_PROC_BROWSER_TEST_F(OverlayPopupAdViolationBrowserTestWithoutEnforcement,
   // running in dry run mode.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
 
-  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+  EXPECT_TRUE(
+      WasParsedScriptElementLoaded(web_contents()->GetPrimaryMainFrame()));
   histogram_tester.ExpectBucketCount(
       "SubresourceFilter.Actions2",
       subresource_filter::SubresourceFilterAction::kUIShown, 0);

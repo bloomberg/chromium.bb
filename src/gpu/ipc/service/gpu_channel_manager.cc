@@ -8,6 +8,12 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
+
+#if BUILDFLAG(IS_WIN)
+#include <dxgi1_3.h>
+#endif
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
@@ -22,7 +28,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -44,7 +49,7 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/gl/gl_angle_util_win.h"
 #endif
 #include "ui/gl/gl_bindings.h"
@@ -57,14 +62,14 @@
 namespace gpu {
 
 namespace {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Amount of time we expect the GPU to stay powered up without being used.
 const int kMaxGpuIdleTimeMs = 40;
 // Maximum amount of time we keep pinging the GPU waiting for the client to
 // draw.
 const int kMaxKeepAliveTimeMs = 200;
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void TrimD3DResources() {
   // Graphics drivers periodically allocate internal memory buffers in
   // order to speed up subsequent rendering requests. These memory allocations
@@ -354,18 +359,14 @@ GpuChannelManager::GpuChannelManager(
   DCHECK(io_task_runner);
   DCHECK(scheduler);
 
-  const bool using_skia_renderer = features::IsUsingSkiaRenderer();
   const bool enable_gr_shader_cache =
-      (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-       gpu::kGpuFeatureStatusEnabled) ||
-      using_skia_renderer;
+      (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+       gpu::kGpuFeatureStatusEnabled);
   const bool disable_disk_cache =
       gpu_preferences_.disable_gpu_shader_disk_cache;
   if (enable_gr_shader_cache && !disable_disk_cache) {
     gr_shader_cache_.emplace(gpu_preferences.gpu_program_cache_size, this);
-    if (using_skia_renderer) {
-      gr_shader_cache_->CacheClientIdOnDisk(gpu::kDisplayCompositorClientId);
-    }
+    gr_shader_cache_->CacheClientIdOnDisk(gpu::kDisplayCompositorClientId);
   }
 }
 
@@ -635,7 +636,7 @@ GpuChannelManager::GetPeakMemoryUsage(uint32_t sequence_num,
   return allocation_per_source;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void GpuChannelManager::DidAccessGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -752,7 +753,7 @@ void GpuChannelManager::HandleMemoryPressure(
 
   if (gr_shader_cache_)
     gr_shader_cache_->PurgeMemory(memory_pressure_level);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   TrimD3DResources();
 #endif
 }
@@ -768,7 +769,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 
   scoped_refptr<gl::GLSurface> surface = default_offscreen_surface();
   bool use_virtualized_gl_contexts = false;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Virtualize GpuPreference::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463
@@ -803,14 +804,18 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     context = nullptr;
   }
   if (!context) {
+    ContextCreationAttribs attribs_helper;
+    attribs_helper.context_type = features::UseGles2ForOopR()
+                                      ? gpu::CONTEXT_TYPE_OPENGLES2
+                                      : gpu::CONTEXT_TYPE_OPENGLES3;
     gl::GLContextAttribs attribs = gles2::GenerateGLContextAttribs(
-        ContextCreationAttribs(), use_passthrough_decoder);
+        attribs_helper, use_passthrough_decoder);
 
     // Disable robust resource initialization for raster decoder and compositor.
     // TODO(crbug.com/1192632): disable robust_resource_initialization for
     // SwANGLE.
-    if (gl::GLSurfaceEGL::GetDisplayType() != gl::ANGLE_SWIFTSHADER &&
-        features::IsUsingSkiaRenderer()) {
+    if (gl::GLSurfaceEGL::GetGLDisplayEGL()->GetDisplayType() !=
+        gl::ANGLE_SWIFTSHADER) {
       attribs.robust_resource_initialization = false;
     }
 

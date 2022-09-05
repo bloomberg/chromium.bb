@@ -34,14 +34,13 @@
 #include <unicode/uchar.h>
 
 #include "base/dcheck_is_on.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace gfx {
 class Size;
@@ -95,7 +94,7 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
   void UpdatePageInfo();
   void Record(LayoutBlock*);
   void Record(LayoutText*);
-  void Destroy(LayoutBlock*);
+  void Destroy(LayoutObject*);
 
   bool PageNeedsAutosizing() const;
 

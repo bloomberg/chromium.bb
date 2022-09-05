@@ -15,8 +15,8 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-shared.h"
 
 using blink::mojom::PermissionDescriptorPtr;
@@ -40,7 +40,7 @@ void PermissionRequestResponseCallbackWrapper(
 
 class PermissionServiceImpl::PendingRequest {
  public:
-  PendingRequest(std::vector<PermissionType> types,
+  PendingRequest(std::vector<blink::PermissionType> types,
                  RequestPermissionsCallback callback)
       : callback_(std::move(callback)), request_size_(types.size()) {}
 
@@ -101,10 +101,10 @@ void PermissionServiceImpl::RequestPermissions(
     return;
   }
 
-  std::vector<PermissionType> types(permissions.size());
-  std::set<PermissionType> duplicates_check;
+  std::vector<blink::PermissionType> types(permissions.size());
+  std::set<blink::PermissionType> duplicates_check;
   for (size_t i = 0; i < types.size(); ++i) {
-    auto type = PermissionDescriptorToPermissionType(permissions[i]);
+    auto type = blink::PermissionDescriptorToPermissionType(permissions[i]);
     if (!type) {
       ReceivedBadMessage();
       return;
@@ -125,17 +125,10 @@ void PermissionServiceImpl::RequestPermissions(
 
   int pending_request_id = pending_requests_.Add(std::move(pending_request));
   PermissionControllerImpl::FromBrowserContext(browser_context)
-      ->RequestPermissions(
-          types, context_->render_frame_host(), origin_.GetURL(), user_gesture,
+      ->RequestPermissionsFromCurrentDocument(
+          types, context_->render_frame_host(), user_gesture,
           base::BindOnce(&PermissionServiceImpl::OnRequestPermissionsResponse,
                          weak_factory_.GetWeakPtr(), pending_request_id));
-
-  // Check if the request still exists. It may have been removed by the
-  // the response callback.
-  PendingRequest* in_progress_request =
-      pending_requests_.Lookup(pending_request_id);
-  if (!in_progress_request)
-    return;
 }
 
 void PermissionServiceImpl::OnRequestPermissionsResponse(
@@ -154,7 +147,8 @@ void PermissionServiceImpl::HasPermission(PermissionDescriptorPtr permission,
 void PermissionServiceImpl::RevokePermission(
     PermissionDescriptorPtr permission,
     PermissionStatusCallback callback) {
-  auto permission_type = PermissionDescriptorToPermissionType(permission);
+  auto permission_type =
+      blink::PermissionDescriptorToPermissionType(permission);
   if (!permission_type) {
     ReceivedBadMessage();
     return;
@@ -177,7 +171,7 @@ void PermissionServiceImpl::AddPermissionObserver(
     PermissionDescriptorPtr permission,
     PermissionStatus last_known_status,
     mojo::PendingRemote<blink::mojom::PermissionObserver> observer) {
-  auto type = PermissionDescriptorToPermissionType(permission);
+  auto type = blink::PermissionDescriptorToPermissionType(permission);
   if (!type) {
     ReceivedBadMessage();
     return;
@@ -189,7 +183,7 @@ void PermissionServiceImpl::AddPermissionObserver(
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatus(
     const PermissionDescriptorPtr& permission) {
-  auto type = PermissionDescriptorToPermissionType(permission);
+  auto type = blink::PermissionDescriptorToPermissionType(permission);
   if (!type) {
     ReceivedBadMessage();
     return PermissionStatus::DENIED;
@@ -198,24 +192,29 @@ PermissionStatus PermissionServiceImpl::GetPermissionStatus(
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
-    PermissionType type) {
+    blink::PermissionType type) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   if (!browser_context)
     return PermissionStatus::DENIED;
 
-  GURL requesting_origin(origin_.GetURL());
   if (context_->render_frame_host()) {
     return browser_context->GetPermissionController()
-        ->GetPermissionStatusForFrame(type, context_->render_frame_host(),
-                                      requesting_origin);
+        ->GetPermissionStatusForCurrentDocument(type,
+                                                context_->render_frame_host());
+  }
+
+  if (context_->render_process_host()) {
+    return browser_context->GetPermissionController()
+        ->GetPermissionStatusForWorker(type, context_->render_process_host(),
+                                       origin_);
   }
 
   DCHECK(context_->GetEmbeddingOrigin().is_empty());
-  return browser_context->GetPermissionController()->GetPermissionStatus(
-      type, requesting_origin, requesting_origin);
+  return browser_context->GetPermissionController()
+      ->GetPermissionStatusForOriginWithoutContext(type, origin_);
 }
 
-void PermissionServiceImpl::ResetPermissionStatus(PermissionType type) {
+void PermissionServiceImpl::ResetPermissionStatus(blink::PermissionType type) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   if (!browser_context)
     return;

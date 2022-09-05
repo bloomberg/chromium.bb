@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_set.h"
 #include "chromeos/network/cellular_esim_profile_handler.h"
+#include "dbus/object_path.h"
 
 namespace chromeos {
 
@@ -20,6 +21,7 @@ class TestCellularESimProfileHandler : public CellularESimProfileHandler {
   ~TestCellularESimProfileHandler() override;
 
   void SetHasRefreshedProfilesForEuicc(const std::string& eid,
+                                       const dbus::ObjectPath& euicc_path,
                                        bool has_refreshed);
 
   // Enables or disables profile list update notification.
@@ -32,16 +34,24 @@ class TestCellularESimProfileHandler : public CellularESimProfileHandler {
   // CellularESimProfileHandler:
   std::vector<CellularESimProfile> GetESimProfiles() override;
   bool HasRefreshedProfilesForEuicc(const std::string& eid) override;
+  bool HasRefreshedProfilesForEuicc(
+      const dbus::ObjectPath& euicc_path) override;
   void SetDevicePrefs(PrefService* device_prefs) override;
   void OnHermesPropertiesUpdated() override;
 
  private:
   std::vector<CellularESimProfile> esim_profile_states_;
   base::flat_set<std::string> refreshed_eids_;
+  base::flat_set<dbus::ObjectPath> refreshed_euicc_paths_;
   bool enable_notify_profile_list_update_;
   bool has_pending_notify_list_update_;
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace ash {
+using ::chromeos::TestCellularESimProfileHandler;
+}
 
 #endif  // CHROMEOS_NETWORK_TEST_CELLULAR_ESIM_PROFILE_HANDLER_H_

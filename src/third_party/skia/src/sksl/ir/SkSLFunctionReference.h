@@ -22,9 +22,9 @@ class FunctionReference final : public Expression {
 public:
     inline static constexpr Kind kExpressionKind = Kind::kFunctionReference;
 
-    FunctionReference(const Context& context, int line,
+    FunctionReference(const Context& context, Position pos,
                       std::vector<const FunctionDeclaration*> functions)
-        : INHERITED(line, kExpressionKind, context.fTypes.fInvalid.get())
+        : INHERITED(pos, kExpressionKind, context.fTypes.fInvalid.get())
         , fFunctions(std::move(functions)) {}
 
     const std::vector<const FunctionDeclaration*>& functions() const {
@@ -35,19 +35,19 @@ public:
         return false;
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::unique_ptr<Expression>(new FunctionReference(fLine, this->functions(),
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::unique_ptr<Expression>(new FunctionReference(pos, this->functions(),
                                                                  &this->type()));
     }
 
-    String description() const override {
-        return String("<function>");
+    std::string description() const override {
+        return "<function>";
     }
 
 private:
-    FunctionReference(int line, std::vector<const FunctionDeclaration*> functions,
+    FunctionReference(Position pos, std::vector<const FunctionDeclaration*> functions,
                       const Type* type)
-        : INHERITED(line, kExpressionKind, type)
+        : INHERITED(pos, kExpressionKind, type)
         , fFunctions(std::move(functions)) {}
 
     std::vector<const FunctionDeclaration*> fFunctions;

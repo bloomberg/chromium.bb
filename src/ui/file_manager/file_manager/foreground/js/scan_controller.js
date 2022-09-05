@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import {DirectoryModel} from './directory_model.js';
-import {CommandHandler} from './file_manager_commands.js';
 import {FileSelectionHandler} from './file_selection.js';
 import {SpinnerController} from './spinner_controller.js';
 import {ListContainer} from './ui/list_container.js';
@@ -16,12 +15,10 @@ export class ScanController {
    * @param {!DirectoryModel} directoryModel
    * @param {!ListContainer} listContainer
    * @param {!SpinnerController} spinnerController
-   * @param {!CommandHandler} commandHandler
    * @param {!FileSelectionHandler} selectionHandler
    */
   constructor(
-      directoryModel, listContainer, spinnerController, commandHandler,
-      selectionHandler) {
+      directoryModel, listContainer, spinnerController, selectionHandler) {
     /** @private @const {!DirectoryModel} */
     this.directoryModel_ = directoryModel;
 
@@ -30,9 +27,6 @@ export class ScanController {
 
     /** @private @const {!SpinnerController} */
     this.spinnerController_ = spinnerController;
-
-    /** @private @const {!CommandHandler} */
-    this.commandHandler_ = commandHandler;
 
     /** @private @const {!FileSelectionHandler} */
     this.selectionHandler_ = selectionHandler;
@@ -100,7 +94,7 @@ export class ScanController {
    */
   onScanCompleted_() {
     if (!this.scanInProgress_) {
-      console.error('Scan-completed event received. But scan is not started.');
+      console.warn('Scan-completed event received. But scan is not started.');
       return;
     }
 
@@ -126,7 +120,7 @@ export class ScanController {
    */
   onScanUpdated_() {
     if (!this.scanInProgress_) {
-      console.error('Scan-updated event received. But scan is not started.');
+      console.warn('Scan-updated event received. But scan is not started.');
       return;
     }
 
@@ -153,7 +147,7 @@ export class ScanController {
    */
   onScanCancelled_() {
     if (!this.scanInProgress_) {
-      console.error('Scan-cancelled event received. But scan is not started.');
+      console.warn('Scan-cancelled event received. But scan is not started.');
       return;
     }
 

@@ -60,11 +60,12 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   bool AddPassword(const std::string& url,
                    const std::u16string& username,
                    const std::u16string& password,
+                   const std::u16string& note,
                    bool use_account_store,
                    content::WebContents* web_contents) override;
-  bool ChangeSavedPassword(const std::vector<int>& ids,
-                           const std::u16string& new_username,
-                           const std::u16string& new_password) override;
+  bool ChangeSavedPassword(
+      const std::vector<int>& ids,
+      const api::passwords_private::ChangeSavedPasswordParams& params) override;
   void RemoveSavedPasswords(const std::vector<int>& ids) override;
   void RemovePasswordExceptions(const std::vector<int>& ids) override;
   void UndoRemoveSavedPasswordOrException() override;
@@ -99,6 +100,13 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       base::StringPiece new_password) override;
   bool RemoveInsecureCredential(
       const api::passwords_private::InsecureCredential& credential) override;
+  bool MuteInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential) override;
+  bool UnmuteInsecureCredential(
+      const api::passwords_private::InsecureCredential& credential) override;
+  void RecordChangePasswordFlowStarted(
+      const api::passwords_private::InsecureCredential& credential,
+      bool is_manual_flow) override;
   void StartPasswordCheck(StartPasswordCheckCallback callback) override;
   void StopPasswordCheck() override;
   api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus() override;

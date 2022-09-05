@@ -1,5 +1,6 @@
 dEQP-VK.api.driver_properties.conformance_version
-dEQP-VK.fragment_operations.early_fragment.discard_early_fragment_tests_stencil
+dEQP-VK.fragment_operations.early_fragment.early_fragment_tests_depth
+dEQP-VK.fragment_operations.early_fragment.no_early_fragment_tests_depth
 dEQP-VK.texture.conversion.snorm_clamp_linear.r16_snorm
 dEQP-VK.texture.conversion.snorm_clamp_linear.r16g16_snorm
 dEQP-VK.texture.conversion.snorm_clamp_linear.r16g16b16a16_snorm
@@ -11,3 +12,4 @@ dEQP-VK.texture.explicit_lod.2d.sizes.57x35_linear_linear_mipmap_linear_repeat
 dEQP-VK.texture.explicit_lod.2d.sizes.57x35_linear_linear_mipmap_nearest_repeat
 dEQP-VK.texture.explicit_lod.2d.sizes.57x35_nearest_linear_mipmap_linear_repeat
 dEQP-VK.texture.explicit_lod.2d.sizes.57x35_nearest_linear_mipmap_nearest_repeat
+dEQP-VK.ycbcr.plane_view.image_view.g10x6_b10x6r10x6_2plane_420_unorm_3pack16_plane_1_compatible_format_r32_uint

@@ -37,7 +37,7 @@ class INVALIDATION_EXPORT Invalidation {
   ~Invalidation();
 
   // Compares two invalidations.  The comparison ignores ack-tracking state.
-  bool Equals(const Invalidation& other) const;
+  bool operator==(const Invalidation& other) const;
 
   Topic topic() const;
   bool is_unknown_version() const;
@@ -89,7 +89,7 @@ class INVALIDATION_EXPORT Invalidation {
   // Acknowledge() on the most recently dropped inavlidation.
   void Drop();
 
-  std::unique_ptr<base::DictionaryValue> ToValue() const;
+  base::Value::Dict ToValue() const;
   std::string ToString() const;
 
  private:

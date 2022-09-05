@@ -24,14 +24,14 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -876,7 +876,7 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   EXPECT_FALSE(GetDocument().getElementById("textfield")->IsFocusable());
 
   // Calling explicit focus() should also not focus the element.
-  GetDocument().getElementById("textfield")->focus();
+  GetDocument().getElementById("textfield")->Focus();
   EXPECT_FALSE(GetDocument().FocusedElement());
 
   // Now commit the lock and ensure we can focus the input
@@ -899,7 +899,7 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   EXPECT_TRUE(GetDocument().getElementById("textfield")->IsFocusable());
 
   // Calling explicit focus() should focus the element
-  GetDocument().getElementById("textfield")->focus();
+  GetDocument().getElementById("textfield")->Focus();
   EXPECT_EQ(GetDocument().FocusedElement(),
             GetDocument().getElementById("textfield"));
 }
@@ -1055,7 +1055,7 @@ TEST_F(DisplayLockContextTest,
   EXPECT_FALSE(text_field->IsFocusable());
 
   // Calling explicit focus() should also not focus the element.
-  text_field->focus();
+  text_field->Focus();
   EXPECT_FALSE(GetDocument().FocusedElement());
 }
 
@@ -3574,6 +3574,67 @@ TEST_F(DisplayLockContextTest, ReattachPropagationBlockedByDisplayLock) {
   EXPECT_TRUE(parent->ChildNeedsReattachLayoutTree());
 
   EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsLayoutTreeRebuild());
+}
+
+TEST_F(DisplayLockContextTest, NoUpdatesInDisplayNone) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <div id=displaynone style="display:none">
+      <div id=displaylocked style="content-visibility:hidden">
+        <div id=child>hello</div>
+      </div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* displaylocked = GetDocument().getElementById("displaylocked");
+  auto* child = GetDocument().getElementById("child");
+
+  EXPECT_FALSE(displaylocked->GetComputedStyle());
+  EXPECT_FALSE(displaylocked->GetLayoutObject());
+  EXPECT_FALSE(child->GetComputedStyle());
+  EXPECT_FALSE(child->GetLayoutObject());
+
+  // EnsureComputedStyle shouldn't lock elements in a display:none subtree, and
+  // certainly shouldn't run layout.
+  displaylocked->EnsureComputedStyle();
+  child->EnsureComputedStyle();
+  EXPECT_FALSE(displaylocked->GetDisplayLockContext());
+  EXPECT_FALSE(displaylocked->GetLayoutObject());
+  EXPECT_FALSE(child->GetLayoutObject());
+}
+
+TEST_F(DisplayLockContextTest, ElementActivateDisplayLockIfNeeded) {
+  SetHtmlInnerHTML(R"HTML(
+    <div style="height: 10000px"></div>
+    <div style="content-visibility: hidden" hidden="until-found"></div>
+    <div style="content-visibility: auto"><div id="target"></div></div>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  // Non-ancestor c-v:hidden should not prevent the activation.
+  EXPECT_TRUE(target->ActivateDisplayLockIfNeeded(
+      DisplayLockActivationReason::kScrollIntoView));
+}
+
+TEST_F(DisplayLockContextTest, ShouldForceUnlockObjectWithFallbackContent) {
+  SetHtmlInnerHTML(R"HTML(
+    <div style="height: 10000px"></div>
+    <object style="content-visibility: auto" id="target">foo bar</object>
+  )HTML");
+
+  // The <object> should should be lockable after the initial layout.
+  UpdateAllLifecyclePhasesForTest();
+  auto* target = To<HTMLPlugInElement>(GetDocument().getElementById("target"));
+  EXPECT_TRUE(target->GetDisplayLockContext());
+  EXPECT_TRUE(target->GetDisplayLockContext()->IsLocked());
+
+  // UpdatePlugin() makes the <object> UseFallbackContent() state, and
+  // invalidates its style.
+  ASSERT_TRUE(target->NeedsPluginUpdate());
+  target->UpdatePlugin();
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->GetDisplayLockContext()->IsLocked());
 }
 
 }  // namespace blink

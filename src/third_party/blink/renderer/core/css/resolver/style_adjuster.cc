@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -62,6 +63,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
+#include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
@@ -81,22 +83,6 @@ bool IsOverflowClipOrVisible(EOverflow overflow) {
   return overflow == EOverflow::kClip || overflow == EOverflow::kVisible;
 }
 
-bool IsEditableElement(Element* element, const ComputedStyle& style) {
-  if (style.UserModify() != EUserModify::kReadOnly)
-    return true;
-
-  if (!element)
-    return false;
-
-  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
-    return !textarea->IsDisabledOrReadOnly();
-
-  if (auto* input = DynamicTo<HTMLInputElement>(*element))
-    return !input->IsDisabledOrReadOnly() && input->IsTextField();
-
-  return false;
-}
-
 TouchAction AdjustTouchActionForElement(TouchAction touch_action,
                                         const ComputedStyle& style,
                                         const ComputedStyle& parent_style,
@@ -107,9 +93,8 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
     // Body scrolls overflow if html root overflow is not visible or the
     // propagation of overflow is stopped by containment.
     if (parent_style.IsOverflowVisibleAlongBothAxes()) {
-      if (!RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled() ||
-          (!parent_style.ShouldApplyAnyContainment(*document_element) &&
-           !style.ShouldApplyAnyContainment(*element))) {
+      if (!parent_style.ShouldApplyAnyContainment(*document_element) &&
+          !style.ShouldApplyAnyContainment(*element)) {
         scrolls_overflow = false;
       }
     }
@@ -433,23 +418,31 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsA<HTMLFencedFrameElement>(element) &&
-      !features::IsFencedFramesMPArchBased()) {
-    // Force the inside-display to `flow`, but honors the outside-display.
-    switch (DisplayOutside(style.Display())) {
-      case EDisplay::kInline:
-      case EDisplay::kContents:
-        style.SetDisplay(EDisplay::kInlineBlock);
-        break;
-      case EDisplay::kBlock:
-        style.SetDisplay(EDisplay::kBlock);
-        break;
-      case EDisplay::kNone:
-        break;
-      default:
-        NOTREACHED();
-        style.SetDisplay(EDisplay::kInlineBlock);
-        break;
+  if (IsA<HTMLFencedFrameElement>(element)) {
+    // Force the CSS style `zoom` property to 1 so that the embedder cannot
+    // communicate into the fenced frame by adjusting it, but still include
+    // the page zoom factor in the effective zoom, which is safe because it
+    // comes from user intervention. crbug.com/1285327
+    style.SetEffectiveZoom(
+        element.GetDocument().GetStyleResolver().InitialZoom());
+
+    if (!features::IsFencedFramesMPArchBased()) {
+      // Force the inside-display to `flow`, but honors the outside-display.
+      switch (DisplayOutside(style.Display())) {
+        case EDisplay::kInline:
+        case EDisplay::kContents:
+          style.SetDisplay(EDisplay::kInlineBlock);
+          break;
+        case EDisplay::kBlock:
+          style.SetDisplay(EDisplay::kBlock);
+          break;
+        case EDisplay::kNone:
+          break;
+        default:
+          NOTREACHED();
+          style.SetDisplay(EDisplay::kInlineBlock);
+          break;
+      }
     }
   }
 
@@ -518,13 +511,25 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
       style.SetDisplay(EDisplay::kNone);
     }
   }
+
+  if (IsA<HTMLBodyElement>(element) &&
+      element.GetDocument().FirstBodyElement() != element) {
+    style.SetIsSecondaryBodyElement();
+  }
 }
 
 void StyleAdjuster::AdjustOverflow(ComputedStyle& style, Element* element) {
   DCHECK(style.OverflowX() != EOverflow::kVisible ||
          style.OverflowY() != EOverflow::kVisible);
 
-  if (style.IsDisplayTableBox()) {
+  if (element && element->IsReplacedElementRespectingCSSOverflow()) {
+    // Replaced elements support only 2 overflow configs: visible and clip. All
+    // values other than visible map to clip.
+    if (style.OverflowX() != EOverflow::kVisible)
+      style.SetOverflowX(EOverflow::kClip);
+    if (style.OverflowY() != EOverflow::kVisible)
+      style.SetOverflowY(EOverflow::kClip);
+  } else if (style.IsDisplayTableBox()) {
     // Tables only support overflow:hidden and overflow:visible and ignore
     // anything else, see https://drafts.csswg.org/css2/visufx.html#overflow. As
     // a table is not a block container box the rules for resolving conflicting
@@ -557,8 +562,10 @@ void StyleAdjuster::AdjustOverflow(ComputedStyle& style, Element* element) {
     else if (style.OverflowY() == EOverflow::kClip)
       style.SetOverflowY(EOverflow::kHidden);
   }
-  if (element && (style.OverflowX() == EOverflow::kClip ||
-                  style.OverflowY() == EOverflow::kClip)) {
+
+  if (element && !element->IsPseudoElement() &&
+      (style.OverflowX() == EOverflow::kClip ||
+       style.OverflowY() == EOverflow::kClip)) {
     UseCounter::Count(element->GetDocument(),
                       WebFeature::kOverflowClipAlongEitherAxis);
   }
@@ -580,10 +587,7 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       style.SetIsFlexOrGridItem();
   }
 
-  if (style.Display() == EDisplay::kBlock && !style.IsFloating())
-    return;
-
-  if (style.Display() == EDisplay::kContents)
+  if (style.Display() == EDisplay::kBlock)
     return;
 
   // FIXME: Don't support this mutation for pseudo styles like first-letter or
@@ -607,42 +611,30 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
     style.SetTextOrientation(layout_parent_style.GetTextOrientation());
     style.UpdateFontOrientation();
   }
-
-  // FIXME: Since we don't support block-flow on flexible boxes yet, disallow
-  // setting of block-flow to anything other than TopToBottomWritingMode.
-  // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-  if (style.GetWritingMode() != WritingMode::kHorizontalTb &&
-      style.IsDeprecatedWebkitBox()) {
-    style.SetWritingMode(WritingMode::kHorizontalTb);
-    style.UpdateFontOrientation();
-  }
-
-  // Disable editing custom layout elements, until EditingNG is ready.
-  if (!RuntimeEnabledFeatures::EditingNGEnabled() &&
-      (style.Display() == EDisplay::kLayoutCustom ||
-       style.Display() == EDisplay::kInlineLayoutCustom))
-    style.SetUserModify(EUserModify::kReadOnly);
-
-  if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
-    // We want to count vertical percentage paddings/margins on flex items
-    // because our current behavior is different from the spec and we want to
-    // gather compatibility data.
-    if (style.PaddingBefore().IsPercentOrCalc() ||
-        style.PaddingAfter().IsPercentOrCalc()) {
-      UseCounter::Count(document,
-                        WebFeature::kFlexboxPercentagePaddingVertical);
-    }
-    if (style.MarginBefore().IsPercentOrCalc() ||
-        style.MarginAfter().IsPercentOrCalc()) {
-      UseCounter::Count(document, WebFeature::kFlexboxPercentageMarginVertical);
-    }
-  }
 }
 
-static void AdjustEffectiveTouchAction(ComputedStyle& style,
-                                       const ComputedStyle& parent_style,
-                                       Element* element,
-                                       bool is_svg_root) {
+bool StyleAdjuster::IsEditableElement(Element* element,
+                                      const ComputedStyle& style) {
+  if (style.UserModify() != EUserModify::kReadOnly)
+    return true;
+
+  if (!element)
+    return false;
+
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
+    return !textarea->IsDisabledOrReadOnly();
+
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
+    return !input->IsDisabledOrReadOnly() && input->IsTextField();
+
+  return false;
+}
+
+void StyleAdjuster::AdjustEffectiveTouchAction(
+    ComputedStyle& style,
+    const ComputedStyle& parent_style,
+    Element* element,
+    bool is_svg_root) {
   TouchAction inherited_action = parent_style.GetEffectiveTouchAction();
 
   bool is_replaced_canvas = element && IsA<HTMLCanvasElement>(element) &&
@@ -718,32 +710,12 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   }
 }
 
-static void AdjustStateForContentVisibility(ComputedStyle& style,
-                                            Element* element) {
+static void AdjustStyleForInert(ComputedStyle& style, Element* element) {
   if (!element)
     return;
-  auto* context = element->GetDisplayLockContext();
-  // The common case for most elements is that we don't have a context and have
-  // the default (visible) content-visibility value.
-  if (LIKELY(!context &&
-             style.ContentVisibility() == EContentVisibility::kVisible)) {
-    return;
-  }
 
-  if (!context)
-    context = &element->EnsureDisplayLockContext();
-  context->SetRequestedState(style.ContentVisibility());
-  context->AdjustElementStyle(&style);
-}
-
-static void AdjustStyleForInert(ComputedStyle& style, Element* element) {
-  if (!element || style.IsForcedInert())
-    return;
-
-  if (RuntimeEnabledFeatures::InertAttributeEnabled() &&
-      element->FastHasAttribute(html_names::kInertAttr) &&
-      element->IsHTMLElement()) {
-    style.SetIsForcedInert();
+  if (element->IsInertRoot()) {
+    style.SetIsInert(true);
     return;
   }
 
@@ -790,6 +762,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   }
 
   auto* svg_element = DynamicTo<SVGElement>(element);
+
+  bool is_mathml_element = RuntimeEnabledFeatures::MathMLCoreEnabled() &&
+                           IsA<MathMLElement>(element);
+
   if (style.Display() != EDisplay::kNone) {
     if (svg_element)
       AdjustStyleForSvgElement(*svg_element, style);
@@ -826,8 +802,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
     // math display values on non-MathML elements compute to flow display
     // values.
-    if ((!element || !element->IsMathMLElement()) &&
+    if ((!element || !is_mathml_element) &&
         style.IsDisplayMathBox(style.Display())) {
+      DCHECK(RuntimeEnabledFeatures::MathMLCoreEnabled());
       style.SetDisplay(style.Display() == EDisplay::kBlockMath
                            ? EDisplay::kBlock
                            : EDisplay::kInline);
@@ -857,8 +834,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForFirstLetter(style);
   }
 
-  AdjustStateForContentVisibility(style, element);
-
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&
       !LayoutParentStyleForcesZIndexToCreateStackingContext(
@@ -872,20 +847,24 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   if (style.OverflowX() != EOverflow::kVisible ||
       style.OverflowY() != EOverflow::kVisible)
-    AdjustOverflow(style, element);
+    AdjustOverflow(style, element ? element : state.GetPseudoElement());
 
-  // overflow-clip-margin only applies if 'overflow: clip' is set along both
-  // axis or 'contain: paint'.
-  if (!style.ContainsPaint() && !(style.OverflowX() == EOverflow::kClip &&
-                                  style.OverflowY() == EOverflow::kClip)) {
-    style.SetOverflowClipMargin(
-        ComputedStyleInitialValues::InitialOverflowClipMargin());
-  }
-
-  if (StopPropagateTextDecorations(style, element))
+  // Highlight pseudos propagate decorations with inheritance only.
+  if (StopPropagateTextDecorations(style, element) || state.IsForHighlight())
     style.ClearAppliedTextDecorations();
   else
     style.RestoreParentTextDecorations(layout_parent_style);
+
+  // The computed value of currentColor for highlight pseudos is the
+  // color that would have been used if no highlights were applied,
+  // i.e. the originating element's color.
+  if (((RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+        state.IsForHighlight()) ||
+       state.IsForCustomHighlight()) &&
+      style.ColorIsCurrentColor() && state.OriginatingElementStyle()) {
+    style.SetColor(state.OriginatingElementStyle()->GetColor());
+  }
+
   if (style.Display() != EDisplay::kContents) {
     style.ApplyTextDecorations(
         parent_style.VisitedDependentColor(GetCSSPropertyTextDecorationColor()),
@@ -954,7 +933,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
     style.SetCssDominantBaseline(baseline);
 
-  } else if (element && element->IsMathMLElement()) {
+  } else if (is_mathml_element) {
     if (style.Display() == EDisplay::kContents) {
       // https://drafts.csswg.org/css-display/#unbox-mathml
       style.SetDisplay(EDisplay::kNone);

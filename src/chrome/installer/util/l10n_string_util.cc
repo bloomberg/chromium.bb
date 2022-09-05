@@ -15,7 +15,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
@@ -63,7 +62,7 @@ void SetTranslationDelegate(TranslationDelegate* delegate) {
   g_translation_delegate = delegate;
 }
 
-std::wstring GetLocalizedString(int base_message_id) {
+std::wstring GetLocalizedString(UINT base_message_id) {
   // Map |base_message_id| to the base id for the current install mode.
   base_message_id = GetBaseMessageIdForMode(base_message_id);
 
@@ -72,7 +71,8 @@ std::wstring GetLocalizedString(int base_message_id) {
 
   std::wstring localized_string;
 
-  int message_id = base_message_id + GetLanguageSelector().offset();
+  UINT message_id =
+      static_cast<UINT>(base_message_id + GetLanguageSelector().offset());
   const ATLSTRINGRESOURCEIMAGE* image =
       AtlGetStringResourceImage(_AtlBaseModule.GetModuleInstance(), message_id);
   if (image) {
@@ -84,7 +84,7 @@ std::wstring GetLocalizedString(int base_message_id) {
   return localized_string;
 }
 
-std::wstring GetLocalizedStringF(int base_message_id, const std::wstring& a) {
+std::wstring GetLocalizedStringF(UINT base_message_id, const std::wstring& a) {
   return base::ReplaceStringPlaceholders(GetLocalizedString(base_message_id),
                                          std::vector<std::wstring>(1, a),
                                          nullptr);
@@ -132,12 +132,12 @@ std::wstring GetCurrentTranslation() {
 
 int GetBaseMessageIdForMode(int base_message_id) {
 // Generate the constants holding the mode-specific resource ID arrays.
-#define HANDLE_MODE_STRING(id, ...)                                    \
-  static constexpr int k##id##Strings[] = {__VA_ARGS__};               \
-  static_assert(                                                       \
-      base::size(k##id##Strings) == install_static::NUM_INSTALL_MODES, \
-      "resource " #id                                                  \
-      " has the wrong number of mode-specific "                        \
+#define HANDLE_MODE_STRING(id, ...)                                   \
+  static constexpr int k##id##Strings[] = {__VA_ARGS__};              \
+  static_assert(                                                      \
+      std::size(k##id##Strings) == install_static::NUM_INSTALL_MODES, \
+      "resource " #id                                                 \
+      " has the wrong number of mode-specific "                       \
       "strings.");
   DO_MODE_STRINGS
 #undef HANDLE_MODE_STRING

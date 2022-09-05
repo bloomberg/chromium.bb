@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Commands} from './commands.js';
-import {Navigator} from './navigator.js';
-import {KeyboardRootNode} from './nodes/keyboard_node.js';
-import {PreferenceManager} from './preference_manager.js';
-import {SAConstants} from './switch_access_constants.js';
+import {Commands} from '/switch_access/commands.js';
+import {Navigator} from '/switch_access/navigator.js';
+import {KeyboardRootNode} from '/switch_access/nodes/keyboard_node.js';
+import {PreferenceManager} from '/switch_access/preference_manager.js';
+import {SAConstants} from '/switch_access/switch_access_constants.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
 
@@ -61,18 +61,9 @@ export class SwitchAccess {
      */
     this.enableImprovedTextInput_ = false;
 
-    /** @private {boolean} */
-    this.enableMultistepAutomationFeatures_ = false;
-
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-switch-access-text', (result) => {
           this.enableImprovedTextInput_ = result;
-        });
-
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-switch-access-multistep-automation',
-        (enabled) => {
-          this.enableMultistepAutomationFeatures_ = enabled;
         });
 
     /* @private {!SAConstants.Mode} */
@@ -86,11 +77,6 @@ export class SwitchAccess {
    */
   improvedTextInputEnabled() {
     return this.enableImprovedTextInput_;
-  }
-
-  /** @return {boolean} */
-  multistepAutomationFeaturesEnabled() {
-    return this.enableMultistepAutomationFeatures_;
   }
 
   /** @return {!SAConstants.Mode} */

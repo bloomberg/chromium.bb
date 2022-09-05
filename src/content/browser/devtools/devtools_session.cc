@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/debug/stack_trace.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
-#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
@@ -161,11 +161,11 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent,
   }
 
   use_io_session_ = force_using_io_session;
-  agent->AttachDevToolsSession(receiver_.BindNewEndpointAndPassRemote(),
-                               session_.BindNewEndpointAndPassReceiver(),
-                               io_session_.BindNewPipeAndPassReceiver(),
-                               session_state_cookie_.Clone(),
-                               client_->UsesBinaryProtocol(), session_id_);
+  agent->AttachDevToolsSession(
+      receiver_.BindNewEndpointAndPassRemote(),
+      session_.BindNewEndpointAndPassReceiver(),
+      io_session_.BindNewPipeAndPassReceiver(), session_state_cookie_.Clone(),
+      client_->UsesBinaryProtocol(), client_->IsTrusted(), session_id_);
   session_.set_disconnect_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
 
@@ -285,8 +285,17 @@ void DevToolsSession::DispatchProtocolMessage(
   std::string session_id(dispatchable.SessionId().begin(),
                          dispatchable.SessionId().end());
   auto it = child_sessions_.find(session_id);
-  if (it == child_sessions_.end())
+  if (it == child_sessions_.end()) {
+    auto error = crdtp::DispatchResponse::SessionNotFound(
+        "Session with given id not found.");
+    DispatchProtocolMessageToClient(
+        (dispatchable.HasCallId()
+             ? crdtp::CreateErrorResponse(dispatchable.CallId(),
+                                          std::move(error))
+             : crdtp::CreateErrorNotification(std::move(error)))
+            ->Serialize());
     return;
+  }
   DevToolsSession* session = it->second;
   DCHECK(!session->proxy_delegate_);
   session->DispatchProtocolMessageInternal(std::move(dispatchable), message);

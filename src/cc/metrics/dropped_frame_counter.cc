@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/features.h"
+#include "cc/metrics/custom_metrics_recorder.h"
 #include "cc/metrics/frame_sorter.h"
 #include "cc/metrics/total_frame_counter.h"
 #include "cc/metrics/ukm_smoothness_data.h"
@@ -31,7 +32,7 @@ constexpr double kBucketBounds[7] = {0, 3, 6, 12, 25, 50, 75};
 
 // Search backwards using the bucket bounds defined above.
 size_t DecideSmoothnessBucket(double pdf) {
-  size_t i = base::size(kBucketBounds) - 1;
+  size_t i = std::size(kBucketBounds) - 1;
   while (pdf < kBucketBounds[i])
     i--;
   return i;
@@ -75,6 +76,11 @@ double SlidingWindowHistogram::GetPercentDroppedFrameVariance() const {
   for (size_t i = 0; i < bin_count; ++i) {
     sum += histogram_bins_[i] * i;
   }
+
+  // Don't calculate if count is 1 or less. Avoid divide by zero.
+  if (total_count_ <= 1)
+    return 0;
+
   double average = sum / total_count_;
   sum = 0;  // Sum is reset to be used for variance calculation
 
@@ -85,17 +91,15 @@ double SlidingWindowHistogram::GetPercentDroppedFrameVariance() const {
     // histogram_bins_[i] times.
   }
 
-  if (total_count_ <= 1)
-    return 0;
   return sum / (total_count_ - 1);
 }
 
 std::vector<double> SlidingWindowHistogram::GetPercentDroppedFrameBuckets()
     const {
   if (total_count_ == 0)
-    return std::vector<double>(base::size(kBucketBounds), 0);
-  std::vector<double> buckets(base::size(kBucketBounds));
-  for (size_t i = 0; i < base::size(kBucketBounds); ++i) {
+    return std::vector<double>(std::size(kBucketBounds), 0);
+  std::vector<double> buckets(std::size(kBucketBounds));
+  for (size_t i = 0; i < std::size(kBucketBounds); ++i) {
     buckets[i] =
         static_cast<double>(smoothness_buckets_[i]) * 100 / total_count_;
   }
@@ -109,7 +113,7 @@ void SlidingWindowHistogram::Clear() {
 }
 
 std::ostream& SlidingWindowHistogram::Dump(std::ostream& stream) const {
-  for (size_t i = 0; i < base::size(histogram_bins_); ++i) {
+  for (size_t i = 0; i < std::size(histogram_bins_); ++i) {
     stream << i << ": " << histogram_bins_[i] << std::endl;
   }
   return stream << "Total: " << total_count_;
@@ -346,7 +350,7 @@ void DroppedFrameCounter::ReportFrames() {
         sliding_window_histogram_[SmoothnessStrategy::kDefaultStrategy]
             .GetPercentDroppedFrameBuckets();
     DCHECK_EQ(sliding_window_buckets.size(),
-              base::size(smoothness_data.buckets));
+              std::size(smoothness_data.buckets));
     std::copy(sliding_window_buckets.begin(), sliding_window_buckets.end(),
               smoothness_data.buckets);
 
@@ -394,18 +398,13 @@ void DroppedFrameCounter::ReportFrames() {
 
 void DroppedFrameCounter::ReportFramesForUI() {
   DCHECK(report_for_ui_);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  UMA_HISTOGRAM_PERCENTAGE(
-      "Ash.Smoothness.MaxPercentDroppedFrames_1sWindow.Uniform",
-      sliding_window_max_percent_dropped_);
 
-  if (sliding_window_max_percent_dropped_ !=
-      last_reported_metrics_.max_window) {
-    UMA_HISTOGRAM_PERCENTAGE("Ash.Smoothness.MaxPercentDroppedFrames_1sWindow",
-                             sliding_window_max_percent_dropped_);
-    last_reported_metrics_.max_window = sliding_window_max_percent_dropped_;
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* recorder = CustomMetricRecorder::Get();
+  if (!recorder)
+    return;
+
+  recorder->ReportPercentDroppedFramesInOneSecoundWindow(
+      sliding_window_current_percent_dropped_);
 }
 
 double DroppedFrameCounter::GetMostRecentAverageSmoothness() const {
@@ -475,6 +474,19 @@ void DroppedFrameCounter::NotifyFrameResult(const viz::BeginFrameArgs& args,
   sliding_window_.push({args, frame_info});
   UpdateDroppedFrameCountInWindow(frame_info, 1);
 
+  const bool is_dropped = frame_info.IsDroppedAffectingSmoothness();
+  if (!in_dropping_ && is_dropped) {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "cc,benchmark", "DroppedFrameDuration", TRACE_ID_LOCAL(this),
+        args.frame_time);
+    in_dropping_ = true;
+  } else if (in_dropping_ && !is_dropped) {
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "cc,benchmark", "DroppedFrameDuration", TRACE_ID_LOCAL(this),
+        args.frame_time);
+    in_dropping_ = false;
+  }
+
   if (ComputeCurrentWindowSize() < sliding_window_interval_)
     return;
 
@@ -527,7 +539,7 @@ void DroppedFrameCounter::PopSlidingWindow() {
   uint32_t dropped =
       dropped_frame_count_in_window_[SmoothnessStrategy::kDefaultStrategy] -
       invalidated_frames;
-  double percent_dropped_frame =
+  const double percent_dropped_frame =
       std::min((dropped * 100.0) / total_frames_in_window_, 100.0);
   sliding_window_histogram_[SmoothnessStrategy::kDefaultStrategy]
       .AddPercentDroppedFrame(percent_dropped_frame, count);
@@ -561,6 +573,7 @@ void DroppedFrameCounter::PopSlidingWindow() {
     time_max_delta_ = newest_args.frame_time - time_fcp_received_;
     sliding_window_max_percent_dropped_ = percent_dropped_frame;
   }
+  sliding_window_current_percent_dropped_ = percent_dropped_frame;
 
   latest_sliding_window_start_ = last_timestamp;
   latest_sliding_window_interval_ = remaining_oldest_args.interval;
@@ -579,7 +592,7 @@ void DroppedFrameCounter::UpdateDroppedFrameCountInWindow(
     dropped_frame_count_in_window_[SmoothnessStrategy::kDefaultStrategy] +=
         count;
   }
-  if (frame_info.WasCompositorUpdateDropped()) {
+  if (frame_info.WasSmoothCompositorUpdateDropped()) {
     DCHECK_GE(dropped_frame_count_in_window_
                       [SmoothnessStrategy::kCompositorFocusedStrategy] +
                   count,
@@ -587,7 +600,7 @@ void DroppedFrameCounter::UpdateDroppedFrameCountInWindow(
     dropped_frame_count_in_window_
         [SmoothnessStrategy::kCompositorFocusedStrategy] += count;
   }
-  if (frame_info.WasMainUpdateDropped()) {
+  if (frame_info.WasSmoothMainUpdateDropped()) {
     DCHECK_GE(dropped_frame_count_in_window_
                       [SmoothnessStrategy::kMainFocusedStrategy] +
                   count,

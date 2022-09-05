@@ -93,13 +93,13 @@ const X509V3_EXT_METHOD v3_name_constraints = {
     0, 0,
     0, v2i_NAME_CONSTRAINTS,
     i2r_NAME_CONSTRAINTS, 0,
-    NULL
+    NULL,
 };
 
 ASN1_SEQUENCE(GENERAL_SUBTREE) = {
         ASN1_SIMPLE(GENERAL_SUBTREE, base, GENERAL_NAME),
         ASN1_IMP_OPT(GENERAL_SUBTREE, minimum, ASN1_INTEGER, 0),
-        ASN1_IMP_OPT(GENERAL_SUBTREE, maximum, ASN1_INTEGER, 1)
+        ASN1_IMP_OPT(GENERAL_SUBTREE, maximum, ASN1_INTEGER, 1),
 } ASN1_SEQUENCE_END(GENERAL_SUBTREE)
 
 ASN1_SEQUENCE(NAME_CONSTRAINTS) = {
@@ -203,7 +203,8 @@ static int print_nc_ipadd(BIO *bp, ASN1_OCTET_STRING *ip)
                    p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
     } else if (len == 32) {
         for (i = 0; i < 16; i++) {
-            BIO_printf(bp, "%X", p[0] << 8 | p[1]);
+            uint16_t v = ((uint16_t)p[0] << 8) | p[1];
+            BIO_printf(bp, "%X", v);
             p += 2;
             if (i == 7)
                 BIO_puts(bp, "/");

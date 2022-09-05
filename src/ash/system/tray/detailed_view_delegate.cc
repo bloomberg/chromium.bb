@@ -39,7 +39,7 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
                                    : 0;
       layout = std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, left_padding, 0, 0), kUnifiedTopShortcutSpacing);
+          gfx::Insets::TLBR(0, left_padding, 0, 0), kUnifiedTopShortcutSpacing);
       layout->set_main_axis_alignment(
           views::BoxLayout::MainAxisAlignment::kCenter);
       layout->set_cross_axis_alignment(
@@ -104,10 +104,6 @@ absl::optional<SkColor> DetailedViewDelegate::GetBackgroundColor() {
   return absl::nullopt;
 }
 
-gfx::Insets DetailedViewDelegate::GetInsetsForDetailedView() const {
-  return kUnifiedDetailedViewPadding;
-}
-
 bool DetailedViewDelegate::IsOverflowIndicatorEnabled() const {
   return false;
 }
@@ -137,8 +133,8 @@ views::View* DetailedViewDelegate::CreateTitleSeparator() {
   title_separator_ = new views::Separator();
   title_separator_->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       ContentLayerType::kSeparatorColor));
-  title_separator_->SetBorder(views::CreateEmptyBorder(
-      kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
+  title_separator_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+      kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0)));
   return title_separator_;
 }
 
@@ -147,14 +143,15 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
   if (show_separator) {
     view->SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(
-            0, 0, kTraySeparatorWidth, 0,
+            gfx::Insets::TLBR(0, 0, kTraySeparatorWidth, 0),
             AshColorProvider::Get()->GetContentLayerColor(
                 ContentLayerType::kSeparatorColor)),
-        gfx::Insets(kMenuSeparatorVerticalPadding, 0,
-                    kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
+        gfx::Insets::TLBR(kMenuSeparatorVerticalPadding, 0,
+                          kMenuSeparatorVerticalPadding - kTraySeparatorWidth,
+                          0)));
   } else {
     view->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
+        gfx::Insets::VH(kMenuSeparatorVerticalPadding, 0)));
   }
   view->SchedulePaint();
 }
@@ -190,9 +187,9 @@ views::Button* DetailedViewDelegate::CreateInfoButton(
 views::Button* DetailedViewDelegate::CreateSettingsButton(
     views::Button::PressedCallback callback,
     int setting_accessible_name_id) {
-  auto* button =
-      new IconButton(std::move(callback), IconButton::Type::kSmall,
-                     &kUnifiedMenuSettingsIcon, setting_accessible_name_id);
+  auto* button = new IconButton(std::move(callback), IconButton::Type::kSmall,
+                                &vector_icons::kSettingsOutlineIcon,
+                                setting_accessible_name_id);
   if (!TrayPopupUtils::CanOpenWebUISettings())
     button->SetEnabled(false);
   return button;

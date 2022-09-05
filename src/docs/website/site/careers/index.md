@@ -17,7 +17,7 @@ title: Chrome Web Platform External Current Positions
 > content & software experiences. The web platform is the stage upon which
 > developers bring their content and experiences to the world.
 
-> See [g.co/chrome/hiring](http://g.co/chrome/hiring) for a list of job openings
+> See [goo.gl/chrome/hiring](https://goo.gl/chrome/hiring) for a list of job openings
 > across Chrome:
 
 > #### Chrome Jobs

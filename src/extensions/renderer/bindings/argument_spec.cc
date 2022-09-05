@@ -176,10 +176,8 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
     // always update this if need be.
     const base::ListValue* enums = nullptr;
     if (dict->GetList("enum", &enums)) {
-      size_t size = enums->GetList().size();
-      CHECK_GT(size, 0u);
-      for (size_t i = 0; i < size; ++i) {
-        const base::Value& value = enums->GetList()[i];
+      CHECK(!enums->GetList().empty());
+      for (const base::Value& value : enums->GetList()) {
         const std::string* enum_str = value.GetIfString();
         // Enum entries come in two versions: a list of possible strings, and
         // a dictionary with a field 'name'.
@@ -699,7 +697,7 @@ bool ArgumentSpec::ParseArgumentToArray(v8::Local<v8::Context> context,
       return false;
     }
     if (out_value)
-      result->Append(std::move(item));
+      result->Append(base::Value::FromUniquePtrValue(std::move(item)));
     if (v8_out_value) {
       // This should never fail, since it's a newly-created array with
       // CreateDataProperty().

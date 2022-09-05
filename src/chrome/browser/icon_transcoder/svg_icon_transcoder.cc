@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
@@ -23,8 +22,8 @@ std::string ReadSvgOnFileThread(base::FilePath svg_path) {
   std::string svg_data;
   if (base::PathExists(svg_path)) {
     base::ReadFileToString(svg_path, &svg_data);
+    LOG_IF(ERROR, svg_data.empty()) << "Empty svg data at path " << svg_path;
   }
-  LOG_IF(ERROR, svg_data.empty()) << "No svg data at path " << svg_path;
   return svg_data;
 }
 
@@ -122,7 +121,7 @@ void SvgIconTranscoder::MaybeCreateWebContents() {
         content::WebContents::CreateParams::kInitializeAndWarmupRendererProcess;
     web_contents_ = content::WebContents::Create(params);
     // When we observe RenderProcessExited, we will need to recreate.
-    web_contents_->GetMainFrame()->GetProcess()->AddObserver(this);
+    web_contents_->GetPrimaryMainFrame()->GetProcess()->AddObserver(this);
   }
 }
 
@@ -130,7 +129,7 @@ bool SvgIconTranscoder::PrepareWebContents() {
   if (!web_contents_ready_) {
     // Old web_contents_ may have been destroyed.
     MaybeCreateWebContents();
-    if (web_contents_->GetMainFrame()->IsRenderFrameLive()) {
+    if (web_contents_->GetPrimaryMainFrame()->IsRenderFrameLive()) {
       web_contents_ready_ = true;
     }
     VLOG(1) << "web_contents "
@@ -152,8 +151,8 @@ void SvgIconTranscoder::RenderProcessExited(
 }
 
 void SvgIconTranscoder::RemoveObserver() {
-  if (web_contents_ && web_contents_->GetMainFrame()) {
-    web_contents_->GetMainFrame()->GetProcess()->RemoveObserver(this);
+  if (web_contents_ && web_contents_->GetPrimaryMainFrame()) {
+    web_contents_->GetPrimaryMainFrame()->GetProcess()->RemoveObserver(this);
   }
 }
 
@@ -192,13 +191,15 @@ void SvgIconTranscoder::OnDownloadImage(base::FilePath png_path,
           [](base::FilePath png_path, IconContentCallback callback,
              std::string compressed) {
             if (!compressed.empty() && !png_path.empty()) {
-              base::ThreadPool::PostTask(
+              base::ThreadPool::PostTaskAndReply(
                   FROM_HERE,
                   {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                   base::BindOnce(&SaveIconOnFileThread, std::move(png_path),
-                                 compressed));
+                                 compressed),
+                  base::BindOnce(std::move(callback), compressed));
+            } else {
+              std::move(callback).Run(std::move(compressed));
             }
-            std::move(callback).Run(std::move(compressed));
           },
           std::move(png_path), std::move(callback)));
 }

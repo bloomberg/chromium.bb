@@ -9,16 +9,18 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_iterator.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
+#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
+#include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
-#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -49,35 +51,62 @@ class LDBComparator : public leveldb::Comparator {
 const base::FilePath::CharType kBlobExtension[] = FILE_PATH_LITERAL(".blob");
 const base::FilePath::CharType kIndexedDBExtension[] =
     FILE_PATH_LITERAL(".indexeddb");
+const base::FilePath::CharType kIndexedDBFile[] =
+    FILE_PATH_LITERAL("indexeddb");
 const base::FilePath::CharType kLevelDBExtension[] =
     FILE_PATH_LITERAL(".leveldb");
 
 // static
-base::FilePath GetBlobStoreFileName(const blink::StorageKey& storage_key) {
-  // TODO(crbug.com/1199077): This will be replaced when the new storage is
-  // implemented.
-  std::string storage_key_id =
-      storage::GetIdentifierFromOrigin(storage_key.origin());
-  return base::FilePath()
-      .AppendASCII(storage_key_id)
-      .AddExtension(kIndexedDBExtension)
-      .AddExtension(kBlobExtension);
+base::FilePath GetBlobStoreFileName(
+    const storage::BucketLocator& bucket_locator) {
+  // TODO(crbug.com/1315371): Allow custom bucket names.
+  if (bucket_locator.storage_key.IsFirstPartyContext()) {
+    // First-party blob files, for legacy reasons, are stored at:
+    // {{first_party_data_path}}/{{serialized_origin}}.indexeddb.blob
+    return base::FilePath()
+        .AppendASCII(storage::GetIdentifierFromOrigin(
+            bucket_locator.storage_key.origin()))
+        .AddExtension(kIndexedDBExtension)
+        .AddExtension(kBlobExtension);
+  } else {
+    // Third-party blob files are stored at:
+    // {{third_party_data_path}}/{{bucket_id}}/IndexedDB/indexeddb.blob
+    return base::FilePath()
+        .AppendASCII(base::NumberToString(bucket_locator.id.GetUnsafeValue()))
+        .Append(storage::kIndexedDbDirectory)
+        .Append(kIndexedDBFile)
+        .AddExtension(kBlobExtension);
+  }
 }
 
 // static
-base::FilePath GetLevelDBFileName(const blink::StorageKey& storage_key) {
-  // TODO(crbug.com/1199077): This will be replaced when the new storage is
-  // implemented.
-  std::string storage_key_id =
-      storage::GetIdentifierFromOrigin(storage_key.origin());
-  return base::FilePath()
-      .AppendASCII(storage_key_id)
-      .AddExtension(kIndexedDBExtension)
-      .AddExtension(kLevelDBExtension);
+base::FilePath GetLevelDBFileName(
+    const storage::BucketLocator& bucket_locator) {
+  // TODO(crbug.com/1315371): Allow custom bucket names.
+  if (bucket_locator.storage_key.IsFirstPartyContext()) {
+    // First-party leveldb files, for legacy reasons, are stored at:
+    // {{first_party_data_path}}/{{serialized_origin}}.indexeddb.leveldb
+    // TODO(crbug.com/1315371): Migrate all first party buckets to the new path.
+    return base::FilePath()
+        .AppendASCII(storage::GetIdentifierFromOrigin(
+            bucket_locator.storage_key.origin()))
+        .AddExtension(kIndexedDBExtension)
+        .AddExtension(kLevelDBExtension);
+  } else {
+    // Third-party leveldb files are stored at:
+    // {{third_party_data_path}}/{{bucket_id}}/IndexedDB/indexeddb.leveldb
+    // TODO(crbug.com/1315371): Use QuotaManagerProxy::GetClientBucketPath.
+    return base::FilePath()
+        .AppendASCII(base::NumberToString(bucket_locator.id.GetUnsafeValue()))
+        .Append(storage::kIndexedDbDirectory)
+        .Append(kIndexedDBFile)
+        .AddExtension(kLevelDBExtension);
+  }
 }
 
-base::FilePath ComputeCorruptionFileName(const blink::StorageKey& storage_key) {
-  return GetLevelDBFileName(storage_key)
+base::FilePath ComputeCorruptionFileName(
+    const storage::BucketLocator& bucket_locator) {
+  return GetLevelDBFileName(bucket_locator)
       .Append(FILE_PATH_LITERAL("corruption_info.json"));
 }
 
@@ -88,7 +117,7 @@ bool IsPathTooLong(storage::FilesystemProxy* filesystem,
   if (!limit.has_value()) {
     DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
 // In limited testing, ChromeOS returns 143, other OSes 255.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     limit = 143;
 #else
     limit = 255;
@@ -112,9 +141,9 @@ bool IsPathTooLong(storage::FilesystemProxy* filesystem,
 
 std::string ReadCorruptionInfo(storage::FilesystemProxy* filesystem_proxy,
                                const base::FilePath& path_base,
-                               const blink::StorageKey& storage_key) {
+                               const storage::BucketLocator& bucket_locator) {
   const base::FilePath info_path =
-      path_base.Append(indexed_db::ComputeCorruptionFileName(storage_key));
+      path_base.Append(indexed_db::ComputeCorruptionFileName(bucket_locator));
   std::string message;
   if (IsPathTooLong(filesystem_proxy, info_path))
     return message;
@@ -137,7 +166,7 @@ std::string ReadCorruptionInfo(storage::FilesystemProxy* filesystem_proxy,
     if (file.IsValid()) {
       std::string input_js(file_info->size, '\0');
       if (file_info->size ==
-          file.Read(0, base::data(input_js), file_info->size)) {
+          file.Read(0, std::data(input_js), file_info->size)) {
         absl::optional<base::Value> val = base::JSONReader::Read(input_js);
         if (val && val->is_dict()) {
           std::string* s = val->FindStringKey("message");

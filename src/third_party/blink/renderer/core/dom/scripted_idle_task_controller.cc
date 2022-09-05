@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -121,8 +122,8 @@ ScriptedIdleTaskController::RegisterCallback(
   idle_tasks_.Set(id, idle_task);
   uint32_t timeout_millis = options->timeout();
 
-  probe::AsyncTaskScheduled(GetExecutionContext(), "requestIdleCallback",
-                            idle_task->async_task_id());
+  idle_task->async_task_context()->Schedule(GetExecutionContext(),
+                                            "requestIdleCallback");
 
   scoped_refptr<internal::IdleRequestCallbackWrapper> callback_wrapper =
       internal::IdleRequestCallbackWrapper::Create(id, this);
@@ -199,7 +200,7 @@ void ScriptedIdleTaskController::RunCallback(
       std::max(deadline - base::TimeTicks::Now(), base::TimeDelta());
 
   probe::AsyncTask async_task(GetExecutionContext(),
-                              idle_task->async_task_id());
+                              idle_task->async_task_context());
   probe::UserCallback probe(GetExecutionContext(), "requestIdleCallback",
                             AtomicString(), true);
 

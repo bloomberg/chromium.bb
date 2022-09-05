@@ -123,39 +123,6 @@ public:
 
         return makeBidiIterator(utf16.get(), utf16Units, dir);
     }
-
-    // This method returns the final results only: a list of bidi regions
-    // (this is all SkParagraph really needs; SkShaper however uses the iterator itself)
-    static std::vector<Region> getBidiRegions(const char utf8[], int utf8Units, Direction dir) {
-
-        auto bidiIterator = makeBidiIterator(utf8, utf8Units, dir);
-        std::vector<Region> bidiRegions;
-        const char* start8 = utf8;
-        const char* end8 = utf8 + utf8Units;
-        SkBidiIterator::Level currentLevel = 0;
-
-        Position pos8 = 0;
-        Position pos16 = 0;
-        Position end16 = bidiIterator->getLength();
-        while (pos16 < end16) {
-            auto level = bidiIterator->getLevelAt(pos16);
-            if (pos16 == 0) {
-                currentLevel = level;
-            } else if (level != currentLevel) {
-                auto end = SkTo<Position>(start8 - utf8);
-                bidiRegions.emplace_back(pos8, end, currentLevel);
-                currentLevel = level;
-                pos8 = end;
-            }
-            SkUnichar u = utf8_next(&start8, end8);
-            pos16 += SkUTF::ToUTF16(u);
-        }
-        auto end = start8 - utf8;
-        if (end != pos8) {
-            bidiRegions.emplace_back(pos8, end, currentLevel);
-        }
-        return bidiRegions;
-    }
 };
 
 void SkBidiIterator::ReorderVisual(const Level runLevels[], int levelsCount,
@@ -310,6 +277,16 @@ class SkUnicode_icu : public SkUnicode {
         Position pos8 = 0;
         Position pos16 = 0;
         Position end16 = sk_ubidi_getLength(bidi.get());
+
+        if (end16 == 0) {
+            return true;
+        }
+        if (sk_ubidi_getDirection(bidi.get()) != UBIDI_MIXED) {
+            // The entire paragraph is unidirectional.
+            bidiRegions->emplace_back(0, utf8Units, sk_ubidi_getLevelAt(bidi.get(), 0));
+            return true;
+        }
+
         while (pos16 < end16) {
             auto level = sk_ubidi_getLevelAt(bidi.get(), pos16);
             if (pos16 == 0) {
@@ -442,6 +419,11 @@ public:
         return SkScriptIterator_icu::makeScriptIterator();
     }
 
+    static bool isHardLineBreak(SkUnichar utf8) {
+        auto property = sk_u_getIntPropertyValue(utf8, UCHAR_LINE_BREAK);
+        return property == U_LB_LINE_FEED || property == U_LB_MANDATORY_BREAK;
+    }
+
     // TODO: Use ICU data file to detect controls and whitespaces
     bool isControl(SkUnichar utf8) override {
         return sk_u_iscntrl(utf8);
@@ -455,9 +437,8 @@ public:
         return sk_u_isspace(utf8);
     }
 
-    static bool isHardLineBreak(SkUnichar utf8) {
-        auto property = sk_u_getIntPropertyValue(utf8, UCHAR_LINE_BREAK);
-        return property == U_LB_LINE_FEED || property == U_LB_MANDATORY_BREAK;
+    bool isHardBreak(SkUnichar utf8) override {
+        return SkUnicode_icu::isHardLineBreak(utf8);
     }
 
     SkString toUpper(const SkString& str) override {

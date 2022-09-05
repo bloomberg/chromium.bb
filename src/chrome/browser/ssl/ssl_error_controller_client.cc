@@ -13,7 +13,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/launch.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -38,7 +37,7 @@
 #include "chrome/common/webui_url_constants.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/base_paths_win.h"
 #include "base/path_service.h"
 #include "base/win/windows_version.h"

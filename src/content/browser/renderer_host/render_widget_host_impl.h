@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -18,16 +17,13 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/kill.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/mojom/render_frame_metadata.mojom.h"
@@ -45,20 +41,17 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/scheduler/browser_task_executor.h"
+#include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom-forward.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/common/page_zoom.h"
-#include "content/public/common/url_constants.h"
-#include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-forward.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
@@ -75,11 +68,11 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/latency/latency_info.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #endif
 
@@ -101,7 +94,6 @@ enum class DomCode;
 }
 
 namespace content {
-class AgentSchedulingGroupHost;
 class BrowserAccessibilityManager;
 class FlingSchedulerBase;
 class FrameTree;
@@ -109,6 +101,7 @@ class InputRouter;
 class MockRenderWidgetHost;
 class PeakGpuMemoryTracker;
 class RenderWidgetHostOwnerDelegate;
+class SiteInstanceGroup;
 class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
@@ -159,7 +152,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   static std::unique_ptr<RenderWidgetHostImpl> Create(
       FrameTree* frame_tree,
       RenderWidgetHostDelegate* delegate,
-      AgentSchedulingGroupHost& agent_scheduling_host,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t routing_id,
       bool hidden,
       bool renderer_initiated_creation,
@@ -175,7 +168,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   static RenderWidgetHostImpl* CreateSelfOwned(
       FrameTree* frame_tree,
       RenderWidgetHostDelegate* delegate,
-      AgentSchedulingGroupHost& agent_scheduling_host,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t routing_id,
       bool hidden,
       std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue);
@@ -426,7 +419,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request);
   void CancelPresentationTimeRequest();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Set the importance of widget. The importance is passed onto
   // RenderProcessHost which aggregates importance of all of its widgets.
   void SetImportance(ChildProcessImportance importance);
@@ -461,6 +454,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // update. Users other than WebContents and RenderWidgetHost should use
   // Focus()/Blur().
   void SetPageFocus(bool focused);
+
+  // Returns true if the RenderWidgetHost thinks it is active. This
+  // is different than `is_focused` but must always be true if `is_focused`
+  // is true. All RenderWidgetHosts in an active tab are considered active,
+  // but only one FrameTree can have page focus (e.g., an inner frame
+  // tree (fenced frame or portals) will not have focus if the primary frame
+  // tree has focus. See
+  // https://www.chromium.org/developers/design-documents/aura/focus-and-activation.
+  bool is_active() const { return is_active_; }
 
   // Called to notify the RenderWidget that it has lost the mouse lock.
   void LostMouseLock();
@@ -875,15 +877,19 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override;
 
+  SiteInstanceGroup* GetSiteInstanceGroup();
+
  protected:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
-  // |delegate| goes away.
+  // |delegate| goes away. |site_instance_group| will outlive this
+  // widget but we store it via a `base::SafeRef` instead of a scoped_refptr to
+  // not create a cycle and keep alive the `SiteInstanceGroup`.
   RenderWidgetHostImpl(
       FrameTree* frame_tree,
       bool self_owned,
       RenderWidgetHostDelegate* delegate,
-      AgentSchedulingGroupHost& agent_scheduling_host,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t routing_id,
       bool hidden,
       bool renderer_initiated_creation,
@@ -1096,7 +1102,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Stop intercepting system keyboard events.
   void UnlockKeyboard();
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   device::mojom::WakeLock* GetWakeLock();
 #endif
 
@@ -1164,8 +1170,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // AgentSchedulingGroupHost to be used for IPC with the corresponding
   // (renderer-side) AgentSchedulingGroup. Its channel may be nullptr if the
-  // renderer crashed.
+  // renderer crashed. We store it here as a separate reference instead of
+  // dynamically fetching it from `site_instance_group_` since its
+  // value gets cleared early in `SiteInstanceGroup` via
+  // RenderProcessHostDestroyed before this object is destroyed.
   AgentSchedulingGroupHost& agent_scheduling_group_;
+
+  // The SiteInstanceGroup this RenderWidgetHost belongs to.
+  base::SafeRef<SiteInstanceGroup> site_instance_group_;
 
   // The ID of the corresponding object in the Renderer Instance.
   const int routing_id_;
@@ -1187,7 +1199,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // The other side is held be the renderer.
   mojo::Receiver<blink::mojom::PointerLockContext> mouse_lock_context_{this};
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Tracks the current importance of widget.
   ChildProcessImportance importance_ = ChildProcessImportance::NORMAL;
 #endif
@@ -1252,7 +1264,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::ObserverList<RenderWidgetHost::InputEventObserver>::Unchecked
       input_event_observers_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Ime input event callbacks. This is separated from input_event_observers_,
   // because not all text events are triggered by input events on Android.
   base::ObserverList<RenderWidgetHost::InputEventObserver>::Unchecked
@@ -1331,6 +1343,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // causing HasFocus to return false when is_focused_ is true.
   bool is_focused_ = false;
 
+  // Indicates whether what the last focus active state that was sent to the
+  // renderer.
+  bool is_active_ = false;
+
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;
 
@@ -1343,7 +1359,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // node.
   bool monitoring_composition_info_ = false;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
@@ -1427,6 +1443,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   std::unique_ptr<power_scheduler::PowerModeVoter> power_mode_loading_voter_;
   absl::optional<BrowserUIThreadScheduler::UserInputActiveHandle>
       user_input_active_handle_;
+
+  // Use for metrics reporting. Used to check if
+  // OnRenderFrameMetadataChangedAfterActivation is being called for the first
+  // time.
+  bool first_surface_activated_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 };

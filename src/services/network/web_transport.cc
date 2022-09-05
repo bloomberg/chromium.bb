@@ -12,12 +12,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
-#include "net/quic/platform/impl/quic_mem_slice_impl.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
+#include "net/third_party/quiche/src/quiche/common/platform/api/quiche_mem_slice.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_session.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_time.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_types.h"
 #include "services/network/network_context.h"
 #include "services/network/public/mojom/web_transport.mojom.h"
 
@@ -49,22 +47,26 @@ class WebTransport::Stream final {
     explicit StreamVisitor(Stream* stream)
         : stream_(stream->weak_factory_.GetWeakPtr()) {}
     ~StreamVisitor() override {
-      if (stream_) {
-        if (stream_->incoming_) {
-          stream_->writable_watcher_.Cancel();
-          stream_->writable_.reset();
-          stream_->transport_->client_->OnIncomingStreamClosed(
-              stream_->id_,
-              /*fin_received=*/false);
-          stream_->incoming_ = nullptr;
-        }
-        if (stream_->outgoing_) {
-          stream_->readable_watcher_.Cancel();
-          stream_->readable_.reset();
-          stream_->outgoing_ = nullptr;
-        }
-        stream_->MayDisposeLater();
+      Stream* stream = stream_.get();
+      if (!stream) {
+        return;
       }
+      if (stream->incoming_) {
+        stream->writable_watcher_.Cancel();
+        stream->writable_.reset();
+        if (stream->transport_->client_) {
+          stream->transport_->client_->OnIncomingStreamClosed(
+              stream->id_,
+              /*fin_received=*/false);
+        }
+        stream->incoming_ = nullptr;
+      }
+      if (stream->outgoing_) {
+        stream->readable_watcher_.Cancel();
+        stream->readable_.reset();
+        stream->outgoing_ = nullptr;
+      }
+      stream->MayDisposeLater();
     }
 
     // Visitor implementation:
@@ -405,10 +407,10 @@ void WebTransport::SendDatagram(base::span<const uint8_t> data,
 
   datagram_callbacks_.emplace(std::move(callback));
 
-  auto buffer = base::MakeRefCounted<net::IOBuffer>(data.size());
-  memcpy(buffer->data(), data.data(), data.size());
-  quic::QuicMemSlice slice(
-      quic::QuicMemSliceImpl(std::move(buffer), data.size()));
+  quiche::QuicheBuffer buffer(quiche::SimpleBufferAllocator::Get(),
+                              data.size());
+  memcpy(buffer.data(), data.data(), data.size());
+  quiche::QuicheMemSlice slice(std::move(buffer));
   transport_->session()->SendOrQueueDatagram(std::move(slice));
 }
 
@@ -503,7 +505,7 @@ void WebTransport::StopSending(uint32_t stream, uint8_t code) {
 
 void WebTransport::SetOutgoingDatagramExpirationDuration(
     base::TimeDelta duration) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
 
@@ -512,7 +514,7 @@ void WebTransport::SetOutgoingDatagramExpirationDuration(
 }
 
 void WebTransport::Close(mojom::WebTransportCloseInfoPtr close_info) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
   closing_ = true;
@@ -543,7 +545,7 @@ void WebTransport::Close(mojom::WebTransportCloseInfoPtr close_info) {
 
 void WebTransport::OnConnected(
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
 
@@ -562,7 +564,7 @@ void WebTransport::OnConnected(
 }
 
 void WebTransport::OnConnectionFailed(const net::WebTransportError& error) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
 
@@ -611,6 +613,10 @@ void WebTransport::OnError(const net::WebTransportError& error) {
 }
 
 void WebTransport::OnIncomingBidirectionalStreamAvailable() {
+  if (torn_down_ || closing_) {
+    return;
+  }
+
   DCHECK(!handshake_client_);
   DCHECK(client_);
 
@@ -653,6 +659,10 @@ void WebTransport::OnIncomingBidirectionalStreamAvailable() {
 }
 
 void WebTransport::OnIncomingUnidirectionalStreamAvailable() {
+  if (torn_down_ || closing_) {
+    return;
+  }
+
   DCHECK(!handshake_client_);
   DCHECK(client_);
 
@@ -687,7 +697,7 @@ void WebTransport::OnIncomingUnidirectionalStreamAvailable() {
 }
 
 void WebTransport::OnDatagramReceived(base::StringPiece datagram) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
 

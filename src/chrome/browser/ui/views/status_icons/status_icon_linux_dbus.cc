@@ -20,7 +20,6 @@
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "components/dbus/menu/menu.h"
@@ -152,9 +151,11 @@ bool ShouldWriteIconToFile() {
       return true;
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
     case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
+    case base::nix::DESKTOP_ENVIRONMENT_DEEPIN:
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
     case base::nix::DESKTOP_ENVIRONMENT_KDE5:
+    case base::nix::DESKTOP_ENVIRONMENT_UKUI:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
       return false;
@@ -319,11 +320,11 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
       {kMethodSecondaryActivate, &StatusIconLinuxDbus::OnSecondaryActivate},
   };
 
-  // The barrier requires base::size(methods) + 2 calls.  base::size(methods)
+  // The barrier requires std::size(methods) + 2 calls.  std::size(methods)
   // for each method exported, 1 for |properties_| initialization, and 1 for
   // |menu_| initialization.
   barrier_ =
-      SuccessBarrierCallback(base::size(methods) + 2,
+      SuccessBarrierCallback(std::size(methods) + 2,
                              base::BindOnce(&StatusIconLinuxDbus::OnInitialized,
                                             weak_factory_.GetWeakPtr()));
 
@@ -515,7 +516,7 @@ void StatusIconLinuxDbus::CleanupIconFile() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!icon_file_.empty()) {
     icon_task_runner_->PostTask(
-        FROM_HERE, (base::BindOnce(base::GetDeletePathRecursivelyCallback(),
-                                   icon_file_.DirName())));
+        FROM_HERE,
+        (base::GetDeletePathRecursivelyCallback(icon_file_.DirName())));
   }
 }

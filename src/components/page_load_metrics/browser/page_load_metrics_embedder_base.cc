@@ -9,6 +9,7 @@
 #include "components/page_load_metrics/browser/observers/back_forward_cache_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/observers/core/uma_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/observers/early_hints_page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/observers/fenced_frames_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/observers/layout_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/observers/prerender_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/observers/use_counter_page_load_metrics_observer.h"
@@ -24,13 +25,15 @@ PageLoadMetricsEmbedderBase::~PageLoadMetricsEmbedderBase() = default;
 
 void PageLoadMetricsEmbedderBase::RegisterObservers(PageLoadTracker* tracker) {
   // Register observers used by all embedders
-  if (!IsNoStatePrefetch(web_contents())) {
+  if (!IsNoStatePrefetch(web_contents()) && !IsSidePanel(web_contents())) {
     tracker->AddObserver(
         std::make_unique<BackForwardCachePageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<UmaPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<LayoutPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<UseCounterPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<EarlyHintsPageLoadMetricsObserver>());
+    tracker->AddObserver(
+        std::make_unique<FencedFramesPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<PrerenderPageLoadMetricsObserver>());
   }
   // Allow the embedder to register any embedder-specific observers

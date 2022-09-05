@@ -11,6 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -151,8 +153,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   // Render Thread.
   THREAD_CHECKER(main_render_thread_checker_);
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  // Can be null in testing.
-  scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
 
   base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track_;
 
@@ -175,17 +176,13 @@ MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
     base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track,
     bool enabled)
     : io_task_runner_(std::move(io_task_runner)),
+      // TODO(crbug.com/1223353, crbug.com/624696): Move to WebFrameScheduler.
+      main_render_task_runner_(Thread::MainThread()->GetTaskRunner()),
       media_stream_video_track_(media_stream_video_track),
       enabled_(enabled),
       emit_frame_drop_events_(true),
       await_next_key_frame_(false) {
   DCHECK(io_task_runner_.get());
-
-  WebLocalFrame* web_frame = WebLocalFrame::FrameForCurrentContext();
-  if (web_frame) {
-    main_render_task_runner_ =
-        web_frame->GetTaskRunner(TaskType::kInternalMedia);
-  }
 }
 
 MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
@@ -326,7 +323,7 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
     std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
     base::TimeTicks estimated_capture_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (!enabled_ && main_render_task_runner_ && emit_frame_drop_events_) {
+  if (!enabled_ && emit_frame_drop_events_) {
     emit_frame_drop_events_ = false;
 
     // TODO(crbug.com/964947): A weak ptr instance of MediaStreamVideoTrack is
@@ -356,7 +353,7 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
   // frames will only be requested when the source has halted delivery (e.g., a
   // screen capturer stops sending frames because the screen is not being
   // updated).
-  if (main_render_task_runner_ && is_refreshing_for_min_frame_rate_) {
+  if (is_refreshing_for_min_frame_rate_) {
     PostCrossThreadTask(
         *main_render_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&MediaStreamVideoTrack::ResetRefreshTimer,
@@ -411,9 +408,9 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
-  auto* component = MakeGarbageCollected<MediaStreamComponent>(source->Owner());
-  component->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
-      source, std::move(callback), enabled));
+  auto* component = MakeGarbageCollected<MediaStreamComponent>(
+      source->Owner(), std::make_unique<MediaStreamVideoTrack>(
+                           source, std::move(callback), enabled));
   return WebMediaStreamTrack(component);
 }
 
@@ -431,10 +428,12 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
   WebMediaStreamTrack track;
-  auto* component = MakeGarbageCollected<MediaStreamComponent>(source->Owner());
-  component->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
-      source, adapter_settings, noise_reduction, is_screencast, min_frame_rate,
-      pan, tilt, zoom, pan_tilt_zoom_allowed, std::move(callback), enabled));
+  auto* component = MakeGarbageCollected<MediaStreamComponent>(
+      source->Owner(),
+      std::make_unique<MediaStreamVideoTrack>(
+          source, adapter_settings, noise_reduction, is_screencast,
+          min_frame_rate, pan, tilt, zoom, pan_tilt_zoom_allowed,
+          std::move(callback), enabled));
   return WebMediaStreamTrack(component);
 }
 
@@ -693,7 +692,6 @@ void MediaStreamVideoTrack::GetSettings(
   if (format) {
     if (frame_rate_ == 0.0)
       settings.frame_rate = format->frame_rate;
-    settings.video_kind = GetVideoKindForFormat(*format);
   } else {
     // Format is only set for local tracks. For other tracks, use the frame rate
     // reported through settings callback SetSizeAndComputedFrameRate().
@@ -706,8 +704,8 @@ void MediaStreamVideoTrack::GetSettings(
   settings.resize_mode = WebString::FromASCII(std::string(
       adapter_settings().target_size() ? WebMediaStreamTrack::kResizeModeRescale
                                        : WebMediaStreamTrack::kResizeModeNone));
-  if (source_->device().display_media_info.has_value()) {
-    const auto& info = source_->device().display_media_info.value();
+  if (source_->device().display_media_info) {
+    const auto& info = source_->device().display_media_info;
     settings.display_surface = info->display_surface;
     settings.logical_surface = info->logical_surface;
     settings.cursor = info->cursor;
@@ -725,11 +723,11 @@ MediaStreamVideoTrack::GetCaptureHandle() {
   }
 
   const MediaStreamDevice& device = source_->device();
-  if (!device.display_media_info.has_value()) {
+  if (!device.display_media_info) {
     return capture_handle;
   }
   const media::mojom::DisplayMediaInformationPtr& info =
-      device.display_media_info.value();
+      device.display_media_info;
 
   if (!info->capture_handle) {
     return capture_handle;

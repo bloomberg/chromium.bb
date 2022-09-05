@@ -59,14 +59,16 @@ class AssistiveWindowController : public views::WidgetObserver,
   std::u16string GetSuggestionText() const override;
   size_t GetConfirmedLength() const override;
   void FocusStateChanged() override;
-  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
   void Announce(const std::u16string& message) override;
 
   // ui::ime::AssistiveDelegate implementation.
   void AssistiveWindowButtonClicked(
       const ui::ime::AssistiveWindowButton& button) const override;
-
-  void InitSuggestionWindow();
+  ui::ime::SuggestionWindowView::Orientation WindowOrientationFor(
+      ui::ime::AssistiveWindowType window_type);
+  void InitSuggestionWindow(
+      ui::ime::SuggestionWindowView::Orientation orientation);
   void InitUndoWindow();
   void InitGrammarSuggestionWindow();
   void InitAccessibilityView();

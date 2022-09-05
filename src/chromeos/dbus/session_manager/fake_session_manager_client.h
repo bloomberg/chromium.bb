@@ -104,7 +104,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void NotifyLockScreenShown() override;
   void NotifyLockScreenDismissed() override;
   bool RequestBrowserDataMigration(
-      const cryptohome::AccountIdentifier& cryptohome_id) override;
+      const cryptohome::AccountIdentifier& cryptohome_id,
+      const bool is_move) override;
   void RetrieveActiveSessions(ActiveSessionsCallback callback) override;
   void RetrieveDevicePolicy(RetrievePolicyCallback callback) override;
   RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
@@ -193,6 +194,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
 
   absl::optional<RestartJobReason> restart_job_reason() const {
     return restart_job_reason_;
+  }
+
+  void set_stop_session_callback(base::OnceClosure callback) {
+    stop_session_callback_ = std::move(callback);
   }
 
   // If |force_failure| is true, forces StorePolicy() to fail.
@@ -317,6 +322,14 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     return primary_user_id_;
   }
 
+  bool request_browser_data_migration_called() const {
+    return request_browser_data_migration_called_;
+  }
+
+  bool request_browser_data_migration_for_move_called() const {
+    return request_browser_data_migration_for_move_called_;
+  }
+
  private:
   // Called in response to writing owner key file specified in new device
   // policy - used for in-memory fake only.
@@ -336,6 +349,9 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   // If restart job was requested, and the client supports restart job, the
   // requested restart reason.
   absl::optional<RestartJobReason> restart_job_reason_;
+
+  // Callback that will be run, if set, when StopSession() is called.
+  base::OnceClosure stop_session_callback_;
 
   base::ObserverList<Observer>::Unchecked observers_{
       SessionManagerClient::kObserverListPolicy};
@@ -384,6 +400,9 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   bool adb_sideload_enabled_ = false;
 
   std::string login_password_;
+
+  bool request_browser_data_migration_called_ = false;
+  bool request_browser_data_migration_for_move_called_ = false;
 
   // Contains last request passed to StartArcMiniContainer
   login_manager::StartArcMiniContainerRequest

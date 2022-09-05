@@ -8,17 +8,11 @@
  *
  */
 
-goog.provide('AbstractTts');
-
-goog.require('Msgs');
-goog.require('TtsInterface');
-goog.require('goog.i18n.MessageFormat');
-
 /**
  * Creates a new instance.
  * @implements {TtsInterface}
  */
-AbstractTts = class {
+export class AbstractTts {
   constructor() {
     this.ttsProperties = new Object();
 
@@ -72,7 +66,12 @@ AbstractTts = class {
     }
   }
 
-  /** @override */
+  /**
+   * @param {string} textString
+   * @param {QueueMode} queueMode
+   * @param {Object=} properties
+   * @override
+   */
   speak(textString, queueMode, properties) {
     return this;
   }
@@ -181,7 +180,7 @@ AbstractTts = class {
    *    acronym / abbreviation.
    *
    * @param {string} text A text string to be spoken.
-   * @param {Object= } properties Out parameter populated with how to speak the
+   * @param {Object=} properties Out parameter populated with how to speak the
    *     string.
    * @return {string} The text formatted in a way that will sound better by
    *     most speech engines.
@@ -208,7 +207,7 @@ AbstractTts = class {
     // Since dollar and sterling pound signs will be replaced with text, move
     // them to after the number if they stay between a negative sign and a
     // number.
-    text = text.replace(AbstractTts.negativeCurrencyAmountRegexp_, (match) => {
+    text = text.replace(AbstractTts.negativeCurrencyAmountRegexp_, match => {
       const minus = match[0];
       const number = match.substring(2);
       const currency = match[1];
@@ -274,7 +273,7 @@ AbstractTts = class {
       this.ttsProperties[key] = value;
     }
   }
-};
+}
 
 
 /**
@@ -454,6 +453,7 @@ AbstractTts.DEBUG = true;
  */
 AbstractTts.CHARACTER_DICTIONARY = {
   ' ': 'space',
+  '\u00a0': 'space',
   '`': 'backtick',
   '~': 'tilde',
   '!': 'exclamation',

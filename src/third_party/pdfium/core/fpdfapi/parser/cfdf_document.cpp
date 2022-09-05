@@ -14,6 +14,7 @@
 #include "core/fpdfapi/parser/cpdf_syntax_parser.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxcrt/cfx_readonlymemorystream.h"
+#include "core/fxcrt/fx_string_wrappers.h"
 #include "third_party/base/span.h"
 
 CFDF_Document::CFDF_Document() = default;
@@ -37,7 +38,7 @@ std::unique_ptr<CFDF_Document> CFDF_Document::ParseMemory(
 void CFDF_Document::ParseStream(RetainPtr<IFX_SeekableReadStream> pFile) {
   m_pFile = std::move(pFile);
   CPDF_SyntaxParser parser(m_pFile);
-  while (1) {
+  while (true) {
     CPDF_SyntaxParser::WordResult word_result = parser.GetNextWord();
     if (word_result.is_number) {
       uint32_t objnum = FXSYS_atoui(word_result.word.c_str());
@@ -78,7 +79,7 @@ ByteString CFDF_Document::WriteToString() const {
   if (!m_pRootDict)
     return ByteString();
 
-  std::ostringstream buf;
+  fxcrt::ostringstream buf;
   buf << "%FDF-1.2\r\n";
   for (const auto& pair : *this)
     buf << pair.first << " 0 obj\r\n"

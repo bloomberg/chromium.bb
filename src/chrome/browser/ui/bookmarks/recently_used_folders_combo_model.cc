@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/metrics/user_metrics.h"
+#include "base/observer_list.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -129,16 +130,6 @@ int RecentlyUsedFoldersComboModel::GetDefaultIndex() const {
   return it == items_.end() ? 0 : static_cast<int>(it - items_.begin());
 }
 
-void RecentlyUsedFoldersComboModel::AddObserver(
-    ui::ComboboxModelObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void RecentlyUsedFoldersComboModel::RemoveObserver(
-    ui::ComboboxModelObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void RecentlyUsedFoldersComboModel::BookmarkModelLoaded(BookmarkModel* model,
                                                         bool ids_reassigned) {}
 
@@ -175,7 +166,7 @@ void RecentlyUsedFoldersComboModel::OnWillRemoveBookmarks(
     }
   }
   if (changed) {
-    for (ui::ComboboxModelObserver& observer : observers_)
+    for (ui::ComboboxModelObserver& observer : observers())
       observer.OnComboboxModelChanged(this);
   }
 }
@@ -218,7 +209,7 @@ void RecentlyUsedFoldersComboModel::BookmarkAllUserNodesRemoved(
     }
   }
   if (changed) {
-    for (ui::ComboboxModelObserver& observer : observers_)
+    for (ui::ComboboxModelObserver& observer : observers())
       observer.OnComboboxModelChanged(this);
   }
 }

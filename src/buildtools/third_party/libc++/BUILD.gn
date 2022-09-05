@@ -11,20 +11,23 @@ config("config") {
   cflags = [ "-fstrict-aliasing" ]
   if (is_win) {
     cflags += [
-      # libc++ wants to redefine the macros WIN32_LEAN_AND_MEAN and _CRT_RAND_S in
-      # its implementation.
+      # libc++ wants to redefine the macros WIN32_LEAN_AND_MEAN and _CRT_RAND_S
+      # in its implementation.
       "-Wno-macro-redefined",
+    ]
 
+    cflags_cc = [
       # We want to use a uniform C++ version across all of chromium, but
-      # upstream libc++ requires C++17 so we have to make an exception here.
-      "-std:c++17",
+      # upstream libc++ requires C++20 so we have to make an exception here.
+      # No other target should override the default -std= flag.
+      "-std:c++20",
     ]
   } else {
-    cflags += [
-      "-fPIC",
-      "-std=c++17",
-    ]
+    cflags += [ "-fPIC" ]
+    cflags_cc = [ "-std=c++20" ]
   }
+
+  defines = [ "_LIBCPP_BUILDING_LIBRARY" ]
 }
 
 # Explicitly set version macros to Windows 7 to prevent libc++ from adding a
@@ -51,7 +54,7 @@ target(_libcxx_target_type, "libc++") {
     "//build/config:common_deps",
     "//third_party/catapult/devil:devil",
   ]
-  if (is_linux && !is_chromeos) {
+  if (is_linux) {
     # This target packages libc++.so, so must have an explicit dependency on
     # libc++.
     visibility +=
@@ -68,6 +71,7 @@ target(_libcxx_target_type, "libc++") {
   sources = [
     "trunk/src/algorithm.cpp",
     "trunk/src/any.cpp",
+    "trunk/src/assert.cpp",
     "trunk/src/atomic.cpp",
     "trunk/src/barrier.cpp",
     "trunk/src/bind.cpp",
@@ -77,12 +81,14 @@ target(_libcxx_target_type, "libc++") {
     "trunk/src/condition_variable_destructor.cpp",
     "trunk/src/debug.cpp",
     "trunk/src/exception.cpp",
+    "trunk/src/format.cpp",
     "trunk/src/functional.cpp",
     "trunk/src/future.cpp",
     "trunk/src/hash.cpp",
     "trunk/src/ios.cpp",
     "trunk/src/ios.instantiations.cpp",
     "trunk/src/iostream.cpp",
+    "trunk/src/legacy_pointer_safety.cpp",
     "trunk/src/locale.cpp",
     "trunk/src/memory.cpp",
     "trunk/src/mutex.cpp",
@@ -92,6 +98,9 @@ target(_libcxx_target_type, "libc++") {
     "trunk/src/random.cpp",
     "trunk/src/random_shuffle.cpp",
     "trunk/src/regex.cpp",
+    "trunk/src/ryu/d2fixed.cpp",
+    "trunk/src/ryu/d2s.cpp",
+    "trunk/src/ryu/f2s.cpp",
     "trunk/src/shared_mutex.cpp",
     "trunk/src/stdexcept.cpp",
     "trunk/src/string.cpp",
@@ -104,6 +113,7 @@ target(_libcxx_target_type, "libc++") {
     "trunk/src/variant.cpp",
     "trunk/src/vector.cpp",
   ]
+  include_dirs = [ "trunk/src" ]
   if (is_win) {
     sources += [
       "trunk/src/support/win32/locale_win32.cpp",
@@ -127,25 +137,27 @@ target(_libcxx_target_type, "libc++") {
     "//build/config/compiler:no_rtti",
     "//build/config/coverage:default_coverage",
   ]
-  if (is_android && libcxx_is_shared) {
+  if ((is_android || is_apple) && libcxx_is_shared) {
     # Use libc++_chrome to avoid conflicting with system libc++
-    # See crbug.com/1076244#c11 for more detail.
     output_name = "libc++_chrome"
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    if (is_android) {
+      # See crbug.com/1076244#c11 for more detail.
+      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    }
   }
   configs += [
     ":config",
     "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:exceptions",
     "//build/config/compiler:rtti",
-    "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
+
   if (libcxx_is_shared && !is_win) {
     configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
     configs += [ "//build/config/gcc:symbol_visibility_default" ]
   }
 
-  defines = [ "_LIBCPP_BUILDING_LIBRARY" ]
+  defines = []
 
   if (!libcxx_is_shared) {
     if (is_apple && is_clang) {

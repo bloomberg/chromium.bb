@@ -515,11 +515,11 @@ IGNITION_HANDLER(StaLookupSlot, InterpreterAssembler) {
   }
 }
 
-// LdaNamedProperty <object> <name_index> <slot>
+// GetNamedProperty <object> <name_index> <slot>
 //
 // Calls the LoadIC at FeedBackVector slot <slot> for <object> and the name at
 // constant pool entry <name_index>.
-IGNITION_HANDLER(LdaNamedProperty, InterpreterAssembler) {
+IGNITION_HANDLER(GetNamedProperty, InterpreterAssembler) {
   TNode<HeapObject> feedback_vector = LoadFeedbackVector();
 
   // Load receiver.
@@ -550,12 +550,12 @@ IGNITION_HANDLER(LdaNamedProperty, InterpreterAssembler) {
   }
 }
 
-// LdaNamedPropertyFromSuper <receiver> <name_index> <slot>
+// GetNamedPropertyFromSuper <receiver> <name_index> <slot>
 //
 // Calls the LoadSuperIC at FeedBackVector slot <slot> for <receiver>, home
 // object's prototype (home object in the accumulator) and the name at constant
 // pool entry <name_index>.
-IGNITION_HANDLER(LdaNamedPropertyFromSuper, InterpreterAssembler) {
+IGNITION_HANDLER(GetNamedPropertyFromSuper, InterpreterAssembler) {
   TNode<Object> receiver = LoadRegisterAtOperandIndex(0);
   TNode<HeapObject> home_object = CAST(GetAccumulator());
   TNode<Object> home_object_prototype = LoadMapPrototype(LoadMap(home_object));
@@ -571,11 +571,11 @@ IGNITION_HANDLER(LdaNamedPropertyFromSuper, InterpreterAssembler) {
   Dispatch();
 }
 
-// LdaKeyedProperty <object> <slot>
+// GetKeyedProperty <object> <slot>
 //
 // Calls the KeyedLoadIC at FeedBackVector slot <slot> for <object> and the key
 // in the accumulator.
-IGNITION_HANDLER(LdaKeyedProperty, InterpreterAssembler) {
+IGNITION_HANDLER(GetKeyedProperty, InterpreterAssembler) {
   TNode<Object> object = LoadRegisterAtOperandIndex(0);
   TNode<Object> name = GetAccumulator();
   TNode<TaggedIndex> slot = BytecodeOperandIdxTaggedIndex(1);
@@ -589,14 +589,14 @@ IGNITION_HANDLER(LdaKeyedProperty, InterpreterAssembler) {
   Dispatch();
 }
 
-class InterpreterStoreNamedPropertyAssembler : public InterpreterAssembler {
+class InterpreterSetNamedPropertyAssembler : public InterpreterAssembler {
  public:
-  InterpreterStoreNamedPropertyAssembler(CodeAssemblerState* state,
-                                         Bytecode bytecode,
-                                         OperandScale operand_scale)
+  InterpreterSetNamedPropertyAssembler(CodeAssemblerState* state,
+                                       Bytecode bytecode,
+                                       OperandScale operand_scale)
       : InterpreterAssembler(state, bytecode, operand_scale) {}
 
-  void StaNamedProperty(Callable ic, NamedPropertyType property_type) {
+  void SetNamedProperty(Callable ic, NamedPropertyType property_type) {
     TNode<Object> object = LoadRegisterAtOperandIndex(0);
     TNode<Name> name = CAST(LoadConstantPoolEntryAtOperandIndex(1));
     TNode<Object> value = GetAccumulator();
@@ -616,31 +616,37 @@ class InterpreterStoreNamedPropertyAssembler : public InterpreterAssembler {
   }
 };
 
-// StaNamedProperty <object> <name_index> <slot>
+// SetNamedProperty <object> <name_index> <slot>
 //
 // Calls the StoreIC at FeedBackVector slot <slot> for <object> and
 // the name in constant pool entry <name_index> with the value in the
 // accumulator.
-IGNITION_HANDLER(StaNamedProperty, InterpreterStoreNamedPropertyAssembler) {
+IGNITION_HANDLER(SetNamedProperty, InterpreterSetNamedPropertyAssembler) {
+  // StoreIC is currently a base class for multiple property store operations
+  // and contains mixed logic for named and keyed, set and define operations,
+  // the paths are controlled by feedback.
+  // TODO(v8:12548): refactor SetNamedIC as a subclass of StoreIC, which can be
+  // called here.
   Callable ic = Builtins::CallableFor(isolate(), Builtin::kStoreIC);
-  StaNamedProperty(ic, NamedPropertyType::kNotOwn);
+  SetNamedProperty(ic, NamedPropertyType::kNotOwn);
 }
 
-// StaNamedOwnProperty <object> <name_index> <slot>
+// DefineNamedOwnProperty <object> <name_index> <slot>
 //
-// Calls the StoreOwnIC at FeedBackVector slot <slot> for <object> and
+// Calls the DefineNamedOwnIC at FeedBackVector slot <slot> for <object> and
 // the name in constant pool entry <name_index> with the value in the
 // accumulator.
-IGNITION_HANDLER(StaNamedOwnProperty, InterpreterStoreNamedPropertyAssembler) {
-  Callable ic = Builtins::CallableFor(isolate(), Builtin::kStoreOwnIC);
-  StaNamedProperty(ic, NamedPropertyType::kOwn);
+IGNITION_HANDLER(DefineNamedOwnProperty, InterpreterSetNamedPropertyAssembler) {
+  Callable ic = Builtins::CallableFor(isolate(), Builtin::kDefineNamedOwnIC);
+  SetNamedProperty(ic, NamedPropertyType::kOwn);
 }
 
-// StaKeyedProperty <object> <key> <slot>
+// SetKeyedProperty <object> <key> <slot>
 //
 // Calls the KeyedStoreIC at FeedbackVector slot <slot> for <object> and
-// the key <key> with the value in the accumulator.
-IGNITION_HANDLER(StaKeyedProperty, InterpreterAssembler) {
+// the key <key> with the value in the accumulator. This could trigger
+// the setter and the set traps if necessary.
+IGNITION_HANDLER(SetKeyedProperty, InterpreterAssembler) {
   TNode<Object> object = LoadRegisterAtOperandIndex(0);
   TNode<Object> name = LoadRegisterAtOperandIndex(1);
   TNode<Object> value = GetAccumulator();
@@ -648,6 +654,11 @@ IGNITION_HANDLER(StaKeyedProperty, InterpreterAssembler) {
   TNode<HeapObject> maybe_vector = LoadFeedbackVector();
   TNode<Context> context = GetContext();
 
+  // KeyedStoreIC is currently a base class for multiple keyed property store
+  // operations and contains mixed logic for set and define operations,
+  // the paths are controlled by feedback.
+  // TODO(v8:12548): refactor SetKeyedIC as a subclass of KeyedStoreIC, which
+  // can be called here.
   TNode<Object> result = CallBuiltin(Builtin::kKeyedStoreIC, context, object,
                                      name, value, slot, maybe_vector);
   // To avoid special logic in the deoptimizer to re-materialize the value in
@@ -659,14 +670,15 @@ IGNITION_HANDLER(StaKeyedProperty, InterpreterAssembler) {
   Dispatch();
 }
 
-// StaKeyedPropertyAsDefine <object> <key> <slot>
+// DefineKeyedOwnProperty <object> <key> <slot>
 //
-// Calls the KeyedDefineOwnIC at FeedbackVector slot <slot> for <object> and
+// Calls the DefineKeyedOwnIC at FeedbackVector slot <slot> for <object> and
 // the key <key> with the value in the accumulator.
 //
-// This is similar to StaKeyedProperty, but avoids checking the prototype chain,
-// and in the case of private names, throws if the private name already exists.
-IGNITION_HANDLER(StaKeyedPropertyAsDefine, InterpreterAssembler) {
+// This is similar to SetKeyedProperty, but avoids checking the prototype
+// chain, and in the case of private names, throws if the private name already
+// exists.
+IGNITION_HANDLER(DefineKeyedOwnProperty, InterpreterAssembler) {
   TNode<Object> object = LoadRegisterAtOperandIndex(0);
   TNode<Object> name = LoadRegisterAtOperandIndex(1);
   TNode<Object> value = GetAccumulator();
@@ -675,7 +687,7 @@ IGNITION_HANDLER(StaKeyedPropertyAsDefine, InterpreterAssembler) {
   TNode<Context> context = GetContext();
 
   TVARIABLE(Object, var_result);
-  var_result = CallBuiltin(Builtin::kKeyedDefineOwnIC, context, object, name,
+  var_result = CallBuiltin(Builtin::kDefineKeyedOwnIC, context, object, name,
                            value, slot, maybe_vector);
   // To avoid special logic in the deoptimizer to re-materialize the value in
   // the accumulator, we overwrite the accumulator after the IC call. It
@@ -710,15 +722,15 @@ IGNITION_HANDLER(StaInArrayLiteral, InterpreterAssembler) {
   Dispatch();
 }
 
-// StaDataPropertyInLiteral <object> <name> <flags> <slot>
+// DefineKeyedOwnPropertyInLiteral <object> <name> <flags> <slot>
 //
 // Define a property <name> with value from the accumulator in <object>.
 // Property attributes and whether set_function_name are stored in
-// DataPropertyInLiteralFlags <flags>.
+// DefineKeyedOwnPropertyInLiteralFlags <flags>.
 //
 // This definition is not observable and is used only for definitions
 // in object or class literals.
-IGNITION_HANDLER(StaDataPropertyInLiteral, InterpreterAssembler) {
+IGNITION_HANDLER(DefineKeyedOwnPropertyInLiteral, InterpreterAssembler) {
   TNode<Object> object = LoadRegisterAtOperandIndex(0);
   TNode<Object> name = LoadRegisterAtOperandIndex(1);
   TNode<Object> value = GetAccumulator();
@@ -729,7 +741,7 @@ IGNITION_HANDLER(StaDataPropertyInLiteral, InterpreterAssembler) {
   TNode<HeapObject> feedback_vector = LoadFeedbackVector();
   TNode<Context> context = GetContext();
 
-  CallRuntime(Runtime::kDefineDataPropertyInLiteral, context, object, name,
+  CallRuntime(Runtime::kDefineKeyedOwnPropertyInLiteral, context, object, name,
               value, flags, feedback_vector, slot);
   Dispatch();
 }
@@ -995,13 +1007,12 @@ class InterpreterBitwiseBinaryOpAssembler : public InterpreterAssembler {
     TNode<UintPtrT> slot_index = BytecodeOperandIdx(1);
     TNode<HeapObject> maybe_feedback_vector = LoadFeedbackVector();
 
-    TVARIABLE(Smi, feedback);
-
     BinaryOpAssembler binop_asm(state());
     TNode<Object> result = binop_asm.Generate_BitwiseBinaryOpWithFeedback(
-        bitwise_op, left, right, [=] { return context; }, &feedback, false);
+        bitwise_op, left, right, [=] { return context; }, slot_index,
+        [=] { return maybe_feedback_vector; },
+        UpdateFeedbackMode::kOptionalFeedback, false);
 
-    MaybeUpdateFeedback(feedback.value(), maybe_feedback_vector, slot_index);
     SetAccumulator(result);
     Dispatch();
   }
@@ -1013,13 +1024,12 @@ class InterpreterBitwiseBinaryOpAssembler : public InterpreterAssembler {
     TNode<HeapObject> maybe_feedback_vector = LoadFeedbackVector();
     TNode<Context> context = GetContext();
 
-    TVARIABLE(Smi, feedback);
-
     BinaryOpAssembler binop_asm(state());
     TNode<Object> result = binop_asm.Generate_BitwiseBinaryOpWithFeedback(
-        bitwise_op, left, right, [=] { return context; }, &feedback, true);
+        bitwise_op, left, right, [=] { return context; }, slot_index,
+        [=] { return maybe_feedback_vector; },
+        UpdateFeedbackMode::kOptionalFeedback, true);
 
-    MaybeUpdateFeedback(feedback.value(), maybe_feedback_vector, slot_index);
     SetAccumulator(result);
     Dispatch();
   }
@@ -2156,27 +2166,55 @@ IGNITION_HANDLER(JumpIfJSReceiverConstant, InterpreterAssembler) {
 // JumpLoop <imm> <loop_depth>
 //
 // Jump by the number of bytes represented by the immediate operand |imm|. Also
-// performs a loop nesting check, a stack check, and potentially triggers OSR in
-// case the current OSR level matches (or exceeds) the specified |loop_depth|.
+// performs a loop nesting check, a stack check, and potentially triggers OSR.
 IGNITION_HANDLER(JumpLoop, InterpreterAssembler) {
   TNode<IntPtrT> relative_jump = Signed(BytecodeOperandUImmWord(0));
-  TNode<Int32T> loop_depth = BytecodeOperandImm(1);
-  TNode<Int8T> osr_level = LoadOsrNestingLevel();
-  TNode<Context> context = GetContext();
 
-  // Check if OSR points at the given {loop_depth} are armed by comparing it to
-  // the current {osr_level} loaded from the header of the BytecodeArray.
-  Label ok(this), osr_armed(this, Label::kDeferred);
-  TNode<BoolT> condition = Int32GreaterThanOrEqual(loop_depth, osr_level);
-  Branch(condition, &ok, &osr_armed);
+  Label ok(this);
+  TNode<FeedbackVector> feedback_vector =
+      CodeStubAssembler::LoadFeedbackVector(LoadFunctionClosure(), &ok);
+  TNode<Int8T> osr_state = LoadOsrState(feedback_vector);
+  TNode<Int32T> loop_depth = BytecodeOperandImm(1);
+
+  Label maybe_osr_because_baseline(this),
+      maybe_osr_because_osr_state(this, Label::kDeferred);
+  // The quick initial OSR check. If it passes, we proceed on to more expensive
+  // OSR logic.
+  static_assert(FeedbackVector::MaybeHasOptimizedOsrCodeBit::encode(true) >
+                FeedbackVector::kMaxOsrUrgency);
+  GotoIfNot(Uint32GreaterThanOrEqual(loop_depth, osr_state),
+            &maybe_osr_because_osr_state);
+
+  // Perhaps we've got cached baseline code?
+  TNode<SharedFunctionInfo> sfi = LoadObjectField<SharedFunctionInfo>(
+      LoadFunctionClosure(), JSFunction::kSharedFunctionInfoOffset);
+  TNode<HeapObject> sfi_data =
+      LoadObjectField<HeapObject>(sfi, SharedFunctionInfo::kFunctionDataOffset);
+  Branch(InstanceTypeEqual(LoadInstanceType(sfi_data), CODET_TYPE),
+         &maybe_osr_because_baseline, &ok);
 
   BIND(&ok);
   // The backward jump can trigger a budget interrupt, which can handle stack
   // interrupts, so we don't need to explicitly handle them here.
   JumpBackward(relative_jump);
 
-  BIND(&osr_armed);
-  OnStackReplacement(context, relative_jump);
+  BIND(&maybe_osr_because_baseline);
+  {
+    TNode<Context> context = GetContext();
+    TNode<IntPtrT> slot_index = Signed(BytecodeOperandIdx(2));
+    OnStackReplacement(context, feedback_vector, relative_jump, loop_depth,
+                       slot_index, osr_state,
+                       OnStackReplacementParams::kBaselineCodeIsCached);
+  }
+
+  BIND(&maybe_osr_because_osr_state);
+  {
+    TNode<Context> context = GetContext();
+    TNode<IntPtrT> slot_index = Signed(BytecodeOperandIdx(2));
+    OnStackReplacement(context, feedback_vector, relative_jump, loop_depth,
+                       slot_index, osr_state,
+                       OnStackReplacementParams::kDefault);
+  }
 }
 
 // SwitchOnSmiNoFeedback <table_start> <table_length> <case_value_base>
@@ -2919,10 +2957,8 @@ IGNITION_HANDLER(ForInStep, InterpreterAssembler) {
 // GetIterator <object>
 //
 // Retrieves the object[Symbol.iterator] method, calls it and stores
-// the result in the accumulator
-// TODO(swapnilgaikwad): Extend the functionality of the bytecode to
-// check if the result is a JSReceiver else throw SymbolIteratorInvalid
-// runtime exception
+// the result in the accumulator. If the result is not JSReceiver,
+// throw SymbolIteratorInvalid runtime exception.
 IGNITION_HANDLER(GetIterator, InterpreterAssembler) {
   TNode<Object> receiver = LoadRegisterAtOperandIndex(0);
   TNode<Context> context = GetContext();
@@ -3080,8 +3116,7 @@ Handle<Code> GenerateBytecodeHandler(Isolate* isolate, const char* debug_name,
   Zone zone(isolate->allocator(), ZONE_NAME, kCompressGraphZone);
   compiler::CodeAssemblerState state(
       isolate, &zone, InterpreterDispatchDescriptor{},
-      CodeKind::BYTECODE_HANDLER, debug_name,
-      builtin);
+      CodeKind::BYTECODE_HANDLER, debug_name, builtin);
 
   switch (bytecode) {
 #define CALL_GENERATOR(Name, ...)                     \

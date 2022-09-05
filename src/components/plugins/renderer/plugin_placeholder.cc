@@ -4,6 +4,7 @@
 
 #include "components/plugins/renderer/plugin_placeholder.h"
 
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -100,7 +101,7 @@ void PluginPlaceholderBase::HidePlugin() {
       parent = parent.ParentNode();
       if (!parent.IsElementNode())
         continue;
-      element = parent.ToConst<blink::WebElement>();
+      element = parent.To<blink::WebElement>();
       if (element.HasAttribute("style")) {
         std::string style_str = element.GetAttribute("style").Utf8();
         if (RE2::PartialMatch(style_str, width_str) &&

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/gpu/h264_decoder.h"
+
 #include <algorithm>
 #include <limits>
 #include <memory>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/media_switches.h"
-#include "media/gpu/h264_decoder.h"
 #include "media/video/h264_level_limits.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -90,19 +90,25 @@ H264Decoder::H264Accelerator::H264Accelerator() = default;
 
 H264Decoder::H264Accelerator::~H264Accelerator() = default;
 
-H264Decoder::H264Accelerator::Status H264Decoder::H264Accelerator::SetStream(
-    base::span<const uint8_t> stream,
-    const DecryptConfig* decrypt_config) {
-  return H264Decoder::H264Accelerator::Status::kNotSupported;
-}
+void H264Decoder::H264Accelerator::ProcessSPS(
+    const H264SPS* sps,
+    base::span<const uint8_t> sps_nalu_data) {}
+
+void H264Decoder::H264Accelerator::ProcessPPS(
+    const H264PPS* pps,
+    base::span<const uint8_t> pps_nalu_data) {}
 
 H264Decoder::H264Accelerator::Status
 H264Decoder::H264Accelerator::ParseEncryptedSliceHeader(
     const std::vector<base::span<const uint8_t>>& data,
     const std::vector<SubsampleEntry>& subsamples,
-    const std::vector<uint8_t>& sps_nalu_data,
-    const std::vector<uint8_t>& pps_nalu_data,
     H264SliceHeader* slice_header_out) {
+  return H264Decoder::H264Accelerator::Status::kNotSupported;
+}
+
+H264Decoder::H264Accelerator::Status H264Decoder::H264Accelerator::SetStream(
+    base::span<const uint8_t> stream,
+    const DecryptConfig* decrypt_config) {
   return H264Decoder::H264Accelerator::Status::kNotSupported;
 }
 
@@ -817,7 +823,7 @@ H264Decoder::H264Accelerator::Status H264Decoder::StartNewFrame(
 
 bool H264Decoder::HandleMemoryManagementOps(scoped_refptr<H264Picture> pic) {
   // 8.2.5.4
-  for (size_t i = 0; i < base::size(pic->ref_pic_marking); ++i) {
+  for (size_t i = 0; i < std::size(pic->ref_pic_marking); ++i) {
     // Code below does not support interlaced stream (per-field pictures).
     H264DecRefPicMarking* ref_pic_marking = &pic->ref_pic_marking[i];
     scoped_refptr<H264Picture> to_mark;
@@ -1058,9 +1064,8 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
     if (!(*output_candidate)->ref) {
       // Current picture hasn't been inserted into DPB yet, so don't remove it
       // if we managed to output it immediately.
-      int outputted_poc = (*output_candidate)->pic_order_cnt;
-      if (outputted_poc != pic->pic_order_cnt)
-        dpb_.DeleteByPOC(outputted_poc);
+      if (*output_candidate != pic)
+        dpb_.Delete(*output_candidate);
     }
 
     ++output_candidate;
@@ -1293,7 +1298,6 @@ H264Decoder::H264Accelerator::Status H264Decoder::ProcessEncryptedSliceHeader(
   all_subsamples.insert(all_subsamples.end(), subsamples.begin(),
                         subsamples.end());
   return accelerator_->ParseEncryptedSliceHeader(spans, all_subsamples,
-                                                 last_sps_nalu_, last_pps_nalu_,
                                                  curr_slice_hdr_.get());
 }
 
@@ -1438,7 +1442,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
     current_stream_has_been_changed_ = false;
   }
 
-  while (1) {
+  while (true) {
     H264Parser::Result par_res;
 
     if (!curr_nalu_) {
@@ -1462,7 +1466,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
             (state_ == State::kAfterReset && !recovery_frame_cnt_))
           break;
 
-        FALLTHROUGH;
+        [[fallthrough]];
       case H264NALU::kIDRSlice: {
         // TODO(posciak): the IDR may require an SPS that we don't have
         // available. For now we'd fail if that happens, but ideally we'd like
@@ -1554,9 +1558,10 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         bool need_new_buffers = false;
         if (!ProcessSPS(sps_id, &need_new_buffers))
           SET_ERROR_AND_RETURN();
+        accelerator_->ProcessSPS(
+            parser_.GetSPS(sps_id),
+            base::span<const uint8_t>(curr_nalu_->data, curr_nalu_->size));
 
-        last_sps_nalu_.assign(curr_nalu_->data,
-                              curr_nalu_->data + curr_nalu_->size);
         if (state_ == State::kNeedStreamMetadata)
           state_ = State::kAfterReset;
 
@@ -1577,9 +1582,9 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         par_res = parser_.ParsePPS(&last_parsed_pps_id_);
         if (par_res != H264Parser::kOk)
           SET_ERROR_AND_RETURN();
-
-        last_pps_nalu_.assign(curr_nalu_->data,
-                              curr_nalu_->data + curr_nalu_->size);
+        accelerator_->ProcessPPS(
+            parser_.GetPPS(last_parsed_pps_id_),
+            base::span<const uint8_t>(curr_nalu_->data, curr_nalu_->size));
         break;
       }
 
@@ -1605,6 +1610,10 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
                                               curr_nalu_->size);
             DCHECK_EQ(1u, subsamples.size());
             sei_subsamples_.push_back(subsamples[0]);
+            // Since the SEI is encrypted, do not try to parse it below as it
+            // may fail or yield incorrect results.
+            DVLOG(3) << "Skipping parsing of encrypted SEI NALU";
+            break;
           }
         }
         if (state_ == State::kAfterReset && !recovery_frame_cnt_ &&
@@ -1632,7 +1641,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
           }
         }
 
-        FALLTHROUGH;
+        [[fallthrough]];
       default:
         DVLOG(4) << "Skipping NALU type: " << curr_nalu_->nal_unit_type;
         break;

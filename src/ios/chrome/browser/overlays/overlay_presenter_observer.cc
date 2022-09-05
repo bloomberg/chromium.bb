@@ -4,9 +4,18 @@
 
 #include "ios/chrome/browser/overlays/public/overlay_presenter_observer.h"
 
+#include <ostream>
+
+#include "base/check.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 
 OverlayPresenterObserver::OverlayPresenterObserver() = default;
+
+OverlayPresenterObserver::~OverlayPresenterObserver() {
+  CHECK(!IsInObserverList())
+      << "OverlayPresenterObserver needs to be removed from OverlayPresenter "
+         "observer list before their destruction.";
+}
 
 const OverlayRequestSupport* OverlayPresenterObserver::GetRequestSupport(
     OverlayPresenter* presenter) const {

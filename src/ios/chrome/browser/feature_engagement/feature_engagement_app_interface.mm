@@ -191,6 +191,45 @@ class ScopedFeatureListHolder {
   return LoadFeatureEngagementTracker();
 }
 
++ (BOOL)enableDefaultSiteViewTipTriggering {
+  std::map<std::string, std::string> default_site_view_tip_params;
+
+  default_site_view_tip_params["availability"] = "any";
+  default_site_view_tip_params["session_rate"] = "<3";
+  default_site_view_tip_params["event_used"] =
+      "name:default_site_view_shown;comparator:==0;window:720;storage:720";
+  default_site_view_tip_params["event_trigger"] =
+      "name:desktop_version_requested;comparator:>=3;window:60;storage:60";
+
+  ScopedFeatureListHolder::GetInstance()
+      ->CreateList()
+      .InitAndEnableFeatureWithParameters(
+          feature_engagement::kIPHDefaultSiteViewFeature,
+          default_site_view_tip_params);
+  return LoadFeatureEngagementTracker();
+}
+
++ (BOOL)enablePasswordSuggestionsTipTriggering {
+  std::map<std::string, std::string> password_suggestions_tip_params;
+
+  password_suggestions_tip_params["availability"] = "any";
+  password_suggestions_tip_params["session_rate"] = "any";
+  password_suggestions_tip_params["event_used"] =
+      "name:password_suggestions_shown;comparator:==0;window:90;"
+      "storage:360";
+  password_suggestions_tip_params["event_trigger"] =
+      "name:password_suggestions_iph_triggered;comparator:==0;window:1825;"
+      "storage:1825";
+
+  ScopedFeatureListHolder::GetInstance()
+      ->CreateList()
+      .InitAndEnableFeatureWithParameters(
+          feature_engagement::kIPHPasswordSuggestionsFeature,
+          password_suggestions_tip_params);
+
+  return LoadFeatureEngagementTracker();
+}
+
 + (void)showTranslate {
   [chrome_test_util::HandlerForActiveBrowser() showTranslate];
 }

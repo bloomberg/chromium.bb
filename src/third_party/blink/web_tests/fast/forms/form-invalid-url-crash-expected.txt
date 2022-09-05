@@ -1,5 +1,0 @@
-A
-B
-C
-
-Test passes if there is no crash

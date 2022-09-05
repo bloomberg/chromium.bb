@@ -9,6 +9,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/crostini/crostini_upgrader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,7 +28,6 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/resources/grit/webui_generated_resources.h"
-#include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "ui/webui/mojo_web_ui_controller.h"
@@ -37,20 +37,21 @@ namespace chromeos {
 void AddStringResources(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kStrings[] = {
       {"upgrade", IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON},
-      {"retry", IDS_CROSTINI_INSTALLER_RETRY_BUTTON},
+      {"retry", IDS_CROSTINI_UPGRADER_TRY_AGAIN_BUTTON},
       {"close", IDS_APP_CLOSE},
       {"cancel", IDS_APP_CANCEL},
       {"done", IDS_CROSTINI_UPGRADER_DONE_BUTTON},
       {"restore", IDS_CROSTINI_UPGRADER_RESTORE_BUTTON},
-      {"learnMore", IDS_LEARN_MORE},
       {"notNow", IDS_CROSTINI_UPGRADER_NOT_NOW},
 
       {"promptTitle", IDS_CROSTINI_UPGRADER_TITLE},
       {"backingUpTitle", IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE},
+      {"backupErrorTitle", IDS_CROSTINI_UPGRADER_BACKUP_ERROR_TITLE},
       {"backupSucceededTitle", IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_TITLE},
       {"prechecksFailedTitle", IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_TITLE},
       {"upgradingTitle", IDS_CROSTINI_UPGRADER_UPGRADING_TITLE},
       {"restoreTitle", IDS_CROSTINI_UPGRADER_RESTORE_TITLE},
+      {"restoreErrorTitle", IDS_CROSTINI_UPGRADER_RESTORE_ERROR_TITLE},
       {"restoreSucceededTitle", IDS_CROSTINI_UPGRADER_RESTORE_SUCCEEDED_TITLE},
       {"succeededTitle", IDS_CROSTINI_UPGRADER_SUCCEEDED_TITLE},
       {"cancelingTitle", IDS_CROSTINI_UPGRADER_CANCELING_TITLE},
@@ -59,36 +60,30 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"precheckNoNetwork", IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_NETWORK},
       {"precheckNoPower", IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_POWER},
 
-      {"promptMessage", IDS_CROSTINI_UPGRADER_BODY},
       {"backingUpMessage", IDS_CROSTINI_UPGRADER_BACKING_UP_MESSAGE},
-      {"backupSucceededMessage",
-       IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_MESSAGE},
+      {"backupErrorMessage", IDS_CROSTINI_UPGRADER_BACKUP_ERROR_MESSAGE},
       {"upgradingMessage", IDS_CROSTINI_UPGRADER_UPGRADING},
-      {"succeededMessage", IDS_CROSTINI_UPGRADER_SUCCEEDED},
-      {"cancelingMessage", IDS_CROSTINI_UPGRADER_CANCELING},
-      {"offerRestoreMessage", IDS_CROSTINI_UPGRADER_OFFER_RESTORE_MESSAGE},
       {"restoreMessage", IDS_CROSTINI_UPGRADER_RESTORE_MESSAGE},
-      {"restoreSucceededMessage",
-       IDS_CROSTINI_UPGRADER_RESTORE_SUCCEEDED_MESSAGE},
+      {"restoreErrorMessage", IDS_CROSTINI_UPGRADER_RESTORE_ERROR_MESSAGE},
+      {"logFileMessageError", IDS_CROSTINI_UPGRADER_LOG_FILE_ERROR},
+      {"logFileMessageSuccess", IDS_CROSTINI_UPGRADER_LOG_FILE_SUCCESS},
 
       {"backupCheckboxMessage", IDS_CROSTINI_UPGRADER_BACKUP_CHECKBOX_MESSAGE},
       {"backupChangeLocation", IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION},
   };
   source->AddLocalizedStrings(kStrings);
-  source->AddString("learnMoreUrl",
-                    std::string{chrome::kLinuxAppsLearnMoreURL} +
-                        "&b=" + base::SysInfo::GetLsbReleaseBoard());
+
+  std::u16string learn_more_url =
+      base::ASCIIToUTF16(std::string{chrome::kLinuxAppsLearnMoreURL} +
+                         "&b=" + base::SysInfo::GetLsbReleaseBoard());
+  source->AddString(
+      "promptMessage",
+      l10n_util::GetStringFUTF8(IDS_CROSTINI_UPGRADER_BODY, learn_more_url));
 
   std::u16string device_name = ui::GetChromeOSDeviceName();
   source->AddString("offlineError",
                     l10n_util::GetStringFUTF8(
                         IDS_CROSTINI_INSTALLER_OFFLINE_ERROR, device_name));
-  source->AddString("precheckNoSpace",
-                    l10n_util::GetStringFUTF8(
-                        IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_SPACE,
-                        ui::FormatBytesWithUnits(
-                            crostini::CrostiniUpgrader::kDiskRequired,
-                            ui::DATA_UNITS_GIBIBYTE, /*show_units=*/true)));
 }
 
 CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
@@ -109,6 +104,7 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
                           IDR_CROSTINI_UPGRADER_BROWSER_PROXY_JS);
   source->AddResourcePath("crostini_upgrader.mojom-lite.js",
                           IDR_CROSTINI_UPGRADER_MOJO_LITE_JS);
+  source->AddResourcePath("images/crostini_icon.svg", IDR_CROSTINI_ICON);
   source->SetDefaultResource(IDR_CROSTINI_UPGRADER_INDEX_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

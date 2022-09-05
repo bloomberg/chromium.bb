@@ -9,7 +9,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -18,7 +20,6 @@
 class AvatarToolbarButtonDelegate;
 class Browser;
 class BrowserView;
-class FeaturePromoControllerViews;
 
 class AvatarToolbarButton : public ToolbarButton,
                             ToolbarIconContainerView::Observer {
@@ -107,8 +108,6 @@ class AvatarToolbarButton : public ToolbarButton,
   // Do not show the IPH right when creating the window, so that the IPH has a
   // separate animation.
   static base::TimeDelta g_iph_min_delay_after_creation;
-
-  const raw_ptr<FeaturePromoControllerViews> feature_promo_controller_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

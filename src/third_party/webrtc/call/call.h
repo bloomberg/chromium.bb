@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/adaptation/resource.h"
 #include "api/media_types.h"
 #include "api/task_queue/task_queue_base.h"
@@ -40,13 +41,7 @@ namespace webrtc {
 // SharedModuleThread supports a callback that is issued when only one reference
 // remains, which is used to indicate to the original owner that the thread may
 // be discarded.
-class SharedModuleThread : public rtc::RefCountInterface {
- protected:
-  SharedModuleThread(std::unique_ptr<ProcessThread> process_thread,
-                     std::function<void()> on_one_ref_remaining);
-  friend class rtc::scoped_refptr<SharedModuleThread>;
-  ~SharedModuleThread() override;
-
+class SharedModuleThread final {
  public:
   // Allows injection of an externally created process thread.
   static rtc::scoped_refptr<SharedModuleThread> Create(
@@ -58,16 +53,28 @@ class SharedModuleThread : public rtc::RefCountInterface {
   ProcessThread* process_thread();
 
  private:
-  void AddRef() const override;
-  rtc::RefCountReleaseStatus Release() const override;
+  friend class rtc::scoped_refptr<SharedModuleThread>;
+  SharedModuleThread(std::unique_ptr<ProcessThread> process_thread,
+                     std::function<void()> on_one_ref_remaining);
+  ~SharedModuleThread();
+
+  void AddRef() const;
+  rtc::RefCountReleaseStatus Release() const;
 
   class Impl;
   mutable std::unique_ptr<Impl> impl_;
 };
 
+// A Call represents a two-way connection carrying zero or more outgoing
+// and incoming media streams, transported over one or more RTP transports.
+
 // A Call instance can contain several send and/or receive streams. All streams
 // are assumed to have the same remote endpoint and will share bitrate estimates
 // etc.
+
+// When using the PeerConnection API, there is an one to one relationship
+// between the PeerConnection and the Call.
+
 class Call {
  public:
   using Config = CallConfig;
@@ -98,10 +105,10 @@ class Call {
 
   virtual void DestroyAudioSendStream(AudioSendStream* send_stream) = 0;
 
-  virtual AudioReceiveStream* CreateAudioReceiveStream(
-      const AudioReceiveStream::Config& config) = 0;
+  virtual AudioReceiveStreamInterface* CreateAudioReceiveStream(
+      const AudioReceiveStreamInterface::Config& config) = 0;
   virtual void DestroyAudioReceiveStream(
-      AudioReceiveStream* receive_stream) = 0;
+      AudioReceiveStreamInterface* receive_stream) = 0;
 
   virtual VideoSendStream* CreateVideoSendStream(
       VideoSendStream::Config config,
@@ -112,16 +119,16 @@ class Call {
       std::unique_ptr<FecController> fec_controller);
   virtual void DestroyVideoSendStream(VideoSendStream* send_stream) = 0;
 
-  virtual VideoReceiveStream* CreateVideoReceiveStream(
-      VideoReceiveStream::Config configuration) = 0;
+  virtual VideoReceiveStreamInterface* CreateVideoReceiveStream(
+      VideoReceiveStreamInterface::Config configuration) = 0;
   virtual void DestroyVideoReceiveStream(
-      VideoReceiveStream* receive_stream) = 0;
+      VideoReceiveStreamInterface* receive_stream) = 0;
 
-  // In order for a created VideoReceiveStream to be aware that it is
+  // In order for a created VideoReceiveStreamInterface to be aware that it is
   // protected by a FlexfecReceiveStream, the latter should be created before
   // the former.
   virtual FlexfecReceiveStream* CreateFlexfecReceiveStream(
-      const FlexfecReceiveStream::Config& config) = 0;
+      const FlexfecReceiveStream::Config config) = 0;
   virtual void DestroyFlexfecReceiveStream(
       FlexfecReceiveStream* receive_stream) = 0;
 
@@ -157,18 +164,22 @@ class Call {
 
   // Called when a receive stream's local ssrc has changed and association with
   // send streams needs to be updated.
-  virtual void OnLocalSsrcUpdated(AudioReceiveStream& stream,
+  virtual void OnLocalSsrcUpdated(AudioReceiveStreamInterface& stream,
+                                  uint32_t local_ssrc) = 0;
+  virtual void OnLocalSsrcUpdated(VideoReceiveStreamInterface& stream,
+                                  uint32_t local_ssrc) = 0;
+  virtual void OnLocalSsrcUpdated(FlexfecReceiveStream& stream,
                                   uint32_t local_ssrc) = 0;
 
-  virtual void OnUpdateSyncGroup(AudioReceiveStream& stream,
-                                 const std::string& sync_group) = 0;
+  virtual void OnUpdateSyncGroup(AudioReceiveStreamInterface& stream,
+                                 absl::string_view sync_group) = 0;
 
   virtual void OnSentPacket(const rtc::SentPacket& sent_packet) = 0;
 
   virtual void SetClientBitratePreferences(
       const BitrateSettings& preferences) = 0;
 
-  virtual const WebRtcKeyValueConfig& trials() const = 0;
+  virtual const FieldTrialsView& trials() const = 0;
 
   virtual TaskQueueBase* network_thread() const = 0;
   virtual TaskQueueBase* worker_thread() const = 0;

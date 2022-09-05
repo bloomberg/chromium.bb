@@ -5,12 +5,13 @@
 #include "components/omnibox/browser/zero_suggest_verbatim_match_provider.h"
 
 #include "base/feature_list.h"
+#include "base/strings/escape.h"
+#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/escape.h"
 
 namespace {
 // The relevance score for verbatim match.
@@ -73,8 +74,18 @@ void ZeroSuggestVerbatimMatchProvider::Start(const AutocompleteInput& input,
   // Make sure the URL is formatted the same was as most visited sites.
   auto format_types = AutocompleteMatch::GetFormatTypes(false, false);
   match.contents = url_formatter::FormatUrl(page_url, format_types,
-                                            net::UnescapeRule::SPACES, nullptr,
+                                            base::UnescapeRule::SPACES, nullptr,
                                             nullptr, nullptr);
+
+  TermMatches term_matches;
+  if (input.text().length() > 0) {
+    term_matches = {{0, 0, input.text().length()}};
+  }
+
+  match.contents_class = ClassifyTermMatches(
+      term_matches, match.contents.size(),
+      ACMatchClassification::MATCH | ACMatchClassification::URL,
+      ACMatchClassification::URL);
 
   // In the case of native pages, the classifier may replace the URL with an
   // empty content, resulting with a verbatim match that does not point

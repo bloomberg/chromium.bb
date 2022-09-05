@@ -5,13 +5,13 @@
 #include "chrome/browser/ash/hats/hats_notification_controller.h"
 
 #include "ash/constants/ash_switches.h"
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/hats/hats_config.h"
@@ -78,10 +78,9 @@ bool IsNewDevice(base::TimeDelta new_device_threshold) {
 bool IsTestingEnabled(const HatsConfig& hats_config) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-  if (command_line->HasSwitch(
-          chromeos::switches::kForceHappinessTrackingSystem)) {
+  if (command_line->HasSwitch(switches::kForceHappinessTrackingSystem)) {
     auto switch_value = command_line->GetSwitchValueASCII(
-        chromeos::switches::kForceHappinessTrackingSystem);
+        switches::kForceHappinessTrackingSystem);
     return switch_value.empty() || hats_config.feature.name == switch_value;
   }
 
@@ -248,7 +247,8 @@ void HatsNotificationController::OnPortalDetectionCompleted(
           l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierHats),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierHats,
+              NotificationCatalogName::kHats),
           message_center::RichNotificationData(), this, kNotificationGoogleIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
     }

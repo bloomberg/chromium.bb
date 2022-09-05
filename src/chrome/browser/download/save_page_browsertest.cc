@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveFileURL) {
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
   EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("text.txt"), full_file_name));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Local file URL will not be quarantined.
   EXPECT_FALSE(quarantine::IsFileQuarantined(full_file_name, GURL(), GURL()));
 #endif
@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
 }
 
 // TODO(crbug.com/1271463): Flaky on mac arm64.
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 #define MAYBE_SaveHTMLOnlyCancel DISABLED_SaveHTMLOnlyCancel
 #else
 #define MAYBE_SaveHTMLOnlyCancel SaveHTMLOnlyCancel
@@ -733,7 +733,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
 // This tests that a webpage with the title "test.exe" is saved as
 // "test.exe.htm".
 // We probably don't care to handle this on Linux or Mac.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   base::FilePath download_dir =
       DownloadPrefs::FromDownloadManager(GetDownloadManager())->
@@ -774,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SecurityLevelHistogram) {
 
 // Tests that a page can be saved as MHTML.
 // Flaky on Windows, crbug.com/1048100
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_SavePageAsMHTML DISABLED_SavePageAsMHTML
 #else
 #define MAYBE_SavePageAsMHTML SavePageAsMHTML
@@ -871,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
 }
 
 // Flaky on Windows: https://crbug.com/1247404.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_SavePageBrowserTest_NonMHTML DISABLED_SavePageBrowserTest_NonMHTML
 #else
 #define MAYBE_SavePageBrowserTest_NonMHTML SavePageBrowserTest_NonMHTML
@@ -987,7 +987,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveUnauthorizedResource) {
   EXPECT_FALSE(base::PathExists(dir.AppendASCII("should-not-save.jpg")));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Save a file and confirm that the file is correctly quarantined.
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveURLQuarantine) {
   GURL url = embedded_test_server()->GetURL("/save_page/text.txt");
@@ -1097,7 +1097,7 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
 
 // Test for crbug.com/538766.
 // Disabled on Mac due to excessive flakiness. https://crbug.com/1271741
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_SaveAsMHTML DISABLED_SaveAsMHTML
 #else
 #define MAYBE_SaveAsMHTML SaveAsMHTML
@@ -1162,23 +1162,25 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
   // Kill one of renderer processes (this is the essence of this test).
   WebContents* web_contents = GetCurrentTab(browser());
   bool did_kill_a_process = false;
-  web_contents->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
-      [](WebContents* web_contents, bool* did_kill_a_process,
-         RenderFrameHost* frame) {
-        if (frame->GetLastCommittedURL().host() == "bar.com") {
-          RenderProcessHost* process_to_kill = frame->GetProcess();
-          EXPECT_NE(web_contents->GetMainFrame()->GetProcess()->GetID(),
-                    process_to_kill->GetID())
-              << "a.com and bar.com should be in different processes.";
+  web_contents->GetPrimaryMainFrame()->ForEachRenderFrameHost(
+      base::BindRepeating(
+          [](WebContents* web_contents, bool* did_kill_a_process,
+             RenderFrameHost* frame) {
+            if (frame->GetLastCommittedURL().host() == "bar.com") {
+              RenderProcessHost* process_to_kill = frame->GetProcess();
+              EXPECT_NE(
+                  web_contents->GetPrimaryMainFrame()->GetProcess()->GetID(),
+                  process_to_kill->GetID())
+                  << "a.com and bar.com should be in different processes.";
 
-          EXPECT_TRUE(process_to_kill->FastShutdownIfPossible());
-          EXPECT_FALSE(process_to_kill->IsInitializedAndNotDead());
-          *did_kill_a_process = true;
-          return content::RenderFrameHost::FrameIterationAction::kStop;
-        }
-        return content::RenderFrameHost::FrameIterationAction::kContinue;
-      },
-      web_contents, &did_kill_a_process));
+              EXPECT_TRUE(process_to_kill->FastShutdownIfPossible());
+              EXPECT_FALSE(process_to_kill->IsInitializedAndNotDead());
+              *did_kill_a_process = true;
+              return content::RenderFrameHost::FrameIterationAction::kStop;
+            }
+            return content::RenderFrameHost::FrameIterationAction::kContinue;
+          },
+          web_contents, &did_kill_a_process));
   EXPECT_TRUE(did_kill_a_process);
 
   // Main verification is that we don't hang and time out when saving.
@@ -1244,7 +1246,7 @@ class SavePageOriginalVsSavedComparisonTest
 
     if (GetParam() == content::SAVE_PAGE_TYPE_AS_MHTML) {
       std::set<url::Origin> origins;
-      GetCurrentTab(browser())->GetMainFrame()->ForEachRenderFrameHost(
+      GetCurrentTab(browser())->GetPrimaryMainFrame()->ForEachRenderFrameHost(
           base::BindRepeating(&CheckFrameForMHTML, base::Unretained(&origins)));
       int unique_origins = origins.size();
       EXPECT_EQ(expected_number_of_frames_in_saved_page, unique_origins)
@@ -1328,7 +1330,7 @@ class SavePageOriginalVsSavedComparisonTest
           save_page_type == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
         DLOG(INFO) << "Verifying that a.htm frame has fully loaded...";
         std::vector<std::string> frame_names;
-        GetCurrentTab(browser())->GetMainFrame()->ForEachRenderFrameHost(
+        GetCurrentTab(browser())->GetPrimaryMainFrame()->ForEachRenderFrameHost(
             base::BindRepeating(
                 [](std::vector<std::string>* frame_names,
                    content::RenderFrameHost* frame) {
@@ -1420,7 +1422,7 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
 // Test compares original-vs-saved for a page with frames at about:blank uri.
 // This tests handling of iframe elements without src attribute (only with
 // srcdoc attribute) and how they get saved / cross-referenced.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // TODO(https://crbug.com/1262400): Fails on dcheck-enabled builds on 11.0.
 #define MAYBE_AboutBlank DISABLED_AboutBlank
 #else
@@ -1466,7 +1468,7 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, NestedFrames) {
 //   subframe1 and subframe2 - both have src=b.htm
 //   subframe3 and subframe4 - about:blank (no src, only srcdoc attribute).
 // ... but different content (generated by main frame's javascript).
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // TODO(https://crbug.com/1262400): Fails on dcheck-enabled builds on 11.0.
 #define MAYBE_RuntimeChanges DISABLED_RuntimeChanges
 #else
@@ -1527,7 +1529,7 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Encoding) {
 }
 
 // Test for saving style element and attribute (see also crbug.com/568293).
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // TODO(https://crbug.com/1262400): Fails on dcheck-enabled builds on 11.0.
 #define MAYBE_Style DISABLED_Style
 #else
@@ -1566,7 +1568,7 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, BrokenImage) {
 
 // Test for saving a page with a cross-site <object> element.
 // Disabled on Windows due to flakiness. crbug.com/1070597.
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #define MAYBE_CrossSiteObject DISABLED_CrossSiteObject
 #else
 #define MAYBE_CrossSiteObject CrossSiteObject

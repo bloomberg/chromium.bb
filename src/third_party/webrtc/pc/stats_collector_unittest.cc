@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
-#include <memory>
+#include <cstdint>
 
 #include "absl/algorithm/container.h"
 #include "absl/types/optional.h"
@@ -20,11 +20,16 @@
 #include "api/candidate.h"
 #include "api/data_channel_interface.h"
 #include "api/media_stream_track.h"
+#include "api/media_types.h"
+#include "api/rtp_sender_interface.h"
 #include "api/scoped_refptr.h"
 #include "call/call.h"
 #include "media/base/media_channel.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
+#include "p2p/base/ice_transport_internal.h"
 #include "pc/media_stream.h"
+#include "pc/rtp_receiver.h"
+#include "pc/rtp_sender.h"
 #include "pc/sctp_data_channel.h"
 #include "pc/test/fake_peer_connection_for_stats.h"
 #include "pc/test/fake_video_track_source.h"
@@ -43,6 +48,7 @@
 #include "rtc_base/string_encode.h"
 #include "rtc_base/third_party/base64/base64.h"
 #include "rtc_base/thread.h"
+#include "test/gmock.h"
 #include "test/gtest.h"
 
 using cricket::ConnectionInfo;
@@ -54,6 +60,8 @@ using cricket::VideoSenderInfo;
 using cricket::VoiceMediaInfo;
 using cricket::VoiceReceiverInfo;
 using cricket::VoiceSenderInfo;
+using ::testing::_;
+using ::testing::AtMost;
 using ::testing::Return;
 using ::testing::UnorderedElementsAre;
 
@@ -81,7 +89,6 @@ class FakeAudioProcessor : public AudioProcessorInterface {
   AudioProcessorInterface::AudioProcessorStatistics GetStats(
       bool has_recv_streams) override {
     AudioProcessorStatistics stats;
-    stats.typing_noise_detected = true;
     if (has_recv_streams) {
       stats.apm_statistics.echo_return_loss = 2.0;
       stats.apm_statistics.echo_return_loss_enhancement = 3.0;
@@ -124,7 +131,6 @@ class FakeAudioProcessorWithInitValue : public AudioProcessorInterface {
   AudioProcessorInterface::AudioProcessorStatistics GetStats(
       bool /*has_recv_streams*/) override {
     AudioProcessorStatistics stats;
-    stats.typing_noise_detected = false;
     return stats;
   }
 };
@@ -480,10 +486,6 @@ void VerifyVoiceSenderInfoReport(const StatsReport* report,
   EXPECT_TRUE(GetValue(report, StatsReport::kStatsValueNameAudioInputLevel,
                        &value_in_report));
   EXPECT_EQ(rtc::ToString(sinfo.audio_level), value_in_report);
-  EXPECT_TRUE(GetValue(report, StatsReport::kStatsValueNameTypingNoiseState,
-                       &value_in_report));
-  std::string typing_detected = sinfo.typing_noise_detected ? "true" : "false";
-  EXPECT_EQ(typing_detected, value_in_report);
   EXPECT_TRUE(GetValue(report,
                        StatsReport::kStatsValueNameAnaBitrateActionCounter,
                        &value_in_report));
@@ -543,7 +545,6 @@ void InitVoiceSenderInfo(cricket::VoiceSenderInfo* voice_sender_info,
   voice_sender_info->apm_statistics.echo_return_loss_enhancement = 109;
   voice_sender_info->apm_statistics.delay_median_ms = 110;
   voice_sender_info->apm_statistics.delay_standard_deviation_ms = 111;
-  voice_sender_info->typing_noise_detected = false;
   voice_sender_info->ana_statistics.bitrate_action_counter = 112;
   voice_sender_info->ana_statistics.channel_action_counter = 113;
   voice_sender_info->ana_statistics.dtx_action_counter = 114;
@@ -560,8 +561,6 @@ void UpdateVoiceSenderInfoFromAudioTrack(
   audio_track->GetSignalLevel(&voice_sender_info->audio_level);
   AudioProcessorInterface::AudioProcessorStatistics audio_processor_stats =
       audio_track->GetAudioProcessor()->GetStats(has_remote_tracks);
-  voice_sender_info->typing_noise_detected =
-      audio_processor_stats.typing_noise_detected;
   voice_sender_info->apm_statistics = audio_processor_stats.apm_statistics;
 }
 
@@ -612,7 +611,7 @@ class StatsCollectorTest : public ::testing::Test {
                              const VoiceMediaInfo& voice_info,
                              StatsReports* reports) {
     stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
-    stats->ClearUpdateStatsCacheForTest();
+    stats->InvalidateCache();
     stats->GetStats(nullptr, reports);
 
     // Verify the existence of the track report.
@@ -667,7 +666,7 @@ class StatsCollectorTest : public ::testing::Test {
     const std::string kTransportName = "transport";
 
     auto pc = CreatePeerConnection();
-    auto stats = CreateStatsCollector(pc);
+    auto stats = CreateStatsCollector(pc.get());
 
     pc->AddVoiceChannel("audio", kTransportName);
 
@@ -732,6 +731,9 @@ class StatsCollectorTest : public ::testing::Test {
     EXPECT_EQ(rtc::SrtpCryptoSuiteToName(rtc::kSrtpAes128CmSha1_80),
               srtp_crypto_suite);
   }
+
+ private:
+  rtc::AutoThread main_thread_;
 };
 
 static rtc::scoped_refptr<MockRtpSenderInternal> CreateMockSender(
@@ -745,6 +747,9 @@ static rtc::scoped_refptr<MockRtpSenderInternal> CreateMockSender(
           Return(track->kind() == MediaStreamTrackInterface::kAudioKind
                      ? cricket::MEDIA_TYPE_AUDIO
                      : cricket::MEDIA_TYPE_VIDEO));
+  EXPECT_CALL(*sender, SetMediaChannel(_)).Times(AtMost(2));
+  EXPECT_CALL(*sender, SetTransceiverAsStopped()).Times(AtMost(1));
+  EXPECT_CALL(*sender, Stop());
   return sender;
 }
 
@@ -759,6 +764,8 @@ static rtc::scoped_refptr<MockRtpReceiverInternal> CreateMockReceiver(
           Return(track->kind() == MediaStreamTrackInterface::kAudioKind
                      ? cricket::MEDIA_TYPE_AUDIO
                      : cricket::MEDIA_TYPE_VIDEO));
+  EXPECT_CALL(*receiver, SetMediaChannel(_)).WillRepeatedly(Return());
+  EXPECT_CALL(*receiver, Stop()).WillRepeatedly(Return());
   return receiver;
 }
 
@@ -770,32 +777,32 @@ class StatsCollectorTrackTest : public StatsCollectorTest,
   // stream, which is created if necessary.
   void AddOutgoingVideoTrack(FakePeerConnectionForStats* pc,
                              StatsCollectorForTest* stats) {
-    track_ = VideoTrack::Create(kLocalTrackId, FakeVideoTrackSource::Create(),
-                                rtc::Thread::Current());
+    video_track_ = VideoTrack::Create(
+        kLocalTrackId, FakeVideoTrackSource::Create(), rtc::Thread::Current());
     if (GetParam()) {
       if (!stream_)
         stream_ = MediaStream::Create("streamid");
-      stream_->AddTrack(track_);
-      stats->AddStream(stream_);
+      stream_->AddTrack(video_track());
+      stats->AddStream(stream_.get());
     } else {
-      stats->AddTrack(track_);
+      stats->AddTrack(video_track_.get());
     }
-    pc->AddSender(CreateMockSender(track_, kSsrcOfTrack));
+    pc->AddSender(CreateMockSender(video_track_, kSsrcOfTrack));
   }
 
   // Adds a incoming video track with a given SSRC into the stats.
   void AddIncomingVideoTrack(FakePeerConnectionForStats* pc,
                              StatsCollectorForTest* stats) {
-    track_ = VideoTrack::Create(kRemoteTrackId, FakeVideoTrackSource::Create(),
-                                rtc::Thread::Current());
+    video_track_ = VideoTrack::Create(
+        kRemoteTrackId, FakeVideoTrackSource::Create(), rtc::Thread::Current());
     if (GetParam()) {
       stream_ = MediaStream::Create("streamid");
-      stream_->AddTrack(track_);
-      stats->AddStream(stream_);
+      stream_->AddTrack(video_track());
+      stats->AddStream(stream_.get());
     } else {
-      stats->AddTrack(track_);
+      stats->AddTrack(video_track_.get());
     }
-    pc->AddReceiver(CreateMockReceiver(track_, kSsrcOfTrack));
+    pc->AddReceiver(CreateMockReceiver(video_track_, kSsrcOfTrack));
   }
 
   // Adds a outgoing audio track with a given SSRC into the stats,
@@ -809,10 +816,10 @@ class StatsCollectorTrackTest : public StatsCollectorTest,
     if (GetParam()) {
       if (!stream_)
         stream_ = MediaStream::Create("streamid");
-      stream_->AddTrack(audio_track_);
-      stats->AddStream(stream_);
+      stream_->AddTrack(audio_track());
+      stats->AddStream(stream_.get());
     } else {
-      stats->AddTrack(audio_track_);
+      stats->AddTrack(audio_track_.get());
     }
     return pc->AddSender(CreateMockSender(audio_track_, kSsrcOfTrack));
   }
@@ -822,24 +829,27 @@ class StatsCollectorTrackTest : public StatsCollectorTest,
                              StatsCollectorForTest* stats) {
     audio_track_ = rtc::make_ref_counted<FakeAudioTrack>(kRemoteTrackId);
     if (GetParam()) {
-      if (stream_ == NULL)
+      if (stream_ == nullptr)
         stream_ = MediaStream::Create("streamid");
-      stream_->AddTrack(audio_track_);
-      stats->AddStream(stream_);
+      stream_->AddTrack(audio_track());
+      stats->AddStream(stream_.get());
     } else {
-      stats->AddTrack(audio_track_);
+      stats->AddTrack(audio_track_.get());
     }
     pc->AddReceiver(CreateMockReceiver(audio_track_, kSsrcOfTrack));
   }
 
+  rtc::scoped_refptr<AudioTrackInterface> audio_track() { return audio_track_; }
+  rtc::scoped_refptr<VideoTrackInterface> video_track() { return video_track_; }
+
   rtc::scoped_refptr<MediaStream> stream_;
-  rtc::scoped_refptr<VideoTrack> track_;
+  rtc::scoped_refptr<VideoTrack> video_track_;
   rtc::scoped_refptr<FakeAudioTrack> audio_track_;
 };
 
 TEST_F(StatsCollectorTest, FilterOutNegativeDataChannelId) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   pc->AddSctpDataChannel("hacks");
 
@@ -863,7 +873,7 @@ TEST_F(StatsCollectorTest, ExtractDataInfo) {
       DataChannelInterface::DataState::kConnecting);
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   InternalDataChannelInit init;
   init.id = kDataChannelId;
@@ -902,7 +912,7 @@ TEST_P(StatsCollectorTrackTest, BytesCounterHandles64Bits) {
   constexpr int64_t kBytesSent = 12345678901234LL;
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   VideoSenderInfo video_sender_info;
   video_sender_info.add_ssrc(1234);
@@ -911,10 +921,9 @@ TEST_P(StatsCollectorTrackTest, BytesCounterHandles64Bits) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
-  auto* video_media_channel = pc->AddVideoChannel("video", "transport");
-  video_media_channel->SetStats(video_info);
+  pc->AddVideoChannel("video", "transport", video_info);
 
-  AddOutgoingVideoTrack(pc, stats.get());
+  AddOutgoingVideoTrack(pc.get(), stats.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -935,7 +944,7 @@ TEST_P(StatsCollectorTrackTest, AudioBandwidthEstimationInfoIsReported) {
   constexpr int kPacerDelay = 123;
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   VoiceSenderInfo voice_sender_info;
   voice_sender_info.add_ssrc(1234);
@@ -947,7 +956,7 @@ TEST_P(StatsCollectorTrackTest, AudioBandwidthEstimationInfoIsReported) {
   auto* voice_media_channel = pc->AddVoiceChannel("audio", "transport");
   voice_media_channel->SetStats(voice_info);
 
-  AddOutgoingAudioTrack(pc, stats.get());
+  AddOutgoingAudioTrack(pc.get(), stats.get());
 
   Call::Stats call_stats;
   call_stats.send_bandwidth_bps = kSendBandwidth;
@@ -984,7 +993,7 @@ TEST_P(StatsCollectorTrackTest, VideoBandwidthEstimationInfoIsReported) {
   constexpr int kPacerDelay = 123;
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   VideoSenderInfo video_sender_info;
   video_sender_info.add_ssrc(1234);
@@ -994,10 +1003,9 @@ TEST_P(StatsCollectorTrackTest, VideoBandwidthEstimationInfoIsReported) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
-  auto* video_media_channel = pc->AddVideoChannel("video", "transport");
-  video_media_channel->SetStats(video_info);
+  pc->AddVideoChannel("video", "transport", video_info);
 
-  AddOutgoingVideoTrack(pc, stats.get());
+  AddOutgoingVideoTrack(pc.get(), stats.get());
 
   Call::Stats call_stats;
   call_stats.send_bandwidth_bps = kSendBandwidth;
@@ -1028,7 +1036,7 @@ TEST_P(StatsCollectorTrackTest, VideoBandwidthEstimationInfoIsReported) {
 // exists in the returned stats.
 TEST_F(StatsCollectorTest, SessionObjectExists) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1042,7 +1050,7 @@ TEST_F(StatsCollectorTest, SessionObjectExists) {
 // in the returned stats.
 TEST_F(StatsCollectorTest, OnlyOneSessionObjectExists) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
@@ -1059,10 +1067,10 @@ TEST_F(StatsCollectorTest, OnlyOneSessionObjectExists) {
 // without calling StatsCollector::UpdateStats.
 TEST_P(StatsCollectorTrackTest, TrackObjectExistsWithoutUpdateStats) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   pc->AddVideoChannel("video", "transport");
-  AddOutgoingVideoTrack(pc, stats.get());
+  AddOutgoingVideoTrack(pc.get(), stats.get());
 
   // Verfies the existence of the track report.
   StatsReports reports;
@@ -1083,7 +1091,7 @@ TEST_P(StatsCollectorTrackTest, TrackAndSsrcObjectExistAfterUpdateSsrcStats) {
   constexpr int64_t kBytesSent = 12345678901234LL;
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   VideoSenderInfo video_sender_info;
   video_sender_info.add_ssrc(1234);
@@ -1092,10 +1100,9 @@ TEST_P(StatsCollectorTrackTest, TrackAndSsrcObjectExistAfterUpdateSsrcStats) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
-  auto* video_media_channel = pc->AddVideoChannel("video", "transport");
-  video_media_channel->SetStats(video_info);
+  pc->AddVideoChannel("video", "transport", video_info);
 
-  AddOutgoingVideoTrack(pc, stats.get());
+  AddOutgoingVideoTrack(pc.get(), stats.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1110,7 +1117,7 @@ TEST_P(StatsCollectorTrackTest, TrackAndSsrcObjectExistAfterUpdateSsrcStats) {
 
   // Get report for the specific `track`.
   reports.clear();
-  stats->GetStats(track_, &reports);
+  stats->GetStats(video_track_.get(), &reports);
   // `reports` should contain at least one session report, one track report,
   // and one ssrc report.
   EXPECT_LE(3u, reports.size());
@@ -1138,7 +1145,7 @@ TEST_P(StatsCollectorTrackTest, TransportObjectLinkedFromSsrcObject) {
   constexpr int64_t kBytesSent = 12345678901234LL;
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   VideoSenderInfo video_sender_info;
   video_sender_info.add_ssrc(1234);
@@ -1147,10 +1154,9 @@ TEST_P(StatsCollectorTrackTest, TransportObjectLinkedFromSsrcObject) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
-  auto* video_media_channel = pc->AddVideoChannel("video", "transport");
-  video_media_channel->SetStats(video_info);
+  pc->AddVideoChannel("video", "transport", video_info);
 
-  AddOutgoingVideoTrack(pc, stats.get());
+  AddOutgoingVideoTrack(pc.get(), stats.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1181,10 +1187,10 @@ TEST_P(StatsCollectorTrackTest, TransportObjectLinkedFromSsrcObject) {
 // an outgoing SSRC where remote stats are not returned.
 TEST_P(StatsCollectorTrackTest, RemoteSsrcInfoIsAbsent) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   pc->AddVideoChannel("video", "transport");
-  AddOutgoingVideoTrack(pc, stats.get());
+  AddOutgoingVideoTrack(pc.get(), stats.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1199,7 +1205,7 @@ TEST_P(StatsCollectorTrackTest, RemoteSsrcInfoIsAbsent) {
 // an outgoing SSRC where stats are returned.
 TEST_P(StatsCollectorTrackTest, RemoteSsrcInfoIsPresent) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   SsrcReceiverInfo remote_ssrc_stats;
   remote_ssrc_stats.timestamp = 12345.678;
@@ -1210,10 +1216,9 @@ TEST_P(StatsCollectorTrackTest, RemoteSsrcInfoIsPresent) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
-  auto* video_media_channel = pc->AddVideoChannel("video", "transport");
-  video_media_channel->SetStats(video_info);
+  pc->AddVideoChannel("video", "transport", video_info);
 
-  AddOutgoingVideoTrack(pc, stats.get());
+  AddOutgoingVideoTrack(pc.get(), stats.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1231,7 +1236,7 @@ TEST_P(StatsCollectorTrackTest, ReportsFromRemoteTrack) {
   constexpr int64_t kNumOfPacketsConcealed = 54321;
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   VideoReceiverInfo video_receiver_info;
   video_receiver_info.add_ssrc(1234);
@@ -1239,10 +1244,9 @@ TEST_P(StatsCollectorTrackTest, ReportsFromRemoteTrack) {
   VideoMediaInfo video_info;
   video_info.receivers.push_back(video_receiver_info);
 
-  auto* video_media_info = pc->AddVideoChannel("video", "transport");
-  video_media_info->SetStats(video_info);
+  pc->AddVideoChannel("video", "transport", video_info);
 
-  AddIncomingVideoTrack(pc, stats.get());
+  AddIncomingVideoTrack(pc.get(), stats.get());
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1281,7 +1285,7 @@ TEST_F(StatsCollectorTest, IceCandidateReport) {
   const rtc::SocketAddress kRemoteAddress(kRemoteIp, kRemotePort);
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   cricket::Candidate local;
   EXPECT_GT(local.id().length(), 0u);
@@ -1417,7 +1421,7 @@ TEST_F(StatsCollectorTest, ChainlessCertificateReportsCreated) {
 // transport is present.
 TEST_F(StatsCollectorTest, NoTransport) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   // This will cause the fake PeerConnection to generate a TransportStats entry
   // but with only a single dummy TransportChannelStats.
@@ -1476,28 +1480,28 @@ TEST_P(StatsCollectorTrackTest, FilterOutNegativeInitialValues) {
   }
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   // Create a local stream with a local audio track and adds it to the stats.
   stream_ = MediaStream::Create("streamid");
   auto local_track =
       rtc::make_ref_counted<FakeAudioTrackWithInitValue>(kLocalTrackId);
-  stream_->AddTrack(local_track);
+  stream_->AddTrack(rtc::scoped_refptr<AudioTrackInterface>(local_track.get()));
   pc->AddSender(CreateMockSender(local_track, kSsrcOfTrack));
   if (GetParam()) {
-    stats->AddStream(stream_);
+    stats->AddStream(stream_.get());
   }
   stats->AddLocalAudioTrack(local_track.get(), kSsrcOfTrack);
 
   // Create a remote stream with a remote audio track and adds it to the stats.
   rtc::scoped_refptr<MediaStream> remote_stream(
       MediaStream::Create("remotestreamid"));
-  auto remote_track =
+  rtc::scoped_refptr<AudioTrackInterface> remote_track =
       rtc::make_ref_counted<FakeAudioTrackWithInitValue>(kRemoteTrackId);
   remote_stream->AddTrack(remote_track);
   pc->AddReceiver(CreateMockReceiver(remote_track, kSsrcOfTrack));
   if (GetParam()) {
-    stats->AddStream(remote_stream);
+    stats->AddStream(remote_stream.get());
   }
 
   VoiceSenderInfo voice_sender_info;
@@ -1563,14 +1567,15 @@ TEST_P(StatsCollectorTrackTest, FilterOutNegativeInitialValues) {
 // AudioTrackInterface::GetStats() method.
 TEST_P(StatsCollectorTrackTest, GetStatsFromLocalAudioTrack) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
-  AddOutgoingAudioTrack(pc, stats.get());
-  stats->AddLocalAudioTrack(audio_track_, kSsrcOfTrack);
+  AddOutgoingAudioTrack(pc.get(), stats.get());
+  stats->AddLocalAudioTrack(audio_track_.get(), kSsrcOfTrack);
 
   VoiceSenderInfo voice_sender_info;
   InitVoiceSenderInfo(&voice_sender_info);
-  UpdateVoiceSenderInfoFromAudioTrack(audio_track_, &voice_sender_info, false);
+  UpdateVoiceSenderInfoFromAudioTrack(audio_track_.get(), &voice_sender_info,
+                                      false);
   VoiceMediaInfo voice_info;
   voice_info.senders.push_back(voice_sender_info);
 
@@ -1578,7 +1583,7 @@ TEST_P(StatsCollectorTrackTest, GetStatsFromLocalAudioTrack) {
   voice_media_channel->SetStats(voice_info);
 
   StatsReports reports;  // returned values.
-  VerifyAudioTrackStats(audio_track_, stats.get(), voice_info, &reports);
+  VerifyAudioTrackStats(audio_track_.get(), stats.get(), voice_info, &reports);
 
   // Verify that there is no remote report for the local audio track because
   // we did not set it up.
@@ -1591,9 +1596,9 @@ TEST_P(StatsCollectorTrackTest, GetStatsFromLocalAudioTrack) {
 // correctly.
 TEST_P(StatsCollectorTrackTest, GetStatsFromRemoteStream) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
-  AddIncomingAudioTrack(pc, stats.get());
+  AddIncomingAudioTrack(pc.get(), stats.get());
 
   VoiceReceiverInfo voice_receiver_info;
   InitVoiceReceiverInfo(&voice_receiver_info);
@@ -1605,16 +1610,16 @@ TEST_P(StatsCollectorTrackTest, GetStatsFromRemoteStream) {
   voice_media_channel->SetStats(voice_info);
 
   StatsReports reports;  // returned values.
-  VerifyAudioTrackStats(audio_track_, stats.get(), voice_info, &reports);
+  VerifyAudioTrackStats(audio_track_.get(), stats.get(), voice_info, &reports);
 }
 
 // This test verifies that a local stats object won't update its statistics
 // after a RemoveLocalAudioTrack() call.
 TEST_P(StatsCollectorTrackTest, GetStatsAfterRemoveAudioStream) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
-  AddOutgoingAudioTrack(pc, stats.get());
+  AddOutgoingAudioTrack(pc.get(), stats.get());
   stats->AddLocalAudioTrack(audio_track_.get(), kSsrcOfTrack);
 
   VoiceSenderInfo voice_sender_info;
@@ -1653,19 +1658,20 @@ TEST_P(StatsCollectorTrackTest, GetStatsAfterRemoveAudioStream) {
 // the same ssrc, they populate stats reports correctly.
 TEST_P(StatsCollectorTrackTest, LocalAndRemoteTracksWithSameSsrc) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   // Create a local stream with a local audio track and adds it to the stats.
-  AddOutgoingAudioTrack(pc, stats.get());
+  AddOutgoingAudioTrack(pc.get(), stats.get());
   stats->AddLocalAudioTrack(audio_track_.get(), kSsrcOfTrack);
 
   // Create a remote stream with a remote audio track and adds it to the stats.
   rtc::scoped_refptr<MediaStream> remote_stream(
       MediaStream::Create("remotestreamid"));
-  auto remote_track = rtc::make_ref_counted<FakeAudioTrack>(kRemoteTrackId);
+  rtc::scoped_refptr<AudioTrackInterface> remote_track =
+      rtc::make_ref_counted<FakeAudioTrack>(kRemoteTrackId);
   pc->AddReceiver(CreateMockReceiver(remote_track, kSsrcOfTrack));
   remote_stream->AddTrack(remote_track);
-  stats->AddStream(remote_stream);
+  stats->AddStream(remote_stream.get());
 
   VoiceSenderInfo voice_sender_info;
   InitVoiceSenderInfo(&voice_sender_info);
@@ -1725,15 +1731,16 @@ TEST_P(StatsCollectorTrackTest, TwoLocalTracksWithSameSsrc) {
   }
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   // Create a local stream with a local audio track and adds it to the stats.
-  auto sender = AddOutgoingAudioTrack(pc, stats.get());
-  stats->AddLocalAudioTrack(audio_track_, kSsrcOfTrack);
+  auto sender = AddOutgoingAudioTrack(pc.get(), stats.get());
+  stats->AddLocalAudioTrack(audio_track_.get(), kSsrcOfTrack);
 
   VoiceSenderInfo voice_sender_info;
   InitVoiceSenderInfo(&voice_sender_info);
-  UpdateVoiceSenderInfoFromAudioTrack(audio_track_, &voice_sender_info, false);
+  UpdateVoiceSenderInfoFromAudioTrack(audio_track_.get(), &voice_sender_info,
+                                      false);
   voice_sender_info.add_ssrc(kSsrcOfTrack);
   VoiceMediaInfo voice_info;
   voice_info.senders.push_back(voice_sender_info);
@@ -1742,10 +1749,10 @@ TEST_P(StatsCollectorTrackTest, TwoLocalTracksWithSameSsrc) {
   voice_media_channel->SetStats(voice_info);
 
   StatsReports reports;  // returned values.
-  VerifyAudioTrackStats(audio_track_, stats.get(), voice_info, &reports);
+  VerifyAudioTrackStats(audio_track_.get(), stats.get(), voice_info, &reports);
 
   // Remove the previous audio track from the stream.
-  stream_->RemoveTrack(audio_track_.get());
+  stream_->RemoveTrack(audio_track());
   stats->RemoveLocalAudioTrack(audio_track_.get(), kSsrcOfTrack);
   pc->RemoveSender(sender);
 
@@ -1753,21 +1760,23 @@ TEST_P(StatsCollectorTrackTest, TwoLocalTracksWithSameSsrc) {
   static const std::string kNewTrackId = "new_track_id";
   auto new_audio_track = rtc::make_ref_counted<FakeAudioTrack>(kNewTrackId);
   pc->AddSender(CreateMockSender(new_audio_track, kSsrcOfTrack));
-  stream_->AddTrack(new_audio_track);
+  stream_->AddTrack(
+      rtc::scoped_refptr<AudioTrackInterface>(new_audio_track.get()));
 
-  stats->AddLocalAudioTrack(new_audio_track, kSsrcOfTrack);
-  stats->ClearUpdateStatsCacheForTest();
+  stats->AddLocalAudioTrack(new_audio_track.get(), kSsrcOfTrack);
+  stats->InvalidateCache();
 
   VoiceSenderInfo new_voice_sender_info;
   InitVoiceSenderInfo(&new_voice_sender_info);
-  UpdateVoiceSenderInfoFromAudioTrack(new_audio_track, &new_voice_sender_info,
-                                      false);
+  UpdateVoiceSenderInfoFromAudioTrack(new_audio_track.get(),
+                                      &new_voice_sender_info, false);
   VoiceMediaInfo new_voice_info;
   new_voice_info.senders.push_back(new_voice_sender_info);
   voice_media_channel->SetStats(new_voice_info);
 
   reports.clear();
-  VerifyAudioTrackStats(new_audio_track, stats.get(), new_voice_info, &reports);
+  VerifyAudioTrackStats(new_audio_track.get(), stats.get(), new_voice_info,
+                        &reports);
 }
 
 // Test that if there are two local senders with the same track then two SSRC
@@ -1778,7 +1787,7 @@ TEST_P(StatsCollectorTrackTest, TwoLocalSendersWithSameTrack) {
   constexpr uint32_t kSecondSsrc = 33;
 
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
   auto local_track =
       rtc::make_ref_counted<FakeAudioTrackWithInitValue>(kLocalTrackId);
@@ -1808,7 +1817,6 @@ TEST_P(StatsCollectorTrackTest, TwoLocalSendersWithSameTrack) {
 
   StatsReports reports;
   stats->GetStats(local_track.get(), &reports);
-  RTC_LOG(LS_INFO) << reports.size();
 
   // Both SSRC reports have the same track ID.
   EXPECT_EQ(kLocalTrackId, GetValueInNthReportByType(
@@ -1839,9 +1847,9 @@ TEST_P(StatsCollectorTrackTest, TwoLocalSendersWithSameTrack) {
 // This test verifies that stats are correctly set in video send ssrc stats.
 TEST_P(StatsCollectorTrackTest, VerifyVideoSendSsrcStats) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
-  AddOutgoingVideoTrack(pc, stats.get());
+  AddOutgoingVideoTrack(pc.get(), stats.get());
 
   VideoSenderInfo video_sender_info;
   video_sender_info.add_ssrc(1234);
@@ -1850,8 +1858,7 @@ TEST_P(StatsCollectorTrackTest, VerifyVideoSendSsrcStats) {
   VideoMediaInfo video_info;
   video_info.aggregated_senders.push_back(video_sender_info);
 
-  auto* video_media_channel = pc->AddVideoChannel("video", "transport");
-  video_media_channel->SetStats(video_info);
+  pc->AddVideoChannel("video", "transport", video_info);
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;
@@ -1867,9 +1874,9 @@ TEST_P(StatsCollectorTrackTest, VerifyVideoSendSsrcStats) {
 // This test verifies that stats are correctly set in video receive ssrc stats.
 TEST_P(StatsCollectorTrackTest, VerifyVideoReceiveSsrcStatsNew) {
   auto pc = CreatePeerConnection();
-  auto stats = CreateStatsCollector(pc);
+  auto stats = CreateStatsCollector(pc.get());
 
-  AddIncomingVideoTrack(pc, stats.get());
+  AddIncomingVideoTrack(pc.get(), stats.get());
 
   VideoReceiverInfo video_receiver_info;
   video_receiver_info.add_ssrc(1234);
@@ -1878,8 +1885,7 @@ TEST_P(StatsCollectorTrackTest, VerifyVideoReceiveSsrcStatsNew) {
   VideoMediaInfo video_info;
   video_info.receivers.push_back(video_receiver_info);
 
-  auto* video_media_channel = pc->AddVideoChannel("video", "transport");
-  video_media_channel->SetStats(video_info);
+  pc->AddVideoChannel("video", "transport", video_info);
 
   stats->UpdateStats(PeerConnectionInterface::kStatsOutputLevelStandard);
   StatsReports reports;

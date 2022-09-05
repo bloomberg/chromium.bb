@@ -71,6 +71,12 @@
 
 namespace {
 
+// The size of the symbol image.
+NSInteger kSymbolImagePointSize = 18;
+
+// The name if the popup symbol.
+NSString* const kRestoreSessionSymbol = @"exclamationmark.triangle.fill";
+
 // The name for directory which contains all session backup subdirectories for
 // multiple sessions.
 const base::FilePath::CharType kSessionBackupDirectory[] =
@@ -148,11 +154,24 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   void InfoBarDismissed() override;
   bool ShouldExpire(const NavigationDetails& details) const override;
-  int GetIconId() const override;
 
+  ui::ImageModel GetIcon() const override {
+    if (icon_.IsEmpty()) {
+      UIImageSymbolConfiguration* configuration = [UIImageSymbolConfiguration
+          configurationWithPointSize:kSymbolImagePointSize
+                              weight:UIImageSymbolWeightMedium
+                               scale:UIImageSymbolScaleMedium];
+      UIImage* image = [UIImage systemImageNamed:kRestoreSessionSymbol
+                               withConfiguration:configuration];
+      icon_ = gfx::Image(image);
+    }
+    return ui::ImageModel::FromImage(icon_);
+  }
+
+  // The icon to display.
+  mutable gfx::Image icon_;
   // TimeInterval when the delegate was created.
   NSTimeInterval delegate_creation_time_;
-
   // The CrashRestoreHelper to restore sessions.
   CrashRestoreHelper* crash_restore_helper_;
 };
@@ -222,15 +241,7 @@ void SessionCrashedInfoBarDelegate::InfoBarDismissed() {
 
 bool SessionCrashedInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  if (base::FeatureList::IsEnabled(kIOSPersistCrashRestore)) {
-    return false;
-  } else {
-    return InfoBarDelegate::ShouldExpire(details);
-  }
-}
-
-int SessionCrashedInfoBarDelegate::GetIconId() const {
-  return IDR_IOS_INFOBAR_RESTORE_SESSION;
+  return false;
 }
 
 }  // namespace
@@ -418,17 +429,9 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
 
     // Remove the backup directory for this session as it will not be moved
     // back to its original browser state directory.
-    if (base::ios::IsMultiwindowSupported()) {
-      [fileManager
-          removeItemAtPath:[backupPath stringByDeletingLastPathComponent]
-                     error:&error];
-    }
+    [fileManager removeItemAtPath:[backupPath stringByDeletingLastPathComponent]
+                            error:&error];
   }
-
-  // If this is not multiwindow platform, there are no more sessions to deal
-  // with.
-  if (!base::ios::IsMultiwindowSupported())
-    return success;
 
   // Now put non restored sessions files to its original location in the browser
   // state directory.
@@ -499,11 +502,8 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
       // webStateList.
       tabRestoreService->CreateHistoricalTab(live_tab.get(), 0);
     }
-    if (base::ios::IsMultiwindowSupported()) {
-      [fileManager
-          removeItemAtPath:[backupPath stringByDeletingLastPathComponent]
-                     error:&error];
-    }
+    [fileManager removeItemAtPath:[backupPath stringByDeletingLastPathComponent]
+                            error:&error];
   }
 }
 

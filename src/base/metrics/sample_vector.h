@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -30,9 +31,6 @@ class BucketRanges;
 
 class BASE_EXPORT SampleVectorBase : public HistogramSamples {
  public:
-  SampleVectorBase(uint64_t id,
-                   Metadata* meta,
-                   const BucketRanges* bucket_ranges);
   SampleVectorBase(const SampleVectorBase&) = delete;
   SampleVectorBase& operator=(const SampleVectorBase&) = delete;
   ~SampleVectorBase() override;
@@ -51,6 +49,13 @@ class BASE_EXPORT SampleVectorBase : public HistogramSamples {
   const BucketRanges* bucket_ranges() const { return bucket_ranges_; }
 
  protected:
+  SampleVectorBase(uint64_t id,
+                   Metadata* meta,
+                   const BucketRanges* bucket_ranges);
+  SampleVectorBase(uint64_t id,
+                   std::unique_ptr<Metadata> meta,
+                   const BucketRanges* bucket_ranges);
+
   bool AddSubtractImpl(
       SampleCountIterator* iter,
       HistogramSamples::Operator op) override;  // |op| is ADD or SUBTRACT.

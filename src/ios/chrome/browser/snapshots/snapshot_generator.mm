@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/task/post_task.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -132,9 +131,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
   if (![self canTakeSnapshot]) {
     if (completion) {
-      base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-                       completion(nil);
-                     }));
+      web::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(^{
+                                                 completion(nil);
+                                               }));
     }
     return;
   }
@@ -202,6 +201,11 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
              frameInBaseView:(CGRect)frameInBaseView {
   DCHECK(baseView);
   DCHECK(!CGRectIsEmpty(frameInBaseView));
+
+  // Disable the automatic view dimming UIKit performs if a view is presented
+  // modally over |baseView|.
+  baseView.tintAdjustmentMode = UIViewTintAdjustmentModeNormal;
+
   // Note: When not using device scale, the output image size may slightly
   // differ from the input size due to rounding.
   const CGFloat kScale =
@@ -234,6 +238,13 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   if (snapshotSuccess)
     image = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
+
+  // Defaults to UIViewTintAdjustmentModeAutomatic if there is no delegate.
+  baseView.tintAdjustmentMode =
+      self.delegate ? [self.delegate snapshotGenerator:self
+                          defaultTintAdjustmentModeForWebState:self.webState]
+                    : UIViewTintAdjustmentModeAutomatic;
+
   return image;
 }
 

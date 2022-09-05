@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <sys/xattr.h>
 
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -21,8 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-namespace base {
-namespace mac {
+namespace base::mac {
 
 namespace {
 
@@ -62,7 +60,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
     "/", "/foo", "foo", "/foo/bar.", "foo/bar.", "/foo/bar./bazquux",
     "foo/bar./bazquux", "foo/.app", "//foo",
   };
-  for (size_t i = 0; i < base::size(invalid_inputs); i++) {
+  for (size_t i = 0; i < std::size(invalid_inputs); i++) {
     out = GetAppBundlePath(FilePath(invalid_inputs[i]));
     EXPECT_TRUE(out.empty()) << "loop: " << i;
   }
@@ -86,24 +84,12 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
     { "/Applications/Google Foo.app/bar/Foo Helper.app/quux/Foo Helper",
         "/Applications/Google Foo.app" },
   };
-  for (size_t i = 0; i < base::size(valid_inputs); i++) {
+  for (size_t i = 0; i < std::size(valid_inputs); i++) {
     out = GetAppBundlePath(FilePath(valid_inputs[i].in));
     EXPECT_FALSE(out.empty()) << "loop: " << i;
     EXPECT_STREQ(valid_inputs[i].expected_out,
         out.value().c_str()) << "loop: " << i;
   }
-}
-
-TEST_F(MacUtilTest, NSObjectRetainRelease) {
-  base::scoped_nsobject<NSArray> array(
-      [[NSArray alloc] initWithObjects:@"foo", nil]);
-  EXPECT_EQ(1U, [array retainCount]);
-
-  NSObjectRetain(array);
-  EXPECT_EQ(2U, [array retainCount]);
-
-  NSObjectRelease(array);
-  EXPECT_EQ(1U, [array retainCount]);
 }
 
 TEST_F(MacUtilTest, IsOSEllipsis) {
@@ -149,36 +135,10 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
   EXPECT_FALSE(IsAtLeastOS##V());
 
   if (major == 10) {
-    if (minor == 11) {
-      EXPECT_TRUE(IsOS10_11());
-      EXPECT_TRUE(IsAtMostOS10_11());
+    if (minor == 13) {
+      EXPECT_TRUE(IsOS10_13());
+      EXPECT_TRUE(IsAtMostOS10_13());
 
-      TEST_FOR_FUTURE_10_OS(12);
-      TEST_FOR_FUTURE_10_OS(13);
-      TEST_FOR_FUTURE_10_OS(14);
-      TEST_FOR_FUTURE_10_OS(15);
-      TEST_FOR_FUTURE_OS(11);
-      TEST_FOR_FUTURE_OS(12);
-
-      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
-    } else if (minor == 12) {
-      EXPECT_FALSE(IsOS10_11());
-      EXPECT_FALSE(IsAtMostOS10_11());
-
-      TEST_FOR_SAME_10_OS(12);
-      TEST_FOR_FUTURE_10_OS(13);
-      TEST_FOR_FUTURE_10_OS(14);
-      TEST_FOR_FUTURE_10_OS(15);
-      TEST_FOR_FUTURE_OS(11);
-      TEST_FOR_FUTURE_OS(12);
-
-      EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
-    } else if (minor == 13) {
-      EXPECT_FALSE(IsOS10_11());
-      EXPECT_FALSE(IsAtMostOS10_11());
-
-      TEST_FOR_PAST_10_OS(12);
-      TEST_FOR_SAME_10_OS(13);
       TEST_FOR_FUTURE_10_OS(14);
       TEST_FOR_FUTURE_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
@@ -186,11 +146,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
 
       EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else if (minor == 14) {
-      EXPECT_FALSE(IsOS10_11());
-      EXPECT_FALSE(IsAtMostOS10_11());
+      EXPECT_FALSE(IsOS10_13());
+      EXPECT_FALSE(IsAtMostOS10_13());
 
-      TEST_FOR_PAST_10_OS(12);
-      TEST_FOR_PAST_10_OS(13);
       TEST_FOR_SAME_10_OS(14);
       TEST_FOR_FUTURE_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
@@ -198,11 +156,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
 
       EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
     } else if (minor == 15) {
-      EXPECT_FALSE(IsOS10_11());
-      EXPECT_FALSE(IsAtMostOS10_11());
+      EXPECT_FALSE(IsOS10_13());
+      EXPECT_FALSE(IsAtMostOS10_13());
 
-      TEST_FOR_PAST_10_OS(12);
-      TEST_FOR_PAST_10_OS(13);
       TEST_FOR_PAST_10_OS(14);
       TEST_FOR_SAME_10_OS(15);
       TEST_FOR_FUTURE_OS(11);
@@ -214,11 +170,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       FAIL() << "Unexpected 10.x macOS.";
     }
   } else if (major == 11) {
-    EXPECT_FALSE(IsOS10_11());
-    EXPECT_FALSE(IsAtMostOS10_11());
+    EXPECT_FALSE(IsOS10_13());
+    EXPECT_FALSE(IsAtMostOS10_13());
 
-    TEST_FOR_PAST_10_OS(12);
-    TEST_FOR_PAST_10_OS(13);
     TEST_FOR_PAST_10_OS(14);
     TEST_FOR_PAST_10_OS(15);
     TEST_FOR_SAME_OS(11);
@@ -226,11 +180,9 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
 
     EXPECT_FALSE(IsOSLaterThan12_DontCallThis());
   } else if (major == 12) {
-    EXPECT_FALSE(IsOS10_11());
-    EXPECT_FALSE(IsAtMostOS10_11());
+    EXPECT_FALSE(IsOS10_13());
+    EXPECT_FALSE(IsAtMostOS10_13());
 
-    TEST_FOR_PAST_10_OS(12);
-    TEST_FOR_PAST_10_OS(13);
     TEST_FOR_PAST_10_OS(14);
     TEST_FOR_PAST_10_OS(15);
     TEST_FOR_PAST_OS(11);
@@ -313,5 +265,4 @@ TEST_F(MacUtilTest, TestRemoveQuarantineAttributeNonExistentPath) {
 
 }  // namespace
 
-}  // namespace mac
-}  // namespace base
+}  // namespace base::mac

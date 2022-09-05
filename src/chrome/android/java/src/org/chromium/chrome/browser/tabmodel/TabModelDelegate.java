@@ -20,16 +20,15 @@ public interface TabModelDelegate {
     void requestToShowTab(Tab tab, @TabSelectionType int type);
 
     /**
-     * Delegate a request to close all tabs in a model.
-     * @param incognito Whether the model is incognito.
-     * @return Whether the request was handled.
-     */
-    boolean closeAllTabsRequest(boolean incognito);
-
-    /**
      * @return Whether reparenting is currently in progress for this TabModel.
      */
     boolean isReparentingInProgress();
+
+    /**
+     * Request to the native TabRestoreService to restore the most recently closed tab.
+     * @param tabModel The model requesting the restore.
+     */
+    default void openMostRecentlyClosedEntry(TabModel model){};
 
     // TODO(aurimas): clean these methods up.
     TabModel getCurrentModel();

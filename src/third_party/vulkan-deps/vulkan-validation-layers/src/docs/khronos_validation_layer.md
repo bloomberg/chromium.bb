@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD041 -->
-<!-- Copyright 2015-2021 LunarG, Inc. -->
+<!-- Copyright 2015-2022 LunarG, Inc. -->
 
 [![Khronos Vulkan][1]][2]
 
@@ -8,23 +8,39 @@
 
 # VK\_LAYER\_KHRONOS\_validation
 
+Vulkan is an Explicit API, enabling direct control over how GPUs actually work. By design, minimal error
+checking is done inside a Vulkan driver - applications have full control and responsibility for correct operation.
+Any errors in Vulkan usage can result in unexpected behavior or even a crash.  The `VK_LAYER_KHRONOS_validation` layer
+can be used to to assist developers in isolating incorrect usage, and in verifying that applications
+correctly use the API.
+
+
 The `VK_LAYER_KHRONOS_validation` layer supports the following validation coverage areas:
 
-- [Core validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/core_checks.md)
-- [Stateless parameter validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/stateless_validation.md)
-- [Object lifetime validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/object_lifetimes.md)
-- [GPU-Assisted validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/gpu_validation.md)
-- [Thread safety validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/thread_safety.md)
-- [Synchronization validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/synchronization_usage.md)
-- [Best practices validation](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/best_practices.md)
-- [Debug Printf functionality](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/debug_printf.md)
-- [Handle wrapping functionality](https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/docs/handle_wrapping.md)
+- [Core validation](core_checks.md)
+- [GPU-Assisted validation](gpu_validation.md)
+- [Thread safety validation](thread_safety.md)
+- [Synchronization validation](synchronization_usage.md)
+- [Best practices validation](best_practices.md)
+- [Debug Printf functionality](debug_printf.md)
+- [Handle wrapping functionality](handle_wrapping.md)
+- [Fine grained locking functionality](fine_grained_locking_usage.md)
 
 **Note:**
 
 * Most *Khronos Validation layer* features can be used simultaneously. However, this could result in noticeable performance degradation. The best practice is to run *Core validation*, *GPU-Assisted validation*, *Synchronization Validation* and *Best practices validation* features individually.
 
 * *Debug Printf functionality* and *GPU-Assisted validation* cannot be run at the same time.
+
+## Configuring the Validation Layer
+
+For an overview of how to configure layers, refer to the [Layers Overview and Configuration](https://vulkan.lunarg.com/doc/sdk/latest/windows/layer_configuration.html) document.
+
+The Validation Layer settings are documented in detail in the
+[VK_LAYER_KHRONOS_validation](https://vulkan.lunarg.com/doc/sdk/latest/windows/khronos_validation_layer.html#user-content-layer-details) document.
+
+The Validation Layer can also be enabled and configured using vkconfig. See the [vkconfig](https://vulkan.lunarg.com/doc/sdk/latest/windows/vkconfig.html) documentation for more information.
+
 
 ## Layer Controls
 Layer behavior is controlled through either a layer settings file or an extension.
@@ -53,9 +69,9 @@ The `VK_EXT_validation_features` flags can be used to disable validation corresp
 | `VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT` | `VK_LAYER_LUNARG_parameter_validation` |
 | `VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT` | `VK_LAYER_LUNARG_object_tracker` |
 | `VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT` | `VK_LAYER_LUNARG_core_validation` |
-| `VK_VALIDATION_FEATURE_DISABLE_UNIQUE_HANDLES_EXT` | `VK_LAYER_GOOGLE_unqiue_objects` |
+| `VK_VALIDATION_FEATURE_DISABLE_UNIQUE_HANDLES_EXT` | `VK_LAYER_GOOGLE_unique_objects` |
 
-Refer to [VK_EXT_validation_features](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_EXT_validation_features)
+Refer to [VK_EXT_validation_features](https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VK_EXT_validation_features)
 in the Vulkan specification for details on this extension.
 
 ### <a name="debugutils"></a>VK\_EXT\_debug\_utils
@@ -95,9 +111,12 @@ adb shell setprop debug.vvl.forcelayerlog 1
 The debug.vvl namespace signifies validation layers, and setting this property forces the validation layer callback to always execute, even if the app registers
 a messenger callback itself. This is especially useful for automation tasks, ensuring that errors can be read in a parseable format.
 
-Refer to [VK_EXT_debug_utils](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_EXT_debug_utils)
+Refer to [VK_EXT_debug_utils](https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VK_EXT_debug_utils)
 in the Vulkan Specification for details on this feature.
 
+## Layer Options
+
+The options for this layer are specified in VkLayer_khronos_validation.json. The option details are in [khronos_validation_layer.html](https://vulkan.lunarg.com/doc/sdk/latest/windows/khronos_validation_layer.html).
 
 
 

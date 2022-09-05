@@ -39,6 +39,23 @@ class FakeLockHandler : public ScreenlockBridge::LockHandler {
   void AttemptEasySignin(const AccountId& account_id,
                          const std::string& secret,
                          const std::string& key_label) override;
+
+  absl::optional<ash::SmartLockState> smart_lock_state() const {
+    return smart_lock_state_;
+  }
+  absl::optional<bool> smart_lock_auth_result() const {
+    return smart_lock_auth_result_;
+  }
+  int unlock_called() const { return unlock_called_; }
+
+  void ClearSmartLockState();
+  void ClearSmartLockAuthResult();
+
+ private:
+  absl::optional<ash::SmartLockState> smart_lock_state_;
+  absl::optional<bool> smart_lock_auth_result_;
+  mojom::AuthType latest_set_auth_type_ = mojom::AuthType::USER_CLICK;
+  int unlock_called_ = 0;
 };
 
 }  // namespace proximity_auth

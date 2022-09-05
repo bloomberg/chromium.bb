@@ -7,7 +7,14 @@ import type * as puppeteer from 'puppeteer';
 
 import {$$, click, getBrowserAndPages, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {addBreakpointForLine, getSelectedSource, listenForSourceFilesLoaded, openSourceCodeEditorForFile, retrieveTopCallFrameScriptLocation, waitForSourceLoadedEvent} from '../helpers/sources-helpers.js';
+import {
+  addBreakpointForLine,
+  getSelectedSource,
+  listenForSourceFilesLoaded,
+  openSourceCodeEditorForFile,
+  retrieveTopCallFrameScriptLocation,
+  waitForSourceLoadedEvent,
+} from '../helpers/sources-helpers.js';
 
 const PRETTY_PRINT_BUTTON = '[aria-label="Pretty print minified-sourcecode.js"]';
 
@@ -59,7 +66,7 @@ describe('The Sources Tab', async function() {
       '    }',
       '}',
       ';notFormattedFunction();',
-      ​ '',
+      '',
     ];
 
     const updatedTextContent = await retrieveCodeMirrorEditorContent();
@@ -108,8 +115,7 @@ describe('The Sources Tab', async function() {
     ]);
   });
 
-  // Flaky on Windows
-  it.skipOnPlatforms(['win32'], '[crbug.com/1184104]: can add breakpoint for formatted file', async () => {
+  it('can add breakpoint for formatted file', async () => {
     const {target, frontend} = getBrowserAndPages();
 
     await openSourceCodeEditorForFile('minified-sourcecode.js', 'minified-sourcecode.html');
@@ -139,16 +145,5 @@ describe('The Sources Tab', async function() {
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('notFormattedFunction();', target);
     assert.deepEqual(scriptLocation, 'minified-source…s:formatted:10');
-  });
-
-  // This requires additional fixes
-  it.skip('[crbug.com/1003497] can add breakpoint for inline scripts in HTML file', async () => {
-    const {target, frontend} = getBrowserAndPages();
-
-    await openSourceCodeEditorForFile('inline-script.html', 'inline-script.html');
-    await addBreakpointForLine(frontend, 16);
-
-    const scriptLocation = await retrieveTopCallFrameScriptLocation('functionInInlineScriptWithSourceURL();', target);
-    assert.deepEqual(scriptLocation, 'named-inline-script.js:2');
   });
 });

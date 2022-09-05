@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <unordered_set>
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -735,7 +736,7 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
         *error_message = "target == GL_TEXTURE_3D is not allowed";
         return false;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     }
     case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
     case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
@@ -975,7 +976,7 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
   std::string output_error_msg;
 
   switch (dest_internal_format) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // RGB5_A1 is not color-renderable on NVIDIA Mac, see
     // https://crbug.com/676209.
     case GL_RGB5_A1:
@@ -1182,25 +1183,6 @@ GLenum GetTextureBindingQuery(GLenum texture_type) {
     default:
       NOTREACHED();
       return 0;
-  }
-}
-
-gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
-  switch (plane_transform) {
-    case GL_OVERLAY_TRANSFORM_NONE_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_NONE;
-    case GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL;
-    case GL_OVERLAY_TRANSFORM_FLIP_VERTICAL_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
-    case GL_OVERLAY_TRANSFORM_ROTATE_90_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_90;
-    case GL_OVERLAY_TRANSFORM_ROTATE_180_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_180;
-    case GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_270;
-    default:
-      return gfx::OVERLAY_TRANSFORM_INVALID;
   }
 }
 

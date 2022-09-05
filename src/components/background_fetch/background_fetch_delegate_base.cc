@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/background_fetch/job_details.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -47,7 +46,7 @@ void BackgroundFetchDelegateBase::GetIconDisplaySize(
   // icon at all, which is returned for all non-Android platforms as the
   // icons can't be displayed on the UI yet.
   gfx::Size display_size;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   display_size = gfx::Size(192, 192);
 #endif
   std::move(callback).Run(display_size);
@@ -102,6 +101,7 @@ void BackgroundFetchDelegateBase::DownloadUrl(
                           weak_ptr_factory_.GetWeakPtr());
   params.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
+  params.request_params.update_first_party_url_on_redirect = false;
 
   JobDetails* job_details = GetJobDetails(job_id);
   if (job_details->job_state == JobDetails::State::kPendingWillStartPaused ||
@@ -171,21 +171,25 @@ void BackgroundFetchDelegateBase::CancelDownload(std::string job_id) {
   Abort(job_id);
 
   if (auto client = GetClient(job_id)) {
+    // The |download_guid| is not releavnt here as the job has already
+    // been aborted and is assumed to have been removed.
     client->OnJobCancelled(
-        job_id, blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
+        job_id, "" /* download_guid */,
+        blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
   }
 }
 
-void BackgroundFetchDelegateBase::OnUiFinished(const std::string& job_id,
-                                               bool activated) {
+void BackgroundFetchDelegateBase::OnUiFinished(const std::string& job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (activated) {
-    if (auto client = GetClient(job_id))
-      client->OnUIActivated(job_id);
-  }
 
   job_details_map_.erase(job_id);
   DoCleanUpUi(job_id);
+}
+
+void BackgroundFetchDelegateBase::OnUiActivated(const std::string& job_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (auto client = GetClient(job_id))
+    client->OnUIActivated(job_id);
 }
 
 JobDetails* BackgroundFetchDelegateBase::GetJobDetails(
@@ -232,7 +236,7 @@ void BackgroundFetchDelegateBase::MarkJobComplete(const std::string& job_id) {
   JobDetails* job_details = GetJobDetails(job_id);
 
   if (job_details->job_state == JobDetails::State::kCancelled) {
-    OnUiFinished(job_id, /*activated=*/false);
+    OnUiFinished(job_id);
     return;
   }
 
@@ -242,14 +246,15 @@ void BackgroundFetchDelegateBase::MarkJobComplete(const std::string& job_id) {
   job_details->current_fetch_guids.clear();
 }
 
-void BackgroundFetchDelegateBase::FailFetch(const std::string& job_id) {
+void BackgroundFetchDelegateBase::FailFetch(const std::string& job_id,
+                                            const std::string& download_guid) {
   // Save a copy before Abort() deletes the reference.
   const std::string unique_id = job_id;
   Abort(job_id);
 
   if (auto client = GetClient(unique_id)) {
     client->OnJobCancelled(
-        unique_id,
+        download_guid, unique_id,
         blink::mojom::BackgroundFetchFailureReason::DOWNLOAD_TOTAL_EXCEEDED);
   }
 }
@@ -301,7 +306,7 @@ void BackgroundFetchDelegateBase::OnDownloadUpdated(
     // We only do this if total download size is specified. If not specified,
     // this check is skipped. This is to allow for situations when the
     // total download size cannot be known when invoking fetch.
-    FailFetch(job_id);
+    FailFetch(job_id, download_guid);
     return;
   }
   DoUpdateUi(job_id);

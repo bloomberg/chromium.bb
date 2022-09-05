@@ -137,16 +137,6 @@ util::Status ProtoTraceReader::ParsePacket(TraceBlobView packet) {
     }
   }
 
-  // Workaround a bug in the frame timeline traces which is emitting packets
-  // with zero timestamp (b/179905685).
-  // TODO(primiano): around mid-2021 there should be no traces that have this
-  // bug and we should be able to remove this workaround.
-  if (decoder.has_frame_timeline_event() && decoder.timestamp() == 0) {
-    context_->storage->IncrementStats(
-        stats::frame_timeline_event_parser_errors);
-    return util::OkStatus();
-  }
-
   protos::pbzero::TracePacketDefaults::Decoder* defaults =
       state->current_generation()->GetTracePacketDefaults();
 
@@ -234,7 +224,7 @@ void ProtoTraceReader::ParseTraceConfig(protozero::ConstBytes blob) {
     PERFETTO_ELOG(
         "It is strongly recommended to have flush_period_ms set when "
         "write_into_file is turned on. This trace will be loaded fully "
-        "into memory before sorting which increases the likliehoold of "
+        "into memory before sorting which increases the likelihood of "
         "OOMs.");
   }
 }

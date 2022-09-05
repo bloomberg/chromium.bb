@@ -9,7 +9,9 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_display_manager.h"
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_switches.h"
 
@@ -17,12 +19,12 @@
 #include "ui/gl/gl_surface_egl.h"
 #endif  // defined(USE_EGL)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/posix/eintr_wrapper.h"
 #include "third_party/libsync/src/include/sync/sync.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <d3d11_1.h>
 #include "base/strings/stringprintf.h"
 #include "media/base/win/mf_helpers.h"
@@ -67,7 +69,7 @@ void Hang() {
   }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b) {
   if (!a.is_valid())
     return b;
@@ -99,20 +101,21 @@ bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
 
 bool PassthroughCommandDecoderSupported() {
 #if defined(USE_EGL)
+  GLDisplayEGL* display = gl::GLSurfaceEGL::GetGLDisplayEGL();
   // Using the passthrough command buffer requires that specific ANGLE
   // extensions are exposed
-  return gl::GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported() &&
-         gl::GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported() &&
-         gl::GLSurfaceEGL::IsRobustResourceInitSupported() &&
-         gl::GLSurfaceEGL::IsDisplayTextureShareGroupSupported() &&
-         gl::GLSurfaceEGL::IsCreateContextClientArraysSupported();
+  return display->IsCreateContextBindGeneratesResourceSupported() &&
+         display->IsCreateContextWebGLCompatabilitySupported() &&
+         display->IsRobustResourceInitSupported() &&
+         display->IsDisplayTextureShareGroupSupported() &&
+         display->IsCreateContextClientArraysSupported();
 #else
   // The passthrough command buffer is only supported on top of ANGLE/EGL
   return false;
 #endif  // defined(USE_EGL)
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // This function is thread safe.
 bool AreOverlaysSupportedWin() {
   return gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
@@ -193,9 +196,27 @@ void LabelSwapChainAndBuffers(IDXGISwapChain* swap_chain,
   media::SetDebugName(swap_chain, name_prefix);
   LabelSwapChainBuffers(swap_chain, name_prefix);
 }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
-#if defined(OS_MAC)
+#if defined(USE_EGL)
+void SetGpuPreferenceEGL(GpuPreference preference, uint64_t system_device_id) {
+  GLDisplayManagerEGL::GetInstance()->SetGpuPreference(preference,
+                                                       system_device_id);
+}
+
+GLDisplayEGL* GetDefaultDisplayEGL() {
+  return GLDisplayManagerEGL::GetInstance()->GetDisplay(
+      GpuPreference::kDefault);
+}
+#endif  // USE_EGL
+
+#if defined(USE_GLX)
+GLDisplayX11* GetDisplayX11(uint64_t system_device_id) {
+  return GLDisplayManagerX11::GetInstance()->GetDisplay(system_device_id);
+}
+#endif  // USE_GLX
+
+#if BUILDFLAG(IS_MAC)
 
 ScopedEnableTextureRectangleInShaderCompiler::
     ScopedEnableTextureRectangleInShaderCompiler(gl::GLApi* gl_api) {
@@ -214,7 +235,7 @@ ScopedEnableTextureRectangleInShaderCompiler::
     gl_api_->glDisableFn(GL_TEXTURE_RECTANGLE_ANGLE);
 }
 
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 ScopedPixelStore::ScopedPixelStore(unsigned int name, int value)
     : name_(name), old_value_(GetIntegerv(name)), value_(value) {

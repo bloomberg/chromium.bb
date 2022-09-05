@@ -4,7 +4,15 @@
 
 import {assertNotNullOrUndefined, getTestServerPort, goToResource, waitForNone} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {ensureResourceSectionIsExpanded, expandIssue, getIssueByTitle, getResourcesElement, ISSUE, navigateToIssuesTab, waitForTableFromResourceSectionContents} from '../helpers/issues-helpers.js';
+import {
+  ensureResourceSectionIsExpanded,
+  expandIssue,
+  getIssueByTitle,
+  getResourcesElement,
+  ISSUE,
+  navigateToIssuesTab,
+  waitForTableFromResourceSectionContents,
+} from '../helpers/issues-helpers.js';
 
 describe('Cross-origin portal post message issue', async () => {
   it('should display correct information', async () => {
@@ -22,7 +30,8 @@ describe('Cross-origin portal post message issue', async () => {
     await waitForTableFromResourceSectionContents(section.content, expectedTableRows);
   });
 
-  it('should handle multiple issue correctly', async () => {
+  // TODO: crbug/1325742 flaky test
+  it.skipOnPlatforms(['mac'], '[crbug.com/1325742] should handle multiple issue correctly', async () => {
     await goToResource('issues/cross-origin-portal-post-2.html');
     await navigateToIssuesTab();
     await expandIssue();

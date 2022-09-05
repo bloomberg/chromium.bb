@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_track_metrics.h"
@@ -195,13 +196,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
 
   virtual Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
-      const MediaConstraints& options);
-  virtual Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
-      RTCSessionDescriptionRequest* request,
       RTCOfferOptionsPlatform* options);
 
-  virtual void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
-                            const MediaConstraints& options);
   virtual void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
                             blink::RTCAnswerOptionsPlatform* options);
 
@@ -244,8 +240,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   virtual void RunSynchronousOnceClosureOnSignalingThread(
       CrossThreadOnceClosure closure,
       const char* trace_event_name);
-  virtual void RunSynchronousRepeatingClosureOnSignalingThread(
-      const base::RepeatingClosure& closure,
+  virtual void RunSynchronousOnceClosureOnSignalingThread(
+      base::OnceClosure closure,
       const char* trace_event_name);
 
   virtual void TrackIceConnectionStateChange(
@@ -337,7 +333,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   void OnModifyTransceivers(
       webrtc::PeerConnectionInterface::SignalingState signaling_state,
       std::vector<blink::RtpTransceiverState> transceiver_states,
-      bool is_remote_description);
+      bool is_remote_description,
+      bool is_rollback);
   void OnDataChannel(scoped_refptr<webrtc::DataChannelInterface> channel);
   void OnIceCandidate(const String& sdp,
                       const String& sdp_mid,
@@ -369,11 +366,6 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
     // video, then false).
     bool rtcp_mux = false;
   };
-  enum class CancellableBooleanOperationResult {
-    kCancelled,
-    kSuccess,
-    kFailure,
-  };
 
   RTCSessionDescriptionPlatform*
   GetRTCSessionDescriptionPlatformOnSignalingThread(
@@ -394,7 +386,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
                                       const FirstSessionDescription& remote);
 
   void AddTransceiverWithTrackOnSignalingThread(
-      rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track,
+      webrtc::MediaStreamTrackInterface* webrtc_track,
       webrtc::RtpTransceiverInit init,
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
@@ -406,7 +398,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
           error_or_transceiver);
   void AddTrackOnSignalingThread(
-      rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+      webrtc::MediaStreamTrackInterface* track,
       std::vector<std::string> stream_ids,
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>*
@@ -414,13 +406,14 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   bool RemoveTrackPlanB(blink::RTCRtpSenderPlatform* web_sender);
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   RemoveTrackUnifiedPlan(blink::RTCRtpSenderPlatform* web_sender);
+  // Helper function to remove a track on the signaling thread.
+  // Updates the entire transceiver state.
+  // The result will be absl::nullopt if the operation is cancelled,
+  // and no change to the state will be made.
   void RemoveTrackUnifiedPlanOnSignalingThread(
-      rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
+      webrtc::RtpSenderInterface* sender,
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
-      CancellableBooleanOperationResult* result);
-  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOfferInternal(
-      blink::RTCSessionDescriptionRequest* request,
-      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options);
+      absl::optional<webrtc::RTCError>* result);
   void CreateOfferOnSignalingThread(
       webrtc::CreateSessionDescriptionObserver* observer,
       webrtc::PeerConnectionInterface::RTCOfferAnswerOptions offer_options,
@@ -470,6 +463,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // Will be reset to nullptr when the handler is `CloseAndUnregister()`-ed, so
   // it doesn't prevent the factory from being garbage-collected.
   Persistent<PeerConnectionDependencyFactory> dependency_factory_;
+  // Reference that outlives `dependency_factory_`, used to free WebRTC
+  // references on the signaling thread during GC.
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
 
   blink::WebLocalFrame* frame_ = nullptr;
 

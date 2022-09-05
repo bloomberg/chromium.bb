@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/web/web_navigation_params.h"
 
-#include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -34,7 +34,6 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
   result->http_body = info.url_request.HttpBody();
   result->http_content_type =
       info.url_request.HttpHeaderField(http_names::kContentType);
-  result->previews_state = info.url_request.GetPreviewsState();
   result->requestor_origin = info.url_request.RequestorOrigin();
   result->frame_load_type = info.frame_load_type;
   result->is_client_redirect = info.is_client_redirect;

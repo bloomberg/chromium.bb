@@ -17,13 +17,15 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
-#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
-#include "components/services/app_service/public/cpp/intent_constants.h"
+#include "components/services/app_service/public/cpp/features.h"
+#include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -33,6 +35,7 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/common/chrome_features.h"
 #endif
 
@@ -46,9 +49,9 @@ struct IndexAndGeneric {
   bool is_generic;
 };
 
-std::string GetActivityLabel(const apps::mojom::IntentFilterPtr& filter,
-                             const apps::AppUpdate& update) {
-  if (filter->activity_label && !filter->activity_label->empty()) {
+std::string GetActivityLabel(const IntentFilterPtr& filter,
+                             const AppUpdate& update) {
+  if (filter->activity_label.has_value() && !filter->activity_label->empty()) {
     return filter->activity_label.value();
   } else {
     return update.Name();
@@ -69,7 +72,7 @@ absl::optional<IconKey> AppServiceProxyBase::InnerIconLoader::GetIconKey(
   absl::optional<IconKey> icon_key;
   host_->app_registry_cache_.ForApp(
       app_id,
-      [&icon_key](const AppUpdate& update) { icon_key = update.GetIconKey(); });
+      [&icon_key](const AppUpdate& update) { icon_key = update.IconKey(); });
   return icon_key;
 }
 
@@ -94,7 +97,7 @@ AppServiceProxyBase::InnerIconLoader::LoadIconFromIconKey(
     return nullptr;
   }
 
-  RecordAppLaunchMetrics(IconLoadingMethod::kViaNonMojomCall);
+  RecordIconLoadMethodMetrics(IconLoadingMethod::kViaNonMojomCall);
   publisher->LoadIcon(app_id, icon_key, icon_type, size_hint_in_dip,
                       allow_placeholder_icon, std::move(callback));
   return nullptr;
@@ -122,7 +125,7 @@ AppServiceProxyBase::InnerIconLoader::LoadIconFromIconKey(
     // for the app and app requested new icon. But new icon is not delivered
     // yet and you resolve old one instead. Now new icon arrives asynchronously
     // but you no longer notify the app or do?"
-    RecordAppLaunchMetrics(IconLoadingMethod::kViaMojomCall);
+    RecordIconLoadMethodMetrics(IconLoadingMethod::kViaMojomCall);
     host_->app_service_->LoadIcon(app_type, app_id, std::move(icon_key),
                                   icon_type, size_hint_in_dip,
                                   allow_placeholder_icon, std::move(callback));
@@ -137,7 +140,12 @@ AppServiceProxyBase::AppServiceProxyBase(Profile* profile)
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
                          apps::IconCache::GarbageCollectionPolicy::kEager),
-      profile_(profile) {}
+      profile_(profile) {
+  if (base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
+    preferred_apps_impl_ = std::make_unique<apps::PreferredAppsImpl>(
+        this, profile ? profile->GetPath() : base::FilePath());
+  }
+}
 
 AppServiceProxyBase::~AppServiceProxyBase() = default;
 
@@ -213,13 +221,64 @@ BrowserAppLauncher* AppServiceProxyBase::BrowserAppLauncher() {
   return browser_app_launcher_.get();
 }
 
-apps::PreferredAppsListHandle& AppServiceProxyBase::PreferredApps() {
-  return preferred_apps_;
+apps::PreferredAppsImpl* AppServiceProxyBase::PreferredAppsImpl() {
+  return preferred_apps_impl_.get();
+}
+
+apps::PreferredAppsListHandle& AppServiceProxyBase::PreferredAppsList() {
+  return preferred_apps_list_;
 }
 
 void AppServiceProxyBase::RegisterPublisher(AppType app_type,
                                             AppPublisher* publisher) {
   publishers_[app_type] = publisher;
+}
+
+void AppServiceProxyBase::InitializePreferredAppsForAllSubscribers() {
+  if (preferred_apps_impl_) {
+    preferred_apps_list_.Init(
+        preferred_apps_impl_->preferred_apps_list().GetValue());
+  }
+}
+
+void AppServiceProxyBase::OnPreferredAppsChanged(
+    PreferredAppChangesPtr changes) {
+  preferred_apps_list_.ApplyBulkUpdate(std::move(changes));
+}
+
+void AppServiceProxyBase::OnPreferredAppSet(
+    const std::string& app_id,
+    IntentFilterPtr intent_filter,
+    IntentPtr intent,
+    ReplacedAppPreferences replaced_app_preferences) {
+  for (const auto& iter : publishers_) {
+    iter.second->OnPreferredAppSet(
+        app_id, intent_filter->Clone(), intent->Clone(),
+        CloneIntentFiltersMap(replaced_app_preferences));
+  }
+}
+
+void AppServiceProxyBase::OnSupportedLinksPreferenceChanged(
+    const std::string& app_id,
+    bool open_in_app) {
+  if (!base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
+    return;
+  }
+
+  for (const auto& iter : publishers_) {
+    iter.second->OnSupportedLinksPreferenceChanged(app_id, open_in_app);
+  }
+}
+
+void AppServiceProxyBase::OnSupportedLinksPreferenceChanged(
+    AppType app_type,
+    const std::string& app_id,
+    bool open_in_app) {
+  publishers_[app_type]->OnSupportedLinksPreferenceChanged(app_id, open_in_app);
+}
+
+bool AppServiceProxyBase::HasPublisher(AppType app_type) {
+  return base::Contains(publishers_, app_type);
 }
 
 absl::optional<IconKey> AppServiceProxyBase::GetIconKey(
@@ -271,8 +330,9 @@ void AppServiceProxyBase::Launch(const std::string& app_id,
               profile_, update, launch_source,
               apps::mojom::LaunchContainer::kLaunchContainerNone);
 
-          app_service_->Launch(update.AppType(), update.AppId(), event_flags,
-                               launch_source, std::move(window_info));
+          app_service_->Launch(ConvertAppTypeToMojomAppType(update.AppType()),
+                               update.AppId(), event_flags, launch_source,
+                               std::move(window_info));
 
           PerformPostLaunchTasks(launch_source);
         });
@@ -304,9 +364,9 @@ void AppServiceProxyBase::LaunchAppWithFiles(
             RecordAppLaunch(update.AppId(), launch_source);
           }
 
-          app_service_->LaunchAppWithFiles(update.AppType(), update.AppId(),
-                                           event_flags, launch_source,
-                                           std::move(file_paths));
+          app_service_->LaunchAppWithFiles(
+              ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
+              event_flags, launch_source, std::move(file_paths));
 
           PerformPostLaunchTasks(launch_source);
         });
@@ -344,8 +404,9 @@ void AppServiceProxyBase::LaunchAppWithIntent(
               apps::mojom::LaunchContainer::kLaunchContainerNone);
 
           app_service_->LaunchAppWithIntent(
-              update.AppType(), update.AppId(), event_flags, std::move(intent),
-              launch_source, std::move(window_info), std::move(callback));
+              ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
+              event_flags, std::move(intent), launch_source,
+              std::move(window_info), std::move(callback));
 
           PerformPostLaunchTasks(launch_source);
         });
@@ -366,8 +427,7 @@ void AppServiceProxyBase::LaunchAppWithUrl(
 
 void AppServiceProxyBase::LaunchAppWithParams(AppLaunchParams&& params,
                                               LaunchCallback callback) {
-  auto app_type = ConvertMojomAppTypToAppType(
-      app_registry_cache_.GetAppType(params.app_id));
+  auto app_type = app_registry_cache_.GetAppType(params.app_id);
   auto* publisher = GetPublisher(app_type);
   if (!publisher) {
     std::move(callback).Run(LaunchResult());
@@ -407,8 +467,9 @@ void AppServiceProxyBase::SetPermission(const std::string& app_id,
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
         app_id, [this, &permission](const apps::AppUpdate& update) {
-          app_service_->SetPermission(update.AppType(), update.AppId(),
-                                      std::move(permission));
+          app_service_->SetPermission(
+              ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
+              std::move(permission));
         });
   }
 }
@@ -417,8 +478,9 @@ void AppServiceProxyBase::UninstallSilently(
     const std::string& app_id,
     apps::mojom::UninstallSource uninstall_source) {
   if (app_service_.is_connected()) {
-    apps::mojom::AppType app_type = app_registry_cache_.GetAppType(app_id);
-    app_service_->Uninstall(app_type, app_id, uninstall_source,
+    auto app_type = app_registry_cache_.GetAppType(app_id);
+    app_service_->Uninstall(ConvertAppTypeToMojomAppType(app_type), app_id,
+                            uninstall_source,
                             /*clear_site_data=*/false, /*report_abuse=*/false);
     PerformPostUninstallTasks(app_type, app_id, uninstall_source);
   }
@@ -428,8 +490,8 @@ void AppServiceProxyBase::StopApp(const std::string& app_id) {
   if (!app_service_.is_connected()) {
     return;
   }
-  apps::mojom::AppType app_type = app_registry_cache_.GetAppType(app_id);
-  app_service_->StopApp(app_type, app_id);
+  auto app_type = app_registry_cache_.GetAppType(app_id);
+  app_service_->StopApp(ConvertAppTypeToMojomAppType(app_type), app_id);
 }
 
 void AppServiceProxyBase::GetMenuModel(
@@ -441,9 +503,9 @@ void AppServiceProxyBase::GetMenuModel(
     return;
   }
 
-  apps::mojom::AppType app_type = app_registry_cache_.GetAppType(app_id);
-  app_service_->GetMenuModel(app_type, app_id, menu_type, display_id,
-                             std::move(callback));
+  auto app_type = app_registry_cache_.GetAppType(app_id);
+  app_service_->GetMenuModel(ConvertAppTypeToMojomAppType(app_type), app_id,
+                             menu_type, display_id, std::move(callback));
 }
 
 void AppServiceProxyBase::ExecuteContextMenuCommand(
@@ -455,16 +517,18 @@ void AppServiceProxyBase::ExecuteContextMenuCommand(
     return;
   }
 
-  apps::mojom::AppType app_type = app_registry_cache_.GetAppType(app_id);
-  app_service_->ExecuteContextMenuCommand(app_type, app_id, command_id,
-                                          shortcut_id, display_id);
+  auto app_type = app_registry_cache_.GetAppType(app_id);
+  app_service_->ExecuteContextMenuCommand(
+      ConvertAppTypeToMojomAppType(app_type), app_id, command_id, shortcut_id,
+      display_id);
 }
 
 void AppServiceProxyBase::OpenNativeSettings(const std::string& app_id) {
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
         app_id, [this](const apps::AppUpdate& update) {
-          app_service_->OpenNativeSettings(update.AppType(), update.AppId());
+          app_service_->OpenNativeSettings(
+              ConvertAppTypeToMojomAppType(update.AppType()), update.AppId());
         });
   }
 }
@@ -492,12 +556,17 @@ std::vector<std::string> AppServiceProxyBase::GetAppIdsForUrl(
 }
 
 std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
-    const apps::mojom::IntentPtr& intent,
+    const apps::mojom::IntentPtr& mojom_intent,
     bool exclude_browsers,
     bool exclude_browser_tab_apps) {
   std::vector<IntentLaunchInfo> intent_launch_info;
-  if (apps_util::OnlyShareToDrive(intent) ||
-      !apps_util::IsIntentValid(intent)) {
+  if (apps_util::OnlyShareToDrive(mojom_intent) ||
+      !apps_util::IsIntentValid(mojom_intent)) {
+    return intent_launch_info;
+  }
+
+  auto intent = ConvertMojomIntentToIntent(mojom_intent);
+  if (!intent) {
     return intent_launch_info;
   }
 
@@ -506,29 +575,29 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
                                     &exclude_browsers,
                                     &exclude_browser_tab_apps](
                                        const apps::AppUpdate& update) {
-      if (update.Readiness() != apps::mojom::Readiness::kReady &&
-          update.Readiness() != apps::mojom::Readiness::kDisabledByPolicy) {
+      if (update.Readiness() != apps::Readiness::kReady &&
+          update.Readiness() != apps::Readiness::kDisabledByPolicy) {
         // We consider apps disabled by policy to be ready as they cause URL
         // loads to be blocked.
         return;
       }
-      if (update.HandlesIntents() != apps::mojom::OptionalBool::kTrue) {
+      if (!update.HandlesIntents().value_or(false)) {
         return;
       }
       if (exclude_browser_tab_apps &&
-          update.WindowMode() == mojom::WindowMode::kBrowser) {
+          update.WindowMode() == WindowMode::kBrowser) {
         return;
       }
       // |activity_label| -> {index, is_generic}
       std::map<std::string, IndexAndGeneric> best_handler_map;
-      bool is_file_handling_intent =
-          intent->files.has_value() && intent->files->size() > 0;
+      bool is_file_handling_intent = !intent->files.empty();
       size_t index = 0;
       for (const auto& filter : update.IntentFilters()) {
-        if (exclude_browsers && apps_util::IsBrowserFilter(filter)) {
+        DCHECK(filter);
+        if (exclude_browsers && filter->IsBrowserFilter()) {
           continue;
         }
-        if (apps_util::IntentMatchesFilter(intent, filter)) {
+        if (intent->MatchFilter(filter)) {
           // Return the first non-generic match if it exists, otherwise the
           // first generic match.
           bool generic = false;
@@ -548,16 +617,14 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
       }
       const auto& filters = update.IntentFilters();
       for (const auto& handler_entry : best_handler_map) {
-        const mojom::IntentFilterPtr& filter =
-            filters[handler_entry.second.index];
+        const IntentFilterPtr& filter = filters[handler_entry.second.index];
         IntentLaunchInfo entry;
         entry.app_id = update.AppId();
         entry.activity_label = GetActivityLabel(filter, update);
         entry.activity_name = filter->activity_name.value_or("");
         entry.is_generic_file_handler =
             apps_util::IsGenericFileHandler(intent, filter);
-        entry.is_file_extension_match =
-            apps_util::FilterIsForFileExtensions(filter);
+        entry.is_file_extension_match = filter->IsFileExtensionsFilter();
         intent_launch_info.push_back(entry);
       }
     });
@@ -585,55 +652,53 @@ void AppServiceProxyBase::AddPreferredApp(
     base::debug::DumpWithoutCrashing();
     return;
   }
-  auto intent_filter = FindBestMatchingFilter(intent);
-  if (!intent_filter || !app_service_.is_connected()) {
+  auto mojom_intent_filter = FindBestMatchingFilter(intent);
+  if (!mojom_intent_filter || !app_service_.is_connected()) {
     return;
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Link capturing behavior is changing with the launch of this feature so that
-  // link capturing is enabled on a per app (rather than per-intent-filter)
-  // basis. Non-Chrome OS platforms do not currently use persistent link
-  // capturing preferences and so this is not a breaking change for them.
-  bool supported_links_behavior_enabled =
-      base::FeatureList::IsEnabled(features::kAppManagementIntentSettings);
-#else
-  bool supported_links_behavior_enabled = true;
-#endif
-
-  if (supported_links_behavior_enabled) {
-    // Treat kUseBrowserForLink like an app with a single supported link, so
-    // that any apps with overlapping supported links will have their preference
-    // removed correctly.
-    if (app_id == apps::kUseBrowserForLink) {
-      std::vector<apps::mojom::IntentFilterPtr> filters;
-      filters.push_back(std::move(intent_filter));
-      app_service_->SetSupportedLinksPreference(apps::mojom::AppType::kUnknown,
-                                                app_id, std::move(filters));
+  // Treat kUseBrowserForLink like an app with a single supported link, so
+  // that any apps with overlapping supported links will have their preference
+  // removed correctly.
+  if (app_id == apps_util::kUseBrowserForLink) {
+    std::vector<apps::mojom::IntentFilterPtr> filters;
+    filters.push_back(std::move(mojom_intent_filter));
+    if (preferred_apps_impl_) {
+      preferred_apps_impl_->SetSupportedLinksPreference(
+          AppType::kUnknown, app_id,
+          ConvertMojomIntentFiltersToIntentFilters(filters));
       return;
     }
 
-    if (apps_util::IsSupportedLinkForApp(app_id, intent_filter)) {
-      SetSupportedLinksPreference(app_id);
-      return;
-    }
+    app_service_->SetSupportedLinksPreference(apps::mojom::AppType::kUnknown,
+                                              app_id, std::move(filters));
+    return;
   }
 
-  preferred_apps_.AddPreferredApp(app_id, intent_filter);
+  if (apps_util::IsSupportedLinkForApp(app_id, mojom_intent_filter)) {
+    SetSupportedLinksPreference(app_id);
+    return;
+  }
+
+  preferred_apps_list_.AddPreferredApp(
+      app_id, ConvertMojomIntentFilterToIntentFilter(mojom_intent_filter));
   constexpr bool kFromPublisher = false;
-  app_service_->AddPreferredApp(app_registry_cache_.GetAppType(app_id), app_id,
-                                std::move(intent_filter), intent->Clone(),
-                                kFromPublisher);
+  if (preferred_apps_impl_) {
+    preferred_apps_impl_->AddPreferredApp(
+        app_registry_cache_.GetAppType(app_id), app_id,
+        ConvertMojomIntentFilterToIntentFilter(mojom_intent_filter),
+        ConvertMojomIntentToIntent(intent), kFromPublisher);
+  } else {
+    app_service_->AddPreferredApp(
+        ConvertAppTypeToMojomAppType(app_registry_cache_.GetAppType(app_id)),
+        app_id, std::move(mojom_intent_filter), intent->Clone(),
+        kFromPublisher);
+  }
 }
 
 void AppServiceProxyBase::SetSupportedLinksPreference(
     const std::string& app_id) {
-  DCHECK(!app_id.empty());
-  if (!app_service_.is_connected()) {
-    return;
-  }
-
-  std::vector<apps::mojom::IntentFilterPtr> filters;
+  IntentFilters filters;
   AppRegistryCache().ForOneApp(
       app_id, [&app_id, &filters](const AppUpdate& app) {
         for (auto& filter : app.IntentFilters()) {
@@ -643,31 +708,71 @@ void AppServiceProxyBase::SetSupportedLinksPreference(
         }
       });
 
-  app_service_->SetSupportedLinksPreference(
-      app_registry_cache_.GetAppType(app_id), app_id, std::move(filters));
+  SetSupportedLinksPreference(app_id, std::move(filters));
+}
+
+void AppServiceProxyBase::SetSupportedLinksPreference(
+    const std::string& app_id,
+    IntentFilters all_link_filters) {
+  DCHECK(!app_id.empty());
+
+  if (preferred_apps_impl_) {
+    preferred_apps_impl_->SetSupportedLinksPreference(
+        app_registry_cache_.GetAppType(app_id), app_id,
+        std::move(all_link_filters));
+    return;
+  }
+
+  if (app_service_.is_connected()) {
+    app_service_->SetSupportedLinksPreference(
+        ConvertAppTypeToMojomAppType(app_registry_cache_.GetAppType(app_id)),
+        app_id, ConvertIntentFiltersToMojomIntentFilters(all_link_filters));
+  }
 }
 
 void AppServiceProxyBase::RemoveSupportedLinksPreference(
     const std::string& app_id) {
   DCHECK(!app_id.empty());
+
+  if (preferred_apps_impl_) {
+    preferred_apps_impl_->RemoveSupportedLinksPreference(
+        app_registry_cache_.GetAppType(app_id), app_id);
+    return;
+  }
+
   if (app_service_.is_connected()) {
     app_service_->RemoveSupportedLinksPreference(
-        app_registry_cache_.GetAppType(app_id), app_id);
+        ConvertAppTypeToMojomAppType(app_registry_cache_.GetAppType(app_id)),
+        app_id);
   }
 }
 
 void AppServiceProxyBase::SetWindowMode(const std::string& app_id,
                                         apps::mojom::WindowMode window_mode) {
   if (app_service_.is_connected()) {
-    app_service_->SetWindowMode(app_registry_cache_.GetAppType(app_id), app_id,
-                                window_mode);
+    app_service_->SetWindowMode(
+        ConvertAppTypeToMojomAppType(app_registry_cache_.GetAppType(app_id)),
+        app_id, window_mode);
   }
 }
 
-void AppServiceProxyBase::OnApps(std::vector<std::unique_ptr<apps::App>> deltas,
-                                 apps::AppType app_type,
+void AppServiceProxyBase::OnApps(std::vector<AppPtr> deltas,
+                                 AppType app_type,
                                  bool should_notify_initialized) {
-  // TODO(crbug.com/1253250): add RemovePreferredApp related code.
+  if (app_service_.is_connected()) {
+    for (const auto& delta : deltas) {
+      if (delta->readiness != Readiness::kUnknown &&
+          !apps_util::IsInstalled(delta->readiness)) {
+        if (preferred_apps_impl_) {
+          preferred_apps_impl_->RemovePreferredApp(delta->app_id);
+        } else {
+          app_service_->RemovePreferredApp(
+              ConvertAppTypeToMojomAppType(delta->app_type), delta->app_id);
+        }
+      }
+    }
+  }
+
   app_registry_cache_.OnApps(std::move(deltas), app_type,
                              should_notify_initialized);
 }
@@ -679,7 +784,11 @@ void AppServiceProxyBase::OnApps(std::vector<apps::mojom::AppPtr> deltas,
     for (const auto& delta : deltas) {
       if (delta->readiness != apps::mojom::Readiness::kUnknown &&
           !apps_util::IsInstalled(delta->readiness)) {
-        app_service_->RemovePreferredApp(delta->app_type, delta->app_id);
+        if (preferred_apps_impl_) {
+          preferred_apps_impl_->RemovePreferredApp(delta->app_id);
+        } else {
+          app_service_->RemovePreferredApp(delta->app_type, delta->app_id);
+        }
       }
     }
   }
@@ -700,34 +809,41 @@ void AppServiceProxyBase::Clone(
 
 void AppServiceProxyBase::OnPreferredAppsChanged(
     apps::mojom::PreferredAppChangesPtr changes) {
-  preferred_apps_.ApplyBulkUpdate(std::move(changes));
+  preferred_apps_list_.ApplyBulkUpdate(
+      ConvertMojomPreferredAppChangesToPreferredAppChanges(changes));
 }
 
 void AppServiceProxyBase::InitializePreferredApps(
-    PreferredAppsList::PreferredApps preferred_apps) {
-  preferred_apps_.Init(preferred_apps);
+    std::vector<apps::mojom::PreferredAppPtr> mojom_preferred_apps) {
+  preferred_apps_list_.Init(
+      ConvertMojomPreferredAppsToPreferredApps(mojom_preferred_apps));
 }
 
 apps::mojom::IntentFilterPtr AppServiceProxyBase::FindBestMatchingFilter(
-    const apps::mojom::IntentPtr& intent) {
+    const apps::mojom::IntentPtr& mojom_intent) {
   apps::mojom::IntentFilterPtr best_matching_intent_filter;
-  if (!app_service_.is_bound()) {
+  if (!app_service_.is_bound() || !mojom_intent) {
     return best_matching_intent_filter;
   }
 
-  int best_match_level = apps_util::IntentFilterMatchLevel::kNone;
+  auto intent = ConvertMojomIntentToIntent(mojom_intent);
+  if (!intent) {
+    return best_matching_intent_filter;
+  }
+  int best_match_level = static_cast<int>(IntentFilterMatchLevel::kNone);
   app_registry_cache_.ForEachApp(
       [&intent, &best_match_level,
        &best_matching_intent_filter](const apps::AppUpdate& update) {
         for (const auto& filter : update.IntentFilters()) {
-          if (!apps_util::IntentMatchesFilter(intent, filter)) {
+          if (!intent->MatchFilter(filter)) {
             continue;
           }
-          auto match_level = apps_util::GetFilterMatchLevel(filter);
+          auto match_level = filter->GetFilterMatchLevel();
           if (match_level <= best_match_level) {
             continue;
           }
-          best_matching_intent_filter = filter->Clone();
+          best_matching_intent_filter =
+              ConvertIntentFilterToMojomIntentFilter(filter);
           best_match_level = match_level;
         }
       });
@@ -744,7 +860,7 @@ void AppServiceProxyBase::RecordAppPlatformMetrics(
     apps::mojom::LaunchContainer container) {}
 
 void AppServiceProxyBase::PerformPostUninstallTasks(
-    apps::mojom::AppType app_type,
+    apps::AppType app_type,
     const std::string& app_id,
     apps::mojom::UninstallSource uninstall_source) {}
 

@@ -5,32 +5,52 @@
 #include "content/browser/webid/idp_network_request_manager.h"
 
 #include <array>
+#include <map>
 #include <string>
 #include <tuple>
+#include <utility>
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "content/public/browser/identity_request_dialog_controller.h"
+#include "content/public/browser/manifest_icon_downloader.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/layout.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 using AccountList = content::IdpNetworkRequestManager::AccountList;
-using AccountsResponse = content::IdpNetworkRequestManager::AccountsResponse;
+using ClientMetadata = content::IdpNetworkRequestManager::ClientMetadata;
+using Endpoints = content::IdpNetworkRequestManager::Endpoints;
+using FetchStatus = content::IdpNetworkRequestManager::FetchStatus;
 using AccountsRequestCallback =
     content::IdpNetworkRequestManager::AccountsRequestCallback;
 using RevokeResponse = content::IdpNetworkRequestManager::RevokeResponse;
+using LoginState = content::IdentityRequestAccount::LoginState;
 
 namespace content {
 
 namespace {
 
+// Values for testing. Real minimum and ideal sizes are different.
+const int kTestIdpBrandIconMinimumSize = 16;
+const int kTestIdpBrandIconIdealSize = 32;
+
 const char kTestIdpUrl[] = "https://idp.test";
 const char kTestRpUrl[] = "https://rp.test";
+const char kTestManifestListUrl[] = "https://idp.test/.well-known/fedcm.json";
+const char kTestManifestUrl[] = "https://idp.test/fedcm.json";
 const char kTestAccountsEndpoint[] = "https://idp.test/accounts_endpoint";
-const char kTestRevokeEndpoint[] = "https://idp.test/revoke_endpoint";
+const char kTestTokenEndpoint[] = "https://idp.test/token_endpoint";
+const char kTestClientMetadataEndpoint[] =
+    "https://idp.test/client_metadata_endpoint";
+const char kTestRevocationEndpoint[] = "https://idp.test/revocation_endpoint";
 
 class IdpNetworkRequestManagerTest : public ::testing::Test {
  public:
@@ -38,42 +58,128 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
     manager_ = std::make_unique<IdpNetworkRequestManager>(
         GURL(kTestIdpUrl), url::Origin::Create(GURL(kTestRpUrl)),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory_));
+            &test_url_loader_factory_),
+        network::mojom::ClientSecurityState::New());
   }
 
   void TearDown() override { manager_.reset(); }
 
-  std::tuple<AccountsResponse, AccountList, IdentityProviderMetadata>
-  SendAccountsRequestAndWaitForResponse(const char* test_accounts) {
+  std::tuple<FetchStatus, std::set<GURL>>
+  SendManifestListRequestAndWaitForResponse(const char* test_data) {
+    GURL manifest_list_url(kTestManifestListUrl);
+    test_url_loader_factory().AddResponse(manifest_list_url.spec(), test_data);
+
+    base::RunLoop run_loop;
+    FetchStatus parsed_fetch_status;
+    std::set<GURL> parsed_urls;
+    auto callback = base::BindLambdaForTesting(
+        [&](FetchStatus fetch_status, const std::set<GURL>& urls) {
+          parsed_fetch_status = fetch_status;
+          parsed_urls = urls;
+          run_loop.Quit();
+        });
+    manager().FetchManifestList(std::move(callback));
+    run_loop.Run();
+
+    return {parsed_fetch_status, parsed_urls};
+  }
+
+  std::tuple<FetchStatus, IdentityProviderMetadata>
+  SendManifestRequestAndWaitForResponse(const char* test_data) {
+    GURL manifest_url(kTestManifestUrl);
+    test_url_loader_factory().AddResponse(manifest_url.spec(), test_data);
+
+    base::RunLoop run_loop;
+    FetchStatus parsed_fetch_status;
+    IdentityProviderMetadata parsed_idp_metadata;
+    auto callback = base::BindLambdaForTesting(
+        [&](FetchStatus fetch_status, Endpoints endpoints,
+            IdentityProviderMetadata idp_metadata) {
+          parsed_fetch_status = fetch_status;
+          parsed_idp_metadata = std::move(idp_metadata);
+          run_loop.Quit();
+        });
+    manager().FetchManifest(kTestIdpBrandIconIdealSize,
+                            kTestIdpBrandIconMinimumSize, std::move(callback));
+    run_loop.Run();
+
+    return {parsed_fetch_status, parsed_idp_metadata};
+  }
+
+  std::tuple<FetchStatus, AccountList> SendAccountsRequestAndWaitForResponse(
+      const char* test_accounts,
+      const char* client_id = "",
+      bool send_id_and_referrer = false) {
     GURL accounts_endpoint(kTestAccountsEndpoint);
     test_url_loader_factory().AddResponse(accounts_endpoint.spec(),
                                           test_accounts);
 
     base::RunLoop run_loop;
-    AccountsResponse parsed_accounts_response;
+    FetchStatus parsed_accounts_response;
     AccountList parsed_accounts;
-    IdentityProviderMetadata parsed_idp_metadata;
     auto callback = base::BindLambdaForTesting(
-        [&](AccountsResponse response, AccountList accounts,
-            IdentityProviderMetadata idp_metadata) {
+        [&](FetchStatus response, AccountList accounts) {
           parsed_accounts_response = response;
           parsed_accounts = accounts;
-          parsed_idp_metadata = std::move(idp_metadata);
           run_loop.Quit();
         });
-    manager().SendAccountsRequest(accounts_endpoint, std::move(callback));
+    manager().SendAccountsRequest(accounts_endpoint, client_id,
+                                  std::move(callback));
     run_loop.Run();
 
-    return {parsed_accounts_response, parsed_accounts,
-            std::move(parsed_idp_metadata)};
+    return {parsed_accounts_response, parsed_accounts};
+  }
+
+  std::string SendTokenRequestAndWaitForResponse(
+      const char* account,
+      const char* request,
+      net::HttpStatusCode http_status = net::HTTP_OK) {
+    const char response[] = R"({"id_token": "token"})";
+    GURL token_endpoint(kTestTokenEndpoint);
+    test_url_loader_factory().AddResponse(token_endpoint.spec(), response,
+                                          http_status);
+
+    std::string token;
+    base::RunLoop run_loop;
+    auto callback = base::BindLambdaForTesting(
+        [&](FetchStatus status, const std::string& token_response) {
+          token = token_response;
+          run_loop.Quit();
+        });
+    manager().SendTokenRequest(token_endpoint, account, request,
+                               std::move(callback));
+    run_loop.Run();
+    return token;
+  }
+
+  ClientMetadata SendClientMetadataRequestAndWaitForResponse(
+      const char* client_id,
+      net::HttpStatusCode http_status = net::HTTP_OK) {
+    const char response[] = R"({})";
+    GURL client_id_endpoint(kTestClientMetadataEndpoint);
+    test_url_loader_factory().AddResponse(
+        client_id_endpoint.spec() + "?client_id=" + client_id, response,
+        http_status);
+
+    ClientMetadata data;
+    base::RunLoop run_loop;
+    auto callback = base::BindLambdaForTesting(
+        [&](FetchStatus status, ClientMetadata metadata) {
+          data = metadata;
+          run_loop.Quit();
+        });
+    manager().FetchClientMetadata(client_id_endpoint, client_id,
+                                  std::move(callback));
+    run_loop.Run();
+    return data;
   }
 
   RevokeResponse SendRevokeRequestAndWaitForResponse(
       const char* client_id,
-      const char* account_id,
+      const char* hint,
       net::HttpStatusCode http_status = net::HTTP_NO_CONTENT) {
-    GURL revoke_endpoint(kTestRevokeEndpoint);
-    test_url_loader_factory().AddResponse(revoke_endpoint.spec(), "",
+    GURL revocation_endpoint(kTestRevocationEndpoint);
+    test_url_loader_factory().AddResponse(revocation_endpoint.spec(), "",
                                           http_status);
 
     RevokeResponse status;
@@ -83,7 +189,7 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
           status = revoke_status;
           run_loop.Quit();
         });
-    manager().SendRevokeRequest(revoke_endpoint, client_id, account_id,
+    manager().SendRevokeRequest(revocation_endpoint, client_id, hint,
                                 std::move(callback));
     run_loop.Run();
     return status;
@@ -106,13 +212,12 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountEmpty) {
   "accounts" : []
   })";
 
-  AccountsResponse accounts_response;
+  FetchStatus accounts_response;
   AccountList accounts;
-  IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
+  std::tie(accounts_response, accounts) =
       SendAccountsRequestAndWaitForResponse(test_empty_account_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+  EXPECT_EQ(FetchStatus::kInvalidResponseError, accounts_response);
   EXPECT_TRUE(accounts.empty());
 }
 
@@ -120,7 +225,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountSingle) {
   const auto* test_single_account_json = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example",
       "given_name": "Ken",
@@ -129,29 +234,28 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountSingle) {
   ]
   })";
 
-  AccountsResponse accounts_response;
+  FetchStatus accounts_response;
   AccountList accounts;
-  IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
+  std::tie(accounts_response, accounts) =
       SendAccountsRequestAndWaitForResponse(test_single_account_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+  EXPECT_EQ(FetchStatus::kSuccess, accounts_response);
   EXPECT_EQ(1UL, accounts.size());
-  EXPECT_EQ("1234", accounts[0].sub);
+  EXPECT_EQ("1234", accounts[0].id);
 }
 
 TEST_F(IdpNetworkRequestManagerTest, ParseAccountMultiple) {
   const auto* test_accounts_json = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example",
       "given_name": "Ken",
       "picture": "https://idp.test/profile/1"
     },
     {
-      "sub" : "5678",
+      "id" : "5678",
       "email": "sam@idp.test",
       "name": "Sam G. Test",
       "given_name": "Sam",
@@ -159,16 +263,15 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountMultiple) {
     }
   ]
   })";
-  AccountsResponse accounts_response;
+  FetchStatus accounts_response;
   AccountList accounts;
-  IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
+  std::tie(accounts_response, accounts) =
       SendAccountsRequestAndWaitForResponse(test_accounts_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+  EXPECT_EQ(FetchStatus::kSuccess, accounts_response);
   EXPECT_EQ(2UL, accounts.size());
-  EXPECT_EQ("1234", accounts[0].sub);
-  EXPECT_EQ("5678", accounts[1].sub);
+  EXPECT_EQ("1234", accounts[0].id);
+  EXPECT_EQ("5678", accounts[1].id);
 }
 
 TEST_F(IdpNetworkRequestManagerTest, ParseAccountOptionalFields) {
@@ -176,64 +279,61 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountOptionalFields) {
   const auto* test_accounts_json = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
   ]
   })";
 
-  AccountsResponse accounts_response;
+  FetchStatus accounts_response;
   AccountList accounts;
-  IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
+  std::tie(accounts_response, accounts) =
       SendAccountsRequestAndWaitForResponse(test_accounts_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
-  EXPECT_EQ("1234", accounts[0].sub);
+  EXPECT_EQ(FetchStatus::kSuccess, accounts_response);
+  EXPECT_EQ("1234", accounts[0].id);
 }
 
 TEST_F(IdpNetworkRequestManagerTest, ParseAccountRequiredFields) {
   {
-    const auto* test_accounts_missing_sub_json = R"({"accounts" : [{
+    const auto* test_accounts_missing_account_id_json = R"({"accounts" : [{
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }]})";
-    AccountsResponse accounts_response;
+    FetchStatus accounts_response;
     AccountList accounts;
-    IdentityProviderMetadata idp_metadata;
-    std::tie(accounts_response, accounts, idp_metadata) =
-        SendAccountsRequestAndWaitForResponse(test_accounts_missing_sub_json);
+    std::tie(accounts_response, accounts) =
+        SendAccountsRequestAndWaitForResponse(
+            test_accounts_missing_account_id_json);
 
-    EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+    EXPECT_EQ(FetchStatus::kInvalidResponseError, accounts_response);
     EXPECT_TRUE(accounts.empty());
   }
   {
     const auto* test_accounts_missing_email_json = R"({"accounts" : [{
-      "sub" : "1234",
+      "id" : "1234",
       "name": "Ken R. Example"
     }]})";
-    AccountsResponse accounts_response;
+    FetchStatus accounts_response;
     AccountList accounts;
-    IdentityProviderMetadata idp_metadata;
-    std::tie(accounts_response, accounts, idp_metadata) =
+    std::tie(accounts_response, accounts) =
         SendAccountsRequestAndWaitForResponse(test_accounts_missing_email_json);
 
-    EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+    EXPECT_EQ(FetchStatus::kInvalidResponseError, accounts_response);
     EXPECT_TRUE(accounts.empty());
   }
   {
     const auto* test_accounts_missing_name_json = R"({"accounts" : [{
-      "sub" : "1234",
+      "id" : "1234",
       "email": "ken@idp.test"
     }]})";
-    AccountsResponse accounts_response;
+    FetchStatus accounts_response;
     AccountList accounts;
-    IdentityProviderMetadata idp_metadata;
-    std::tie(accounts_response, accounts, idp_metadata) =
+    std::tie(accounts_response, accounts) =
         SendAccountsRequestAndWaitForResponse(test_accounts_missing_name_json);
 
-    EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+    EXPECT_EQ(FetchStatus::kInvalidResponseError, accounts_response);
     EXPECT_TRUE(accounts.empty());
   }
 }
@@ -242,13 +342,13 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountPictureUrl) {
   const auto* test_accounts_json = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example",
       "picture": "https://idp.test/profile/1234"
     },
     {
-      "sub" : "567",
+      "id" : "567",
       "email": "sam@idp.test",
       "name": "Sam R. Example",
       "picture": "invalid_url"
@@ -256,13 +356,12 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountPictureUrl) {
   ]
   })";
 
-  AccountsResponse accounts_response;
+  FetchStatus accounts_response;
   AccountList accounts;
-  IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
+  std::tie(accounts_response, accounts) =
       SendAccountsRequestAndWaitForResponse(test_accounts_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+  EXPECT_EQ(FetchStatus::kSuccess, accounts_response);
   EXPECT_TRUE(accounts[0].picture.is_valid());
   EXPECT_EQ(GURL("https://idp.test/profile/1234"), accounts[0].picture);
   EXPECT_FALSE(accounts[1].picture.is_valid());
@@ -274,7 +373,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountUnicode) {
     const auto* json = R"({
      "accounts" : [
         {
-          "sub" : "1234",
+          "id" : "1234",
           "email": "ken@idp.test",
           "%s": "%s"
         }
@@ -288,10 +387,9 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountUnicode) {
   for (auto& test_value : test_values) {
     const auto& accounts_json = TestAccountWithKeyValue("name", test_value);
 
-    AccountsResponse accounts_response;
+    FetchStatus accounts_response;
     AccountList accounts;
-    IdentityProviderMetadata idp_metadata;
-    std::tie(accounts_response, accounts, idp_metadata) =
+    std::tie(accounts_response, accounts) =
         SendAccountsRequestAndWaitForResponse(accounts_json.c_str());
 
     EXPECT_EQ(1UL, accounts.size());
@@ -302,157 +400,364 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountUnicode) {
 TEST_F(IdpNetworkRequestManagerTest, ParseAccountInvalid) {
   const auto* test_invalid_account_json = "{}";
 
-  AccountsResponse accounts_response;
+  FetchStatus accounts_response;
   AccountList accounts;
-  IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
+  std::tie(accounts_response, accounts) =
       SendAccountsRequestAndWaitForResponse(test_invalid_account_json);
 
-  EXPECT_EQ(AccountsResponse::kInvalidResponseError, accounts_response);
+  EXPECT_EQ(FetchStatus::kInvalidResponseError, accounts_response);
   EXPECT_TRUE(accounts.empty());
 }
 
 TEST_F(IdpNetworkRequestManagerTest, ParseAccountMalformed) {
   const auto* test_invalid_account_json = "malformed_json";
 
-  AccountsResponse accounts_response;
+  FetchStatus accounts_response;
   AccountList accounts;
-  IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
+  std::tie(accounts_response, accounts) =
       SendAccountsRequestAndWaitForResponse(test_invalid_account_json);
 
-  EXPECT_EQ(AccountsResponse::kInvalidResponseError, accounts_response);
+  EXPECT_EQ(FetchStatus::kInvalidResponseError, accounts_response);
   EXPECT_TRUE(accounts.empty());
 }
 
-TEST_F(IdpNetworkRequestManagerTest, ParseAccountBranding) {
-  const char test_accounts_json[] = R"({
-  "accounts" : [
-    {
-      "sub" : "1234",
-      "email": "ken@idp.test",
-      "name": "Ken R. Example"
-    }
-  ],
-  "branding" : {
-    "foreground_color": "blue",
-    "background_color": "#f0e0d0"
-  }
-  })";
+TEST_F(IdpNetworkRequestManagerTest, ComputeManifestListUrl) {
+  EXPECT_EQ("https://localhost:8000/.well-known/fedcm.json",
+            IdpNetworkRequestManager::ComputeManifestListUrl(
+                GURL("https://localhost:8000/test/"))
+                ->spec());
 
-  AccountsResponse accounts_response;
-  AccountList accounts;
-  IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
-      SendAccountsRequestAndWaitForResponse(test_accounts_json);
+  EXPECT_EQ("https://google.com/.well-known/fedcm.json",
+            IdpNetworkRequestManager::ComputeManifestListUrl(
+                GURL("https://www.google.com:8000/test/"))
+                ->spec());
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
-  EXPECT_EQ(SK_ColorBLUE, idp_metadata.brand_text_color);
-  EXPECT_EQ(SkColorSetRGB(0xf0, 0xe0, 0xd0),
-            idp_metadata.brand_background_color);
+  EXPECT_EQ(absl::nullopt, IdpNetworkRequestManager::ComputeManifestListUrl(
+                               GURL("https://192.101.0.1/test/")));
+}
+
+// Test that IdpNetworkRequestManager::FetchManifestList() fails when the
+// identity provider domain is empty.
+TEST_F(IdpNetworkRequestManagerTest, FetchManifestListIllegalDomainFails) {
+  GURL illegal_idp_url("https://192.101.0.1/test/");
+
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto network_manager = std::make_unique<IdpNetworkRequestManager>(
+      illegal_idp_url, url::Origin::Create(GURL(kTestRpUrl)),
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory),
+      network::mojom::ClientSecurityState::New());
+
+  std::string manifest_list_contents =
+      "({\"provider_urls\": [\"" + illegal_idp_url.spec() + "\"]})";
+
+  base::RunLoop run_loop;
+  auto callback = base::BindLambdaForTesting(
+      [&](FetchStatus fetch_status, const std::set<GURL>& urls) {
+        EXPECT_EQ(FetchStatus::kHttpNotFoundError, fetch_status);
+        run_loop.Quit();
+      });
+  network_manager->FetchManifestList(std::move(callback));
+  run_loop.Run();
+
+  // Manifest list download should not have been attempted.
+  EXPECT_EQ(0, test_url_loader_factory.NumPending());
+}
+
+TEST_F(IdpNetworkRequestManagerTest, ParseManifestList) {
+  FetchStatus fetch_status;
+  std::set<GURL> urls;
+
+  std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
+  "provider_urls": ["https://idp.test/"]
+  })");
+  EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
+  EXPECT_EQ(std::set<GURL>{GURL("https://idp.test/")}, urls);
+
+  std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
+  "provider_urls": ["https://idp.test/path"]
+  })");
+  EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
+  EXPECT_EQ(std::set<GURL>{GURL("https://idp.test/path/")}, urls);
+
+  // Value not a list
+  std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
+  "provider_urls": "https://idp.test/"
+  })");
+  EXPECT_EQ(FetchStatus::kInvalidResponseError, fetch_status);
+
+  // Toplevel not a dictionary
+  std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"(
+  ["https://idp.test/"]
+  )");
+  EXPECT_EQ(FetchStatus::kInvalidResponseError, fetch_status);
+
+  // Incorrect key
+  std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
+  "providers": ["https://idp.test/"]
+  })");
+  EXPECT_EQ(FetchStatus::kInvalidResponseError, fetch_status);
+
+  // Array entry not a string
+  std::tie(fetch_status, urls) = SendManifestListRequestAndWaitForResponse(R"({
+  "provider_urls": [1]
+  })");
+  EXPECT_EQ(FetchStatus::kInvalidResponseError, fetch_status);
 }
 
 // Test that the "alpha" value in the "branding" JSON is ignored.
-TEST_F(IdpNetworkRequestManagerTest, ParseAccountBrandingRemoveAlpha) {
-  const char test_accounts_json[] = R"({
-  "accounts" : [
-    {
-      "sub" : "1234",
-      "email": "ken@idp.test",
-      "name": "Ken R. Example"
-    }
-  ],
+TEST_F(IdpNetworkRequestManagerTest, ParseManifestBrandingRemoveAlpha) {
+  const char test_json[] = R"({
   "branding" : {
     "background_color": "#20202020"
   }
   })";
 
-  AccountsResponse accounts_response;
-  AccountList accounts;
+  FetchStatus fetch_status;
   IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
-      SendAccountsRequestAndWaitForResponse(test_accounts_json);
+  std::tie(fetch_status, idp_metadata) =
+      SendManifestRequestAndWaitForResponse(test_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+  EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
   EXPECT_EQ(SkColorSetARGB(0xff, 0x20, 0x20, 0x20),
             idp_metadata.brand_background_color);
 }
 
-TEST_F(IdpNetworkRequestManagerTest, ParseAccountBrandingInvalidColor) {
-  const char test_accounts_json[] = R"({
-  "accounts" : [
-    {
-      "sub" : "1234",
-      "email": "ken@idp.test",
-      "name": "Ken R. Example"
-    }
-  ],
+TEST_F(IdpNetworkRequestManagerTest, ParseManifestBrandingInvalidColor) {
+  const char test_json[] = R"({
   "branding" : {
     "background_color": "fake_color"
   }
   })";
 
-  AccountsResponse accounts_response;
-  AccountList accounts;
+  FetchStatus fetch_status;
   IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
-      SendAccountsRequestAndWaitForResponse(test_accounts_json);
+  std::tie(fetch_status, idp_metadata) =
+      SendManifestRequestAndWaitForResponse(test_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+  EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
   EXPECT_EQ(absl::nullopt, idp_metadata.brand_background_color);
 }
 
 TEST_F(IdpNetworkRequestManagerTest,
-       ParseAccountBrandingIgnoreInsufficientContrastTextColor) {
-  const char test_accounts_json[] = R"({
-  "accounts" : [
-    {
-      "sub" : "1234",
-      "email": "ken@idp.test",
-      "name": "Ken R. Example"
-    }
-  ],
+       ParseManifestIgnoreInsufficientContrastTextColor) {
+  const char test_json[] = R"({
   "branding" : {
     "background_color": "#000000",
-    "foreground_color": "#010101"
+    "color": "#010101"
   }
   })";
 
-  AccountsResponse accounts_response;
-  AccountList accounts;
+  FetchStatus fetch_status;
   IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
-      SendAccountsRequestAndWaitForResponse(test_accounts_json);
+  std::tie(fetch_status, idp_metadata) =
+      SendManifestRequestAndWaitForResponse(test_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+  EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
   EXPECT_EQ(SkColorSetRGB(0, 0, 0), idp_metadata.brand_background_color);
   EXPECT_EQ(absl::nullopt, idp_metadata.brand_text_color);
 }
 
 TEST_F(IdpNetworkRequestManagerTest,
-       ParseAccountBrandingIgnoreCustomTextColorNoCustomBackgroundColor) {
-  const char test_accounts_json[] = R"({
-  "accounts" : [
-    {
-      "sub" : "1234",
-      "email": "ken@idp.test",
-      "name": "Ken R. Example"
-    }
-  ],
+       ParseManifestBrandingIgnoreCustomTextColorNoCustomBackgroundColor) {
+  const char test_json[] = R"({
   "branding" : {
-    "foreground_color": "blue"
+    "color": "blue"
   }
   })";
 
-  AccountsResponse accounts_response;
-  AccountList accounts;
+  FetchStatus fetch_status;
   IdentityProviderMetadata idp_metadata;
-  std::tie(accounts_response, accounts, idp_metadata) =
-      SendAccountsRequestAndWaitForResponse(test_accounts_json);
+  std::tie(fetch_status, idp_metadata) =
+      SendManifestRequestAndWaitForResponse(test_json);
 
-  EXPECT_EQ(AccountsResponse::kSuccess, accounts_response);
+  EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
   EXPECT_EQ(absl::nullopt, idp_metadata.brand_background_color);
   EXPECT_EQ(absl::nullopt, idp_metadata.brand_text_color);
+}
+
+TEST_F(IdpNetworkRequestManagerTest, ParseManifestBrandingSelectBestSize) {
+  // Selected icon depends on OS supported scale factors.
+  ui::test::ScopedSetSupportedResourceScaleFactors
+      scoped_supported_scale_factors({ui::k100Percent});
+
+  const char test_json[] = R"({
+  "branding" : {
+    "icons": [
+      {
+        "url": "https://example.com/10.png",
+        "size": 10
+      },
+      {
+        "url": "https://example.com/16.png",
+        "size": 16
+      },
+      {
+        "url": "https://example.com/39.png",
+        "size": 39
+      },
+      {
+        "url": "https://example.com/40.png",
+        "size": 40
+      },
+      {
+        "url": "https://example.com/41.png",
+        "size": 41
+      }
+    ]
+  }
+  })";
+
+  ASSERT_EQ(32, kTestIdpBrandIconIdealSize);
+  // 32 / kMaskableWebIconSafeZoneRatio = 40
+
+  FetchStatus fetch_status;
+  IdentityProviderMetadata idp_metadata;
+  std::tie(fetch_status, idp_metadata) =
+      SendManifestRequestAndWaitForResponse(test_json);
+
+  EXPECT_EQ(FetchStatus::kSuccess, fetch_status);
+  EXPECT_EQ("https://example.com/40.png", idp_metadata.brand_icon_url.spec());
+}
+
+// Tests that we send the correct referrer for account requests.
+TEST_F(IdpNetworkRequestManagerTest, AccountRequestReferrer) {
+  bool called = false;
+  auto interceptor =
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        called = true;
+        EXPECT_EQ(GURL(kTestAccountsEndpoint), request.url);
+        EXPECT_EQ(request.request_body, nullptr);
+        EXPECT_EQ(false, request.referrer.is_valid());
+      });
+  test_url_loader_factory().SetInterceptor(interceptor);
+
+  const char test_accounts_json[] = R"({
+  "accounts" : [
+    {
+      "id" : "1234",
+      "email": "ken@idp.test",
+      "name": "Ken R. Example"
+    }
+  ]
+  })";
+
+  FetchStatus accounts_response;
+  AccountList accounts;
+  std::tie(accounts_response, accounts) =
+      SendAccountsRequestAndWaitForResponse(test_accounts_json);
+
+  ASSERT_TRUE(called);
+  EXPECT_EQ(FetchStatus::kSuccess, accounts_response);
+}
+
+// Verifies that we correctly check the signed-in status.
+TEST_F(IdpNetworkRequestManagerTest, AccountSignedInStatus) {
+  bool called = false;
+  auto interceptor =
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        called = true;
+        EXPECT_EQ(GURL(kTestAccountsEndpoint), request.url);
+        EXPECT_EQ(request.request_body, nullptr);
+        EXPECT_FALSE(request.referrer.is_valid());
+      });
+  test_url_loader_factory().SetInterceptor(interceptor);
+
+  const char test_accounts_json[] = R"({
+  "accounts" : [
+    {
+      "id" : "1",
+      "email": "ken@idp.test",
+      "name": "Ken R. Example",
+      "approved_clients": ["xxx"]
+    },
+    {
+      "id" : "2",
+      "email": "jim@idp.test",
+      "name": "Jim R. Example",
+      "approved_clients": []
+    },
+    {
+      "id" : "3",
+      "email": "rashida@idp.test",
+      "name": "Rashida R. Example",
+      "approved_clients": ["yyy"]
+    },
+    {
+      "id" : "4",
+      "email": "wei@idp.test",
+      "name": "Wei R. Example"
+    },
+    {
+      "id" : "5",
+      "email": "hans@idp.test",
+      "name": "Hans R. Example",
+      "approved_clients": ["xxx", "yyy"]
+    }
+  ]
+  })";
+
+  FetchStatus accounts_response;
+  AccountList accounts;
+  std::tie(accounts_response, accounts) =
+      SendAccountsRequestAndWaitForResponse(test_accounts_json, "xxx");
+
+  EXPECT_TRUE(called);
+  EXPECT_EQ(FetchStatus::kSuccess, accounts_response);
+  ASSERT_EQ(5ul, accounts.size());
+  ASSERT_TRUE(accounts[0].login_state.has_value());
+  EXPECT_EQ(LoginState::kSignIn, *accounts[0].login_state);
+  ASSERT_TRUE(accounts[1].login_state.has_value());
+  EXPECT_EQ(LoginState::kSignUp, *accounts[1].login_state);
+  ASSERT_TRUE(accounts[2].login_state.has_value());
+  EXPECT_EQ(LoginState::kSignUp, *accounts[2].login_state);
+  EXPECT_FALSE(accounts[3].login_state.has_value());
+  ASSERT_TRUE(accounts[4].login_state.has_value());
+  EXPECT_EQ(LoginState::kSignIn, *accounts[4].login_state);
+}
+
+// Tests the token request implementation.
+TEST_F(IdpNetworkRequestManagerTest, TokenRequest) {
+  bool called = false;
+  auto interceptor =
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        called = true;
+        EXPECT_EQ(GURL(kTestTokenEndpoint), request.url);
+        EXPECT_EQ(GURL(kTestRpUrl), request.referrer);
+
+        // Check that the request body is correct (should be "request")
+        ASSERT_NE(request.request_body, nullptr);
+        ASSERT_EQ(1ul, request.request_body->elements()->size());
+        const network::DataElement& elem =
+            request.request_body->elements()->at(0);
+        ASSERT_EQ(network::DataElement::Tag::kBytes, elem.type());
+        const network::DataElementBytes& byte_elem =
+            elem.As<network::DataElementBytes>();
+        EXPECT_EQ("request", byte_elem.AsStringPiece());
+      });
+  test_url_loader_factory().SetInterceptor(interceptor);
+  std::string token = SendTokenRequestAndWaitForResponse("account", "request");
+  ASSERT_TRUE(called);
+  ASSERT_EQ("token", token);
+}
+
+// Tests the client metadata implementation.
+TEST_F(IdpNetworkRequestManagerTest, ClientMetadata) {
+  bool called = false;
+  auto interceptor =
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        called = true;
+        std::string url_string =
+            std::string(kTestClientMetadataEndpoint) + "?client_id=xxx";
+        EXPECT_EQ(GURL(url_string), request.url);
+        EXPECT_EQ(request.request_body, nullptr);
+        EXPECT_EQ(GURL(kTestRpUrl), request.referrer);
+      });
+  test_url_loader_factory().SetInterceptor(interceptor);
+  ClientMetadata data = SendClientMetadataRequestAndWaitForResponse("xxx");
+  ASSERT_TRUE(called);
+  ASSERT_EQ("", data.privacy_policy_url);
+  ASSERT_EQ("", data.terms_of_service_url);
 }
 
 // Tests the revoke implementation.
@@ -461,6 +766,8 @@ TEST_F(IdpNetworkRequestManagerTest, Revoke) {
   auto interceptor =
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         called = true;
+        EXPECT_EQ(GURL(kTestRpUrl), request.referrer);
+        // Check that the request body is correct
         ASSERT_NE(request.request_body, nullptr);
         ASSERT_EQ(1ul, request.request_body->elements()->size());
         const network::DataElement& elem =
@@ -468,8 +775,7 @@ TEST_F(IdpNetworkRequestManagerTest, Revoke) {
         ASSERT_EQ(network::DataElement::Tag::kBytes, elem.type());
         const network::DataElementBytes& byte_elem =
             elem.As<network::DataElementBytes>();
-        EXPECT_EQ("{\"request\":{\"client_id\":\"xxx\"},\"sub\":\"yyy\"}",
-                  byte_elem.AsStringPiece());
+        EXPECT_EQ("client_id=xxx&hint=yyy", byte_elem.AsStringPiece());
       });
   test_url_loader_factory().SetInterceptor(interceptor);
   RevokeResponse status = SendRevokeRequestAndWaitForResponse("xxx", "yyy");
@@ -482,6 +788,69 @@ TEST_F(IdpNetworkRequestManagerTest, RevokeError) {
       SendRevokeRequestAndWaitForResponse("xxx", "yyy", net::HTTP_FORBIDDEN);
   ASSERT_EQ(RevokeResponse::kError, status);
 }
+
+// Tests that we correctly records metrics regarding approved_clients.
+TEST_F(IdpNetworkRequestManagerTest, RecordApprovedClientsMetrics) {
+  base::HistogramTester histogram_tester;
+  bool called = false;
+  auto interceptor =
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        called = true;
+        EXPECT_EQ(GURL(kTestAccountsEndpoint), request.url);
+        EXPECT_EQ(request.request_body, nullptr);
+        EXPECT_FALSE(request.referrer.is_valid());
+      });
+  test_url_loader_factory().SetInterceptor(interceptor);
+
+  const char test_accounts_json[] = R"({
+  "accounts" : [
+    {
+      "id" : "1",
+      "email": "ken@idp.test",
+      "name": "Ken R. Example",
+      "approved_clients": []
+    },
+    {
+      "id" : "2",
+      "email": "jim@idp.test",
+      "name": "Jim R. Example",
+      "approved_clients": ["xxx"]
+    },
+    {
+      "id" : "3",
+      "email": "rashida@idp.test",
+      "name": "Rashida R. Example",
+      "approved_clients": ["xxx", "yyy"]
+    },
+    {
+      "id" : "4",
+      "email": "wei@idp.test",
+      "name": "Wei R. Example"
+    }
+   ]
+  })";
+
+  FetchStatus accounts_response;
+  AccountList accounts;
+  std::tie(accounts_response, accounts) =
+      SendAccountsRequestAndWaitForResponse(test_accounts_json, "xxx");
+
+  EXPECT_TRUE(called);
+  EXPECT_EQ(FetchStatus::kSuccess, accounts_response);
+  ASSERT_EQ(4ul, accounts.size());
+
+  histogram_tester.ExpectTotalCount("Blink.FedCm.ApprovedClientsExistence", 4);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsExistence", 1,
+                                     3);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsExistence", 0,
+                                     1);
+
+  histogram_tester.ExpectTotalCount("Blink.FedCm.ApprovedClientsSize", 3);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsSize", 0, 1);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsSize", 1, 1);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsSize", 2, 1);
+}
+
 }  // namespace
 
 }  // namespace content

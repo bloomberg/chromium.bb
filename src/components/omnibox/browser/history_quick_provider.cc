@@ -12,6 +12,7 @@
 #include "base/check.h"
 #include "base/i18n/break_iterator.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,12 +27,12 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
+#include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -55,7 +56,10 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   if ((input.type() == metrics::OmniboxInputType::EMPTY))
     return;
 
-  autocomplete_input_ = input;
+  // Remove the keyword from input if we're in keyword mode for a starter pack
+  // engine.
+  autocomplete_input_ = KeywordProvider::AdjustInputForStarterPackEngines(
+      input, client()->GetTemplateURLService());
 
   // TODO(pkasting): We should just block here until this loads.  Any time
   // someone unloads the history backend, we'll get inconsistent inline
@@ -227,7 +231,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           info.url(),
           url_formatter::FormatUrl(info.url(), fill_into_edit_format_types,
-                                   net::UnescapeRule::SPACES, nullptr, nullptr,
+                                   base::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier(), &inline_autocomplete_offset);
 
@@ -255,7 +259,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
           autocomplete_input_.parts().scheme.len > 0 ||
               history_match.match_in_scheme,
           history_match.match_in_subdomain),
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   auto contents_terms =
       FindTermMatches(autocomplete_input_.text(), match.contents);
   match.contents_class = ClassifyTermMatches(

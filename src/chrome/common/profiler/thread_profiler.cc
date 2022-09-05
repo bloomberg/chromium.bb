@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/android/library_loader/anchor_functions.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -30,11 +31,10 @@
 #include "content/public/common/content_switches.h"
 #include "sandbox/policy/sandbox.h"
 
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 #include "base/android/apk_assets.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/profiler/arm_cfi_table.h"
-#include "base/profiler/chrome_unwinder_android.h"
 #include "chrome/android/modules/stack_unwinder/public/module.h"
 
 extern "C" {
@@ -42,7 +42,14 @@ extern "C" {
 // shared library.
 extern char __executable_start;
 }
-#endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
+#include "base/profiler/chrome_unwinder_android_v2.h"
+#else
+#include "base/profiler/chrome_unwinder_android.h"
+#endif
+
+#endif  // BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 
 using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
@@ -59,7 +66,7 @@ ThreadProfiler* g_main_thread_instance = nullptr;
 constexpr double kFractionOfExecutionTimeToSample = 0.02;
 
 bool IsCurrentProcessBackgrounded() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Port provider that returns the calling process's task port, ignoring its
   // argument.
   class SelfPortProvider : public base::PortProvider {
@@ -69,12 +76,40 @@ bool IsCurrentProcessBackgrounded() {
   };
   SelfPortProvider provider;
   return base::Process::Current().IsProcessBackgrounded(&provider);
-#else   // defined(OS_MAC)
+#else   // BUILDFLAG(IS_MAC)
   return base::Process::Current().IsProcessBackgrounded();
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 }
 
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
+class ChromeUnwinderCreator {
+ public:
+  ChromeUnwinderCreator() {
+    constexpr char kCfiFileName[] = "assets/unwind_cfi_32_v2";
+    base::MemoryMappedFile::Region cfi_region;
+    int fd = base::android::OpenApkAsset(kCfiFileName, &cfi_region);
+    DCHECK_GE(fd, 0);
+    bool mapped_file_ok =
+        chrome_cfi_file_.Initialize(base::File(fd), cfi_region);
+    DCHECK(mapped_file_ok);
+  }
+  ChromeUnwinderCreator(const ChromeUnwinderCreator&) = delete;
+  ChromeUnwinderCreator& operator=(const ChromeUnwinderCreator&) = delete;
+
+  std::unique_ptr<base::Unwinder> Create() {
+    return std::make_unique<base::ChromeUnwinderAndroidV2>(
+        base::CreateChromeUnwindInfoAndroid(
+            {chrome_cfi_file_.data(), chrome_cfi_file_.length()}),
+        /* chrome_module_base_address= */
+        reinterpret_cast<uintptr_t>(&__executable_start),
+        /* text_section_start_address= */ base::android::kStartOfText);
+  }
+
+ private:
+  base::MemoryMappedFile chrome_cfi_file_;
+};
+#else
 // Encapsulates the setup required to create the Chrome unwinder on Android.
 class ChromeUnwinderCreator {
  public:
@@ -105,6 +140,7 @@ class ChromeUnwinderCreator {
   base::MemoryMappedFile chrome_cfi_file_;
   std::unique_ptr<base::ArmCFITable> chrome_cfi_table_;
 };
+#endif
 
 // Encapsulates the setup required to create the Android native unwinder.
 class NativeUnwinderCreator {
@@ -141,10 +177,10 @@ std::vector<std::unique_ptr<base::Unwinder>> CreateCoreUnwinders(
   unwinders.push_back(chrome_unwinder_creator->Create());
   return unwinders;
 }
-#endif  // defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#endif  // BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 
 base::StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactory() {
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
   // The module is loadable if the profiler is enabled for the current
   // process.
   CHECK(
@@ -162,7 +198,8 @@ const base::RepeatingClosure GetApplyPerSampleMetadataCallback(
     CallStackProfileParams::Process process) {
   if (process != CallStackProfileParams::Process::kRenderer)
     return base::RepeatingClosure();
-  static const base::SampleMetadata process_backgrounded("ProcessBackgrounded");
+  static const base::SampleMetadata process_backgrounded(
+      "ProcessBackgrounded", base::SampleMetadataScope::kProcess);
   return base::BindRepeating(
       [](base::SampleMetadata process_backgrounded) {
         process_backgrounded.Set(IsCurrentProcessBackgrounded());
@@ -296,22 +333,12 @@ void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
 }
 
 // static
-void ThreadProfiler::SetBrowserProcessReceiverCallback(
-    const base::RepeatingCallback<void(base::TimeTicks,
-                                       metrics::SampledProfile)>& callback) {
-  CallStackProfileBuilder::SetBrowserProcessReceiverCallback(callback);
-}
-
-// static
-void ThreadProfiler::SetCollectorForChildProcess(
-    mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector) {
-  if (!ThreadProfilerConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
-    return;
-
-  DCHECK_NE(CallStackProfileParams::Process::kBrowser,
-            GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
-  CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
-      std::move(collector));
+bool ThreadProfiler::ShouldCollectProfilesForChildProcess() {
+  CallStackProfileParams::Process process =
+      GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess());
+  DCHECK_NE(CallStackProfileParams::Process::kBrowser, process);
+  return ThreadProfilerConfiguration::Get()
+      ->IsProfilerEnabledForCurrentProcess();
 }
 
 // ThreadProfiler implementation synopsis:

@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
@@ -81,6 +82,12 @@ class DriveIntegrationServiceObserver : public base::CheckedObserver {
 
   // Triggered when the `DriveIntegrationService` is being destroyed.
   virtual void OnDriveIntegrationServiceDestroyed() {}
+
+  // Triggered when the mirroring functionality is enabled.
+  virtual void OnMirroringEnabled() {}
+
+  // Triggered when the mirroring functionality is disabled.
+  virtual void OnMirroringDisabled() {}
 };
 
 // DriveIntegrationService is used to integrate Drive to Chrome. This class
@@ -232,6 +239,28 @@ class DriveIntegrationService : public KeyedService,
                     bool crop_to_square,
                     GetThumbnailCallback callback);
 
+  // Toggle mirroring on or off defined by |enabled|.
+  void ToggleMirroring(
+      bool enabled,
+      drivefs::mojom::DriveFs::ToggleMirroringCallback callback);
+
+  // Toggle syncing for a specific path. Should only be called once mirroring
+  // has been enabled via |ToggleMirroring|.
+  void ToggleSyncForPath(
+      const base::FilePath& path,
+      drivefs::mojom::MirrorPathStatus status,
+      drivefs::mojom::DriveFs::ToggleSyncForPathCallback callback);
+
+  // Retrieves a list of paths being synced.
+  void GetSyncingPaths(
+      drivefs::mojom::DriveFs::GetSyncingPathsCallback callback);
+
+  // Tells DriveFS to update its cached pin states of hosted files (once).
+  void PollHostedFilePinStates();
+
+  // Returns whether mirroring is enabled.
+  bool IsMirroringEnabled();
+
  private:
   enum State {
     NOT_INITIALIZED,
@@ -315,6 +344,16 @@ class DriveIntegrationService : public KeyedService,
       drive::FileError error,
       absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
 
+  void OnEnableMirroringStatusUpdate(drivefs::mojom::MirrorSyncStatus status);
+
+  void OnDisableMirroringStatusUpdate(drivefs::mojom::MirrorSyncStatus status);
+
+  // Toggle syncing for |path| if the the directory exists.
+  void ToggleSyncForPathIfDirectoryExists(
+      const base::FilePath& path,
+      drivefs::mojom::DriveFs::ToggleSyncForPathCallback callback,
+      bool exists);
+
   friend class DriveIntegrationServiceFactory;
 
   Profile* profile_;
@@ -324,6 +363,8 @@ class DriveIntegrationService : public KeyedService,
   bool in_clear_cache_ = false;
   // Custom mount point name that can be injected for testing in constructor.
   std::string mount_point_name_;
+
+  bool mirroring_enabled_ = false;
 
   base::FilePath cache_root_directory_;
   std::unique_ptr<EventLogger> logger_;

@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 from __future__ import print_function
+# TODO(https://crbug.com/1262296): Update this after Python2 trybots retire.
+# pylint: disable=deprecated-module
+import logging
 import optparse
 import platform
 import re
@@ -102,8 +105,8 @@ def try_create_agent(config):
   # Check device SDK version.
   device_sdk_version = util.get_device_sdk_version()
   if device_sdk_version < version_codes.JELLY_BEAN_MR2:
-    print('Device SDK versions < 18 (Jellybean MR2) not supported.\n'
-          'Your device SDK version is %d.' % device_sdk_version)
+    logging.error('Device SDK versions < 18 (Jellybean MR2) not supported.\n'
+                  'Your device SDK version is %d.', device_sdk_version)
     return None
 
   return AtraceAgent(device_sdk_version,
@@ -162,6 +165,8 @@ def _construct_atrace_args(config, categories):
 class AtraceAgent(tracing_agents.TracingAgent):
 
   def __init__(self, device_sdk_version, tracing_path):
+    # TODO(https://crbug.com/1262296): Update this after Python2 trybots retire.
+    # pylint: disable=super-with-arguments
     super(AtraceAgent, self).__init__()
     self._device_sdk_version = device_sdk_version
     self._tracing_path = tracing_path
@@ -190,12 +195,13 @@ class AtraceAgent(tracing_agents.TracingAgent):
     self._categories = [x for x in self._categories.split(',') if
         x in avail_cats]
     if unavailable:
-      print('These categories are unavailable: ' + ' '.join(unavailable))
+      logging.warning('These categories are unavailable: %s',
+                      ' '.join(unavailable))
     self._device_utils = device_utils.DeviceUtils(config.device_serial_number)
     self._device_serial_number = config.device_serial_number
     self._tracer_args = _construct_atrace_args(config,
                                                self._categories)
-    print('Tracer arguments: %s' % self._tracer_args)
+    logging.info('Tracer arguments: %s', self._tracer_args)
     self._device_utils.RunShellCommand(
         self._tracer_args + ['--async_start'], check_return=True)
     return True
@@ -298,7 +304,7 @@ class AtraceAgent(tracing_agents.TracingAgent):
       data_start = data_start.end(0)
     else:
       raise IOError('Unable to get atrace data. Did you forget adb root?')
-    output = re.sub(ADB_IGNORE_REGEXP, '', result[data_start:])
+    output = re.sub(ADB_IGNORE_REGEXP, b'', result[data_start:])
     return output
 
   def _preprocess_trace_data(self, trace_data):
@@ -313,8 +319,7 @@ class AtraceAgent(tracing_agents.TracingAgent):
       trace_data = strip_and_decompress_trace(trace_data)
 
     if not trace_data:
-      print('No data was captured.  Output file was not written.',
-            file=sys.stderr)
+      logging.error('No data was captured.  Output file was not written.')
       sys.exit(1)
 
     if _FIX_MISSING_TGIDS:
@@ -370,7 +375,7 @@ def strip_and_decompress_trace(trace_data):
 
   if not trace_data.startswith(TRACE_TEXT_HEADER):
     # No header found, so assume the data is compressed.
-    print('No header found. Will try to decompress the trace data.')
+    logging.info('No header found. Will try to decompress the trace data.')
     trace_data = zlib.decompress(trace_data)
 
   # Enforce Unix line-endings.

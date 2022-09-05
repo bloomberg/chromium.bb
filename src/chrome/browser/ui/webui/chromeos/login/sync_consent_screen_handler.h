@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SYNC_CONSENT_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SYNC_CONSENT_SCREEN_HANDLER_H_
 
-#include <unordered_set>
+#include <string>
+#include <unordered_map>
 
+#include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
@@ -27,14 +29,15 @@ class SyncConsentScreenView {
   virtual void Bind(ash::SyncConsentScreen* screen) = 0;
 
   // Shows the contents of the screen.
-  virtual void Show() = 0;
+  virtual void Show(bool is_arc_restricted) = 0;
 
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Controls if the loading throbber is visible. This is used when
-  // SyncScreenBehavior is unknown.
-  virtual void SetThrobberVisible(bool visible) = 0;
+  // The screen is initially shown in a loading state.
+  // When SyncScreenBehavior becomes Shown, this method should be called to
+  // advance the screen to the loaded state.
+  virtual void ShowLoadedStep() = 0;
 
   // Set the minor mode flag, which controls whether we could use nudge
   // techinuque on the UI.
@@ -51,7 +54,7 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   // numeric values should never be reused. Public for testing.
   enum class UserChoice { kDeclined = 0, kAccepted = 1, kMaxValue = kAccepted };
 
-  explicit SyncConsentScreenHandler(JSCallsContainer* js_calls_container);
+  SyncConsentScreenHandler();
 
   SyncConsentScreenHandler(const SyncConsentScreenHandler&) = delete;
   SyncConsentScreenHandler& operator=(const SyncConsentScreenHandler&) = delete;
@@ -64,33 +67,21 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
 
   // SyncConsentScreenView:
   void Bind(ash::SyncConsentScreen* screen) override;
-  void Show() override;
+  void Show(bool is_arc_restricted) override;
   void Hide() override;
-  void SetThrobberVisible(bool visible) override;
+  void ShowLoadedStep() override;
   void SetIsMinorMode(bool value) override;
 
  private:
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
   void RegisterMessages() override;
 
   // WebUI message handlers
-  void HandleNonSplitSettingsContinue(
-      const bool opted_in,
-      const bool review_sync,
-      const ::login::StringList& consent_description,
-      const std::string& consent_confirmation);
-
-  // WebUI message handlers for SplitSettingsSync.
-  void HandleAcceptAndContinue(const ::login::StringList& consent_description,
-                               const std::string& consent_confirmation);
-  void HandleDeclineAndContinue(const ::login::StringList& consent_description,
-                                const std::string& consent_confirmation);
-
-  // Helper for the accept and decline cases.
-  void Continue(const ::login::StringList& consent_description,
-                const std::string& consent_confirmation,
-                UserChoice choice);
+  void HandleContinue(const bool opted_in,
+                      const bool review_sync,
+                      const base::Value::List& consent_description_list,
+                      const std::string& consent_confirmation);
 
   // Adds resource `resource_id` both to `builder` and to `known_string_ids_`.
   void RememberLocalizedValue(const std::string& name,
@@ -102,7 +93,7 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
       ::login::LocalizedValuesBuilder* builder);
 
   // Resource IDs of the displayed strings.
-  std::unordered_set<int> known_string_ids_;
+  std::unordered_map<std::string, int> known_strings_;
 
   ash::SyncConsentScreen* screen_ = nullptr;
 };

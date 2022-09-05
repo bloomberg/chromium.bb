@@ -9,7 +9,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -49,6 +48,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
   uint16_t GetAppearance() const override;
   absl::optional<std::string> GetName() const override;
   bool IsPaired() const override;
+#if BUILDFLAG(IS_CHROMEOS)
+  bool IsBonded() const override;
+#endif  // BUILDFLAG(IS_CHROMEOS)
   bool IsConnected() const override;
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
@@ -65,6 +67,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
                             ErrorCallback error_callback) override;
   void Connect(device::BluetoothDevice::PairingDelegate* pairing_delegate,
                ConnectCallback callback) override;
+#if BUILDFLAG(IS_CHROMEOS)
+  void ConnectClassic(
+      device::BluetoothDevice::PairingDelegate* pairing_delegate,
+      ConnectCallback callback) override;
+#endif  // BUILDFLAG(IS_CHROMEOS)
   void SetPinCode(const std::string& pincode) override;
   void SetPasskey(uint32_t passkey) override;
   void ConfirmPairing() override;
@@ -87,12 +94,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
   bool IsGattServicesDiscoveryComplete() const override;
   void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
             ConnectCallback callback) override;
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   void ExecuteWrite(base::OnceClosure callback,
                     ExecuteWriteErrorCallback error_callback) override;
   void AbortWrite(base::OnceClosure callback,
                   AbortWriteErrorCallback error_callback) override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   FlossDeviceId AsFlossDeviceId() const;
   void SetName(const std::string& name);
@@ -100,8 +107,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
   void SetIsConnected(bool is_connected);
   void ConnectAllEnabledProfiles();
   void ResetPairing();
+  // Triggers the pending callback of Connect() method.
+  void TriggerConnectCallback(
+      absl::optional<BluetoothDevice::ConnectErrorCode> error_code);
 
   BluetoothPairingFloss* pairing() const { return pairing_.get(); }
+
+  void InitializeDeviceProperties();
 
  protected:
   // BluetoothDevice override
@@ -127,6 +139,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
 
   void OnCancelPairingError(const Error& error);
   void OnForgetError(ErrorCallback error_callback, const Error& error);
+  void OnGetRemoteType(
+      const absl::optional<FlossAdapterClient::BluetoothDeviceType>& ret,
+      const absl::optional<Error>& error);
+  void OnGetRemoteClass(const absl::optional<uint32_t>& ret,
+                        const absl::optional<Error>& error);
+  void OnGetRemoteUuids(const absl::optional<UUIDList>& ret,
+                        const absl::optional<Error>& error);
+  void OnConnectAllEnabledProfiles(const absl::optional<Void>& ret,
+                                   const absl::optional<Error>& error);
+  void OnDisconnectAllEnabledProfiles(base::OnceClosure callback,
+                                      ErrorCallback error_callback,
+                                      const absl::optional<Void>& ret,
+                                      const absl::optional<Error>& error);
+
+  absl::optional<ConnectCallback> pending_callback_on_connect_profiles_ =
+      absl::nullopt;
 
   // Address of this device. Changing this should necessitate creating a new
   // BluetoothDeviceFloss object.
@@ -134,6 +162,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
 
   // Name of this device. Can be queried later and isn't mandatory for creation.
   std::string name_;
+
+  // Transport type of device.
+  // TODO(b/204708206): Update with property framework when available
+  device::BluetoothTransport transport_;
+
+  // Class of device.
+  // TODO(b/204708206): Update with property framework when available
+  uint32_t cod_;
 
   // Whether the device is bonded/paired.
   FlossAdapterClient::BondState bond_state_ =

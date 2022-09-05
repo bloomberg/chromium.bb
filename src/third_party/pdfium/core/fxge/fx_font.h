@@ -38,6 +38,11 @@
 /* Other font flags */
 #define FXFONT_USEEXTERNATTR 0x80000
 
+// These numbers come from the OpenType name table specification.
+constexpr uint16_t kNamePlatformAppleUnicode = 0;
+constexpr uint16_t kNamePlatformMac = 1;
+constexpr uint16_t kNamePlatformWindows = 3;
+
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 class SkTypeface;
 
@@ -49,7 +54,7 @@ class TextGlyphPos;
 FX_RECT GetGlyphsBBox(const std::vector<TextGlyphPos>& glyphs, int anti_alias);
 
 ByteString GetNameFromTT(pdfium::span<const uint8_t> name_table, uint32_t name);
-int GetTTCIndex(pdfium::span<const uint8_t> pFontData, uint32_t font_offset);
+size_t GetTTCIndex(pdfium::span<const uint8_t> pFontData, size_t font_offset);
 
 inline bool FontStyleIsForceBold(uint32_t style) {
   return !!(style & FXFONT_FORCE_BOLD);
@@ -86,7 +91,7 @@ inline bool FontFamilyIsScript(int32_t family) {
   return !!(family & FXFONT_FF_SCRIPT);
 }
 
-wchar_t PDF_UnicodeFromAdobeName(const char* name);
-ByteString PDF_AdobeNameFromUnicode(wchar_t unicode);
+wchar_t UnicodeFromAdobeName(const char* name);
+ByteString AdobeNameFromUnicode(wchar_t unicode);
 
 #endif  // CORE_FXGE_FX_FONT_H_

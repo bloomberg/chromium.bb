@@ -10,8 +10,73 @@
 // #import {loadTimeData} from '../i18n_setup.js';
 // #import {Oobe} from '../cr_ui.m.js'
 // #import {$} from 'chrome://resources/js/util.m.js';
+// #import './debug_util.js';
+// #import {AssistantNativeIconType} from '../../assistant_optin/utils.m.js';
 
 // #import {MessageType, ProblemType} from 'chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.m.js';
+
+const createAssistantData = (isMinor) => {
+  const data = {};
+  data['valuePropTitle'] =
+      'Value ' + (isMinor ? 'minor ' : 'regular') + ' prop title';
+  data['valuePropNextButton'] = 'Value prop next button';
+  data['valuePropSkipButton'] = 'Value prop skip button';
+  data['valuePropFooter'] = 'Value prop footer';
+  data['equalWeightButtons'] = isMinor;
+  if (isMinor) {
+    data['childName'] = 'Child name';
+  }
+  return data;
+};
+
+const createAssistantZippy = (type, isMinor, isNativeIcons) => {
+  const zippy = {};
+  zippy['isMinorMode'] = isMinor;
+  zippy['title'] = 'Zippy ' + (isMinor ? 'minor ' : 'regular') + ' title';
+  zippy['identity'] = 'Zippy identity';
+  zippy['intro'] = 'Zippy intro';
+  zippy['name'] = 'Zippy ' + type + ' name';
+  zippy['description'] = 'Zippy ' + type + ' description';
+  if (isMinor) {
+    zippy['additionalInfo'] = 'Zippy additional info';
+  }
+  zippy['popupLink'] = 'Zippy popup link';
+  zippy['learnMoreDialogTitle'] = 'Zippy learn more dialog title';
+  zippy['learnMoreDialogContent'] = 'Zippy learn more dialog content';
+  zippy['learnMoreDialogButton'] = 'Zippy learn more dialog button';
+  zippy['useNativeIcons'] = !!isNativeIcons;
+
+  if (isNativeIcons) {
+    if (type === 'WAA') {
+      zippy['nativeIconType'] = AssistantNativeIconType.WAA;
+    } else if (type == 'DA') {
+      zippy['nativeIconType'] = AssistantNativeIconType.DA;
+    } else {
+      console.error('### Uknown zippy type ' + type);
+    }
+  } else {
+    if (type === 'WAA') {
+      if (isMinor) {
+        zippy['iconUri'] =
+            'https://www.gstatic.com/myactivity/icon/icon_fp_history_blue.svg';
+      } else {
+        zippy['iconUri'] =
+            'https://ssl.gstatic.com/identity/boq/consentflowtexts/icon_web_and_app_activity_grey600_72-fb2e66730dca510849d22bee9f0f29ba.png';
+      }
+    } else if (type === 'DA') {
+      if (isMinor) {
+        zippy['iconUri'] =
+            'https://www.gstatic.com/myactivity/icon/icon_fp_chromebook_blue.svg';
+      } else {
+        zippy['iconUri'] =
+            'https://ssl.gstatic.com/identity/boq/consentflowtexts/icon_device_information_vertical_grey600_72-be6f9c8691213019712cfa4106a509e0.png';
+      }
+    } else {
+      console.error('### Uknown zippy type ' + type);
+    }
+  }
+  return zippy;
+};
 
 cr.define('cr.ui.login.debug', function() {
   const DEBUG_BUTTON_STYLE = `
@@ -75,9 +140,6 @@ cr.define('cr.ui.login.debug', function() {
       border-color: #faa !important;
       color: #faa`;
 
-  const RECOMMENDED_APPS_CONTENT = `
-// <include src="../../arc_support/recommend_app_list_view.html">
-  `;
   /**
    * Indicates if screen is present in usual user flow, represents some error
    * state or is shown in some other cases. See KNOWN_SCREENS for more details.
@@ -216,7 +278,7 @@ cr.define('cr.ui.login.debug', function() {
             screen.updateCountdownString(
                 'Your device will shut down in 60 seconds. Remove the USB \
                  before turning your device back on. Then you can start using \
-                 CloudReady 2.0.');
+                 ChromeOS Flex.');
             screen.showStep('success');
           },
         },
@@ -246,7 +308,7 @@ cr.define('cr.ui.login.debug', function() {
           id: 'error',
           trigger: (screen) => {
             screen.setError(
-                'Chrome OS was unable to connect to Public Wifi. ' +
+                'ChromeOS was unable to connect to Public Wifi. ' +
                 'Please select another network or try again.');
           }
         },
@@ -537,6 +599,14 @@ cr.define('cr.ui.login.debug', function() {
       ]
     },
     {
+      id: 'smart-privacy-protection',
+      kind: ScreenKind.NORMAL,
+    },
+    {
+      id: 'theme-selection',
+      kind: ScreenKind.NORMAL,
+    },
+    {
       id: 'reset',
       kind: ScreenKind.OTHER,
       states: [
@@ -598,7 +668,7 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: 'allowlist-customer',
           trigger: (screen) => {
-            screen.showAllowlistCheckFailedError(true, {
+            screen.showAllowlistCheckFailedError({
               enterpriseManaged: false,
             });
           },
@@ -724,7 +794,7 @@ cr.define('cr.ui.login.debug', function() {
           // Error dialog
           id: 'error-dialog',
           trigger: (screen) => {
-            let error = 'Some error text';
+            const error = 'Some error text';
             screen.showErrorDialog(error);
           }
         },
@@ -903,14 +973,26 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'sync-consent',
       kind: ScreenKind.NORMAL,
-      defaultState: 'step-no-split',
-      states: [{
-        id: 'minor-mode',
-        data: {
-          syncConsentOptionalEnabled: false,
-          isMinorMode: true,
+      defaultState: 'step-loaded',
+      states: [
+        {
+          id: 'minor-mode',
+          data: {
+            isChildAccount: true,
+            isArcRestricted: false,
+          },
+          trigger: (screen) => {
+            screen.setIsMinorMode(true);
+          },
         },
-      }]
+        {
+          id: 'arc-restricted',
+          data: {
+            isChildAccount: false,
+            isArcRestricted: true,
+          },
+        }
+      ]
     },
     {
       id: 'consolidated-consent',
@@ -920,7 +1002,10 @@ cr.define('cr.ui.login.debug', function() {
       // additionalTosUrl.
       states: [
         {
-          id: 'regular',
+          id: 'regular-owner',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(true);
+          },
           data: {
             isArcEnabled: true,
             isDemo: false,
@@ -932,7 +1017,40 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
+          id: 'regular',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(false);
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'child-owner',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(true);
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: true,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
           id: 'child',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(false);
+          },
           data: {
             isArcEnabled: true,
             isDemo: false,
@@ -956,7 +1074,25 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
+          id: 'arc-disabled-owner',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(true);
+          },
+          data: {
+            isArcEnabled: false,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
           id: 'arc-disabled',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(false);
+          },
           data: {
             isArcEnabled: false,
             isDemo: false,
@@ -972,6 +1108,7 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             screen.setBackupMode(true, true);
             screen.setLocationMode(false, true);
+            screen.setIsDeviceOwner(false);
           },
           data: {
             isArcEnabled: true,
@@ -987,6 +1124,7 @@ cr.define('cr.ui.login.debug', function() {
           id: 'error',
           trigger: (screen) => {
             screen.setUIStep('error');
+            screen.setIsDeviceOwner(true);
           },
           data: {
             isArcEnabled: true,
@@ -1146,7 +1284,7 @@ cr.define('cr.ui.login.debug', function() {
           id: '2-apps',
           trigger: (screen) => {
             screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_OLD_CONTENT);
             screen.loadAppList([
               {
                 name: 'Test app 1',
@@ -1164,8 +1302,8 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             // There can be up to 21 apps: see recommend_apps_fetcher_impl
             screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_CONTENT);
-            let apps = [];
+            screen.setWebview(RECOMMENDED_APPS_OLD_CONTENT);
+            const apps = [];
             for (let i = 1; i <= 21; i++) {
               apps.push({
                 name: 'Test app ' + i,
@@ -1184,6 +1322,150 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'assistant-optin-flow',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'loading',
+          trigger: (screen) => {
+            (screen.$).card.showStep('loading');
+          },
+        },
+        {
+          id: 'value_prop',
+          trigger: (screen) => {
+            (screen.$).card.onReload();
+            (screen.$).card.showStep('value-prop');
+            (screen.$).card.reloadContent(
+                createAssistantData(/*isMinor=*/ false));
+
+            const zippies = [[]];
+            zippies[0].push(createAssistantZippy(
+                'WAA', /*isMinor=*/ false, /*isNativeIcons=*/ false));
+            zippies[0].push(createAssistantZippy(
+                'DA', /*isMinor=*/ false, /*isNativeIcons=*/ false));
+
+            (screen.$).card.addSettingZippy('settings', zippies);
+          },
+        },
+        {
+          id: 'value_prop_minor',
+          trigger: (screen) => {
+            (screen.$).card.onReload();
+            (screen.$).card.showStep('value-prop');
+            (screen.$).card.reloadContent(
+                createAssistantData(/*isMinor=*/ true));
+
+            const zippies = [[]];
+            zippies[0].push(createAssistantZippy('WAA', /*isMinor=*/ true));
+            zippies[0].push(createAssistantZippy('DA', /*isMinor=*/ true));
+
+            (screen.$).card.addSettingZippy('settings', zippies);
+          },
+        },
+        {
+          id: 'value_prop_native_icons',
+          trigger: (screen) => {
+            (screen.$).card.onReload();
+            (screen.$).card.showStep('value-prop');
+            (screen.$).card.reloadContent(
+                createAssistantData(/*isMinor=*/ false));
+
+            const zippies = [[]];
+            zippies[0].push(createAssistantZippy(
+                'WAA', /*isMinor=*/ false, /*isNativeIcons=*/ true));
+            zippies[0].push(createAssistantZippy(
+                'DA', /*isMinor=*/ false, /*isNativeIcons=*/ true));
+
+            (screen.$).card.addSettingZippy('settings', zippies);
+          },
+        },
+        {
+          id: 'value_prop_minor_native_icons',
+          trigger: (screen) => {
+            (screen.$).card.onReload();
+            (screen.$).card.showStep('value-prop');
+            (screen.$).card.reloadContent(
+                createAssistantData(/*isMinor=*/ false));
+
+            const zippies = [[]];
+            zippies[0].push(createAssistantZippy(
+                'WAA', /*isMinor=*/ true, /*isNativeIcons=*/ true));
+            zippies[0].push(createAssistantZippy(
+                'DA', /*isMinor=*/ true, /*isNativeIcons=*/ true));
+
+            (screen.$).card.addSettingZippy('settings', zippies);
+          },
+        },
+        {
+          id: 'related_info',
+          trigger: (screen) => {
+            const data = createAssistantData(/*isMinor=*/ false);
+            data['activityControlNeeded'] = false;
+            (screen.$).card.reloadContent(data);
+            (screen.$).card.showStep('related-info');
+          },
+        },
+        {
+          id: 'related_info activityControlNeeded',
+          trigger: (screen) => {
+            const data = createAssistantData(/*isMinor=*/ false);
+            data['activityControlNeeded'] = true;
+            (screen.$).card.reloadContent(data);
+            (screen.$).card.showStep('related-info');
+          },
+        },
+        {
+          id: 'related_info native icons',
+          trigger: (screen) => {
+            const data = createAssistantData(/*isMinor=*/ false);
+            data['activityControlNeeded'] = false;
+            data['useNativeIcons'] = true;
+            (screen.$).card.reloadContent(data);
+            (screen.$).card.showStep('related-info');
+          },
+        },
+        {
+          id: 'related_info isMinor nativeIcons',
+          trigger: (screen) => {
+            const data = createAssistantData(/*isMinor=*/ true);
+            data['activityControlNeeded'] = false;
+            data['useNativeIcons'] = true;
+            (screen.$).card.reloadContent(data);
+            (screen.$).card.showStep('related-info');
+          },
+        },
+        {
+          id: 'voice_match_begin laptop',
+          trigger: (screen) => {
+            (screen.$).card.showStep('voice-match');
+            ((screen.$).card.$).voiceMatch.setUIStep('intro');
+            ((screen.$).card.$).voiceMatch.isTabletMode_ = false;
+          },
+        },
+        {
+          id: 'voice_match_begin tablet',
+          trigger: (screen) => {
+            (screen.$).card.showStep('voice-match');
+            ((screen.$).card.$).voiceMatch.setUIStep('intro');
+            ((screen.$).card.$).voiceMatch.isTabletMode_ = true;
+          },
+        },
+        {
+          id: 'voice_match_listen',
+          trigger: (screen) => {
+            (screen.$).card.showStep('voice-match');
+            ((screen.$).card.$).voiceMatch.setUIStep('recording');
+            ((screen.$).card.$).voiceMatch.listenForHotword();
+          },
+        },
+        {
+          id: 'voice_match_done',
+          trigger: (screen) => {
+            (screen.$).card.showStep('voice-match');
+            ((screen.$).card.$).voiceMatch.setUIStep('recording');
+            ((screen.$).card.$).voiceMatch.voiceMatchDone();
+          },
+        },
+      ],
     },
     {
       id: 'parental-handoff',
@@ -1206,6 +1488,7 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'marketing-opt-in',
       kind: ScreenKind.NORMAL,
+      handledSteps: 'overview',
       states: [
         {
           id: 'WithOptionToSubscribe',
@@ -1215,6 +1498,7 @@ cr.define('cr.ui.login.debug', function() {
             legalFooterVisibility: false,
           },
           trigger: (screen) => {
+            screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(false);
           },
         },
@@ -1226,6 +1510,7 @@ cr.define('cr.ui.login.debug', function() {
             legalFooterVisibility: false,
           },
           trigger: (screen) => {
+            screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(false);
           },
         },
@@ -1237,17 +1522,19 @@ cr.define('cr.ui.login.debug', function() {
             legalFooterVisibility: true,
           },
           trigger: (screen) => {
+            screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(false);
           },
         },
         {
-          id: 'WithAceessibilityButton',
+          id: 'WithAccessibilityButton',
           data: {
             optInVisibility: true,
             optInDefaultState: true,
             legalFooterVisibility: true,
           },
           trigger: (screen) => {
+            screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(true);
           },
         },
@@ -1291,7 +1578,7 @@ cr.define('cr.ui.login.debug', function() {
           /** @type {!HTMLElement} */ (document.createElement('h2'));
       this.titleDiv.textContent = title;
 
-      let panel = /** @type {!HTMLElement} */ (document.createElement('div'));
+      const panel = /** @type {!HTMLElement} */ (document.createElement('div'));
       panel.className = 'debug-tool-panel';
       panel.id = id;
 
@@ -1306,7 +1593,7 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     clearContent() {
-      let range = document.createRange();
+      const range = document.createRange();
       range.selectNodeContents(this.content);
       range.deleteContents();
     }
@@ -1340,8 +1627,9 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     showDebugUI() {
-      if (this.debuggerVisible_)
+      if (this.debuggerVisible_) {
         return;
+      }
       this.refreshScreensPanel();
       this.debuggerVisible_ = true;
       this.debuggerOverlay_.removeAttribute('hidden');
@@ -1362,10 +1650,12 @@ cr.define('cr.ui.login.debug', function() {
 
     getScreenshotId() {
       var result = 'unknown';
-      if (this.currentScreenId_)
+      if (this.currentScreenId_) {
         result = this.currentScreenId_;
-      if (this.lastScreenState_ && this.lastScreenState_ !== 'default')
+      }
+      if (this.lastScreenState_ && this.lastScreenState_ !== 'default') {
         result = result + '_' + this.lastScreenState_;
+      }
       return result;
     }
 
@@ -1374,14 +1664,15 @@ cr.define('cr.ui.login.debug', function() {
      * function with a delay before executing next one.
      */
     runIterator_() {
-      if (!this.commandIterator_)
+      if (!this.commandIterator_) {
         return;
-      let command = this.commandIterator_.next();
+      }
+      const command = this.commandIterator_.next();
       if (command.done) {
         this.commandIterator_ = undefined;
         return;
       }
-      let [func, timeout] = command.value;
+      const [func, timeout] = command.value;
       try {
         func();
       } finally {
@@ -1410,7 +1701,7 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     showStateCommand(screenAndState) {
-      let [screenId, stateId] = screenAndState;
+      const [screenId, stateId] = screenAndState;
       // Switch to screen.
       return [
         () => {
@@ -1422,7 +1713,7 @@ cr.define('cr.ui.login.debug', function() {
 
     makeScreenshotCommand() {
       // Make a screenshot.
-      let id = this.getScreenshotId();
+      const id = this.getScreenshotId();
       return [
         () => {
           console.info('Making screenshot for ' + id);
@@ -1439,7 +1730,7 @@ cr.define('cr.ui.login.debug', function() {
     * screenshotSeries_(statesList) {
       yield this.hideButtonCommand();
       // Make all screenshots
-      for (let screenAndState of statesList) {
+      for (const screenAndState of statesList) {
         yield this.showStateCommand(screenAndState);
         yield this.makeScreenshotCommand();
       }
@@ -1459,7 +1750,7 @@ cr.define('cr.ui.login.debug', function() {
      * Generator that returns all (screen, state) pairs for current screen.
      */
     * iterateStates(screenId) {
-      for (let state of this.screenMap[screenId].states) {
+      for (const state of this.screenMap[screenId].states) {
         yield [screenId, state.id];
       }
     }
@@ -1468,9 +1759,10 @@ cr.define('cr.ui.login.debug', function() {
      * Generator that returns (screen, state) pairs for all known screens.
      */
     * iterateScreens() {
-      for (let screen of this.knownScreens) {
-        if (screen.skipScreenshots)
+      for (const screen of this.knownScreens) {
+        if (screen.skipScreenshots) {
           continue;
+        }
         yield* this.iterateStates(screen.id);
       }
     }
@@ -1500,7 +1792,7 @@ cr.define('cr.ui.login.debug', function() {
         screen.index = index;
         // Create a default state
         if (!screen.states) {
-          let state = {
+          const state = {
             id: 'default',
           };
           screen.states = [state];
@@ -1511,7 +1803,7 @@ cr.define('cr.ui.login.debug', function() {
         }
         screen.stateMap_ = {};
         // For each state fall back to screen data if state data is not defined.
-        for (let state of screen.states) {
+        for (const state of screen.states) {
           if (!state.data) {
             state.data = screen.data;
           }
@@ -1521,7 +1813,7 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createLanguagePanel(parent) {
-      let langPanel = new ToolPanel(
+      const langPanel = new ToolPanel(
           this.debuggerOverlay_, 'Language', 'DebuggerPanelLanguage');
       const LANGUAGES = [
         ['English', 'en-US'],
@@ -1540,7 +1832,7 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createToolsPanel(parent) {
-      let panel =
+      const panel =
           new ToolPanel(this.debuggerOverlay_, 'Tools', 'DebuggerPanelTools');
       new DebugButton(
           panel.content, 'Capture screenshot', this.makeScreenshot.bind(this));
@@ -1550,10 +1842,13 @@ cr.define('cr.ui.login.debug', function() {
       new DebugButton(
           panel.content, 'Capture deck of all screens',
           this.makeScreenshotDeck.bind(this));
+      new DebugButton(panel.content, 'Toggle color mode', function() {
+        chrome.send('debug.toggleColorMode');
+      });
     }
 
     createScreensPanel(parent) {
-      let panel = new ToolPanel(
+      const panel = new ToolPanel(
           this.debuggerOverlay_, 'Screens', 'DebuggerPanelScreens');
       // List of screens will be created later, as not all screens
       // might be registered at this point.
@@ -1561,7 +1856,7 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createStatesPanel(parent) {
-      let panel = new ToolPanel(
+      const panel = new ToolPanel(
           this.debuggerOverlay_, 'Screen States', 'DebuggerPanelStates');
       // List of states is rebuilt every time to reflect current screen.
       this.statesPanel = panel;
@@ -1572,8 +1867,8 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     triggerScreenState(screenId, stateId) {
-      let screen = this.screenMap[screenId];
-      let state = screen.stateMap_[stateId];
+      const screen = this.screenMap[screenId];
+      const state = screen.stateMap_[stateId];
       var data = {};
       if (state.data) {
         data = state.data;
@@ -1581,7 +1876,7 @@ cr.define('cr.ui.login.debug', function() {
       this.currentScreenId_ = screenId;
       this.lastScreenState_ = stateId;
       /** @suppress {visibility} */
-      let displayManager = cr.ui.Oobe.instance_;
+      const displayManager = cr.ui.Oobe.instance_;
       cr.ui.Oobe.instance_.showScreen({id: screen.id, data: data});
       if (state.trigger) {
         state.trigger(displayManager.currentScreen);
@@ -1590,7 +1885,7 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createScreensList() {
-      for (let screen of KNOWN_SCREENS) {
+      for (const screen of KNOWN_SCREENS) {
         this.screenMap[screen.id] = screen;
       }
       this.knownScreens = [];
@@ -1598,23 +1893,25 @@ cr.define('cr.ui.login.debug', function() {
       /** @suppress {visibility} */
       for (var id of cr.ui.Oobe.instance_.screens_) {
         if (id in this.screenMap) {
-          let screenDef = this.screenMap[id];
-          let screenElement = $(id);
+          const screenDef = this.screenMap[id];
+          const screenElement = $(id);
           if (screenElement.listSteps &&
               typeof screenElement.listSteps === 'function') {
             if (screenDef.stateMap_['default']) {
               screenDef.states = [];
               screenDef.stateMap_ = {};
             }
-            let handledSteps = new Set();
+            const handledSteps = new Set();
             if (screenDef.handledSteps) {
-              for (let step of screenDef.handledSteps.split(','))
+              for (const step of screenDef.handledSteps.split(',')) {
                 handledSteps.add(step);
+              }
             }
-            for (let step of screenElement.listSteps()) {
-              if (handledSteps.has(step))
+            for (const step of screenElement.listSteps()) {
+              if (handledSteps.has(step)) {
                 continue;
-              let state = {
+              }
+              const state = {
                 id: 'step-' + step,
                 data: screenDef.data,
                 trigger: (screen) => {
@@ -1624,14 +1921,15 @@ cr.define('cr.ui.login.debug', function() {
               screenDef.states.push(state);
               screenDef.stateMap_[state.id] = state;
             }
-            if (screenDef.defaultState === 'default')
+            if (screenDef.defaultState === 'default') {
               screenDef.defaultState = 'step-' + screenElement.defaultUIStep();
+            }
           }
           this.knownScreens.push(screenDef);
           this.screenMap[id] = screenDef;
         } else {
           console.error('### Screen not registered in debug overlay ' + id);
-          let unknownScreen = {
+          const unknownScreen = {
             id: id,
             kind: ScreenKind.UNKNOWN,
             suffix: '???',
@@ -1646,7 +1944,7 @@ cr.define('cr.ui.login.debug', function() {
         }
       }
       this.knownScreens = this.knownScreens.sort((a, b) => a.index - b.index);
-      let content = this.screensPanel.content;
+      const content = this.screensPanel.content;
       this.knownScreens.forEach((screen) => {
         var name = screen.id;
         if (screen.suffix) {
@@ -1664,7 +1962,7 @@ cr.define('cr.ui.login.debug', function() {
         this.createScreensList();
       }
       /** @suppress {visibility} */
-      let displayManager = cr.ui.Oobe.instance_;
+      const displayManager = cr.ui.Oobe.instance_;
       if (this.stateCachedFor_) {
         this.screenButtons[this.stateCachedFor_].element.classList.remove(
             'debug-button-selected');
@@ -1680,11 +1978,11 @@ cr.define('cr.ui.login.debug', function() {
             'debug-button-selected');
       }
 
-      let screen = this.screenMap[this.currentScreenId_];
+      const screen = this.screenMap[this.currentScreenId_];
 
       this.statesPanel.clearContent();
-      for (let state of screen.states) {
-        let button = new DebugButton(
+      for (const state of screen.states) {
+        const button = new DebugButton(
             this.statesPanel.content, state.id,
             this.triggerScreenState.bind(
                 this, this.currentScreenId_, state.id));
@@ -1722,7 +2020,7 @@ cr.define('cr.ui.login.debug', function() {
       }
       {
         // Create UI Debugger button
-        let button =
+        const button =
             /** @type {!HTMLElement} */ (document.createElement('div'));
         button.id = 'invokeDebuggerButton';
         button.className = 'debugger-button';
@@ -1733,7 +2031,7 @@ cr.define('cr.ui.login.debug', function() {
       }
       {
         // Create base debugger panel.
-        let overlay =
+        const overlay =
             /** @type {!HTMLElement} */ (document.createElement('div'));
         overlay.id = 'debuggerOverlay';
         overlay.className = 'debugger-overlay';

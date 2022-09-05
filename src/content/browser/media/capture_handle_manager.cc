@@ -225,12 +225,10 @@ void CaptureHandleManager::OnTabCaptureStarted(
   auto iter = captures_.find(capture_key);
   if (iter == captures_.end()) {
     // Creating a new tracking session.
-    const absl::optional<media::mojom::DisplayMediaInformationPtr>& info =
+    const media::mojom::DisplayMediaInformationPtr& info =
         captured_device.display_media_info;
     media::mojom::CaptureHandlePtr capture_handle =
-        (info.has_value() && info.value())
-            ? info.value()->capture_handle.Clone()
-            : nullptr;
+        info ? info->capture_handle.Clone() : nullptr;
     captures_[capture_key] = std::make_unique<CaptureInfo>(
         std::move(observer), std::move(capture_handle),
         std::move(handle_change_callback));
@@ -255,10 +253,12 @@ void CaptureHandleManager::OnTabCaptureStopped(
 
 void CaptureHandleManager::OnTabCaptureDevicesUpdated(
     const std::string& label,
-    const std::vector<blink::MediaStreamDevice>& new_devices,
+    blink::mojom::StreamDevicesSetPtr new_stream_devices_set,
     GlobalRenderFrameHostId capturer,
     DeviceCaptureHandleChangeCallback handle_change_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(new_stream_devices_set);
+  DCHECK_EQ(1u, new_stream_devices_set->stream_devices.size());
 
   // Pause tracking of all old devices.
   for (auto& capture : captures_) {
@@ -268,8 +268,15 @@ void CaptureHandleManager::OnTabCaptureDevicesUpdated(
   }
 
   // Start tracking any new devices; resume tracking of changed devices.
-  for (const auto& device : new_devices) {
-    OnTabCaptureStarted(label, device, capturer, handle_change_callback);
+  const blink::mojom::StreamDevices& new_devices =
+      *new_stream_devices_set->stream_devices[0];
+  if (new_devices.audio_device.has_value()) {
+    OnTabCaptureStarted(label, new_devices.audio_device.value(), capturer,
+                        handle_change_callback);
+  }
+  if (new_devices.video_device.has_value()) {
+    OnTabCaptureStarted(label, new_devices.video_device.value(), capturer,
+                        handle_change_callback);
   }
 
   // Forget any old device which was not in |new_devices|.

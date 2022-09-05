@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/guid.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,6 +23,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_triggered_feature_service.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/browser/titled_url_match_utils.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -153,8 +153,8 @@ TestBookmarkPositions PositionsFromAutocompleteMatch(
   return positions;
 }
 
-// Convience function to make comparing test expectations structure against the
-// actual ACMatchClassifications easier.
+// Convenience function to make comparing test expectations structure against
+// the actual ACMatchClassifications easier.
 TestBookmarkPositions PositionsFromExpectations(
     const size_t expectations[9][2]) {
   TestBookmarkPositions positions;
@@ -207,7 +207,7 @@ void BookmarkProviderTest::SetUp() {
 
   provider_ = new BookmarkProvider(provider_client_.get());
   const BookmarkNode* other_node = model_->other_node();
-  for (size_t i = 0; i < base::size(bookmark_provider_test_data); ++i) {
+  for (size_t i = 0; i < std::size(bookmark_provider_test_data); ++i) {
     const BookmarksTestInfo& cur(bookmark_provider_test_data[i]);
     const GURL url(cur.url);
     model_->AddURL(other_node, other_node->children().size(),
@@ -306,7 +306,7 @@ TEST_F(BookmarkProviderTest, Positions) {
       {"emptytitle", 1, {}},
   };
 
-  for (size_t i = 0; i < base::size(query_data); ++i) {
+  for (size_t i = 0; i < std::size(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
@@ -384,7 +384,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
                       "burning worms #2"}},  // not boosted
   };
 
-  for (size_t i = 0; i < base::size(query_data); ++i) {
+  for (size_t i = 0; i < std::size(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
@@ -438,7 +438,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
       // actually bookmarked.
   };
 
-  for (size_t i = 0; i < base::size(query_data); ++i) {
+  for (size_t i = 0; i < std::size(query_data); ++i) {
     const std::string description =
         "for query=" + query_data[i].query + " and url=" + query_data[i].url;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
@@ -486,7 +486,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
       // clang-format on
   };
 
-  for (size_t i = 0; i < base::size(query_data); ++i) {
+  for (size_t i = 0; i < std::size(query_data); ++i) {
     std::string description = "for query=" + query_data[i].query;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             metrics::OmniboxEventProto::OTHER,

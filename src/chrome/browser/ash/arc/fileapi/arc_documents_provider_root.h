@@ -54,7 +54,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
     bool supports_thumbnail;
     // Last modified time of the the file, returned in the COLUMN_LAST_MODIFIED
     // from the DocumentsProvider.queryDocument() and .queryChildDocuments(). If
-    // unknown, it's set to the Unix epoch time.
+    // unknown, it's set to the base::Time().
     base::Time last_modified;
     // Size of the file in bytes, returned in the COLUMN_SIZE from the
     // DocumentsProvider.queryDocument() and .queryChildDocuments(). If the
@@ -221,6 +221,9 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   void GetRootSize(GetRootSizeCallback callback);
 
  private:
+  friend class ArcDocumentsProviderRootMapTest;
+  FRIEND_TEST_ALL_PREFIXES(ArcDocumentsProviderRootMapTest, Lookup);
+
   struct WatcherData;
   struct DirectoryCache;
 

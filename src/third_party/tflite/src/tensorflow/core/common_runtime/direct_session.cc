@@ -433,7 +433,7 @@ Status DirectSession::Extend(GraphDef&& graph) {
   return ExtendLocked(std::move(graph));
 }
 
-Status DirectSession::ExtendLocked(GraphDef graph) {
+Status DirectSession::ExtendLocked(GraphDef&& graph) {
   if (finalized_) {
     return errors::FailedPrecondition("Session has been finalized.");
   }
@@ -540,6 +540,12 @@ Status DirectSession::RunInternal(
         CreateDebuggerState(executors_and_keys->callable_options,
                             run_options.debug_options().global_step(), step_id,
                             executor_step_count, &debugger_state));
+  }
+
+  if (run_metadata != nullptr &&
+      options_.config.experimental().has_session_metadata()) {
+    *run_metadata->mutable_session_metadata() =
+        options_.config.experimental().session_metadata();
   }
 
 #ifndef __ANDROID__

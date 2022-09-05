@@ -19,6 +19,7 @@ RankingItemType RankingItemTypeFromSearchResult(
   switch (result.result_type()) {
     case ash::AppListSearchResultType::kInstalledApp:
     case ash::AppListSearchResultType::kInternalApp:
+    case ash::AppListSearchResultType::kGames:
       return RankingItemType::kApp;
     case ash::AppListSearchResultType::kOmnibox:
       return RankingItemType::kOmniboxGeneric;
@@ -35,7 +36,12 @@ RankingItemType RankingItemTypeFromSearchResult(
     case ash::AppListSearchResultType::kOsSettings:
     case ash::AppListSearchResultType::kInternalPrivacyInfo:
     case ash::AppListSearchResultType::kAssistantText:
+    case ash::AppListSearchResultType::kPersonalization:
+    // Types that are only shown in the productivity launcher:
     case ash::AppListSearchResultType::kHelpApp:
+    case ash::AppListSearchResultType::kZeroStateHelpApp:
+    case ash::AppListSearchResultType::kKeyboardShortcut:
+    case ash::AppListSearchResultType::kOpenTab:
       // NOTE: We don't rank results of type kAssistantChip, kAssistantText
       // as those results, if present, are shown in a dedicated slot.
       return RankingItemType::kIgnored;

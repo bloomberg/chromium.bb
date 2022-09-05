@@ -122,8 +122,7 @@ DEF_ACQUIRE_GETTER(SharedFunctionInfo,
 uint16_t SharedFunctionInfo::internal_formal_parameter_count_with_receiver()
     const {
   const uint16_t param_count = TorqueGeneratedClass::formal_parameter_count();
-  if (param_count == kDontAdaptArgumentsSentinel) return param_count;
-  return param_count + (kJSArgcIncludesReceiver ? 0 : 1);
+  return param_count;
 }
 
 uint16_t SharedFunctionInfo::internal_formal_parameter_count_without_receiver()
@@ -139,8 +138,8 @@ void SharedFunctionInfo::set_internal_formal_parameter_count(int value) {
   TorqueGeneratedClass::set_formal_parameter_count(value);
 }
 
-RENAME_UINT16_TORQUE_ACCESSORS(SharedFunctionInfo, raw_function_token_offset,
-                               function_token_offset)
+RENAME_PRIMITIVE_TORQUE_ACCESSORS(SharedFunctionInfo, raw_function_token_offset,
+                                  function_token_offset, uint16_t)
 
 RELAXED_INT32_ACCESSORS(SharedFunctionInfo, flags, kFlagsOffset)
 int32_t SharedFunctionInfo::relaxed_flags() const {
@@ -225,7 +224,7 @@ bool SharedFunctionInfo::AreSourcePositionsAvailable(IsolateT* isolate) const {
 
 template <typename IsolateT>
 SharedFunctionInfo::Inlineability SharedFunctionInfo::GetInlineability(
-    IsolateT* isolate, bool is_turboprop) const {
+    IsolateT* isolate) const {
   if (!script().IsScript()) return kHasNoScript;
 
   if (GetIsolate()->is_precise_binary_code_coverage() &&
@@ -244,11 +243,7 @@ SharedFunctionInfo::Inlineability SharedFunctionInfo::GetInlineability(
   // inline.
   if (!HasBytecodeArray()) return kHasNoBytecode;
 
-  int max_inlined_size = FLAG_max_inlined_bytecode_size;
-  if (is_turboprop) {
-    max_inlined_size = max_inlined_size / FLAG_turboprop_inline_scaling_factor;
-  }
-  if (GetBytecodeArray(isolate).length() > max_inlined_size) {
+  if (GetBytecodeArray(isolate).length() > FLAG_max_inlined_bytecode_size) {
     return kExceedsBytecodeLimit;
   }
 
@@ -265,6 +260,12 @@ BIT_FIELD_ACCESSORS(SharedFunctionInfo, flags2, class_scope_has_private_brand,
 BIT_FIELD_ACCESSORS(SharedFunctionInfo, flags2,
                     has_static_private_methods_or_accessors,
                     SharedFunctionInfo::HasStaticPrivateMethodsOrAccessorsBit)
+
+BIT_FIELD_ACCESSORS(SharedFunctionInfo, flags2, is_sparkplug_compiling,
+                    SharedFunctionInfo::IsSparkplugCompilingBit)
+
+BIT_FIELD_ACCESSORS(SharedFunctionInfo, flags2, maglev_compilation_failed,
+                    SharedFunctionInfo::MaglevCompilationFailedBit)
 
 BIT_FIELD_ACCESSORS(SharedFunctionInfo, relaxed_flags, syntax_kind,
                     SharedFunctionInfo::FunctionSyntaxKindBits)
@@ -308,12 +309,12 @@ BailoutReason SharedFunctionInfo::disabled_optimization_reason() const {
 }
 
 LanguageMode SharedFunctionInfo::language_mode() const {
-  STATIC_ASSERT(LanguageModeSize == 2);
+  static_assert(LanguageModeSize == 2);
   return construct_language_mode(IsStrictBit::decode(flags(kRelaxedLoad)));
 }
 
 void SharedFunctionInfo::set_language_mode(LanguageMode language_mode) {
-  STATIC_ASSERT(LanguageModeSize == 2);
+  static_assert(LanguageModeSize == 2);
   // We only allow language mode transitions that set the same language mode
   // again or go up in the chain:
   DCHECK(is_sloppy(this->language_mode()) || is_strict(language_mode));
@@ -324,7 +325,7 @@ void SharedFunctionInfo::set_language_mode(LanguageMode language_mode) {
 }
 
 FunctionKind SharedFunctionInfo::kind() const {
-  STATIC_ASSERT(FunctionKindBits::kSize == kFunctionKindBitSize);
+  static_assert(FunctionKindBits::kSize == kFunctionKindBitSize);
   return FunctionKindBits::decode(flags(kRelaxedLoad));
 }
 
@@ -369,7 +370,7 @@ int SharedFunctionInfo::function_map_index() const {
 }
 
 void SharedFunctionInfo::set_function_map_index(int index) {
-  STATIC_ASSERT(Context::LAST_FUNCTION_MAP_INDEX <=
+  static_assert(Context::LAST_FUNCTION_MAP_INDEX <=
                 Context::FIRST_FUNCTION_MAP_INDEX + FunctionMapIndexBits::kMax);
   DCHECK_LE(Context::FIRST_FUNCTION_MAP_INDEX, index);
   DCHECK_LE(index, Context::LAST_FUNCTION_MAP_INDEX);
@@ -401,8 +402,6 @@ bool SharedFunctionInfo::IsDontAdaptArguments() const {
   return TorqueGeneratedClass::formal_parameter_count() ==
          kDontAdaptArgumentsSentinel;
 }
-
-bool SharedFunctionInfo::IsInterpreted() const { return HasBytecodeArray(); }
 
 DEF_ACQUIRE_GETTER(SharedFunctionInfo, scope_info, ScopeInfo) {
   Object maybe_scope_info = name_or_scope_info(cage_base, kAcquireLoad);
@@ -712,6 +711,10 @@ bool SharedFunctionInfo::HasWasmCapiFunctionData() const {
   return function_data(kAcquireLoad).IsWasmCapiFunctionData();
 }
 
+bool SharedFunctionInfo::HasWasmOnFulfilledData() const {
+  return function_data(kAcquireLoad).IsWasmOnFulfilledData();
+}
+
 AsmWasmData SharedFunctionInfo::asm_wasm_data() const {
   DCHECK(HasAsmWasmData());
   return AsmWasmData::cast(function_data(kAcquireLoad));
@@ -814,21 +817,22 @@ void SharedFunctionInfo::ClearPreparseData() {
   DisallowGarbageCollection no_gc;
   Heap* heap = GetHeapFromWritableObject(data);
 
-  // Swap the map.
-  heap->NotifyObjectLayoutChange(data, no_gc);
-  STATIC_ASSERT(UncompiledDataWithoutPreparseData::kSize <
+  // We are basically trimming that object to its supertype, so recorded slots
+  // within the object don't need to be invalidated.
+  heap->NotifyObjectLayoutChange(data, no_gc, InvalidateRecordedSlots::kNo);
+  static_assert(UncompiledDataWithoutPreparseData::kSize <
                 UncompiledDataWithPreparseData::kSize);
-  STATIC_ASSERT(UncompiledDataWithoutPreparseData::kSize ==
+  static_assert(UncompiledDataWithoutPreparseData::kSize ==
                 UncompiledData::kHeaderSize);
+
+  // Fill the remaining space with filler and clear slots in the trimmed area.
+  heap->NotifyObjectSizeChange(data, UncompiledDataWithPreparseData::kSize,
+                               UncompiledDataWithoutPreparseData::kSize,
+                               ClearRecordedSlots::kYes);
+
+  // Swap the map.
   data.set_map(GetReadOnlyRoots().uncompiled_data_without_preparse_data_map(),
                kReleaseStore);
-
-  // Fill the remaining space with filler.
-  heap->CreateFillerObjectAt(
-      data.address() + UncompiledDataWithoutPreparseData::kSize,
-      UncompiledDataWithPreparseData::kSize -
-          UncompiledDataWithoutPreparseData::kSize,
-      ClearRecordedSlots::kYes);
 
   // Ensure that the clear was successful.
   DCHECK(HasUncompiledDataWithoutPreparseData());

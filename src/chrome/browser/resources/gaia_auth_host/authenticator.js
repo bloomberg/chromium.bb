@@ -9,7 +9,7 @@
 // #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js'
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {$, appendParam} from 'chrome://resources/js/util.m.js';
-// #import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// #import {sendWithPromise, getPropertyDescriptor} from 'chrome://resources/js/cr.m.js';
 
 // #import {SamlHandler, OnHeadersReceivedDetails} from './saml_handler.m.js';
 // #import {WebviewEventManager} from './webview_event_manager.m.js';
@@ -59,6 +59,7 @@ cr.define('cr.login', function() {
 
   /**
    * Credentials passed with 'authCompleted' message.
+   * `isAvailableInArc` field is optional and is used only on Chrome OS.
    * @typedef {{
    *   email: string,
    *   gaiaId: string,
@@ -71,7 +72,8 @@ cr.define('cr.login', function() {
    *   trusted: boolean,
    *   services: Array,
    *   passwordAttributes: !PasswordAttributes,
-   *   syncTrustedVaultKeys: !SyncTrustedVaultKeys
+   *   syncTrustedVaultKeys: !SyncTrustedVaultKeys,
+   *   isAvailableInArc: (boolean|undefined),
    * }}
    */
   /* #export */ let AuthCompletedCredentials;
@@ -102,7 +104,7 @@ cr.define('cr.login', function() {
    *   isSupervisedUser: boolean,
    *   isDeviceOwner: boolean,
    *   ssoProfile: string,
-   *   enableCloseView: boolean,
+   *   enableAzureADIntegration: boolean
    * }}
    */
   /* #export */ let AuthParams;
@@ -124,6 +126,10 @@ cr.define('cr.login', function() {
   const GAIA_MESSAGE_GAIA_USER_INFO = 'ChromeOS.Gaia.Message.Gaia.UserInfo';
   const GAIA_MESSAGE_SAML_CLOSE_VIEW = 'ChromeOS.Gaia.Message.Saml.CloseView';
   const GAIA_MESSAGE_GAIA_CLOSE_VIEW = 'ChromeOS.Gaia.Message.Gaia.CloseView';
+
+  // Regular expressions used to check for Azure AD-related hosts
+  const AZURE_AD_HOST = /login\.microsoftonline\.com$/;
+  const AZURE_AD_B2B_HOST = /b2clogin\.com$/;
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -148,7 +154,7 @@ cr.define('cr.login', function() {
    * @type {!Array<string>}
    * @const
    */
-  const SUPPORTED_PARAMS = [
+  /* #export */ const SUPPORTED_PARAMS = [
     'gaiaId',        // Obfuscated GAIA ID to skip the email prompt page
                      // during the re-auth flow.
     'gaiaUrl',       // Gaia url to use.
@@ -216,9 +222,9 @@ cr.define('cr.login', function() {
     'isSupervisedUser',  // True if the user is supervised user.
     'isDeviceOwner',     // True if the user is device owner.
     'doSamlRedirect',    // True if the authentication is done via external IdP.
-    'enableCloseView',   // True if authenticator should wait for the closeView
-                         // message from Gaia.
     'rart',              // Encrypted reauth request token.
+    'enableAzureADIntegration'  // True if features specific to Azure AD are
+                                // enabled
   ];
 
   // Timeout in ms to wait for the message from Gaia indicating end of the flow.
@@ -246,10 +252,9 @@ cr.define('cr.login', function() {
   const messageHandlers = {
     'attemptLogin'(msg) {
       this.email_ = msg.email;
-      if (this.authMode == AuthMode.DESKTOP) {
+      if (this.authMode === AuthMode.DESKTOP) {
         this.password_ = msg.password;
       }
-      this.isSamlUserPasswordless_ = null;
 
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
       // We need to dispatch only first event, before user enters password.
@@ -281,8 +286,9 @@ cr.define('cr.login', function() {
     },
     'userInfo'(msg) {
       this.services_ = msg.services;
+      this.servicesProvided_ = true;
       if (!this.authCompletedFired_) {
-        const metric = this.authFlow == AuthFlow.SAML ?
+        const metric = this.authFlow === AuthFlow.SAML ?
             GAIA_MESSAGE_SAML_USER_INFO :
             GAIA_MESSAGE_GAIA_USER_INFO;
         chrome.send('metricsHandler:recordBooleanHistogram', [metric, true]);
@@ -340,16 +346,11 @@ cr.define('cr.login', function() {
       this.syncTrustedVaultKeys_ = msg.value;
     },
     'closeView'(msg) {
-      if (!this.enableCloseView_) {
-        return;
-      }
-
-      if (!this.services_) {
-        console.error('Authenticator: UserInfo should come before closeView');
-      }
-
       if (!this.authCompletedFired_) {
-        const metric = this.authFlow == AuthFlow.SAML ?
+        if (!this.services_) {
+          console.error('Authenticator: UserInfo should come before closeView');
+        }
+        const metric = this.authFlow === AuthFlow.SAML ?
             GAIA_MESSAGE_SAML_CLOSE_VIEW :
             GAIA_MESSAGE_GAIA_CLOSE_VIEW;
         chrome.send('metricsHandler:recordBooleanHistogram', [metric, true]);
@@ -410,12 +411,11 @@ cr.define('cr.login', function() {
       /**
        * @private {WebView|undefined}
        */
-      this.webview_ = typeof webview == 'string' ?
+      this.webview_ = typeof webview === 'string' ?
           /** @type {WebView} */ ($(webview)) :
           webview;
       assert(this.webview_);
       this.enableGaiaActionButtons_ = false;
-      this.enableCloseView_ = false;
       this.webviewEventManager_ = WebviewEventManager.create();
 
       this.clientId_ = null;
@@ -427,30 +427,19 @@ cr.define('cr.login', function() {
       this.samlApiUsedCallback = null;
       this.recordSAMLProviderCallback = null;
       this.missingGaiaInfoCallback = null;
-      /**
-       * Callback allowing to request whether the specified user which
-       * authenticates via SAML is a user without a password (neither a manually
-       * entered one nor one provided via Credentials Passing API).
-       * @type {?function(string, string, function(boolean))} Arguments are the
-       * e-mail, the GAIA ID, and the response callback.
-       */
-      this.getIsSamlUserPasswordlessCallback = null;
       this.needPassword = true;
       this.services_ = null;
+      this.servicesProvided_ = false;
+      this.waitApiPasswordConfirm_ = false;
       this.gaiaDoneTimer_ = null;
-      /**
-       * Caches the result of |getIsSamlUserPasswordlessCallback| invocation for
-       * the current user. Null if no result is obtained yet.
-       * @type {?boolean}
-       * @private
-       */
-      this.isSamlUserPasswordless_ = null;
       /** @private {boolean} */
       this.isConstrainedWindow_ = false;
       this.samlAclUrl_ = null;
       /** @private {?SyncTrustedVaultKeys} */
       this.syncTrustedVaultKeys_ = null;
       this.closeViewReceived_ = false;
+      /** @private {boolean} */
+      this.isAzureADIntegrationEnabled_ = false;
 
       window.addEventListener(
           'message', e => this.onMessageFromWebview_(e), false);
@@ -461,7 +450,7 @@ cr.define('cr.login', function() {
        * @type {boolean}
        * @private
        */
-      this.isDomLoaded_ = document.readyState != 'loading';
+      this.isDomLoaded_ = document.readyState !== 'loading';
       if (this.isDomLoaded_) {
         this.initializeAfterDomLoaded_();
       } else {
@@ -488,17 +477,19 @@ cr.define('cr.login', function() {
       this.samlHandler_.reset();
       this.videoEnabled = false;
       this.services_ = null;
-      this.gaiaDoneTimer_ = null;
-      this.isSamlUserPasswordless_ = null;
+      this.servicesProvided_ = false;
+      this.waitApiPasswordConfirm_ = false;
+      this.maybeClearGaiaTimeout_();
       this.syncTrustedVaultKeys_ = null;
       this.closeViewReceived_ = false;
+      this.isAzureADIntegrationEnabled_ = false;
     }
 
     /**
      * Resets the webview to the blank page.
      */
     resetWebview() {
-      if (this.webview_.src && this.webview_.src != BLANK_PAGE_URL) {
+      if (this.webview_.src && this.webview_.src !== BLANK_PAGE_URL) {
         this.webview_.src = BLANK_PAGE_URL;
       }
     }
@@ -534,6 +525,9 @@ cr.define('cr.login', function() {
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'apiPasswordAdded',
           e => this.onSamlApiPasswordAdded_(e));
+      this.webviewEventManager_.addEventListener(
+          this.samlHandler_, 'apiPasswordConfirmed',
+          e => this.onSamlApiPasswordConfirmed_(e));
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'challengeMachineKeyRequired',
           e => this.onChallengeMachineKeyRequired_(e));
@@ -622,7 +616,7 @@ cr.define('cr.login', function() {
         // We have not navigated anywhere yet. Note that a webview's src
         // attribute does not allow a change back to "".
         this.webview_.partition = newWebviewPartitionName;
-      } else if (this.webview_.partition != newWebviewPartitionName) {
+      } else if (this.webview_.partition !== newWebviewPartitionName) {
         // The webview has already navigated. We have to re-create it.
         const webivewParent = this.webview_.parentElement;
 
@@ -651,27 +645,23 @@ cr.define('cr.login', function() {
       // gaiaUrl parameter is used for testing. Once defined, it is never
       // changed.
       this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
-      this.isConstrainedWindow_ = data.constrained == '1';
+      this.isConstrainedWindow_ = data.constrained === '1';
       this.clientId_ = data.clientId;
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
       this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
-      this.enableCloseView_ = !!data.enableCloseView;
+      this.isAzureADIntegrationEnabled_ = data.enableAzureADIntegration;
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
       this.samlAclUrl_ = data.samlAclUrl;
-      // The email field is repurposed as public session email in SAML guest
-      // mode, ie when frameUrl is not empty.
-      if (data.samlAclUrl) {
-        this.email_ = data.email;
-      }
+      this.email_ = data.email;
 
       if (data.startsOnSamlPage) {
         this.samlHandler_.startsOnSamlPage = true;
       }
       // Don't block insecure content for desktop flow because it lands on
       // http. Otherwise, block insecure content as long as gaia is https.
-      this.samlHandler_.blockInsecureContent = authMode != AuthMode.DESKTOP &&
+      this.samlHandler_.blockInsecureContent = authMode !== AuthMode.DESKTOP &&
           this.idpOrigin_.startsWith('https://');
       this.samlHandler_.extractSamlPasswordAttributes =
           data.extractSamlPasswordAttributes;
@@ -836,10 +826,10 @@ cr.define('cr.login', function() {
 
       if (this.isConstrainedWindow_) {
         let isEmbeddedPage = false;
-        if (this.idpOrigin_ && currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
+        if (this.idpOrigin_ && currentUrl.lastIndexOf(this.idpOrigin_) === 0) {
           const headers = details.responseHeaders;
           for (let i = 0; headers && i < headers.length; ++i) {
-            if (headers[i].name.toLowerCase() == EMBEDDED_FORM_HEADER) {
+            if (headers[i].name.toLowerCase() === EMBEDDED_FORM_HEADER) {
               isEmbeddedPage = true;
               break;
             }
@@ -866,7 +856,7 @@ cr.define('cr.login', function() {
      * @private
      */
     updateHistoryState_(url) {
-      if (history.state && history.state.url != url) {
+      if (history.state && history.state.url !== url) {
         history.pushState({url: url}, '');
       } else {
         history.replaceState({url: url}, '');
@@ -878,8 +868,8 @@ cr.define('cr.login', function() {
      * @private
      */
     onFocus_() {
-      if (this.authMode == AuthMode.DESKTOP &&
-          document.activeElement == document.body) {
+      if (this.authMode === AuthMode.DESKTOP &&
+          document.activeElement === document.body) {
         this.webview_.focus();
       }
     }
@@ -893,6 +883,37 @@ cr.define('cr.login', function() {
       const state = e.state;
       if (state && state.url) {
         this.webview_.src = state.url;
+      }
+    }
+
+    /**
+     * Check url's host to determine if it comes from Azure AD
+     * @param {URL?} url
+     * @private
+     */
+    isAzureAD_(url) {
+      return Boolean(
+          url.host.match(AZURE_AD_HOST) || url.host.match(AZURE_AD_B2B_HOST));
+    }
+
+    /**
+     * Try to auto-fill email on sign-in page if IdP is Azure AD
+     * @param {string} url url from location header
+     * @private
+     */
+    maybeAutofillUsernameIfAzureAD_(url) {
+      if (!this.isAzureADIntegrationEnabled_) {
+        return;
+      }
+      if (!url.startsWith('https')) {
+        return;
+      }
+      if (!this.email_) {
+        return;
+      }
+      if (this.isAzureAD_(new URL(url))) {
+        url = appendParam(url, 'login_hint', this.email_);
+        this.webview_.src = url;
       }
     }
 
@@ -912,7 +933,7 @@ cr.define('cr.login', function() {
         return;
       }
       const currentUrl = details.url;
-      if (currentUrl.lastIndexOf(this.idpOrigin_, 0) != 0) {
+      if (currentUrl.lastIndexOf(this.idpOrigin_, 0) !== 0) {
         return;
       }
 
@@ -920,7 +941,7 @@ cr.define('cr.login', function() {
       for (let i = 0; headers && i < headers.length; ++i) {
         const header = headers[i];
         const headerName = header.name.toLowerCase();
-        if (headerName == SIGN_IN_HEADER) {
+        if (headerName === SIGN_IN_HEADER) {
           const headerValues = header.value.toLowerCase().split(',');
           const signinDetails = {};
           headerValues.forEach(function(e) {
@@ -931,13 +952,13 @@ cr.define('cr.login', function() {
           this.email_ = signinDetails['email'].slice(1, -1);
           this.gaiaId_ = signinDetails['obfuscatedid'].slice(1, -1);
           this.sessionIndex_ = signinDetails['sessionindex'];
-          this.isSamlUserPasswordless_ = null;
-        } else if (headerName == LOCATION_HEADER) {
+        } else if (headerName === LOCATION_HEADER) {
           // If the "choose what to sync" checkbox was clicked, then the
           // continue URL will contain a source=3 field.
           assert(header.value !== undefined);
           const location = decodeURIComponent(header.value);
           this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
+          this.maybeAutofillUsernameIfAzureAD_(header.value);
         }
       }
     }
@@ -946,19 +967,19 @@ cr.define('cr.login', function() {
      * Returns true if given HTML5 message is received from the webview element.
      * @param {Object} e Payload of the received HTML5 message.
      */
-    isGaiaMessage(e) {
+    isGaiaMessage_(e) {
       if (!this.isWebviewEvent_(e)) {
         return false;
       }
 
       // The event origin does not have a trailing slash.
-      if (e.origin !=
+      if (e.origin !==
           this.idpOrigin_.substring(0, this.idpOrigin_.length - 1)) {
         return false;
       }
 
       // Gaia messages must be an object with 'method' property.
-      if (typeof e.data != 'object' || !e.data.hasOwnProperty('method')) {
+      if (typeof e.data !== 'object' || !e.data.hasOwnProperty('method')) {
         return false;
       }
       return true;
@@ -970,7 +991,7 @@ cr.define('cr.login', function() {
      * @private
      */
     onMessageFromWebview_(e) {
-      if (!this.isGaiaMessage(e)) {
+      if (!this.isGaiaMessage_(e)) {
         return;
       }
 
@@ -1010,14 +1031,8 @@ cr.define('cr.login', function() {
      */
     verifyConfirmedPassword(password) {
       if (!this.samlHandler_.verifyConfirmedPassword(password)) {
-        // Invoke confirm password callback asynchronously because the
-        // verification was based on messages and caller (GaiaSigninScreen)
-        // does not expect it to be called immediately.
-        // TODO(xiyuan): Change to synchronous call when iframe based code
-        // is removed.
-        const invokeConfirmPassword = () => this.confirmPasswordCallback(
+        this.confirmPasswordCallback(
             this.email_, this.samlHandler_.scrapedPasswordCount);
-        window.setTimeout(invokeConfirmPassword, 0);
         return;
       }
 
@@ -1049,64 +1064,39 @@ cr.define('cr.login', function() {
       // `onGaiaDoneTimeout_`.
       const userInfoAvailable = !!this.services_;
 
-      const gaiaDone = userInfoAvailable &&
-          (!this.enableCloseView_ || this.closeViewReceived_);
+      const gaiaDone = userInfoAvailable && this.closeViewReceived_ &&
+          !this.waitApiPasswordConfirm_;
 
-      if (gaiaDone && this.gaiaDoneTimer_) {
-        window.clearTimeout(this.gaiaDoneTimer_);
-        this.gaiaDoneTimer_ = null;
-      }
-
-      if (this.gaiaDoneTimer_) {
+      if (gaiaDone) {
+        this.maybeClearGaiaTimeout_();
+      } else if (this.gaiaDoneTimer_) {
         // Early out if `gaiaDoneTimer_` is running.
         return;
-      }
-
-      if (!gaiaDone) {
-        // Start `gaiaDoneTimer_` if user info is not available.
+      } else {
+        // Start `gaiaDoneTimer_` if Gaia is not yet done.
         this.gaiaDoneTimer_ = window.setTimeout(
             () => this.onGaiaDoneTimeout_(), GAIA_DONE_WAIT_TIMEOUT_MS);
         return;
       }
 
-      if (this.isSamlUserPasswordless_ === null &&
-          this.authFlow == AuthFlow.SAML && this.email_ && this.gaiaId_ &&
-          this.getIsSamlUserPasswordlessCallback) {
-        // Start a request to obtain the |isSamlUserPasswordless_| value for
-        // the current user. Once the response arrives, maybeCompleteAuth_()
-        // will be called again.
-        this.getIsSamlUserPasswordlessCallback(
-            this.email_, this.gaiaId_,
-            this.onGotIsSamlUserPasswordless_.bind(
-                this, this.email_, this.gaiaId_));
-        return;
-      }
-
-      if (this.recordSAMLProviderCallback && this.authFlow == AuthFlow.SAML) {
+      if (this.recordSAMLProviderCallback && this.authFlow === AuthFlow.SAML) {
         // Makes distinction between different SAML providers
         this.recordSAMLProviderCallback(
             this.samlHandler_.x509certificate || '');
-      }
-
-      if (this.isSamlUserPasswordless_ && this.authFlow == AuthFlow.SAML &&
-          this.email_ && this.gaiaId_) {
-        // No password needed for this user, so complete immediately.
-        this.onAuthCompleted_();
-        return;
       }
 
       if (this.samlHandler_.samlApiUsed) {
         if (this.samlApiUsedCallback) {
           // Makes distinction between Gaia and Chrome Credentials Passing API
           // login to properly fill ChromeOS.SAML.ApiLogin metrics.
-          this.samlApiUsedCallback(this.authFlow == AuthFlow.SAML);
+          this.samlApiUsedCallback(this.authFlow === AuthFlow.SAML);
         }
         this.password_ = this.samlHandler_.apiPasswordBytes;
         this.onAuthCompleted_();
         return;
       }
 
-      if (this.samlHandler_.scrapedPasswordCount == 0) {
+      if (this.samlHandler_.scrapedPasswordCount === 0) {
         if (this.noPasswordCallback) {
           this.noPasswordCallback(this.email_);
           return;
@@ -1117,7 +1107,7 @@ cr.define('cr.login', function() {
         // password when it is available but not a mandatory requirement.
         console.warn('Authenticator: No password scraped for SAML.');
       } else if (this.needPassword) {
-        if (this.samlHandler_.scrapedPasswordCount == 1) {
+        if (this.samlHandler_.scrapedPasswordCount === 1) {
           // If we scraped exactly one password, we complete the
           // authentication right away.
           this.password_ = this.samlHandler_.firstScrapedPassword;
@@ -1151,22 +1141,6 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Invoked when the result of |getIsSamlUserPasswordlessCallback| arrives.
-     * @param {string} email
-     * @param {string} gaiaId
-     * @param {boolean} isSamlUserPasswordless
-     * @private
-     */
-    onGotIsSamlUserPasswordless_(email, gaiaId, isSamlUserPasswordless) {
-      // Compare the request's user identifier with the currently set one, in
-      // order to ignore responses to old requests.
-      if (this.email_ && this.email_ == email && this.gaiaId_ &&
-          this.gaiaId_ == gaiaId) {
-        this.isSamlUserPasswordless_ = isSamlUserPasswordless;
-        this.maybeCompleteAuth_();
-      }
-    }
-
     /**
      * Asserts the |arr| which is known as |nameOfArr| is an array of strings.
      * @private
@@ -1185,7 +1159,7 @@ cr.define('cr.login', function() {
      */
     assertStringDict_(dict, nameOfDict) {
       console.assert(
-          typeof dict == 'object', 'FATAL: Bad %s type: %s', nameOfDict,
+          typeof dict === 'object', 'FATAL: Bad %s type: %s', nameOfDict,
           typeof dict);
       for (const key in dict) {
         this.assertStringElement_(dict[key], nameOfDict, key);
@@ -1195,7 +1169,7 @@ cr.define('cr.login', function() {
     /** Asserts an element |elem| in a certain collection is a string. */
     assertStringElement_(elem, nameOfCollection, index) {
       console.assert(
-          typeof elem == 'string', 'FATAL: Bad %s[%s] type: %s',
+          typeof elem === 'string', 'FATAL: Bad %s[%s] type: %s',
           nameOfCollection, index, typeof elem);
     }
 
@@ -1207,22 +1181,18 @@ cr.define('cr.login', function() {
       assert(
           this.skipForNow_ ||
           (this.email_ && this.gaiaId_ && this.sessionIndex_));
+      let scrapedPasswords = [];
+      if (this.authFlow === AuthFlow.SAML && !this.samlHandler_.samlApiUsed) {
+        scrapedPasswords = this.samlHandler_.scrapedPasswords;
+      }
       // Chrome will crash on incorrect data type, so log some error message
       // here.
       if (this.services_) {
         this.assertStringArray_(this.services_, 'services');
       }
-      if (this.isSamlUserPasswordless_ && this.authFlow == AuthFlow.SAML &&
-          this.email_) {
-        // In the passwordless case, the user data will be protected by non
-        // password based mechanisms. Clear anything that got collected into
-        // |password_|, if any.
-        this.password_ = '';
-      }
       let passwordAttributes = {};
-      if (this.authFlow == AuthFlow.SAML &&
-          this.samlHandler_.extractSamlPasswordAttributes &&
-          !this.isSamlUserPasswordless_) {
+      if (this.authFlow === AuthFlow.SAML &&
+          this.samlHandler_.extractSamlPasswordAttributes) {
         passwordAttributes = this.samlHandler_.passwordAttributes;
       }
       this.assertStringDict_(passwordAttributes, 'passwordAttributes');
@@ -1234,15 +1204,17 @@ cr.define('cr.login', function() {
               email: this.email_ || '',
               gaiaId: this.gaiaId_ || '',
               password: this.password_ || '',
-              usingSAML: this.authFlow == AuthFlow.SAML,
+              usingSAML: this.authFlow === AuthFlow.SAML,
+              scrapedSAMLPasswords: scrapedPasswords,
               publicSAML: this.samlAclUrl_ || false,
               chooseWhatToSync: this.chooseWhatToSync_,
               skipForNow: this.skipForNow_,
               sessionIndex: this.sessionIndex_ || '',
               trusted: this.trusted_,
               services: this.services_ || [],
+              servicesProvided: this.servicesProvided_,
               passwordAttributes: passwordAttributes,
-              syncTrustedVaultKeys: this.syncTrustedVaultKeys_ || {}
+              syncTrustedVaultKeys: this.syncTrustedVaultKeys_ || {},
             }
           }));
       this.resetStates();
@@ -1299,9 +1271,23 @@ cr.define('cr.login', function() {
      */
     onSamlApiPasswordAdded_(e) {
       this.dispatchEvent(new Event('apiPasswordAdded'));
+      this.waitApiPasswordConfirm_ = true;
+
       // Saml API 'add' password might be received after the 'loadcommit'
       // event. In such case, maybeCompleteAuth_ should be attempted again if
       // GAIA ID is available.
+      if (this.gaiaId_) {
+        this.maybeCompleteAuth_();
+      }
+    }
+
+    /**
+     * Invoked when |samlHandler_| fires 'apiPasswordConfirmed' event. Could be
+     * from 3rd-party SAML IdP or Gaia which also uses the API.
+     * @private
+     */
+    onSamlApiPasswordConfirmed_(e) {
+      this.waitApiPasswordConfirm_ = false;
       if (this.gaiaId_) {
         this.maybeCompleteAuth_();
       }
@@ -1348,7 +1334,7 @@ cr.define('cr.login', function() {
 
       // Posts a message to IdP pages to initiate communication.
       const currentUrl = this.webview_.src;
-      if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
+      if (currentUrl.lastIndexOf(this.idpOrigin_) === 0) {
         const msg = {
           'method': 'handshake',
         };
@@ -1365,9 +1351,9 @@ cr.define('cr.login', function() {
         // Focus webview after dispatching event when webview is already
         // visible.
         this.webview_.focus();
-      } else if (currentUrl == BLANK_PAGE_URL) {
+      } else if (currentUrl === BLANK_PAGE_URL) {
         this.fireReadyEvent_();
-      } else if (currentUrl == this.samlAclUrl_) {
+      } else if (currentUrl === this.samlAclUrl_) {
         this.skipForNow_ = true;
         this.onAuthCompleted_();
       }
@@ -1427,28 +1413,45 @@ cr.define('cr.login', function() {
       if (!this.services_) {
         console.error('Gaia done timeout: Forcing empty services.');
         this.services_ = [];
-        const metric = this.authFlow == AuthFlow.SAML ?
+        const metric = this.authFlow === AuthFlow.SAML ?
             GAIA_MESSAGE_SAML_USER_INFO :
             GAIA_MESSAGE_GAIA_USER_INFO;
         chrome.send('metricsHandler:recordBooleanHistogram', [metric, false]);
       }
 
-      if (this.enableCloseView_ && !this.closeViewReceived_) {
+      if (!this.closeViewReceived_) {
         console.error('Gaia done timeout: closeView was not called.');
         this.closeViewReceived_ = true;
 
-        const metric = this.authFlow == AuthFlow.SAML ?
+        const metric = this.authFlow === AuthFlow.SAML ?
             GAIA_MESSAGE_SAML_CLOSE_VIEW :
             GAIA_MESSAGE_GAIA_CLOSE_VIEW;
         chrome.send('metricsHandler:recordBooleanHistogram', [metric, false]);
       }
 
-      this.gaiaDoneTimer_ = null;
+      if (this.waitApiPasswordConfirm_) {
+        // Log duplicates the log from the saml handler. The message is used by
+        // the tast test to catch failures.
+        console.error('SamlHandler.onAPICall_: API password was not confirmed');
+        this.waitApiPasswordConfirm_ = false;
+      }
+
+      this.maybeClearGaiaTimeout_();
       this.maybeCompleteAuth_();
+    }
+
+    /**
+     * @private
+     */
+    maybeClearGaiaTimeout_() {
+      if (!this.gaiaDoneTimer_) {
+        return;
+      }
+      window.clearTimeout(this.gaiaDoneTimer_);
+      this.gaiaDoneTimer_ = null;
     }
   }
 
-  // #cr_define_end
   /**
    * The current auth flow of the hosted auth page.
    * @type {AuthFlow}
@@ -1480,5 +1483,6 @@ cr.define('cr.login', function() {
   Authenticator.AuthMode = AuthMode;
   Authenticator.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
 
+  // #cr_define_end
   return {Authenticator: Authenticator};
 });

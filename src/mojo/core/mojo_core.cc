@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -93,14 +94,14 @@ class GlobalStateInitializer {
                          true,   // Timestamp
                          true);  // Tick count
 
-#if !defined(OFFICIAL_BUILD) && !defined(OS_WIN)
+#if !defined(OFFICIAL_BUILD) && !BUILDFLAG(IS_WIN)
     // Correct stack dumping behavior requires symbol names in all loaded
     // libraries to be cached. We do this here in case the calling process will
     // imminently enter a sandbox.
     base::debug::EnableInProcessStackDumping();
 #endif
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
     // Tickle base's PRNG. This lazily opens a static handle to /dev/urandom.
     // Mojo Core uses the API internally, so it's important to warm the handle
     // before potentially entering a sandbox.
@@ -182,7 +183,7 @@ MojoResult ShutdownImpl(const struct MojoShutdownOptions* options) {
   return MOJO_RESULT_OK;
 }
 
-MojoSystemThunks g_thunks = {0};
+MojoSystemThunks64 g_thunks = {0};
 
 }  // namespace
 
@@ -192,7 +193,7 @@ MojoSystemThunks g_thunks = {0};
 #define EXPORT_FROM_MOJO_CORE __attribute__((visibility("default")))
 #endif
 
-EXPORT_FROM_MOJO_CORE void MojoGetSystemThunks(MojoSystemThunks* thunks) {
+EXPORT_FROM_MOJO_CORE void MojoGetSystemThunks(MojoSystemThunks64* thunks) {
   if (!g_thunks.size) {
     g_thunks = mojo::core::GetSystemThunks();
     g_thunks.Initialize = InitializeImpl;
@@ -201,7 +202,7 @@ EXPORT_FROM_MOJO_CORE void MojoGetSystemThunks(MojoSystemThunks* thunks) {
 
   // Caller must provide a thunk structure at least large enough to hold Core
   // ABI version 0. SetQuota is the first function introduced in ABI version 1.
-  CHECK_GE(thunks->size, offsetof(MojoSystemThunks, SetQuota));
+  CHECK_GE(thunks->size, offsetof(MojoSystemThunks64, SetQuota));
 
   // NOTE: This also overrites |thunks->size| with the actual size of our own
   // thunks if smaller than the caller's. This informs the caller that we

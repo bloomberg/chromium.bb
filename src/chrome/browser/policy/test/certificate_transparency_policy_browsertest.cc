@@ -6,9 +6,8 @@
 #include "base/values.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/policy/policy_test_utils.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "chrome/browser/policy/safe_browsing_policy_test.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/hash_value.h"
 #include "net/cert/x509_util.h"
 #include "net/http/transport_security_state.h"
@@ -48,7 +48,7 @@ void SetRequireCTForTesting(bool required) {
                      required));
 }
 
-class CertificateTransparencyPolicyTest : public PolicyTest {
+class CertificateTransparencyPolicyTest : public SafeBrowsingPolicyTest {
  public:
   CertificateTransparencyPolicyTest() {
     SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
@@ -71,18 +71,15 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
   // Require CT for all hosts (in the absence of policy).
   SetRequireCTForTesting(true);
 
-  ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/")));
+  ASSERT_TRUE(NavigateToUrl(https_server_ok.GetURL("/"), this));
 
   // The page should initially be blocked.
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  WaitForInterstitial(tab);
+  content::WebContents* tab = chrome_test_utils::GetActiveWebContents(this);
+  ASSERT_TRUE(IsShowingInterstitial(tab));
 
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      tab->GetMainFrame(), "proceed-link"));
-  EXPECT_NE(u"OK",
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+      tab->GetPrimaryMainFrame(), "proceed-link"));
+  EXPECT_NE(u"OK", chrome_test_utils::GetActiveWebContents(this)->GetTitle());
 
   // Now exempt the URL from being blocked by setting policy.
   base::Value disabled_urls(base::Value::Type::LIST);
@@ -95,31 +92,26 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
   UpdateProviderPolicy(policies);
   FlushBlocklistPolicy();
 
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), https_server_ok.GetURL("/simple.html")));
+  ASSERT_TRUE(NavigateToUrl(https_server_ok.GetURL("/simple.html"), this));
 
   // There should be no interstitial after the page loads.
   EXPECT_FALSE(IsShowingInterstitial(tab));
-  EXPECT_EQ(u"OK",
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+  EXPECT_EQ(u"OK", chrome_test_utils::GetActiveWebContents(this)->GetTitle());
 
   // Now ensure that this setting still works after a network process crash.
   if (!content::IsOutOfProcessNetworkService())
     return;
 
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), https_server_ok.GetURL("/title1.html")));
+  ASSERT_TRUE(NavigateToUrl(https_server_ok.GetURL("/title1.html"), this));
 
   SimulateNetworkServiceCrash();
   SetRequireCTForTesting(true);
 
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), https_server_ok.GetURL("/simple.html")));
+  ASSERT_TRUE(NavigateToUrl(https_server_ok.GetURL("/simple.html"), this));
 
   // There should be no interstitial after the page loads.
   EXPECT_FALSE(IsShowingInterstitial(tab));
-  EXPECT_EQ(u"OK",
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+  EXPECT_EQ(u"OK", chrome_test_utils::GetActiveWebContents(this)->GetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
@@ -132,11 +124,10 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
   // Require CT for all hosts (in the absence of policy).
   SetRequireCTForTesting(true);
 
-  ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/")));
+  ASSERT_TRUE(NavigateToUrl(https_server_ok.GetURL("/"), this));
 
   content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+      chrome_test_utils::GetActiveWebContents(this);
 
   // The page should initially be blocked.
   content::RenderFrameHost* main_frame;
@@ -146,13 +137,12 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
   ASSERT_TRUE(helper);
   ASSERT_TRUE(
       helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-  main_frame = web_contents->GetMainFrame();
+  main_frame = web_contents->GetPrimaryMainFrame();
   ASSERT_TRUE(content::WaitForRenderFrameReady(main_frame));
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       main_frame, "proceed-link"));
 
-  EXPECT_NE(u"OK",
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+  EXPECT_NE(u"OK", chrome_test_utils::GetActiveWebContents(this)->GetTitle());
 
   // Now exempt the leaf SPKI from being blocked by setting policy.
   net::HashValue leaf_hash;
@@ -168,12 +158,10 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
   UpdateProviderPolicy(policies);
   FlushBlocklistPolicy();
 
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), https_server_ok.GetURL("/simple.html")));
+  ASSERT_TRUE(NavigateToUrl(https_server_ok.GetURL("/simple.html"), this));
 
   // Check we are no longer in the interstitial.
-  EXPECT_EQ(u"OK",
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+  EXPECT_EQ(u"OK", chrome_test_utils::GetActiveWebContents(this)->GetTitle());
 }
 
 }  // namespace policy

@@ -32,6 +32,7 @@ constexpr char kDeskIdKey[] = "desk_id";
 constexpr char kCurrentBoundsKey[] = "current_bounds";
 constexpr char kWindowStateTypeKey[] = "window_state_type";
 constexpr char kPreMinimizedShowStateTypeKey[] = "pre_min_state";
+constexpr char kSnapPercentageKey[] = "snap_percent";
 constexpr char kMinimumSizeKey[] = "min_size";
 constexpr char kMaximumSizeKey[] = "max_size";
 constexpr char kTitleKey[] = "title";
@@ -66,13 +67,13 @@ base::Value ConvertUintToValue(uint32_t number) {
 // true.
 absl::optional<bool> GetBoolValueFromDict(const base::DictionaryValue& dict,
                                           const std::string& key_name) {
-  return dict.HasKey(key_name) ? dict.FindBoolKey(key_name) : absl::nullopt;
+  return dict.FindBoolKey(key_name);
 }
 
 // Gets int value from base::DictionaryValue, e.g. { "key": 100 } returns 100.
 absl::optional<int32_t> GetIntValueFromDict(const base::DictionaryValue& dict,
                                             const std::string& key_name) {
-  return dict.HasKey(key_name) ? dict.FindIntKey(key_name) : absl::nullopt;
+  return dict.FindIntKey(key_name);
 }
 
 // Gets uint32_t value from base::DictionaryValue, e.g. { "key": "123" } returns
@@ -80,7 +81,7 @@ absl::optional<int32_t> GetIntValueFromDict(const base::DictionaryValue& dict,
 absl::optional<uint32_t> GetUIntValueFromDict(const base::DictionaryValue& dict,
                                               const std::string& key_name) {
   uint32_t result = 0;
-  if (!dict.HasKey(key_name) ||
+  if (!dict.FindKey(key_name) ||
       !base::StringToUint(dict.FindStringKey(key_name)->c_str(), &result)) {
     return absl::nullopt;
   }
@@ -90,8 +91,6 @@ absl::optional<uint32_t> GetUIntValueFromDict(const base::DictionaryValue& dict,
 absl::optional<std::string> GetStringValueFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
-  if (!dict.HasKey(key_name))
-    return absl::nullopt;
   const std::string* value = dict.FindStringKey(key_name);
   return value ? absl::optional<std::string>(*value) : absl::nullopt;
 }
@@ -100,10 +99,8 @@ absl::optional<std::u16string> GetU16StringValueFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
   std::u16string result;
-  if (!dict.HasKey(key_name))
-    return absl::nullopt;
   const std::string* value = dict.FindStringKey(key_name);
-  if (!base::UTF8ToUTF16(value->c_str(), value->length(), &result))
+  if (!value || !base::UTF8ToUTF16(value->c_str(), value->length(), &result))
     return absl::nullopt;
   return result;
 }
@@ -112,9 +109,6 @@ absl::optional<std::u16string> GetU16StringValueFromDict(
 // returns 22000000.
 absl::optional<int64_t> GetDisplayIdFromDict(
     const base::DictionaryValue& dict) {
-  if (!dict.HasKey(kDisplayIdKey))
-    return absl::nullopt;
-
   const std::string* display_id_str = dict.FindStringKey(kDisplayIdKey);
   int64_t display_id_value;
   if (display_id_str &&
@@ -128,17 +122,14 @@ absl::optional<int64_t> GetDisplayIdFromDict(
 // Gets urls from the dictionary value.
 absl::optional<std::vector<GURL>> GetUrlsFromDict(
     const base::DictionaryValue& dict) {
-  if (!dict.HasKey(kUrlsKey))
-    return absl::nullopt;
-
   const base::Value* urls_path_value = dict.FindListKey(kUrlsKey);
   if (!urls_path_value || !urls_path_value->is_list() ||
-      urls_path_value->GetList().empty()) {
+      urls_path_value->GetListDeprecated().empty()) {
     return absl::nullopt;
   }
 
   std::vector<GURL> url_paths;
-  for (const auto& item : urls_path_value->GetList()) {
+  for (const auto& item : urls_path_value->GetListDeprecated()) {
     if (item.GetString().empty())
       continue;
     GURL url(item.GetString());
@@ -155,16 +146,13 @@ absl::optional<std::vector<GURL>> GetUrlsFromDict(
 // std::vector<base::FilePath>{"aa.cc", "bb.h", ...}.
 absl::optional<std::vector<base::FilePath>> GetFilePathsFromDict(
     const base::DictionaryValue& dict) {
-  if (!dict.HasKey(kFilePathsKey))
-    return absl::nullopt;
-
   const base::Value* file_paths_value = dict.FindListKey(kFilePathsKey);
   if (!file_paths_value || !file_paths_value->is_list() ||
-      file_paths_value->GetList().empty())
+      file_paths_value->GetListDeprecated().empty())
     return absl::nullopt;
 
   std::vector<base::FilePath> file_paths;
-  for (const auto& item : file_paths_value->GetList()) {
+  for (const auto& item : file_paths_value->GetListDeprecated()) {
     if (item.GetString().empty())
       continue;
     file_paths.push_back(base::FilePath(item.GetString()));
@@ -177,17 +165,14 @@ absl::optional<std::vector<base::FilePath>> GetFilePathsFromDict(
 // gfx::Size(100, 300).
 absl::optional<gfx::Size> GetSizeFromDict(const base::DictionaryValue& dict,
                                           const std::string& key_name) {
-  if (!dict.HasKey(key_name))
-    return absl::nullopt;
-
   const base::Value* size_value = dict.FindListKey(key_name);
   if (!size_value || !size_value->is_list() ||
-      size_value->GetList().size() != 2) {
+      size_value->GetListDeprecated().size() != 2) {
     return absl::nullopt;
   }
 
   std::vector<int> size;
-  for (const auto& item : size_value->GetList())
+  for (const auto& item : size_value->GetListDeprecated())
     size.push_back(item.GetInt());
 
   return gfx::Size(size[0], size[1]);
@@ -198,15 +183,13 @@ absl::optional<gfx::Size> GetSizeFromDict(const base::DictionaryValue& dict,
 absl::optional<gfx::Rect> GetBoundsRectFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name) {
-  if (!dict.HasKey(key_name))
-    return absl::nullopt;
-
   const base::Value* rect_value = dict.FindListKey(key_name);
-  if (!rect_value || !rect_value->is_list() || rect_value->GetList().empty())
+  if (!rect_value || !rect_value->is_list() ||
+      rect_value->GetListDeprecated().empty())
     return absl::nullopt;
 
   std::vector<int> rect;
-  for (const auto& item : rect_value->GetList())
+  for (const auto& item : rect_value->GetListDeprecated())
     rect.push_back(item.GetInt());
 
   if (rect.size() != 4)
@@ -219,7 +202,7 @@ absl::optional<gfx::Rect> GetBoundsRectFromDict(
 // 2 } returns WindowStateType::kMinimized.
 absl::optional<chromeos::WindowStateType> GetWindowStateTypeFromDict(
     const base::DictionaryValue& dict) {
-  return dict.HasKey(kWindowStateTypeKey)
+  return dict.FindKey(kWindowStateTypeKey)
              ? absl::make_optional(static_cast<chromeos::WindowStateType>(
                    dict.FindIntKey(kWindowStateTypeKey).value()))
              : absl::nullopt;
@@ -227,7 +210,7 @@ absl::optional<chromeos::WindowStateType> GetWindowStateTypeFromDict(
 
 absl::optional<ui::WindowShowState> GetPreMinimizedShowStateTypeFromDict(
     const base::DictionaryValue& dict) {
-  return dict.HasKey(kPreMinimizedShowStateTypeKey)
+  return dict.FindKey(kPreMinimizedShowStateTypeKey)
              ? absl::make_optional(static_cast<ui::WindowShowState>(
                    dict.FindIntKey(kPreMinimizedShowStateTypeKey).value()))
              : absl::nullopt;
@@ -261,6 +244,7 @@ AppRestoreData::AppRestoreData(base::Value&& value) {
   window_state_type = GetWindowStateTypeFromDict(*data_dict);
   pre_minimized_show_state_type =
       GetPreMinimizedShowStateTypeFromDict(*data_dict);
+  snap_percentage = GetUIntValueFromDict(*data_dict, kSnapPercentageKey);
   maximum_size = GetSizeFromDict(*data_dict, kMaximumSizeKey);
   minimum_size = GetSizeFromDict(*data_dict, kMinimumSizeKey);
   title = GetU16StringValueFromDict(*data_dict, kTitleKey);
@@ -268,7 +252,7 @@ AppRestoreData::AppRestoreData(base::Value&& value) {
   primary_color = GetUIntValueFromDict(*data_dict, kPrimaryColorKey);
   status_bar_color = GetUIntValueFromDict(*data_dict, kStatusBarColorKey);
 
-  if (data_dict->HasKey(kIntentKey)) {
+  if (data_dict->FindKey(kIntentKey)) {
     intent = apps_util::ConvertValueToIntent(
         std::move(*data_dict->FindDictKey(kIntentKey)));
   }
@@ -289,6 +273,7 @@ AppRestoreData::AppRestoreData(std::unique_ptr<AppLaunchInfo> app_launch_info) {
   intent = std::move(app_launch_info->intent);
   app_type_browser = std::move(app_launch_info->app_type_browser);
   app_name = std::move(app_launch_info->app_name);
+  tab_group_infos = std::move(app_launch_info->tab_group_infos);
 }
 
 AppRestoreData::~AppRestoreData() = default;
@@ -329,6 +314,9 @@ std::unique_ptr<AppRestoreData> AppRestoreData::Clone() const {
   if (app_name.has_value())
     data->app_name = app_name.value();
 
+  if (title.has_value())
+    data->title = title.value();
+
   if (activation_index.has_value())
     data->activation_index = activation_index.value();
 
@@ -344,14 +332,14 @@ std::unique_ptr<AppRestoreData> AppRestoreData::Clone() const {
   if (pre_minimized_show_state_type.has_value())
     data->pre_minimized_show_state_type = pre_minimized_show_state_type.value();
 
+  if (snap_percentage.has_value())
+    data->snap_percentage = snap_percentage.value();
+
   if (maximum_size.has_value())
     data->maximum_size = maximum_size.value();
 
   if (minimum_size.has_value())
     data->minimum_size = minimum_size.value();
-
-  if (title.has_value())
-    data->title = title.value();
 
   if (bounds_in_root.has_value())
     data->bounds_in_root = bounds_in_root.value();
@@ -361,6 +349,9 @@ std::unique_ptr<AppRestoreData> AppRestoreData::Clone() const {
 
   if (status_bar_color.has_value())
     data->status_bar_color = status_bar_color.value();
+
+  if (tab_group_infos.has_value())
+    data->tab_group_infos = tab_group_infos.value();
 
   return data;
 }
@@ -413,6 +404,9 @@ base::Value AppRestoreData::ConvertToValue() const {
   if (app_name.has_value())
     launch_info_dict.SetStringKey(kAppNameKey, app_name.value());
 
+  if (title.has_value())
+    launch_info_dict.SetStringKey(kTitleKey, base::UTF16ToUTF8(title.value()));
+
   if (activation_index.has_value())
     launch_info_dict.SetIntKey(kActivationIndexKey, activation_index.value());
 
@@ -435,6 +429,11 @@ base::Value AppRestoreData::ConvertToValue() const {
         static_cast<int>(pre_minimized_show_state_type.value()));
   }
 
+  if (snap_percentage.has_value()) {
+    launch_info_dict.SetKey(kSnapPercentageKey,
+                            ConvertUintToValue(snap_percentage.value()));
+  }
+
   if (maximum_size.has_value()) {
     launch_info_dict.SetKey(kMaximumSizeKey,
                             ConvertSizeToValue(maximum_size.value()));
@@ -444,9 +443,6 @@ base::Value AppRestoreData::ConvertToValue() const {
     launch_info_dict.SetKey(kMinimumSizeKey,
                             ConvertSizeToValue(minimum_size.value()));
   }
-
-  if (title.has_value())
-    launch_info_dict.SetStringKey(kTitleKey, base::UTF16ToUTF8(title.value()));
 
   if (bounds_in_root.has_value()) {
     launch_info_dict.SetKey(kBoundsInRoot,
@@ -484,13 +480,18 @@ void AppRestoreData::ModifyWindowInfo(const WindowInfo& window_info) {
         window_info.pre_minimized_show_state_type.value();
   }
 
+  if (window_info.snap_percentage.has_value())
+    snap_percentage = window_info.snap_percentage.value();
+
   if (window_info.display_id.has_value())
     display_id = window_info.display_id.value();
+
+  if (window_info.app_title.has_value())
+    title = window_info.app_title;
 
   if (window_info.arc_extra_info.has_value()) {
     minimum_size = window_info.arc_extra_info->minimum_size;
     maximum_size = window_info.arc_extra_info->maximum_size;
-    title = window_info.arc_extra_info->title;
     bounds_in_root = window_info.arc_extra_info->bounds_in_root;
   }
 }
@@ -507,6 +508,7 @@ void AppRestoreData::ClearWindowInfo() {
   current_bounds.reset();
   window_state_type.reset();
   pre_minimized_show_state_type.reset();
+  snap_percentage.reset();
   minimum_size.reset();
   maximum_size.reset();
   title.reset();
@@ -531,6 +533,7 @@ std::unique_ptr<AppLaunchInfo> AppRestoreData::GetAppLaunchInfo(
     app_launch_info->intent = intent->Clone();
   app_launch_info->app_type_browser = app_type_browser;
   app_launch_info->app_name = app_name;
+  app_launch_info->tab_group_infos = tab_group_infos;
   return app_launch_info;
 }
 
@@ -554,12 +557,17 @@ std::unique_ptr<WindowInfo> AppRestoreData::GetWindowInfo() const {
         pre_minimized_show_state_type.value();
   }
 
+  if (snap_percentage.has_value())
+    window_info->snap_percentage = snap_percentage;
+
+  if (title.has_value())
+    window_info->app_title = title;
+
   if (maximum_size.has_value() || minimum_size.has_value() ||
       title.has_value() || bounds_in_root.has_value()) {
     window_info->arc_extra_info = WindowInfo::ArcExtraInfo();
     window_info->arc_extra_info->maximum_size = maximum_size;
     window_info->arc_extra_info->minimum_size = minimum_size;
-    window_info->arc_extra_info->title = title;
     window_info->arc_extra_info->bounds_in_root = bounds_in_root;
   }
 

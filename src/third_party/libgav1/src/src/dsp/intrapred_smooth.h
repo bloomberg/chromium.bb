@@ -38,6 +38,12 @@
 namespace libgav1 {
 namespace dsp {
 
+enum {
+  // Weights are quadratic from '1' to '1 / block_size', scaled by
+  // 2^kSmoothWeightScale.
+  kSmoothWeightScale = 8,
+};
+
 // Initializes Dsp::intra_predictors[][kIntraPredictorSmooth.*].
 // This function is not thread-safe.
 void IntraPredSmoothInit_C();

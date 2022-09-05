@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/metrics/perf/profile_provider_chromeos.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_provider.h"
 
@@ -20,7 +21,7 @@ struct ArcFeatures;
 namespace metrics {
 class CachedMetricsProfile;
 class ChromeUserMetricsExtension;
-}
+}  // namespace metrics
 
 enum class EnrollmentStatus;
 class PrefRegistrySimple;
@@ -52,6 +53,14 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // |callback| is run.
   void InitTaskGetArcFeatures(base::OnceClosure callback);
 
+  // Loads the cellular device variant. When this task is complete, |callback|
+  // is run.
+  void InitTaskGetCellularDeviceVariant(base::OnceClosure callback);
+
+  // Retrieves TPM firmware version using TpmManagerClient. When this task is
+  // complete, |callback| is run.
+  void InitTaskGetTpmFirmwareVersion(base::OnceClosure callback);
+
   // metrics::MetricsProvider:
   void Init() override;
   void AsyncInit(base::OnceClosure done_callback) override;
@@ -75,19 +84,44 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   void UpdateMultiProfileUserCount(
       metrics::SystemProfileProto* system_profile_proto);
 
-  // Sets the full hardware class, then calls the callback.
-  void SetFullHardwareClass(base::OnceClosure callback,
-                            std::string full_hardware_class);
+  // Invoked when StatisticsProvider finishes loading to read the full hardware
+  // class from StatisticsProvider and calls the callback.
+  void OnMachineStatisticsLoaded(base::OnceClosure callback);
+
+  // Sets the cellular device variant, then calls the callback.
+  void SetCellularDeviceVariant(base::OnceClosure callback,
+                                std::string cellular_device_variant);
 
   // Updates ARC-related system profile fields, then calls the callback.
   void OnArcFeaturesParsed(base::OnceClosure callback,
                            absl::optional<arc::ArcFeatures> features);
+
+  // Sets the TPM firmware version, then calls the callback.
+  void OnTpmManagerGetVersionInfo(
+      base::OnceClosure callback,
+      const tpm_manager::GetVersionInfoReply& reply);
+
+  // Sets the TPM supported features (runtime selection), then calls the
+  // callback.
+  void OnTpmManagerGetSupportedFeatures(
+      base::OnceClosure callback,
+      const tpm_manager::GetSupportedFeaturesReply& reply);
+
+  void SetTpmType(metrics::SystemProfileProto* system_profile_proto);
 
   // Called from the ProvideCurrentSessionData(...) to record UserType.
   void UpdateUserTypeUMA();
 
   // Writes info about the linked Android phone if there is one.
   void WriteLinkedAndroidPhoneProto(
+      metrics::SystemProfileProto* system_profile_proto);
+
+  // Writes info about cellular device variant if present in
+  // system profile proto.
+  void WriteCellularDeviceVariant(
+      metrics::SystemProfileProto* system_profile_proto);
+
+  void WriteDemoModeDimensionMetrics(
       metrics::SystemProfileProto* system_profile_proto);
 
   // For collecting systemwide performance data via the UMA channel.
@@ -108,8 +142,14 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // the configured system components such as CPU, WiFi adapter, etc.
   std::string full_hardware_class_;
 
+  // Cellular device variant for Chrome OS devices with cellular support.
+  std::string cellular_device_variant_;
+
   // ARC release version obtained from build properties.
   absl::optional<std::string> arc_release_ = absl::nullopt;
+
+  // The firmware version of the TPM (go/trusted-platform-module).
+  absl::optional<uint64_t> tpm_firmware_version_ = absl::nullopt;
 
   base::WeakPtrFactory<ChromeOSMetricsProvider> weak_ptr_factory_{this};
 };

@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/app_constants/constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/test/scoped_views_test_helper.h"
@@ -116,7 +116,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
 #endif
     extension_ = extension_environment_.MakePackagedApp(kTestExtensionId, true);
     chrome_app_ = extension_environment_.MakePackagedApp(
-        extension_misc::kChromeAppId, true);
+        app_constants::kChromeAppId, true);
   }
 
   void TearDown() override {
@@ -194,7 +194,6 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
             nullptr);
   }
 
- protected:
   raw_ptr<views::Widget> widget_ = nullptr;
   raw_ptr<AppInfoDialog> dialog_ =
       nullptr;  // Owned by |widget_|'s views hierarchy.
@@ -317,7 +316,7 @@ TEST_F(AppInfoDialogViewsTest, ViewInStore) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(AppInfoDialogViewsTest, ArcAppInfoLinks) {
-  ShowAppInfo(extension_misc::kChromeAppId);
+  ShowAppInfo(app_constants::kChromeAppId);
   EXPECT_FALSE(widget_->IsClosed());
   // App Info should not have ARC App info links section because ARC Settings
   // app is not available yet.
@@ -331,7 +330,7 @@ TEST_F(AppInfoDialogViewsTest, ArcAppInfoLinks) {
   arc::mojom::AppHost* app_host = arc_prefs;
   app_host->OnAppListRefreshed(GetArcSettingsAppInfo());
   EXPECT_TRUE(arc_prefs->IsRegistered(arc::kSettingsAppId));
-  ShowAppInfo(extension_misc::kChromeAppId);
+  ShowAppInfo(app_constants::kChromeAppId);
   EXPECT_FALSE(widget_->IsClosed());
   EXPECT_TRUE(dialog_->arc_app_info_links_for_test());
 
@@ -340,13 +339,16 @@ TEST_F(AppInfoDialogViewsTest, ArcAppInfoLinks) {
   std::unique_ptr<TestingProfile> other_profile =
       std::make_unique<TestingProfile>();
   extension_environment_.CreateExtensionServiceForProfile(other_profile.get());
+  // We're adding the extension to the second profile, so don't install it
+  // automatically in the profile from `extension_environment_`.
+  const bool install = false;
   scoped_refptr<const extensions::Extension> other_app =
-      extension_environment_.MakePackagedApp(extension_misc::kChromeAppId,
-                                             true);
+      extension_environment_.MakePackagedApp(app_constants::kChromeAppId,
+                                             install);
   extensions::ExtensionSystem::Get(other_profile.get())
       ->extension_service()
       ->AddExtension(other_app.get());
-  ShowAppInfoForProfile(extension_misc::kChromeAppId, other_profile.get());
+  ShowAppInfoForProfile(app_constants::kChromeAppId, other_profile.get());
   EXPECT_FALSE(widget_->IsClosed());
   // The ARC App info links are not available if ARC is not allowed for
   // secondary profile.

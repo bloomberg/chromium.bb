@@ -20,7 +20,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/dbus/u2f/u2f_client.h"
+#include "chromeos/dbus/u2f/u2f_client.h"  // nogncheck
 #endif
 
 namespace {
@@ -151,7 +151,7 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
 
 // Verify a TouchEventsEnabled value is recorded during PostBrowserStart.
 // Flaky on Win only.  http://crbug.com/1026946
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart \
   DISABLED_VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart
 #else

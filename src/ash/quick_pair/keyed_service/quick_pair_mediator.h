@@ -8,12 +8,17 @@
 #include <memory>
 
 #include "ash/quick_pair/feature_status_tracker/quick_pair_feature_status_tracker.h"
+#include "ash/quick_pair/keyed_service/fast_pair_bluetooth_config_delegate.h"
 #include "ash/quick_pair/pairing/pairer_broker.h"
 #include "ash/quick_pair/pairing/retroactive_pairing_detector.h"
 #include "ash/quick_pair/scanning/scanner_broker.h"
 #include "ash/quick_pair/ui/ui_broker.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/scoped_observation.h"
+#include "chromeos/services/bluetooth_config/adapter_state_controller.h"
+#include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class PrefRegistrySimple;
 
@@ -26,7 +31,6 @@ class FastPairDelegate;
 namespace ash {
 namespace quick_pair {
 
-class FastPairBluetoothConfigDelegate;
 class FastPairRepository;
 struct Device;
 class QuickPairProcessManager;
@@ -36,11 +40,15 @@ class BatteryUpdateMessageHandler;
 
 // Implements the Mediator design pattern for the components in the Quick Pair
 // system, e.g. the UI Broker, Scanning Broker and Pairing Broker.
-class Mediator final : public FeatureStatusTracker::Observer,
-                       public ScannerBroker::Observer,
-                       public PairerBroker::Observer,
-                       public UIBroker::Observer,
-                       public RetroactivePairingDetector::Observer {
+class Mediator final
+    : public FeatureStatusTracker::Observer,
+      public ScannerBroker::Observer,
+      public PairerBroker::Observer,
+      public UIBroker::Observer,
+      public RetroactivePairingDetector::Observer,
+      public FastPairBluetoothConfigDelegate::Observer,
+      public chromeos::bluetooth_config::AdapterStateController::Observer,
+      public chromeos::bluetooth_config::mojom::DiscoverySessionStatusObserver {
  public:
   class Factory {
    public:
@@ -73,7 +81,7 @@ class Mediator final : public FeatureStatusTracker::Observer,
   // FeatureStatusTracker::Observer
   void OnFastPairEnabledChanged(bool is_enabled) override;
 
-  // SannerBroker::Observer
+  // ScannerBroker::Observer
   void OnDeviceFound(scoped_refptr<Device> device) override;
   void OnDeviceLost(scoped_refptr<Device> device) override;
 
@@ -97,9 +105,24 @@ class Mediator final : public FeatureStatusTracker::Observer,
   // RetroactivePairingDetector::Observer
   void OnRetroactivePairFound(scoped_refptr<Device> device) override;
 
+  // FastPairBluetoothConfigDelegate::Observer
+  void OnAdapterStateControllerChanged(
+      chromeos::bluetooth_config::AdapterStateController*
+          adapter_state_controller) override;
+
+  // chromeos::bluetooth_config::AdapterStateController::Observer
+  void OnAdapterStateChanged() override;
+
+  // chromeos::bluetooth_config::mojom::DiscoverySessionStatusObserver
+  void OnHasAtLeastOneDiscoverySessionChanged(
+      bool has_at_least_one_discovery_session) override;
+
  private:
   void SetFastPairState(bool is_enabled);
+  void BindToCrosBluetoothConfig();
+  void CancelPairing();
 
+  bool has_at_least_one_discovery_session_ = false;
   std::unique_ptr<FeatureStatusTracker> feature_status_tracker_;
   std::unique_ptr<ScannerBroker> scanner_broker_;
   std::unique_ptr<MessageStreamLookup> message_stream_lookup_;
@@ -124,6 +147,19 @@ class Mediator final : public FeatureStatusTracker::Observer,
       retroactive_pairing_detector_observation_{this};
   base::ScopedObservation<UIBroker, UIBroker::Observer> ui_broker_observation_{
       this};
+  base::ScopedObservation<FastPairBluetoothConfigDelegate,
+                          FastPairBluetoothConfigDelegate::Observer>
+      config_delegate_observation_{this};
+  base::ScopedObservation<
+      chromeos::bluetooth_config::AdapterStateController,
+      chromeos::bluetooth_config::AdapterStateController::Observer>
+      adapter_state_controller_observation_{this};
+  mojo::Remote<chromeos::bluetooth_config::mojom::CrosBluetoothConfig>
+      remote_cros_bluetooth_config_;
+  mojo::Receiver<
+      chromeos::bluetooth_config::mojom::DiscoverySessionStatusObserver>
+      cros_discovery_session_observer_receiver_{this};
+  base::WeakPtrFactory<Mediator> weak_ptr_factory_{this};
 };
 
 }  // namespace quick_pair

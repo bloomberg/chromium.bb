@@ -16,6 +16,9 @@ class EventGenerator;
 
 namespace ash {
 
+class DeskActivationAnimation;
+class DesksBarView;
+
 constexpr int kNumFingersForHighlight = 3;
 constexpr int kNumFingersForDesksSwitch = 4;
 
@@ -55,9 +58,11 @@ void ActivateDesk(const Desk* desk);
 // Creates a desk through keyboard.
 void NewDesk();
 
-// Removes the given |desk| and waits for the desk-removal animation to finish
+// Removes the given `desk` and waits for the desk-removal animation to finish
 // if one would launch.
-void RemoveDesk(const Desk* desk);
+// If `close_windows` is set to true, the windows in `desk` are closed as well.
+void RemoveDesk(const Desk* desk,
+                DeskCloseType close_type = DeskCloseType::kCombineDesks);
 
 // Returns the active desk.
 const Desk* GetActiveDesk();
@@ -68,6 +73,12 @@ const Desk* GetNextDesk();
 // Scrolls to the adjacent desk and waits for the animation if applicable.
 void ScrollToSwitchDesks(bool scroll_left,
                          ui::test::EventGenerator* event_generator);
+
+// Wait until `animation`'s ending screenshot has been taken.
+void WaitUntilEndingScreenshotTaken(DeskActivationAnimation* animation);
+
+// Returns the desk bar view for the primary display.
+const DesksBarView* GetPrimaryRootDesksBarView();
 
 }  // namespace ash
 

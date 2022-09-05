@@ -52,12 +52,14 @@ BookmarkEditorView::BookmarkEditorView(
     Profile* profile,
     const BookmarkNode* parent,
     const EditDetails& details,
-    BookmarkEditor::Configuration configuration)
+    BookmarkEditor::Configuration configuration,
+    BookmarkEditor::OnSaveCallback on_save_callback)
     : profile_(profile),
       parent_(parent),
       details_(details),
       bb_model_(BookmarkModelFactory::GetForBrowserContext(profile)),
-      show_tree_(configuration == SHOW_TREE) {
+      show_tree_(configuration == SHOW_TREE),
+      on_save_callback_(std::move(on_save_callback)) {
   DCHECK(profile);
   DCHECK(bb_model_);
   DCHECK(bb_model_->client()->CanBeEditedByUser(parent));
@@ -78,7 +80,6 @@ BookmarkEditorView::BookmarkEditorView(
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::DialogContentType::kControl, views::DialogContentType::kControl));
   Init();
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK_EDITOR);
 }
 
 BookmarkEditorView::~BookmarkEditorView() {
@@ -141,10 +142,10 @@ bool BookmarkEditorView::IsCommandIdChecked(int command_id) const {
 
 bool BookmarkEditorView::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
-    case IDS_EDIT:
-    case IDS_DELETE:
+    case kContextMenuItemEdit:
+    case kContextMenuItemDelete:
       return !running_menu_for_root_;
-    case IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM:
+    case kContextMenuItemNewFolder:
       return true;
     default:
       NOTREACHED();
@@ -160,13 +161,13 @@ bool BookmarkEditorView::GetAcceleratorForCommandId(
 
 void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
   DCHECK(tree_view_->GetActiveNode());
-  if (command_id == IDS_EDIT) {
+  if (command_id == kContextMenuItemEdit) {
     tree_view_->StartEditing(tree_view_->GetActiveNode());
-  } else if (command_id == IDS_DELETE) {
+  } else if (command_id == kContextMenuItemDelete) {
     ExecuteCommandDelete(base::BindOnce(&chrome::ConfirmDeleteBookmarkNode,
                                         GetWidget()->GetNativeWindow()));
   } else {
-    DCHECK_EQ(IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM, command_id);
+    DCHECK_EQ(kContextMenuItemNewFolder, command_id);
     NewFolder(tree_model_->AsNode(tree_view_->GetActiveNode()));
   }
 }
@@ -467,24 +468,27 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   if (!show_tree_) {
     BookmarkEditor::ApplyEditsWithNoFolderChange(
         bb_model_, parent_, details_, new_title, new_url);
-    return;
+  } else {
+    // Create the new folders and update the titles.
+    const BookmarkNode* new_parent = nullptr;
+    ApplyNameChangesAndCreateNewFolders(
+        bb_model_->root_node(), tree_model_->GetRoot(), parent, &new_parent);
+
+    BookmarkEditor::ApplyEditsWithPossibleFolderChange(
+        bb_model_, new_parent, details_, new_title, new_url);
+
+    BookmarkExpandedStateTracker::Nodes expanded_nodes;
+    UpdateExpandedNodes(tree_model_->GetRoot(), &expanded_nodes);
+    bb_model_->expanded_state_tracker()->SetExpandedNodes(expanded_nodes);
+
+    // Remove the folders that were removed. This has to be done after all the
+    // other changes have been committed.
+    bookmarks::DeleteBookmarkFolders(bb_model_, deletes_);
   }
 
-  // Create the new folders and update the titles.
-  const BookmarkNode* new_parent = nullptr;
-  ApplyNameChangesAndCreateNewFolders(
-      bb_model_->root_node(), tree_model_->GetRoot(), parent, &new_parent);
-
-  BookmarkEditor::ApplyEditsWithPossibleFolderChange(
-      bb_model_, new_parent, details_, new_title, new_url);
-
-  BookmarkExpandedStateTracker::Nodes expanded_nodes;
-  UpdateExpandedNodes(tree_model_->GetRoot(), &expanded_nodes);
-  bb_model_->expanded_state_tracker()->SetExpandedNodes(expanded_nodes);
-
-  // Remove the folders that were removed. This has to be done after all the
-  // other changes have been committed.
-  bookmarks::DeleteBookmarkFolders(bb_model_, deletes_);
+  // Once all required bookmarks updates have been called, call the configured
+  // callback.
+  std::move(on_save_callback_).Run();
 }
 
 void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
@@ -537,11 +541,11 @@ void BookmarkEditorView::UpdateExpandedNodes(
 ui::SimpleMenuModel* BookmarkEditorView::GetMenuModel() {
   if (!context_menu_model_.get()) {
     context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
-    context_menu_model_->AddItemWithStringId(IDS_EDIT, IDS_EDIT);
-    context_menu_model_->AddItemWithStringId(IDS_DELETE, IDS_DELETE);
+    context_menu_model_->AddItemWithStringId(kContextMenuItemEdit, IDS_EDIT);
+    context_menu_model_->AddItemWithStringId(kContextMenuItemDelete,
+                                             IDS_DELETE);
     context_menu_model_->AddItemWithStringId(
-        IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM,
-        IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
+        kContextMenuItemNewFolder, IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
   }
   return context_menu_model_.get();
 }

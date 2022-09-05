@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
@@ -96,7 +95,8 @@ void ZipFileCreator::CreateZipFile(
   DCHECK(!remote_zip_file_creator_);
 
   if (!file.IsValid()) {
-    LOG(ERROR) << "Cannot create ZIP file " << Redact(dest_file_);
+    LOG(ERROR) << "Cannot create ZIP file " << Redact(dest_file_) << ": "
+               << base::File::ErrorToString(file.error_details());
     ReportResult(kError);
     return;
   }
@@ -167,9 +167,8 @@ void ZipFileCreator::ReportResult(const Result result) {
 
   // In case of error, remove the partially created ZIP file.
   if (result != kSuccess)
-    base::ThreadPool::PostTask(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(base::GetDeleteFileCallback(), dest_file_));
+    base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
+                               base::GetDeleteFileCallback(dest_file_));
 
   if (progress_callback_)
     std::move(progress_callback_).Run();

@@ -27,6 +27,7 @@ static_library("media_router_feature") {
   deps = [
     "//chrome/browser/profiles:profile",
     "//chrome/common:constants",
+    "//components/media_router/common:common",
     "//components/prefs:prefs",
     "//components/user_prefs:user_prefs",
     "//content/public/browser",
@@ -195,7 +196,10 @@ if (!is_android) {
     testonly = true
     deps = [
       "discovery",
+      "//chrome/browser/media/router/discovery/access_code:discovery_resources_proto",
       "//chrome/test:test_support",
+      "//components/cast_channel:cast_channel",
+      "//components/cast_channel:test_support",
       "//components/media_router/browser:test_support",
       "//components/media_router/common:test_support",
       "//components/media_router/common/mojom:media_router",
@@ -204,6 +208,10 @@ if (!is_android) {
     ]
     public_deps = [ ":router" ]
     sources = [
+      "discovery/access_code/access_code_test_util.cc",
+      "discovery/access_code/access_code_test_util.h",
+      "discovery/mdns/cast_media_sink_service_test_helpers.cc",
+      "discovery/mdns/cast_media_sink_service_test_helpers.h",
       "providers/test/test_media_route_provider.cc",
       "providers/test/test_media_route_provider.h",
       "test/media_router_mojo_test.cc",
@@ -236,6 +244,7 @@ source_set("unittests") {
     "//chrome/test:test_support",
     "//components/cast_channel:cast_channel",
     "//components/cast_channel:test_support",
+    "//components/endpoint_fetcher:endpoint_fetcher",
     "//components/media_router/browser:test_support",
     "//components/media_router/common:test_support",
     "//content/test:test_support",
@@ -250,13 +259,17 @@ source_set("unittests") {
     sources += [
       # In-browser discovery is not used by Android for now.
       "discovery/access_code/access_code_cast_discovery_interface_unittest.cc",
+      "discovery/access_code/access_code_cast_feature_unittest.cc",
+      "discovery/access_code/access_code_cast_pref_updater_unittest.cc",
+      "discovery/access_code/access_code_cast_sink_service_unittest.cc",
+      "discovery/access_code/access_code_media_sink_util_unittest.cc",
       "discovery/dial/device_description_fetcher_unittest.cc",
       "discovery/dial/device_description_service_unittest.cc",
       "discovery/dial/dial_app_discovery_service_unittest.cc",
       "discovery/dial/dial_device_data_unittest.cc",
       "discovery/dial/dial_media_sink_service_impl_unittest.cc",
       "discovery/dial/dial_registry_unittest.cc",
-      "discovery/dial/dial_service_unittest.cc",
+      "discovery/dial/dial_service_impl_unittest.cc",
       "discovery/dial/dial_url_fetcher_unittest.cc",
       "discovery/dial/safe_dial_app_info_parser_unittest.cc",
       "discovery/dial/safe_dial_device_description_parser_unittest.cc",
@@ -295,9 +308,13 @@ source_set("unittests") {
     deps += [
       ":test_support",
       "//chrome/browser/media/router/discovery:discovery",
+      "//chrome/browser/media/router/discovery/access_code:access_code_cast_feature",
+      "//chrome/browser/media/router/discovery/access_code:access_code_sink_service",
+      "//chrome/browser/media/router/discovery/access_code:discovery_resources_proto",
       "//chrome/test:test_support",
       "//components/sync_preferences:test_support",
       "//content/test:test_support",
+      "//services/preferences/public/cpp:cpp",
       "//third_party/openscreen/src/cast/common:public",
     ]
   }
@@ -316,12 +333,9 @@ if (enable_openscreen) {
   test("openscreen_unittests") {
     deps = [
       "//base/test:run_all_unittests",
-      "//base/test:test_support",
-      "//chrome/browser",
-      "//chrome/test:test_support",
+      "//components/cast_certificate:openscreen_certificate_verifier",
       "//components/openscreen_platform:openscreen_platform_network_service",
       "//testing/gmock",
-      "//third_party/blink/public/mojom:mojom_platform_headers",
       "//third_party/openscreen/src:openscreen_unittests_all",
     ]
   }

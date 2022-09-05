@@ -5,7 +5,10 @@
 #ifndef NET_SOCKET_SSL_CONNECT_JOB_H_
 #define NET_SOCKET_SSL_CONNECT_JOB_H_
 
+#include <stdint.h>
+
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,12 +19,14 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
+#include "net/dns/host_resolver_results.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -183,12 +188,12 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   std::unique_ptr<SSLClientSocket> ssl_socket_;
 
   // True once SSL negotiation has started.
-  bool ssl_negotiation_started_;
+  bool ssl_negotiation_started_ = false;
 
   // True if legacy crypto should be disabled for the job's current connection
   // attempt. On error, the connection will be retried with legacy crypto
   // enabled.
-  bool disable_legacy_crypto_with_fallback_;
+  bool disable_legacy_crypto_with_fallback_ = true;
 
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
 
@@ -199,12 +204,20 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   // through an HTTPS CONNECT request or a SOCKS proxy).
   IPEndPoint server_address_;
 
-  // Any DNS aliases for the remote endpoint. The alias chain order is
-  // preserved in reverse, from canonical name (i.e. address record name)
-  // through to query name. Stored because `nested_connect_job_` has a
-  // limited lifetime and the aliases can no longer be retrieved from there by
-  // by the time that the aliases are needed to be passed in SetSocket.
-  std::vector<std::string> dns_aliases_;
+  // Any DNS aliases for the remote endpoint. Includes all known aliases, e.g.
+  // from A, AAAA, or HTTPS, not just from the address used for the connection,
+  // in no particular order. Stored because `nested_connect_job_` has a limited
+  // lifetime and the aliases can no longer be retrieved from there by by the
+  // time that the aliases are needed to be passed in SetSocket.
+  std::set<std::string> dns_aliases_;
+
+  // The endpoint result used by `nested_connect_job_`. Stored because
+  // `nested_connect_job_` has a limited lifetime.
+  absl::optional<HostResolverEndpointResult> endpoint_result_;
+
+  // If not `absl::nullopt`, the ECH retry configs to use in the ECH recovery
+  // flow. `endpoint_result_` will then contain the endpoint to reconnect to.
+  absl::optional<std::vector<uint8_t>> ech_retry_configs_;
 };
 
 }  // namespace net

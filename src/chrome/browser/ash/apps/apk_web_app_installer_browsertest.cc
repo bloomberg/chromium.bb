@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,25 +64,26 @@ arc::mojom::RawIconPngDataPtr GetFakeIconBytes() {
   return fake_app_instance->GenerateIconResponse(128, /*app_icon=*/true);
 }
 
-std::unique_ptr<WebApplicationInfo> CreateWebApplicationInfo(const GURL& url) {
-  auto web_application_info = std::make_unique<WebApplicationInfo>();
-  web_application_info->start_url = url;
-  web_application_info->title = u"App Title";
-  web_application_info->theme_color = SK_ColorBLUE;
-  web_application_info->scope = url.Resolve("scope");
-  web_application_info->display_mode = web_app::DisplayMode::kBrowser;
-  web_application_info->user_display_mode = web_app::DisplayMode::kStandalone;
+std::unique_ptr<WebAppInstallInfo> CreateWebAppInstallInfo(const GURL& url) {
+  auto web_app_install_info = std::make_unique<WebAppInstallInfo>();
+  web_app_install_info->start_url = url;
+  web_app_install_info->title = u"App Title";
+  web_app_install_info->theme_color = SK_ColorBLUE;
+  web_app_install_info->scope = url.Resolve("scope");
+  web_app_install_info->display_mode = web_app::DisplayMode::kBrowser;
+  web_app_install_info->user_display_mode =
+      web_app::UserDisplayMode::kStandalone;
 
   const std::vector<SquareSizePx> sizes_px{web_app::icon_size::k256,
                                            web_app::icon_size::k512};
   const std::vector<SkColor> colors{SK_ColorRED, SK_ColorYELLOW};
-  web_app::AddIconsToWebApplicationInfo(web_application_info.get(), url,
-                                        {{IconPurpose::ANY, sizes_px, colors}});
+  web_app::AddIconsToWebAppInstallInfo(web_app_install_info.get(), url,
+                                       {{IconPurpose::ANY, sizes_px, colors}});
 
-  return web_application_info;
+  return web_app_install_info;
 }
 
-void ExpectInitialIconInfosFromWebApplicationInfo(
+void ExpectInitialIconInfosFromWebAppInstallInfo(
     const std::vector<apps::IconInfo>& icon_infos,
     const GURL& url) {
   EXPECT_EQ(2u, icon_infos.size());
@@ -94,12 +97,12 @@ void ExpectInitialIconInfosFromWebApplicationInfo(
   EXPECT_EQ(apps::IconInfo::Purpose::kAny, icon_infos[1].purpose);
 }
 
-void ExpectInitialManifestFieldsFromWebApplicationInfo(
+void ExpectInitialManifestFieldsFromWebAppInstallInfo(
     const web_app::WebAppIconManager& icon_manager,
     const web_app::WebApp* web_app,
     const GURL& url) {
   // Manifest fields:
-  EXPECT_EQ(web_app->name(), "App Title");
+  EXPECT_EQ(web_app->untranslated_name(), "App Title");
   EXPECT_EQ(web_app->start_url(), url);
   EXPECT_EQ(web_app->scope().spec(), url.Resolve("scope"));
   EXPECT_EQ(web_app->display_mode(), web_app::DisplayMode::kBrowser);
@@ -114,12 +117,11 @@ void ExpectInitialManifestFieldsFromWebApplicationInfo(
   EXPECT_EQ(url.Resolve("scope"), web_app->sync_fallback_data().scope);
   {
     SCOPED_TRACE("web_app->manifest_icons()");
-    ExpectInitialIconInfosFromWebApplicationInfo(web_app->manifest_icons(),
-                                                 url);
+    ExpectInitialIconInfosFromWebAppInstallInfo(web_app->manifest_icons(), url);
   }
   {
     SCOPED_TRACE("web_app->sync_fallback_data().icon_infos");
-    ExpectInitialIconInfosFromWebApplicationInfo(
+    ExpectInitialIconInfosFromWebAppInstallInfo(
         web_app->sync_fallback_data().icon_infos, url);
   }
 
@@ -133,16 +135,18 @@ void ExpectInitialManifestFieldsFromWebApplicationInfo(
             SK_ColorYELLOW);
 
   // User preferences:
-  EXPECT_EQ(web_app->user_display_mode(), web_app::DisplayMode::kStandalone);
+  EXPECT_EQ(web_app->user_display_mode(),
+            web_app::UserDisplayMode::kStandalone);
 }
 
 }  // namespace
 
 namespace ash {
 
-class ApkWebAppInstallerBrowserTest : public InProcessBrowserTest,
-                                      public web_app::AppRegistrarObserver,
-                                      public ArcAppListPrefs::Observer {
+class ApkWebAppInstallerBrowserTest
+    : public InProcessBrowserTest,
+      public web_app::WebAppInstallManagerObserver,
+      public ArcAppListPrefs::Observer {
  public:
   ApkWebAppInstallerBrowserTest() = default;
 
@@ -181,7 +185,7 @@ class ApkWebAppInstallerBrowserTest : public InProcessBrowserTest,
   void SetUpWebApps() {
     provider_ = web_app::WebAppProvider::GetForTest(browser()->profile());
     DCHECK(provider_);
-    observation_.Observe(&provider_->registrar());
+    observation_.Observe(&provider_->install_manager());
   }
 
   void TearDownWebApps() {
@@ -247,7 +251,7 @@ class ApkWebAppInstallerBrowserTest : public InProcessBrowserTest,
     app_uninstalled_callback_ = callback;
   }
 
-  // web_app::AppRegistrarObserver overrides.
+  // web_app::WebAppInstallManagerObserver overrides.
   void OnWebAppInstalled(const web_app::AppId& web_app_id) override {
     installed_web_app_ids_.push_back(web_app_id);
     installed_web_app_names_.push_back(
@@ -279,8 +283,8 @@ class ApkWebAppInstallerBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
-  base::ScopedObservation<web_app::WebAppRegistrar,
-                          web_app::AppRegistrarObserver>
+  base::ScopedObservation<web_app::WebAppInstallManager,
+                          web_app::WebAppInstallManagerObserver>
       observation_{this};
   ArcAppListPrefs* arc_app_list_prefs_ = nullptr;
   web_app::WebAppProvider* provider_ = nullptr;
@@ -433,10 +437,10 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerDelayedArcStartBrowserTest,
   {
     for (const auto& id : installed_web_app_ids_) {
       base::RunLoop run_loop;
-      provider_->install_finalizer().UninstallExternalWebApp(
-          id, webapps::WebappUninstallSource::kArc,
-          base::BindLambdaForTesting([&](bool uninstalled) {
-            EXPECT_TRUE(uninstalled);
+      provider_->install_finalizer().UninstallWebApp(
+          id, webapps::WebappUninstallSource::kShelf,
+          base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+            EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
             run_loop.Quit();
           }));
       run_loop.Run();
@@ -584,12 +588,10 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerWithShelfControllerBrowserTest,
       ArcAppListPrefs::GetAppId(kPackageName, kAppActivity);
 
   /// Create an app and add to the package.
-  arc::mojom::AppInfo app;
-  app.name = kAppTitle;
-  app.package_name = kPackageName;
-  app.activity = kAppActivity;
-  app.sticky = true;
-  app_instance_->SendPackageAppListRefreshed(kPackageName, {app});
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.emplace_back(arc::mojom::AppInfo::New(kAppTitle, kPackageName,
+                                             kAppActivity, true /* sticky */));
+  app_instance_->SendPackageAppListRefreshed(kPackageName, apps);
 
   EXPECT_TRUE(installed_web_app_ids_.empty());
   EXPECT_TRUE(uninstalled_web_app_ids_.empty());
@@ -670,11 +672,11 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
   service->SetArcAppListPrefsForTesting(arc_app_list_prefs_);
 
   // Install the Web App as if the user installs it.
-  std::unique_ptr<WebApplicationInfo> web_application_info =
-      CreateWebApplicationInfo(GURL(kAppUrl));
+  std::unique_ptr<WebAppInstallInfo> web_app_install_info =
+      CreateWebAppInstallInfo(GURL(kAppUrl));
 
   web_app::AppId app_id = web_app::test::InstallWebApp(
-      browser()->profile(), std::move(web_application_info),
+      browser()->profile(), std::move(web_app_install_info),
       /*overwrite_existing_manifest_fields=*/true,
       webapps::WebappInstallSource::SYNC);
 
@@ -688,8 +690,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
 
   {
     SCOPED_TRACE("Expect initial manifest fields.");
-    ExpectInitialManifestFieldsFromWebApplicationInfo(icon_manager(), web_app,
-                                                      GURL(kAppUrl));
+    ExpectInitialManifestFieldsFromWebAppInstallInfo(icon_manager(), web_app,
+                                                     GURL(kAppUrl));
   }
 
   // Install the Web App from ARC.
@@ -715,8 +717,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
 
   {
     SCOPED_TRACE("Expect same manifest fields, no overwrites.");
-    ExpectInitialManifestFieldsFromWebApplicationInfo(icon_manager(), web_app,
-                                                      GURL(kAppUrl));
+    ExpectInitialManifestFieldsFromWebAppInstallInfo(icon_manager(), web_app,
+                                                     GURL(kAppUrl));
   }
 }
 
@@ -752,11 +754,11 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
   EXPECT_FALSE(web_app->IsSynced());
 
   // Install the Web App as if the user installs it.
-  std::unique_ptr<WebApplicationInfo> web_application_info =
-      CreateWebApplicationInfo(GURL(kAppUrl));
+  std::unique_ptr<WebAppInstallInfo> web_app_install_info =
+      CreateWebAppInstallInfo(GURL(kAppUrl));
 
   web_app::AppId web_app_id = web_app::test::InstallWebApp(
-      browser()->profile(), std::move(web_application_info),
+      browser()->profile(), std::move(web_app_install_info),
       /*overwrite_existing_manifest_fields=*/true,
       webapps::WebappInstallSource::SYNC);
   ASSERT_EQ(app_id, web_app_id);
@@ -772,8 +774,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
     SCOPED_TRACE(
         "Expect online manifest fields, the offline fields from ARC have been "
         "overwritten.");
-    ExpectInitialManifestFieldsFromWebApplicationInfo(icon_manager(), web_app,
-                                                      GURL(kAppUrl));
+    ExpectInitialManifestFieldsFromWebAppInstallInfo(icon_manager(), web_app,
+                                                     GURL(kAppUrl));
   }
 }
 

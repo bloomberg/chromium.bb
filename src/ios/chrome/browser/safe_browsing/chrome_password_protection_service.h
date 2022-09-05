@@ -25,12 +25,17 @@ class GURL;
 class PrefService;
 class SafeBrowsingService;
 
+namespace history {
+class HistoryService;
+}
+
 namespace password_manager {
 class PasswordStore;
 }  // namespace password_manager
 
 namespace safe_browsing {
 class PasswordProtectionRequest;
+class SafeBrowsingMetricsCollector;
 }  // namespace safe_browsing
 
 namespace web {
@@ -47,6 +52,9 @@ class ChromePasswordProtectionService
   ChromePasswordProtectionService(
       SafeBrowsingService* sb_service,
       ChromeBrowserState* browser_state,
+      history::HistoryService* history_service,
+      safe_browsing::SafeBrowsingMetricsCollector*
+          safe_browsing_metrics_collector,
       ChangePhishedCredentialsCallback add_phished_credentials =
           base::BindRepeating(&password_manager::AddPhishedCredentials),
       ChangePhishedCredentialsCallback remove_phished_credentials =
@@ -92,7 +100,8 @@ class ChromePasswordProtectionService
       safe_browsing::PasswordProtectionRequest* request,
       const std::string& username,
       safe_browsing::PasswordType password_type,
-      bool is_phishing_url) override;
+      bool is_phishing_url,
+      bool warning_shown) override;
 
   void ReportPasswordChanged() override;
 

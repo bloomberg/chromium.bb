@@ -41,7 +41,9 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 
 import {Cookie} from './Cookie.js';
-import type {BlockedCookieWithReason, ContentData, ExtraRequestInfo, ExtraResponseInfo, MIME_TYPE, NameValue, WebBundleInfo, WebBundleInnerRequestInfo} from './NetworkRequest.js';
+import type {
+  BlockedCookieWithReason, ContentData, ExtraRequestInfo, ExtraResponseInfo, MIME_TYPE, NameValue, WebBundleInfo,
+  WebBundleInnerRequestInfo} from './NetworkRequest.js';
 import {Events as NetworkRequestEvents, NetworkRequest} from './NetworkRequest.js';
 import type {Target} from './Target.js';
 import {Capability} from './Target.js';
@@ -123,20 +125,23 @@ const CONNECTION_TYPES = new Map([
 
 export class NetworkManager extends SDKModel<EventTypes> {
   readonly dispatcher: NetworkDispatcher;
+  readonly fetchDispatcher: FetchDispatcher;
   readonly #networkAgent: ProtocolProxyApi.NetworkApi;
   readonly #bypassServiceWorkerSetting: Common.Settings.Setting<boolean>;
 
   constructor(target: Target) {
     super(target);
     this.dispatcher = new NetworkDispatcher(this);
+    this.fetchDispatcher = new FetchDispatcher(target.fetchAgent());
     this.#networkAgent = target.networkAgent();
     target.registerNetworkDispatcher(this.dispatcher);
+    target.registerFetchDispatcher(this.fetchDispatcher);
     if (Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
-      this.#networkAgent.invoke_setCacheDisabled({cacheDisabled: true});
+      void this.#networkAgent.invoke_setCacheDisabled({cacheDisabled: true});
     }
 
-    this.#networkAgent.invoke_enable({maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH});
-    this.#networkAgent.invoke_setAttachDebugStack({enabled: true});
+    void this.#networkAgent.invoke_enable({maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH});
+    void this.#networkAgent.invoke_setAttachDebugStack({enabled: true});
 
     this.#bypassServiceWorkerSetting = Common.Settings.Settings.instance().createSetting('bypassServiceWorker', false);
     if (this.#bypassServiceWorkerSetting.get()) {
@@ -164,7 +169,7 @@ export class NetworkManager extends SDKModel<EventTypes> {
     if (!manager || !requestId || request.isRedirect()) {
       return;
     }
-    manager.#networkAgent.invoke_replayXHR({requestId});
+    void manager.#networkAgent.invoke_replayXHR({requestId});
   }
 
   static async searchInRequest(request: NetworkRequest, query: string, caseSensitive: boolean, isRegex: boolean):
@@ -246,12 +251,16 @@ export class NetworkManager extends SDKModel<EventTypes> {
     return newHeaders;
   }
 
-  requestForURL(url: string): NetworkRequest|null {
+  requestForURL(url: Platform.DevToolsPath.UrlString): NetworkRequest|null {
     return this.dispatcher.requestForURL(url);
   }
 
+  requestforId(id: string): NetworkRequest|null {
+    return this.dispatcher.requestForId(id);
+  }
+
   private cacheDisabledSettingChanged({data: enabled}: Common.EventTarget.EventTargetEvent<boolean>): void {
-    this.#networkAgent.invoke_setCacheDisabled({cacheDisabled: enabled});
+    void this.#networkAgent.invoke_setCacheDisabled({cacheDisabled: enabled});
   }
 
   dispose(): void {
@@ -261,7 +270,7 @@ export class NetworkManager extends SDKModel<EventTypes> {
   }
 
   private bypassServiceWorkerChanged(): void {
-    this.#networkAgent.invoke_setBypassServiceWorker({bypass: this.#bypassServiceWorkerSetting.get()});
+    void this.#networkAgent.invoke_setBypassServiceWorker({bypass: this.#bypassServiceWorkerSetting.get()});
   }
 
   async getSecurityIsolationStatus(frameId: Protocol.Page.FrameId|
@@ -278,7 +287,7 @@ export class NetworkManager extends SDKModel<EventTypes> {
   }
 
   async loadNetworkResource(
-      frameId: Protocol.Page.FrameId|null, url: string,
+      frameId: Protocol.Page.FrameId|null, url: Platform.DevToolsPath.UrlString,
       options: Protocol.Network.LoadNetworkResourceOptions): Promise<Protocol.Network.LoadNetworkResourcePageResult> {
     const result = await this.#networkAgent.invoke_loadNetworkResource({frameId: frameId ?? undefined, url, options});
     if (result.getError()) {
@@ -372,10 +381,27 @@ export const Fast3GConditions: Conditions = {
 
 const MAX_EAGER_POST_REQUEST_BODY_LENGTH = 64 * 1024;  // bytes
 
+export class FetchDispatcher implements ProtocolProxyApi.FetchDispatcher {
+  readonly #fetchAgent: ProtocolProxyApi.FetchApi;
+
+  constructor(agent: ProtocolProxyApi.FetchApi) {
+    this.#fetchAgent = agent;
+  }
+
+  requestPaused({requestId, request, resourceType, responseStatusCode, responseHeaders}:
+                    Protocol.Fetch.RequestPausedEvent): void {
+    void MultitargetNetworkManager.instance().requestIntercepted(new InterceptedRequest(
+        this.#fetchAgent, request, resourceType, requestId, responseStatusCode, responseHeaders));
+  }
+
+  authRequired({}: Protocol.Fetch.AuthRequiredEvent): void {
+  }
+}
+
 export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
   readonly #manager: NetworkManager;
   #requestsById: Map<string, NetworkRequest>;
-  #requestsByURL: Map<string, NetworkRequest>;
+  #requestsByURL: Map<Platform.DevToolsPath.UrlString, NetworkRequest>;
   #requestIdToExtraInfoBuilder: Map<string, ExtraInfoBuilder>;
   readonly #requestIdToTrustTokenEvent: Map<string, Protocol.Network.TrustTokenOperationDoneEvent>;
   constructor(manager: NetworkManager) {
@@ -392,6 +418,16 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
      * once it is created in `requestWillBeSent`.
      */
     this.#requestIdToTrustTokenEvent = new Map();
+
+    MultitargetNetworkManager.instance().addEventListener(
+        MultitargetNetworkManager.Events.RequestIntercepted, this.#markAsIntercepted.bind(this));
+  }
+
+  #markAsIntercepted(event: Common.EventTarget.EventTargetEvent<Platform.DevToolsPath.UrlString>): void {
+    const request = this.requestForURL(event.data);
+    if (request) {
+      request.setWasIntercepted(true);
+    }
   }
 
   private headersMapToHeadersArray(headersMap: Protocol.Network.Headers): NameValue[] {
@@ -417,7 +453,7 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
 
   private updateNetworkRequestWithResponse(networkRequest: NetworkRequest, response: Protocol.Network.Response): void {
     if (response.url && networkRequest.url() !== response.url) {
-      networkRequest.setUrl(response.url);
+      networkRequest.setUrl(response.url as Platform.DevToolsPath.UrlString);
     }
     networkRequest.mimeType = (response.mimeType as MIME_TYPE);
     if (!networkRequest.statusCode) {
@@ -426,7 +462,7 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
     if (!networkRequest.statusText) {
       networkRequest.statusText = response.statusText;
     }
-    if (!networkRequest.hasExtraResponseInfo()) {
+    if (!networkRequest.hasExtraResponseInfo() || networkRequest.wasIntercepted()) {
       networkRequest.responseHeaders = this.headersMapToHeadersArray(response.headers);
     }
 
@@ -488,11 +524,11 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
     }
   }
 
-  requestForId(url: string): NetworkRequest|null {
-    return this.#requestsById.get(url) || null;
+  requestForId(id: string): NetworkRequest|null {
+    return this.#requestsById.get(id) || null;
   }
 
-  requestForURL(url: string): NetworkRequest|null {
+  requestForURL(url: Platform.DevToolsPath.UrlString): NetworkRequest|null {
     return this.#requestsByURL.get(url) || null;
   }
 
@@ -520,7 +556,7 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
     // TODO(crbug/841076): Sends the request ID of prefetching to the browser
     // process and DevTools to find the matching request.
     if (!networkRequest) {
-      networkRequest = this.#requestsByURL.get(info.outerResponse.url);
+      networkRequest = this.#requestsByURL.get(info.outerResponse.url as Platform.DevToolsPath.UrlString);
       if (!networkRequest) {
         return;
       }
@@ -558,10 +594,12 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
           frameId,
         });
       }
-      networkRequest = this.appendRedirect(requestId, timestamp, request.url);
+      networkRequest = this.appendRedirect(requestId, timestamp, request.url as Platform.DevToolsPath.UrlString);
       this.#manager.dispatchEventToListeners(Events.RequestRedirected, networkRequest);
     } else {
-      networkRequest = NetworkRequest.create(requestId, request.url, documentURL, frameId ?? null, loaderId, initiator);
+      networkRequest = NetworkRequest.create(
+          requestId, request.url as Platform.DevToolsPath.UrlString, documentURL as Platform.DevToolsPath.UrlString,
+          frameId ?? null, loaderId, initiator);
       requestToManagerMap.set(networkRequest, this.#manager);
     }
     networkRequest.hasNetworkData = true;
@@ -600,7 +638,7 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
       const lastModifiedHeader = lowercaseHeaders['last-modified'];
       // We missed the requestWillBeSent.
       const eventData: RequestUpdateDroppedEventData = {
-        url: response.url,
+        url: response.url as Platform.DevToolsPath.UrlString,
         frameId: frameId ?? null,
         loaderId: loaderId,
         resourceType: type,
@@ -686,7 +724,8 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
   }
 
   webSocketCreated({requestId, url: requestURL, initiator}: Protocol.Network.WebSocketCreatedEvent): void {
-    const networkRequest = NetworkRequest.createForWebSocket(requestId, requestURL, initiator);
+    const networkRequest =
+        NetworkRequest.createForWebSocket(requestId, requestURL as Platform.DevToolsPath.UrlString, initiator);
     requestToManagerMap.set(networkRequest, this.#manager);
     networkRequest.setResourceType(Common.ResourceType.resourceTypes.WebSocket);
     this.startNetworkRequest(networkRequest, null);
@@ -782,23 +821,7 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
     networkRequest.addEventSourceMessage(time, eventName, eventId, data);
   }
 
-  requestIntercepted({
-    interceptionId,
-    request,
-    frameId,
-    resourceType,
-    isNavigationRequest,
-    isDownload,
-    redirectUrl,
-    authChallenge,
-    responseErrorReason,
-    responseStatusCode,
-    responseHeaders,
-    requestId,
-  }: Protocol.Network.RequestInterceptedEvent): void {
-    MultitargetNetworkManager.instance().requestIntercepted(new InterceptedRequest(
-        this.#manager.target().networkAgent(), interceptionId, request, frameId, resourceType, isNavigationRequest,
-        isDownload, redirectUrl, authChallenge, responseErrorReason, responseStatusCode, responseHeaders, requestId));
+  requestIntercepted({}: Protocol.Network.RequestInterceptedEvent): void {
   }
 
   requestWillBeSentExtraInfo({requestId, associatedCookies, headers, clientSecurityState, connectTiming}:
@@ -851,7 +874,9 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
     return builder;
   }
 
-  private appendRedirect(requestId: Protocol.Network.RequestId, time: number, redirectURL: string): NetworkRequest {
+  private appendRedirect(
+      requestId: Protocol.Network.RequestId, time: number,
+      redirectURL: Platform.DevToolsPath.UrlString): NetworkRequest {
     const originalNetworkRequest = this.#requestsById.get(requestId);
     if (!originalNetworkRequest) {
       throw new Error(`Could not find original network request for ${requestId}`);
@@ -954,7 +979,8 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
 
   webTransportCreated({transportId, url: requestURL, timestamp: time, initiator}:
                           Protocol.Network.WebTransportCreatedEvent): void {
-    const networkRequest = NetworkRequest.createForWebSocket(transportId, requestURL, initiator);
+    const networkRequest =
+        NetworkRequest.createForWebSocket(transportId, requestURL as Platform.DevToolsPath.UrlString, initiator);
     networkRequest.hasNetworkData = true;
     requestToManagerMap.set(networkRequest, this.#manager);
     networkRequest.setResourceType(Common.ResourceType.resourceTypes.WebTransport);
@@ -1001,7 +1027,7 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
   subresourceWebBundleMetadataReceived({requestId, urls}: Protocol.Network.SubresourceWebBundleMetadataReceivedEvent):
       void {
     const extraInfoBuilder = this.getExtraInfoBuilder(requestId);
-    extraInfoBuilder.setWebBundleInfo({resourceUrls: urls});
+    extraInfoBuilder.setWebBundleInfo({resourceUrls: urls as Platform.DevToolsPath.UrlString[]});
     const finalRequest = extraInfoBuilder.finalRequest();
     if (finalRequest) {
       this.updateNetworkRequest(finalRequest);
@@ -1057,7 +1083,9 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
   private createNetworkRequest(
       requestId: Protocol.Network.RequestId, frameId: Protocol.Page.FrameId, loaderId: Protocol.Network.LoaderId,
       url: string, documentURL: string, initiator: Protocol.Network.Initiator|null): NetworkRequest {
-    const request = NetworkRequest.create(requestId, url, documentURL, frameId, loaderId, initiator);
+    const request = NetworkRequest.create(
+        requestId, url as Platform.DevToolsPath.UrlString, documentURL as Platform.DevToolsPath.UrlString, frameId,
+        loaderId, initiator);
     requestToManagerMap.set(request, this.#manager);
     return request;
   }
@@ -1070,7 +1098,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
   #userAgentOverrideInternal: string;
   #userAgentMetadataOverride: Protocol.Emulation.UserAgentMetadata|null;
   #customAcceptedEncodings: Protocol.Network.ContentEncoding[]|null;
-  readonly #agents: Set<ProtocolProxyApi.NetworkApi>;
+  readonly #networkAgents: Set<ProtocolProxyApi.NetworkApi>;
+  readonly #fetchAgents: Set<ProtocolProxyApi.FetchApi>;
   readonly inflightMainResourceRequests: Map<string, NetworkRequest>;
   #networkConditionsInternal: Conditions;
   #updatingInterceptionPatternsPromise: Promise<void>|null;
@@ -1087,7 +1116,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     this.#userAgentOverrideInternal = '';
     this.#userAgentMetadataOverride = null;
     this.#customAcceptedEncodings = null;
-    this.#agents = new Set();
+    this.#networkAgents = new Set();
+    this.#fetchAgents = new Set();
     this.inflightMainResourceRequests = new Map();
     this.#networkConditionsInternal = NoThrottlingConditions;
     this.#updatingInterceptionPatternsPromise = null;
@@ -1162,25 +1192,27 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
 
   modelAdded(networkManager: NetworkManager): void {
     const networkAgent = networkManager.target().networkAgent();
+    const fetchAgent = networkManager.target().fetchAgent();
     if (this.#extraHeaders) {
-      networkAgent.invoke_setExtraHTTPHeaders({headers: this.#extraHeaders});
+      void networkAgent.invoke_setExtraHTTPHeaders({headers: this.#extraHeaders});
     }
     if (this.currentUserAgent()) {
-      networkAgent.invoke_setUserAgentOverride(
+      void networkAgent.invoke_setUserAgentOverride(
           {userAgent: this.currentUserAgent(), userAgentMetadata: this.#userAgentMetadataOverride || undefined});
     }
     if (this.#effectiveBlockedURLs.length) {
-      networkAgent.invoke_setBlockedURLs({urls: this.#effectiveBlockedURLs});
+      void networkAgent.invoke_setBlockedURLs({urls: this.#effectiveBlockedURLs});
     }
     if (this.isIntercepting()) {
-      networkAgent.invoke_setRequestInterception({patterns: this.#urlsForRequestInterceptor.valuesArray()});
+      void fetchAgent.invoke_enable({patterns: this.#urlsForRequestInterceptor.valuesArray()});
     }
     if (this.#customAcceptedEncodings === null) {
-      networkAgent.invoke_clearAcceptedEncodingsOverride();
+      void networkAgent.invoke_clearAcceptedEncodingsOverride();
     } else {
-      networkAgent.invoke_setAcceptedEncodings({encodings: this.#customAcceptedEncodings});
+      void networkAgent.invoke_setAcceptedEncodings({encodings: this.#customAcceptedEncodings});
     }
-    this.#agents.add(networkAgent);
+    this.#networkAgents.add(networkAgent);
+    this.#fetchAgents.add(fetchAgent);
     if (this.isThrottling()) {
       this.updateNetworkConditions(networkAgent);
     }
@@ -1194,7 +1226,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
       }
       this.inflightMainResourceRequests.delete((entry[0] as string));
     }
-    this.#agents.delete(networkManager.target().networkAgent());
+    this.#networkAgents.delete(networkManager.target().networkAgent());
+    this.#fetchAgents.delete(networkManager.target().fetchAgent());
   }
 
   isThrottling(): boolean {
@@ -1208,7 +1241,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
 
   setNetworkConditions(conditions: Conditions): void {
     this.#networkConditionsInternal = conditions;
-    for (const agent of this.#agents) {
+    for (const agent of this.#networkAgents) {
       this.updateNetworkConditions(agent);
     }
     this.dispatchEventToListeners(MultitargetNetworkManager.Events.ConditionsChanged);
@@ -1221,10 +1254,10 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
   private updateNetworkConditions(networkAgent: ProtocolProxyApi.NetworkApi): void {
     const conditions = this.#networkConditionsInternal;
     if (!this.isThrottling()) {
-      networkAgent.invoke_emulateNetworkConditions(
+      void networkAgent.invoke_emulateNetworkConditions(
           {offline: false, latency: 0, downloadThroughput: 0, uploadThroughput: 0});
     } else {
-      networkAgent.invoke_emulateNetworkConditions({
+      void networkAgent.invoke_emulateNetworkConditions({
         offline: this.isOffline(),
         latency: conditions.latency,
         downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
@@ -1236,8 +1269,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
 
   setExtraHTTPHeaders(headers: Protocol.Network.Headers): void {
     this.#extraHeaders = headers;
-    for (const agent of this.#agents) {
-      agent.invoke_setExtraHTTPHeaders({headers: this.#extraHeaders});
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_setExtraHTTPHeaders({headers: this.#extraHeaders});
     }
   }
 
@@ -1247,8 +1280,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
 
   private updateUserAgentOverride(): void {
     const userAgent = this.currentUserAgent();
-    for (const agent of this.#agents) {
-      agent.invoke_setUserAgentOverride(
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_setUserAgentOverride(
           {userAgent: userAgent, userAgentMetadata: this.#userAgentMetadataOverride || undefined});
     }
   }
@@ -1297,11 +1330,11 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
 
   private updateAcceptedEncodingsOverride(): void {
     const customAcceptedEncodings = this.#customAcceptedEncodings;
-    for (const agent of this.#agents) {
+    for (const agent of this.#networkAgents) {
       if (customAcceptedEncodings === null) {
-        agent.invoke_clearAcceptedEncodingsOverride();
+        void agent.invoke_clearAcceptedEncodingsOverride();
       } else {
-        agent.invoke_setAcceptedEncodings({encodings: customAcceptedEncodings});
+        void agent.invoke_setAcceptedEncodings({encodings: customAcceptedEncodings});
       }
     }
   }
@@ -1348,8 +1381,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
       return;
     }
     this.#effectiveBlockedURLs = urls;
-    for (const agent of this.#agents) {
-      agent.invoke_setBlockedURLs({urls: this.#effectiveBlockedURLs});
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_setBlockedURLs({urls: this.#effectiveBlockedURLs});
     }
   }
 
@@ -1381,8 +1414,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     }
     this.#updatingInterceptionPatternsPromise = null;
     const promises = ([] as Promise<unknown>[]);
-    for (const agent of this.#agents) {
-      promises.push(agent.invoke_setRequestInterception({patterns: this.#urlsForRequestInterceptor.valuesArray()}));
+    for (const agent of this.#fetchAgents) {
+      promises.push(agent.invoke_enable({patterns: this.#urlsForRequestInterceptor.valuesArray()}));
     }
     this.dispatchEventToListeners(MultitargetNetworkManager.Events.InterceptorsChanged);
     await Promise.all(promises);
@@ -1392,6 +1425,9 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     for (const requestInterceptor of this.#urlsForRequestInterceptor.keysArray()) {
       await requestInterceptor(interceptedRequest);
       if (interceptedRequest.hasResponded()) {
+        this.dispatchEventToListeners(
+            MultitargetNetworkManager.Events.RequestIntercepted,
+            interceptedRequest.request.url as Platform.DevToolsPath.UrlString);
         return;
       }
     }
@@ -1401,14 +1437,14 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
   }
 
   clearBrowserCache(): void {
-    for (const agent of this.#agents) {
-      agent.invoke_clearBrowserCache();
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_clearBrowserCache();
     }
   }
 
   clearBrowserCookies(): void {
-    for (const agent of this.#agents) {
-      agent.invoke_clearBrowserCookies();
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_clearBrowserCookies();
     }
   }
 
@@ -1424,7 +1460,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     return certificate.tableNames;
   }
 
-  async loadResource(url: string): Promise<{
+  async loadResource(url: Platform.DevToolsPath.UrlString): Promise<{
     success: boolean,
     content: string,
     errorDescription: Host.ResourceLoader.LoadErrorDescription,
@@ -1458,6 +1494,7 @@ export namespace MultitargetNetworkManager {
     UserAgentChanged = 'UserAgentChanged',
     InterceptorsChanged = 'InterceptorsChanged',
     AcceptedEncodingsChanged = 'AcceptedEncodingsChanged',
+    RequestIntercepted = 'RequestIntercepted',
   }
 
   export type EventTypes = {
@@ -1466,42 +1503,31 @@ export namespace MultitargetNetworkManager {
     [Events.UserAgentChanged]: void,
     [Events.InterceptorsChanged]: void,
     [Events.AcceptedEncodingsChanged]: void,
+    [Events.RequestIntercepted]: Platform.DevToolsPath.UrlString,
   };
 }
 
 export class InterceptedRequest {
-  readonly #networkAgent: ProtocolProxyApi.NetworkApi;
-  readonly #interceptionId: Protocol.Network.InterceptionId;
+  readonly #fetchAgent: ProtocolProxyApi.FetchApi;
   #hasRespondedInternal: boolean;
   request: Protocol.Network.Request;
-  frameId: Protocol.Page.FrameId;
   resourceType: Protocol.Network.ResourceType;
-  isNavigationRequest: boolean;
-  isDownload: boolean;
-  redirectUrl: string|undefined;
-  authChallenge: Protocol.Network.AuthChallenge|undefined;
-  responseErrorReason: Protocol.Network.ErrorReason|undefined;
   responseStatusCode: number|undefined;
-  responseHeaders: Protocol.Network.Headers|undefined;
-  requestId: string|undefined;
+  responseHeaders: Protocol.Fetch.HeaderEntry[]|undefined;
+  requestId: Protocol.Fetch.RequestId;
 
   constructor(
-      networkAgent: ProtocolProxyApi.NetworkApi, interceptionId: Protocol.Network.InterceptionId,
-      request: Protocol.Network.Request, frameId: Protocol.Page.FrameId, resourceType: Protocol.Network.ResourceType,
-      isNavigationRequest: boolean, isDownload?: boolean, redirectUrl?: string,
-      authChallenge?: Protocol.Network.AuthChallenge, responseErrorReason?: Protocol.Network.ErrorReason,
-      responseStatusCode?: number, responseHeaders?: Protocol.Network.Headers, requestId?: string) {
-    this.#networkAgent = networkAgent;
-    this.#interceptionId = interceptionId;
+      fetchAgent: ProtocolProxyApi.FetchApi,
+      request: Protocol.Network.Request,
+      resourceType: Protocol.Network.ResourceType,
+      requestId: Protocol.Fetch.RequestId,
+      responseStatusCode?: number,
+      responseHeaders?: Protocol.Fetch.HeaderEntry[],
+  ) {
+    this.#fetchAgent = fetchAgent;
     this.#hasRespondedInternal = false;
     this.request = request;
-    this.frameId = frameId;
     this.resourceType = resourceType;
-    this.isNavigationRequest = isNavigationRequest;
-    this.isDownload = Boolean(isDownload);
-    this.redirectUrl = redirectUrl;
-    this.authChallenge = authChallenge;
-    this.responseErrorReason = responseErrorReason;
     this.responseStatusCode = responseStatusCode;
     this.responseHeaders = responseHeaders;
     this.requestId = requestId;
@@ -1511,19 +1537,11 @@ export class InterceptedRequest {
     return this.#hasRespondedInternal;
   }
 
-  async continueRequestWithContent(contentBlob: Blob): Promise<void> {
+  async continueRequestWithContent(contentBlob: Blob, encoded: boolean, responseHeaders: Protocol.Fetch.HeaderEntry[]):
+      Promise<void> {
     this.#hasRespondedInternal = true;
-    const headers = [
-      'HTTP/1.1 200 OK',
-      'Date: ' + (new Date()).toUTCString(),
-      'Server: Chrome Devtools Request Interceptor',
-      'Connection: closed',
-      'Content-Length: ' + contentBlob.size,
-      'Content-Type: ' + contentBlob.type || 'text/x-unknown',
-    ];
-    const encodedResponse = await blobToBase64(new Blob([headers.join('\r\n'), '\r\n\r\n', contentBlob]));
-    this.#networkAgent.invoke_continueInterceptedRequest(
-        {interceptionId: this.#interceptionId, rawResponse: encodedResponse});
+    const body = encoded ? await contentBlob.text() : await blobToBase64(contentBlob);
+    void this.#fetchAgent.invoke_fulfillRequest({requestId: this.requestId, responseCode: 200, body, responseHeaders});
 
     async function blobToBase64(blob: Blob): Promise<string> {
       const reader = new FileReader();
@@ -1548,18 +1566,17 @@ export class InterceptedRequest {
   continueRequestWithoutChange(): void {
     console.assert(!this.#hasRespondedInternal);
     this.#hasRespondedInternal = true;
-    this.#networkAgent.invoke_continueInterceptedRequest({interceptionId: this.#interceptionId});
+    void this.#fetchAgent.invoke_continueRequest({requestId: this.requestId});
   }
 
   continueRequestWithError(errorReason: Protocol.Network.ErrorReason): void {
     console.assert(!this.#hasRespondedInternal);
     this.#hasRespondedInternal = true;
-    this.#networkAgent.invoke_continueInterceptedRequest({interceptionId: this.#interceptionId, errorReason});
+    void this.#fetchAgent.invoke_failRequest({requestId: this.requestId, errorReason});
   }
 
   async responseBody(): Promise<ContentData> {
-    const response =
-        await this.#networkAgent.invoke_getResponseBodyForInterception({interceptionId: this.#interceptionId});
+    const response = await this.#fetchAgent.invoke_getResponseBody({requestId: this.requestId});
     const error = response.getError() || null;
     return {error: error, content: error ? null : response.body, encoded: response.base64Encoded};
   }
@@ -1714,13 +1731,13 @@ export interface Message {
 
 export interface InterceptionPattern {
   urlPattern: string;
-  interceptionStage: Protocol.Network.InterceptionStage;
+  requestStage: Protocol.Fetch.RequestStage;
 }
 
 export type RequestInterceptor = (request: InterceptedRequest) => Promise<void>;
 
 export interface RequestUpdateDroppedEventData {
-  url: string;
+  url: Platform.DevToolsPath.UrlString;
   frameId: Protocol.Page.FrameId|null;
   loaderId: Protocol.Network.LoaderId;
   resourceType: Protocol.Network.ResourceType;

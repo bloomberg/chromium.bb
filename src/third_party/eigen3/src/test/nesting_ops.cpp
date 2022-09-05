@@ -27,7 +27,7 @@ template <int N, typename ReferenceType, typename XprType>
 bool verify_eval_type(const XprType &, const ReferenceType&)
 {
   typedef typename internal::nested_eval<XprType,N>::type EvalType;
-  return internal::is_same<typename internal::remove_all<EvalType>::type, typename internal::remove_all<ReferenceType>::type>::value;
+  return internal::is_same<internal::remove_all_t<EvalType>, internal::remove_all_t<ReferenceType>>::value;
 }
 
 template <typename MatrixType> void run_nesting_ops_1(const MatrixType& _m)

@@ -35,6 +35,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -63,10 +64,8 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/context_menu_provider.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
-#include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -75,6 +74,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 class ScopedDeferMainFrameUpdate;
@@ -117,7 +117,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       mojom::blink::PageVisibilityState visibility,
       bool is_prerendering,
       bool is_inside_portal,
-      bool is_fenced_frame,
+      absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
       bool compositing_enabled,
       bool widgets_never_composited,
       WebViewImpl* opener,
@@ -184,7 +184,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   gfx::Size ContentsPreferredMinimumSize() override;
   void UpdatePreferredSize() override;
   void EnablePreferredSizeChangedMode() override;
-  void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;
   float ZoomFactorForDeviceScaleFactor() override {
     return zoom_factor_for_device_scale_factor_;
@@ -283,7 +282,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       SetPageLifecycleStateCallback callback) override;
   void AudioStateChanged(bool is_audio_playing) override;
   void ActivatePrerenderedPage(
-      base::TimeTicks activation_start,
+      mojom::blink::PrerenderPageActivationParamsPtr
+          prerender_page_activation_params,
       ActivatePrerenderedPageCallback callback) override;
   void SetInsidePortal(bool is_inside_portal) override;
   void UpdateWebPreferences(
@@ -357,18 +357,17 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // TODO(https://crbug.com/1139104): Remove this.
   std::string GetNullFrameReasonForBug1139104() const;
 
-  // Changes the zoom and scroll for zooming into an editable element
-  // with bounds |element_bounds_in_document| and caret bounds
-  // |caret_bounds_in_document|.
-  void ZoomAndScrollToFocusedEditableElementRect(
-      const gfx::Rect& element_bounds_in_document,
-      const gfx::Rect& caret_bounds_in_document,
-      bool zoom_into_legible_scale);
-
-  bool StartPageScaleAnimation(const gfx::Point& target_position,
-                               bool use_anchor,
-                               float new_scale,
-                               base::TimeDelta duration);
+  // Finishes a ScrollIntoView for a focused editable element by performing a
+  // view-level reveal. That is, when an embedder requests to reveal a focused
+  // editable, the editable is first ScrollIntoView'ed in the layout tree to
+  // ensure it's visible in the outermost document but stops short of scrolling
+  // the outermost frame. This method will then perform a platform-specific
+  // reveal of the editable, e.g. by animating a scroll and zoom in to a
+  // legible scale. This should only be called in a WebView where the main
+  // frame is local and outermost.
+  void FinishScrollFocusedEditableIntoView(
+      const gfx::RectF& caret_rect_in_root_frame,
+      mojom::blink::ScrollIntoViewParamsPtr params);
 
   // Handles context menu events orignated via the the keyboard. These
   // include the VK_APPS virtual key and the Shift+F10 combine. Code is
@@ -495,13 +494,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   PageScaleConstraintsSet& GetPageScaleConstraintsSet() const;
 
-  FloatSize ElasticOverscroll() const { return elastic_overscroll_; }
+  gfx::Vector2dF ElasticOverscroll() const { return elastic_overscroll_; }
 
   class ChromeClient& GetChromeClient() const {
     return *chrome_client_.Get();
   }
-
-  bool ShouldZoomToLegibleScale(const Element&);
 
   // Allows main frame updates to occur if they were previously blocked. They
   // are blocked during loading a navigation, to allow Blink to proceed without
@@ -556,7 +553,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Shows a previously created WebView (via window.open()).
   void Show(const LocalFrameToken& opener_frame_token,
             NavigationPolicy policy,
-            const gfx::Rect& rect,
+            const gfx::Rect& requested_rect,
+            const gfx::Rect& adjusted_rect,
             bool opened_by_user_gesture);
 
   // Send the window rect to the browser and call `ack_callback` when the
@@ -651,7 +649,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       mojom::blink::PageVisibilityState visibility,
       bool is_prerendering,
       bool is_inside_portal,
-      bool is_fenced_frame,
+      absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
       bool does_composite,
       bool widgets_never_composite,
       WebViewImpl* opener,
@@ -680,8 +678,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
   void DisablePopupMouseWheelEventListener();
 
-  float DeviceScaleFactor() const;
-
   LocalFrame* FocusedLocalFrameInWidget() const;
 
   // Clear focus and text input state of the page. If there was a focused
@@ -690,19 +686,33 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RemoveFocusAndTextInputState();
 
   // Finds the zoom and scroll parameters for zooming into an editable element
-  // with bounds |element_bounds_in_document| and caret bounds
-  // |caret_bounds_in_document|. If the original element belongs to the local
-  // root of MainFrameImpl(), then the bounds are exactly those of the element
-  // and caret. Otherwise (when the editable element is inside an OOPIF), the
-  // bounds are projection of the original element's bounds in the main frame
-  // which is inside the layout area of some remote frame in this frame tree.
+  // with bounds |element_bounds_in_root_frame| and caret bounds
+  // |caret_bounds_in_root_frame|.
   void ComputeScaleAndScrollForEditableElementRects(
-      const gfx::Rect& element_bounds_in_document,
-      const gfx::Rect& caret_bounds_in_document,
+      const gfx::Rect& element_bounds_in_root_frame,
+      const gfx::Rect& caret_bounds_in_root_frame,
       bool zoom_into_legible_scale,
-      float& scale,
-      gfx::Point& scroll,
+      float& new_scale,
+      gfx::Point& new_scroll_position,
       bool& need_animation);
+
+  // Starts a page scale (and scroll!) animation on the compositor thread that
+  // will smoothly animate the viewport position and zoom. Returns true if an
+  // animation was queued, false if an animation was not needed.
+  //
+  // * target_position - A position in root document coordinates ("position"
+  // meaning it's relative to the top-left of the document).  This is the
+  // location that scroll will animate to.
+  // * use_anchor: If true, the animation `target_position` is used as an
+  // "anchor". `target_position` must already be visible in the viewport and
+  // scroll/zoom will be animated such that the anchor will be kept fixed in
+  // the viewport (if possible).
+  // * new_scale: The target page scale factor to animate to.
+  // * duration: The animation's duration.
+  bool StartPageScaleAnimation(const gfx::Point& target_position,
+                               bool use_anchor,
+                               float new_scale,
+                               base::TimeDelta duration);
 
   // Sends any outstanding TrackedFeaturesUpdate messages to the browser.
   void ReportActiveSchedulerTrackedFeatures();
@@ -850,7 +860,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   float zoom_factor_override_ = 0.f;
 
-  FloatSize elastic_overscroll_;
+  gfx::Vector2dF elastic_overscroll_;
 
   // If true, we send IPC messages when |preferred_size_| changes.
   bool send_preferred_size_changes_ = false;

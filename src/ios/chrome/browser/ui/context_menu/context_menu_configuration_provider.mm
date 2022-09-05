@@ -5,10 +5,13 @@
 #import "ios/chrome/browser/ui/context_menu/context_menu_configuration_provider.h"
 
 #include "base/ios/ios_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/url_param_filter/core/features.h"
+#include "components/url_param_filter/core/url_param_filterer.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -24,8 +27,6 @@
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/search_image_with_lens_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_utils.h"
-#import "ios/chrome/browser/ui/context_menu/image_preview_view_controller.h"
-#import "ios/chrome/browser/ui/context_menu/link_no_preview_view_controller.h"
 #import "ios/chrome/browser/ui/image_util/image_copier.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_commands.h"
@@ -42,7 +43,9 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/context_menu/context_menu_api.h"
 #include "ios/public/provider/chrome/browser/lens/lens_api.h"
 #include "ios/web/common/features.h"
 #import "ios/web/common/url_scheme_util.h"
@@ -61,9 +64,6 @@ namespace {
 const NSUInteger kContextMenuMaxURLTitleLength = 100;
 // Character to append to context menut titles that are truncated.
 NSString* const kContextMenuEllipsis = @"…";
-
-// Desired width and height of favicon.
-const CGFloat kFaviconWidthHeight = 24;
 
 }  // namespace
 
@@ -96,9 +96,13 @@ const CGFloat kFaviconWidthHeight = 24;
   return self;
 }
 
+// TODO(crbug.com/1318432): rafactor long method.
 - (UIContextMenuConfiguration*)
     contextMenuConfigurationForWebState:(web::WebState*)webState
                                  params:(web::ContextMenuParams)params {
+  // Reset the URL.
+  _URLToLoad = GURL();
+
   // Prevent context menu from displaying for a tab which is no longer the
   // current one.
   if (webState != self.currentWebState) {
@@ -110,21 +114,14 @@ const CGFloat kFaviconWidthHeight = 24;
   const GURL imageURL = params.src_url;
   const bool isImage = imageURL.is_valid();
 
-  BOOL isOffTheRecord = self.browser->GetBrowserState()->IsOffTheRecord();
-  __weak UIViewController* weakBaseViewController = self.baseViewController;
-
-  // Presents a custom menu only if there is a valid url or a valid image.
-  if (!isLink && !isImage)
-    return nil;
-
   DCHECK(self.browser->GetBrowserState());
-
-  __weak __typeof(self) weakSelf = self;
+  const bool isOffTheRecord = self.browser->GetBrowserState()->IsOffTheRecord();
 
   const GURL& lastCommittedURL = webState->GetLastCommittedURL();
   web::Referrer referrer(lastCommittedURL, web::ReferrerPolicyDefault);
 
   NSMutableArray<UIMenuElement*>* menuElements = [[NSMutableArray alloc] init];
+  // TODO(crbug.com/1299758) add scenario for not a link and not an image.
   MenuScenario menuScenario = isImage && isLink
                                   ? MenuScenario::kContextMenuImageLink
                                   : isImage ? MenuScenario::kContextMenuImage
@@ -134,7 +131,10 @@ const CGFloat kFaviconWidthHeight = 24;
       [[BrowserActionFactory alloc] initWithBrowser:self.browser
                                            scenario:menuScenario];
 
+  __weak __typeof(self) weakSelf = self;
+
   if (isLink) {
+    _URLToLoad = linkURL;
     base::RecordAction(
         base::UserMetricsAction("MobileWebContextMenuLinkImpression"));
     if (web::UrlHasWebScheme(linkURL)) {
@@ -157,9 +157,41 @@ const CGFloat kFaviconWidthHeight = 24;
 
       if (!isOffTheRecord) {
         // Open in Incognito Tab.
-        UIAction* openIncognitoTab =
-            [actionFactory actionToOpenInNewIncognitoTabWithURL:linkURL
-                                                     completion:nil];
+        UIAction* openIncognitoTab;
+        if (base::FeatureList::IsEnabled(
+                url_param_filter::features::kIncognitoParamFilterEnabled)) {
+          // Experimental filter guarded by the kIncognitoParamFilterEnabled
+          // flag.
+          url_param_filter::FilterResult result =
+              url_param_filter::FilterUrl(lastCommittedURL, linkURL);
+          if (result.experimental_status ==
+              url_param_filter::ClassificationExperimentStatus::EXPERIMENTAL) {
+            base::UmaHistogramCounts100(
+                "Navigation.UrlParamFilter.FilteredParamCountExperimental",
+                result.filtered_param_count);
+          } else {
+            base::UmaHistogramCounts100(
+                "Navigation.UrlParamFilter.FilteredParamCount",
+                result.filtered_param_count);
+          }
+          GURL targetURL =
+              result.filtered_param_count > 0 ? result.filtered_url : linkURL;
+          loadParams = UrlLoadParams::InNewTab(targetURL);
+          loadParams.in_incognito = YES;
+          loadParams.filtered_param_count = result.filtered_param_count;
+          openIncognitoTab =
+              [actionFactory actionToOpenInNewIncognitoTabWithBlock:^{
+                ContextMenuConfigurationProvider* strongSelf = weakSelf;
+                if (!strongSelf)
+                  return;
+                UrlLoadingBrowserAgent::FromBrowser(strongSelf.browser)
+                    ->Load(loadParams);
+              }];
+        } else {
+          openIncognitoTab =
+              [actionFactory actionToOpenInNewIncognitoTabWithURL:linkURL
+                                                       completion:nil];
+        }
         [menuElements addObject:openIncognitoTab];
       }
 
@@ -175,7 +207,7 @@ const CGFloat kFaviconWidthHeight = 24;
       }
 
       if (linkURL.SchemeIsHTTPOrHTTPS()) {
-        NSString* innerText = params.link_text;
+        NSString* innerText = params.text;
         if ([innerText length] > 0) {
           // Add to reading list.
           UIAction* addToReadingList =
@@ -203,6 +235,9 @@ const CGFloat kFaviconWidthHeight = 24;
   if (isImage) {
     base::RecordAction(
         base::UserMetricsAction("MobileWebContextMenuImageImpression"));
+
+    __weak UIViewController* weakBaseViewController = self.baseViewController;
+
     // Save Image.
     UIAction* saveImage = [actionFactory actionSaveImageWithBlock:^{
       if (!weakSelf || !weakBaseViewController)
@@ -272,11 +307,8 @@ const CGFloat kFaviconWidthHeight = 24;
 
     if (!useLens && search_engines::SupportsSearchByImage(service)) {
       const TemplateURL* defaultURL = service->GetDefaultSearchProvider();
-      NSString* title =
-          IsContextMenuActionsRefreshEnabled()
-              ? l10n_util::GetNSString(IDS_IOS_CONTEXT_MENU_SEARCHFORIMAGE)
-              : l10n_util::GetNSStringF(IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE,
-                                        defaultURL->short_name());
+      NSString* title = l10n_util::GetNSStringF(
+          IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE, defaultURL->short_name());
       UIAction* searchByImage = [actionFactory
           actionSearchImageWithTitle:title
                                Block:^{
@@ -288,9 +320,18 @@ const CGFloat kFaviconWidthHeight = 24;
     }
   }
 
+  // Insert any provided menu items. Do after Link and/or Image to allow
+  // inserting at beginning or adding to end.
+  ios::provider::AddContextMenuElements(
+      menuElements, self.browser->GetBrowserState(), webState, params,
+      self.baseViewController);
+
+  if (menuElements.count == 0) {
+    return nil;
+  }
+
   NSString* menuTitle = nil;
-  if (!base::FeatureList::IsEnabled(
-          web::features::kWebViewNativeContextMenuPhase2)) {
+  if (isLink || isImage) {
     menuTitle = GetContextMenuTitle(params);
 
     // Truncate context meny titles that originate from URLs, leaving text
@@ -300,8 +341,6 @@ const CGFloat kFaviconWidthHeight = 24;
       menuTitle = [[menuTitle substringToIndex:kContextMenuMaxURLTitleLength]
           stringByAppendingString:kContextMenuEllipsis];
     }
-  } else if (!isLink) {
-    menuTitle = GetContextMenuTitle(params);
   }
 
   UIMenu* menu = [UIMenu menuWithTitle:menuTitle children:menuElements];
@@ -312,47 +351,9 @@ const CGFloat kFaviconWidthHeight = 24;
         return menu;
       };
 
-  UIContextMenuContentPreviewProvider previewProvider = ^UIViewController* {
-    if (!base::FeatureList::IsEnabled(
-            web::features::kWebViewNativeContextMenuPhase2)) {
-      return nil;
-    }
-    if (isLink) {
-      NSString* title = GetContextMenuTitle(params);
-      NSString* subtitle = GetContextMenuSubtitle(params);
-      LinkNoPreviewViewController* previewViewController =
-          [[LinkNoPreviewViewController alloc] initWithTitle:title
-                                                    subtitle:subtitle];
-
-      __weak LinkNoPreviewViewController* weakPreview = previewViewController;
-      FaviconLoader* faviconLoader =
-          IOSChromeFaviconLoaderFactory::GetForBrowserState(
-              self.browser->GetBrowserState());
-      faviconLoader->FaviconForPageUrl(
-          linkURL, kFaviconWidthHeight, kFaviconWidthHeight,
-          /*fallback_to_google_server=*/false,
-          ^(FaviconAttributes* attributes) {
-            [weakPreview configureFaviconWithAttributes:attributes];
-          });
-      return previewViewController;
-    }
-    DCHECK(isImage);
-    ImagePreviewViewController* preview =
-        [[ImagePreviewViewController alloc] init];
-    __weak ImagePreviewViewController* weakPreview = preview;
-
-    ImageFetchTabHelper* imageFetcher =
-        ImageFetchTabHelper::FromWebState(self.currentWebState);
-    DCHECK(imageFetcher);
-    imageFetcher->GetImageData(imageURL, referrer, ^(NSData* data) {
-      [weakPreview updateImageData:data];
-    });
-
-    return preview;
-  };
   return
       [UIContextMenuConfiguration configurationWithIdentifier:nil
-                                              previewProvider:previewProvider
+                                              previewProvider:nil
                                                actionProvider:actionProvider];
 }
 
@@ -399,6 +400,8 @@ const CGFloat kFaviconWidthHeight = 24;
 
 // Searches an image with Lens using the given |imageData|.
 - (void)searchImageUsingLensWithData:(NSData*)imageData {
+  // TODO(crbug.com/1323783): This should be an id<LensCommands> and use
+  // HandlerForProtocol().
   id<BrowserCommands> handler =
       static_cast<id<BrowserCommands>>(_browser->GetCommandDispatcher());
   UIImage* image = [UIImage imageWithData:imageData];

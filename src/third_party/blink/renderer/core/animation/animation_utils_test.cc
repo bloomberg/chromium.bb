@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -123,10 +124,10 @@ TEST_F(AnimationUtilsTest, ForEachInterpolatedPropertyValueWithContainerQuery) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size; }
-      @container size(min-width: 1px) {
+      @container (min-width: 1px) {
         #target { left: 10px; }
       }
-      @container size(min-width: 99999px) {
+      @container (min-width: 99999px) {
         #target { left: 10000px; }
       }
     </style>

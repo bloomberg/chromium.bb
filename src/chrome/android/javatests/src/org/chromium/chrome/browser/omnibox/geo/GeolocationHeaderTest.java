@@ -18,15 +18,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
@@ -37,6 +35,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@DisabledTest(message = "Flaky - https://crbug.com/1315315")
 public class GeolocationHeaderTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -87,24 +86,6 @@ public class GeolocationHeaderTest {
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({GOOGLE_BASE_URL_SWITCH})
-    @DisableFeatures(ChromeFeatureList.REVERT_DSE_AUTOMATIC_PERMISSIONS)
-    public void testPermissionWithAutogrant() {
-        long now = setMockLocationNow();
-
-        // X-Geo shouldn't be sent when location is disallowed for the origin.
-        checkHeaderWithPermission(ContentSettingValues.ALLOW, now, false);
-        checkHeaderWithPermission(ContentSettingValues.BLOCK, now, true);
-
-        // The default permission for the DSE is to allow access, so the header
-        // should be sent in this case.
-        checkHeaderWithPermission(ContentSettingValues.DEFAULT, now, false);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Location"})
-    @CommandLineFlags.Add({GOOGLE_BASE_URL_SWITCH})
-    @EnableFeatures(ChromeFeatureList.REVERT_DSE_AUTOMATIC_PERMISSIONS)
     public void testPermissionWithoutAutogrant() {
         long now = setMockLocationNow();
 

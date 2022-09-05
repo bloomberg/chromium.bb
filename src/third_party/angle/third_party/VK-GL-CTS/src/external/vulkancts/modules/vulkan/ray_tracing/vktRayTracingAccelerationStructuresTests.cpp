@@ -45,6 +45,7 @@
 #include "tcuFloat.hpp"
 
 #include <set>
+#include <limits>
 
 namespace vkt
 {
@@ -671,6 +672,17 @@ public:
 		4,
 		5
 	};
+	// Different vertex configurations of a triangle whose parameter x is set to NaN during inactive_triangles tests
+	const bool nanConfig[7][3] =
+	{
+		{ true,		true,		true	},
+		{ true,		false,		false	},
+		{ false,	true,		false	},
+		{ false,	false,		true	},
+		{ true,		true,		false	},
+		{ false,	true,		true	},
+		{ true,		false,		true	},
+	};
 };
 
 std::vector<de::SharedPtr<BottomLevelAccelerationStructure> > SingleTriangleConfiguration::initBottomAccelerationStructures (Context&			context,
@@ -684,29 +696,58 @@ std::vector<de::SharedPtr<BottomLevelAccelerationStructure> > SingleTriangleConf
 	std::vector<de::SharedPtr<BottomLevelAccelerationStructure> >	result;
 
 	de::MovePtr<BottomLevelAccelerationStructure>	bottomLevelAccelerationStructure = makeBottomLevelAccelerationStructure();
-	bottomLevelAccelerationStructure->setGeometryCount(1u);
 
-	de::SharedPtr<RaytracedGeometryBase> geometry;
-	geometry = makeRaytracedGeometry(VK_GEOMETRY_TYPE_TRIANGLES_KHR, testParams.vertexFormat, testParams.indexType);
-
-	auto customVertices(vertices);
+	unsigned int geometryCount = testParams.emptyASCase == EmptyAccelerationStructureCase::INACTIVE_TRIANGLES ? 4U : 1U;
 
 	if (testParams.emptyASCase == EmptyAccelerationStructureCase::INACTIVE_TRIANGLES)
 	{
-		const auto nanValue = tcu::Float32::nan().asFloat();
-		for (auto& vtx : customVertices)
-			vtx.x() = nanValue;
+		bottomLevelAccelerationStructure->setGeometryCount(geometryCount);
+
+		de::SharedPtr<RaytracedGeometryBase> geometry;
+		geometry = makeRaytracedGeometry(VK_GEOMETRY_TYPE_TRIANGLES_KHR, testParams.vertexFormat, testParams.indexType);
+
+		for (unsigned int i = 0; i < geometryCount; i++)
+		{
+			auto customVertices(vertices);
+
+			const auto nanValue = tcu::Float32::nan().asFloat();
+
+			if (nanConfig[i][0])
+				customVertices[3].x() = nanValue;
+			if (nanConfig[i][1])
+				customVertices[4].x() = nanValue;
+			if (nanConfig[i][2])
+				customVertices[5].x() = nanValue;
+
+			for (auto it = begin(customVertices), eit = end(customVertices); it != eit; ++it)
+				geometry->addVertex(*it);
+
+			if (testParams.indexType != VK_INDEX_TYPE_NONE_KHR)
+			{
+				for (auto it = begin(indices), eit = end(indices); it != eit; ++it)
+					geometry->addIndex(*it);
+			}
+			bottomLevelAccelerationStructure->addGeometry(geometry);
+		}
 	}
-
-	for (auto it = begin(customVertices), eit = end(customVertices); it != eit; ++it)
-		geometry->addVertex(*it);
-
-	if (testParams.indexType != VK_INDEX_TYPE_NONE_KHR)
+	else
 	{
-		for (auto it = begin(indices), eit = end(indices); it != eit; ++it)
-			geometry->addIndex(*it);
+		bottomLevelAccelerationStructure->setGeometryCount(geometryCount);
+
+		de::SharedPtr<RaytracedGeometryBase> geometry;
+		geometry = makeRaytracedGeometry(VK_GEOMETRY_TYPE_TRIANGLES_KHR, testParams.vertexFormat, testParams.indexType);
+
+		for (auto it = begin(vertices), eit = end(vertices); it != eit; ++it)
+			geometry->addVertex(*it);
+
+		if (testParams.indexType != VK_INDEX_TYPE_NONE_KHR)
+		{
+			for (auto it = begin(indices), eit = end(indices); it != eit; ++it)
+				geometry->addIndex(*it);
+		}
+		bottomLevelAccelerationStructure->addGeometry(geometry);
 	}
-	bottomLevelAccelerationStructure->addGeometry(geometry);
+
 	result.push_back(de::SharedPtr<BottomLevelAccelerationStructure>(bottomLevelAccelerationStructure.release()));
 
 	return result;
@@ -761,21 +802,6 @@ void SingleTriangleConfiguration::initShaderBindingTables(de::MovePtr<RayTracing
 	raygenShaderBindingTable											= rayTracingPipeline->createShaderBindingTable(vkd, device, pipeline, allocator, shaderGroupHandleSize, shaderGroupBaseAlignment, 0, 1 );
 	hitShaderBindingTable												= rayTracingPipeline->createShaderBindingTable(vkd, device, pipeline, allocator, shaderGroupHandleSize, shaderGroupBaseAlignment, 1, 1 );
 	missShaderBindingTable												= rayTracingPipeline->createShaderBindingTable(vkd, device, pipeline, allocator, shaderGroupHandleSize, shaderGroupBaseAlignment, 2, 1 );
-}
-
-bool pointInTriangle2D(const tcu::Vec3& p, const tcu::Vec3& p0, const tcu::Vec3& p1, const tcu::Vec3& p2)
-{
-	float s = p0.y() * p2.x() - p0.x() * p2.y() + (p2.y() - p0.y()) * p.x() + (p0.x() - p2.x()) * p.y();
-	float t = p0.x() * p1.y() - p0.y() * p1.x() + (p0.y() - p1.y()) * p.x() + (p1.x() - p0.x()) * p.y();
-
-	if ((s < 0) != (t < 0))
-		return false;
-
-	float a = -p1.y() * p2.x() + p0.y() * (p2.x() - p1.x()) + p0.x() * (p1.y() - p2.y()) + p1.x() * p2.y();
-
-	return a < 0 ?
-		(s <= 0 && s + t >= a) :
-		(s >= 0 && s + t <= a);
 }
 
 bool SingleTriangleConfiguration::verifyImage(BufferWithMemory* resultBuffer, Context& context, TestParams& testParams)
@@ -1839,26 +1865,13 @@ bool RayTracingASBasicTestInstance::iterateNoWorkers (void)
 
 bool RayTracingASBasicTestInstance::iterateWithWorkers (void)
 {
-	const deUint64					singleThreadTimeStart	= deGetMicroseconds();
 	de::MovePtr<BufferWithMemory>	singleThreadBufferCPU	= runTest(0);
 	const bool						singleThreadValidation	= m_data.testConfiguration->verifyImage(singleThreadBufferCPU.get(), m_context, m_data);
-	const deUint64					singleThreadTime		= deGetMicroseconds() - singleThreadTimeStart;
 
-	deUint64						multiThreadTimeStart	= deGetMicroseconds();
 	de::MovePtr<BufferWithMemory>	multiThreadBufferCPU	= runTest(m_data.workerThreadsCount);
 	const bool						multiThreadValidation	= m_data.testConfiguration->verifyImage(multiThreadBufferCPU.get(), m_context, m_data);
-	deUint64						multiThreadTime			= deGetMicroseconds() - multiThreadTimeStart;
-	const deUint64					multiThreadTimeOut		= 10 * singleThreadTime;
 
 	const deUint32					result					= singleThreadValidation && multiThreadValidation;
-
-	if (multiThreadTime > multiThreadTimeOut)
-	{
-		std::string failMsg	= "Time of multithreaded test execution " + de::toString(multiThreadTime) +
-							  " that is longer than expected execution time " + de::toString(multiThreadTimeOut);
-
-		TCU_FAIL(failMsg);
-	}
 
 	return result;
 }
@@ -2530,7 +2543,7 @@ tcu::TestStatus RayTracingDeviceASCompabilityKHRTestInstance::iterate (void)
 	const VkQueue					queue				= m_context.getUniversalQueue();
 	Allocator&						allocator			= m_context.getDefaultAllocator();
 
-	const Move<VkCommandPool>		cmdPool				= createCommandPool(vkd, device, 0, queueFamilyIndex);
+	const Move<VkCommandPool>		cmdPool				= createCommandPool(vkd, device, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueFamilyIndex);
 	const Move<VkCommandBuffer>		cmdBuffer			= allocateCommandBuffer(vkd, device, *cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	bool							result				= false;
@@ -3461,6 +3474,7 @@ void addEmptyAccelerationStructureTests (tcu::TestCaseGroup* group)
 
 			for (int emptyCaseIdx = 0; emptyCaseIdx < DE_LENGTH_OF_ARRAY(emptyCases); ++emptyCaseIdx)
 			{
+
 				TestParams testParams
 				{
 					buildTypes[buildTypeIdx].buildType,

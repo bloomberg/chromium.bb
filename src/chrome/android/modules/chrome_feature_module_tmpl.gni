@@ -88,6 +88,8 @@ template("chrome_feature_module") {
                            [
                              "add_view_trace_events",
                              "base_module_target",
+                             "expected_android_manifest",
+                             "expected_android_manifest_base",
                              "manifest_package",
                              "min_sdk_version",
                              "package_id",
@@ -112,7 +114,7 @@ template("chrome_feature_module") {
     }
 
     # Don't embed more translations than required (http://crbug.com/932017).
-    aapt_locale_allowlist = locales
+    aapt_locale_allowlist = platform_pak_locales
     proguard_enabled = !is_java_debug
     package_name = _module_desc.name
 

@@ -4,39 +4,112 @@
 
 #include "chromeos/services/bluetooth_config/fake_device_pairing_handler.h"
 
+#include "base/run_loop.h"
+#include "chromeos/services/bluetooth_config/device_conversion_util.h"
+
 namespace chromeos {
 namespace bluetooth_config {
 
 FakeDevicePairingHandler::FakeDevicePairingHandler(
     mojo::PendingReceiver<mojom::DevicePairingHandler> pending_receiver,
-    AdapterStateController* adapter_state_controller,
-    base::OnceClosure finished_pairing_callback)
+    AdapterStateController* adapter_state_controller)
     : DevicePairingHandler(std::move(pending_receiver),
-                           adapter_state_controller,
-                           std::move(finished_pairing_callback)) {}
+                           adapter_state_controller) {}
 
 FakeDevicePairingHandler::~FakeDevicePairingHandler() {
+  if (current_pairing_device_id().empty())
+    return;
+
   // If we have a pairing attempt and this class is destroyed, cancel the
   // pairing.
-  if (!current_pairing_device_id().empty())
-    CancelPairing();
-
-  NotifyFinished();
+  CancelPairing();
 }
 
-void FakeDevicePairingHandler::SetDeviceList(
-    std::vector<device::BluetoothDevice*> device_list) {
-  device_list_ = std::move(device_list);
+void FakeDevicePairingHandler::SimulatePairDeviceFinished(
+    absl::optional<device::ConnectionFailureReason> failure_reason) {
+  DCHECK(!current_pairing_device_id().empty());
+  FinishCurrentPairingRequest(failure_reason);
+  base::RunLoop().RunUntilIdle();
 }
 
-device::BluetoothDevice* FakeDevicePairingHandler::FindDevice(
-    const std::string& device_id) const {
-  for (auto* device : device_list_) {
-    if (device->GetIdentifier() != device_id)
-      continue;
-    return device;
+void FakeDevicePairingHandler::SimulateFetchDeviceFinished(
+    mojom::BluetoothDevicePropertiesPtr device) {
+  std::move(fetch_device_callback_).Run(std::move(device));
+}
+
+void FakeDevicePairingHandler::SimulateRequestPinCode() {
+  DCHECK(!current_pairing_device_id().empty());
+  SendRequestPinCode();
+  base::RunLoop().RunUntilIdle();
+}
+
+void FakeDevicePairingHandler::SimulateRequestPasskey() {
+  DCHECK(!current_pairing_device_id().empty());
+  SendRequestPasskey();
+  base::RunLoop().RunUntilIdle();
+}
+
+void FakeDevicePairingHandler::SimulateDisplayPinCode(
+    const std::string& pin_code) {
+  DCHECK(!current_pairing_device_id().empty());
+  SendDisplayPinCode(pin_code);
+  base::RunLoop().RunUntilIdle();
+}
+
+void FakeDevicePairingHandler::SimulateDisplayPasskey(uint32_t passkey) {
+  DCHECK(!current_pairing_device_id().empty());
+  SendDisplayPasskey(passkey);
+  base::RunLoop().RunUntilIdle();
+}
+
+void FakeDevicePairingHandler::SimulateKeysEntered(uint32_t entered) {
+  DCHECK(!current_pairing_device_id().empty());
+  SendKeysEntered(entered);
+  base::RunLoop().RunUntilIdle();
+}
+
+void FakeDevicePairingHandler::SimulateConfirmPasskey(uint32_t passkey) {
+  DCHECK(!current_pairing_device_id().empty());
+  SendConfirmPasskey(passkey);
+  base::RunLoop().RunUntilIdle();
+}
+
+void FakeDevicePairingHandler::SimulateAuthorizePairing() {
+  DCHECK(!current_pairing_device_id().empty());
+  SendAuthorizePairing();
+  base::RunLoop().RunUntilIdle();
+}
+
+void FakeDevicePairingHandler::FetchDevice(const std::string& device_address,
+                                           FetchDeviceCallback callback) {
+  fetch_device_callback_ = std::move(callback);
+}
+
+void FakeDevicePairingHandler::PerformPairDevice(const std::string& device_id) {
+}
+
+void FakeDevicePairingHandler::PerformFinishCurrentPairingRequest(
+    absl::optional<device::ConnectionFailureReason> failure_reason,
+    base::TimeDelta duration) {}
+
+void FakeDevicePairingHandler::CancelPairing() {
+  base::RunLoop().RunUntilIdle();
+  FinishCurrentPairingRequest(device::ConnectionFailureReason::kFailed);
+  base::RunLoop().RunUntilIdle();
+}
+
+void FakeDevicePairingHandler::OnRequestPinCode(const std::string& pin_code) {}
+
+void FakeDevicePairingHandler::OnRequestPasskey(const std::string& passkey) {}
+
+void FakeDevicePairingHandler::OnConfirmPairing(bool confirmed) {
+  last_confirm_ = confirmed;
+  if (confirmed) {
+    FinishCurrentPairingRequest(/*failure_reason=*/absl::nullopt);
+  } else {
+    FinishCurrentPairingRequest(device::ConnectionFailureReason::kAuthFailed);
   }
-  return nullptr;
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace bluetooth_config

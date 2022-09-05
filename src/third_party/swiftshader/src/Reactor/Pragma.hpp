@@ -15,14 +15,47 @@
 #ifndef rr_Pragma_hpp
 #define rr_Pragma_hpp
 
+#include <variant>
+
 namespace rr {
 
-enum PragmaBooleanOption
+enum BooleanPragmaOption
 {
 	MemorySanitizerInstrumentation,
+	InitializeLocalVariables,
 };
 
-void Pragma(PragmaBooleanOption option, bool enable);
+enum IntegerPragmaOption
+{
+	OptimizationLevel,  // O0, O1, O2 (default), O3
+};
+
+void Pragma(BooleanPragmaOption option, bool enable);
+void Pragma(IntegerPragmaOption option, int value);
+
+class ScopedPragma
+{
+public:
+	ScopedPragma(BooleanPragmaOption option, bool enable);
+	ScopedPragma(IntegerPragmaOption option, int value);
+
+	~ScopedPragma();
+
+private:
+	struct BooleanPragma
+	{
+		BooleanPragmaOption option;
+		bool enable;
+	};
+
+	struct IntegerPragma
+	{
+		IntegerPragmaOption option;
+		int value;
+	};
+
+	std::variant<BooleanPragma, IntegerPragma> oldState;
+};
 
 }  // namespace rr
 

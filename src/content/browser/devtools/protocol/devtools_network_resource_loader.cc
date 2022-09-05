@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/devtools/protocol/devtools_network_resource_loader.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -45,7 +46,6 @@ DevToolsNetworkResourceLoader::Create(
     Caching caching,
     Credentials include_credentials,
     CompletionCallback completion_callback) {
-  DCHECK(gurl.SchemeIsHTTPOrHTTPS());
   network::ResourceRequest resource_request;
   resource_request.url = std::move(gurl);
   resource_request.request_initiator = origin;

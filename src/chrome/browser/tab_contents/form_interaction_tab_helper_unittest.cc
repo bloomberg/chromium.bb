@@ -9,7 +9,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind.h"
 #include "chrome/browser/performance_manager/test_support/page_aggregator.h"
@@ -112,7 +111,7 @@ TEST_F(FormInteractionTabHelperTest, HadFormInteractionWithChildFrames) {
   EXPECT_FALSE(helper->had_form_interaction());
 
   auto* parent_tester =
-      content::RenderFrameHostTester::For(contents->GetMainFrame());
+      content::RenderFrameHostTester::For(contents->GetPrimaryMainFrame());
   auto* child = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("https://foochild.com"), parent_tester->AppendChild("child"));
 

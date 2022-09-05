@@ -311,7 +311,8 @@ class PrimitiveTopologyTest extends GPUTest {
       colorAttachments: [
         {
           view: colorAttachment.createView(),
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -329,12 +330,13 @@ class PrimitiveTopologyTest extends GPUTest {
     // Output color is solid green.
     renderPass.setPipeline(
       this.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: this.device.createShaderModule({
             code: `
-              [[stage(vertex)]] fn main(
-                [[location(0)]] pos : vec4<f32>
-                ) -> [[builtin(position)]] vec4<f32> {
+              @vertex fn main(
+                @location(0) pos : vec4<f32>
+                ) -> @builtin(position) vec4<f32> {
                 return pos;
               }`,
           }),
@@ -355,7 +357,7 @@ class PrimitiveTopologyTest extends GPUTest {
         fragment: {
           module: this.device.createShaderModule({
             code: `
-              [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+              @fragment fn main() -> @location(0) vec4<f32> {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
               }`,
           }),
@@ -407,7 +409,7 @@ class PrimitiveTopologyTest extends GPUTest {
       }
     }
 
-    renderPass.endPass();
+    renderPass.end();
 
     this.device.queue.submit([encoder.finish()]);
 

@@ -6,6 +6,7 @@
 
 #include "absl/types/optional.h"
 #include "components/account_manager_core/account.h"
+#include "components/account_manager_core/account_addition_options.h"
 #include "components/account_manager_core/account_addition_result.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -107,6 +108,8 @@ FromMojoAccountAdditionStatus(
     case cm::AccountAdditionResult::Status::kUnexpectedResponse:
       return account_manager::AccountAdditionResult::Status::
           kUnexpectedResponse;
+    case cm::AccountAdditionResult::Status::kBlockedByPolicy:
+      return account_manager::AccountAdditionResult::Status::kBlockedByPolicy;
     default:
       LOG(WARNING) << "Unknown crosapi::mojom::AccountAdditionResult::Status: "
                    << mojo_status;
@@ -127,6 +130,8 @@ crosapi::mojom::AccountAdditionResult::Status ToMojoAccountAdditionStatus(
       return cm::AccountAdditionResult::Status::kNetworkError;
     case account_manager::AccountAdditionResult::Status::kUnexpectedResponse:
       return cm::AccountAdditionResult::Status::kUnexpectedResponse;
+    case account_manager::AccountAdditionResult::Status::kBlockedByPolicy:
+      return cm::AccountAdditionResult::Status::kBlockedByPolicy;
   }
 }
 
@@ -288,6 +293,8 @@ FromMojoAccountAdditionResult(
     case account_manager::AccountAdditionResult::Status::kCancelledByUser:
     case account_manager::AccountAdditionResult::Status::kUnexpectedResponse:
       return account_manager::AccountAdditionResult::FromStatus(status.value());
+    case account_manager::AccountAdditionResult::Status::kBlockedByPolicy:
+      return account_manager::AccountAdditionResult::FromStatus(status.value());
   }
 }
 
@@ -304,6 +311,20 @@ crosapi::mojom::AccountAdditionResultPtr ToMojoAccountAdditionResult(
     mojo_result->error = ToMojoGoogleServiceAuthError(result.error());
   }
   return mojo_result;
+}
+
+absl::optional<account_manager::AccountAdditionOptions>
+FromMojoAccountAdditionOptions(
+    const crosapi::mojom::AccountAdditionOptionsPtr& mojo_options) {
+  if (!mojo_options)
+    return absl::nullopt;
+
+  account_manager::AccountAdditionOptions result;
+  result.is_available_in_arc = mojo_options->is_available_in_arc;
+  result.show_arc_availability_picker =
+      mojo_options->show_arc_availability_picker;
+
+  return result;
 }
 
 }  // namespace account_manager

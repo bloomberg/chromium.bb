@@ -55,7 +55,6 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     ASSERT_TRUE(result);
 
     GpuDriverBugWorkarounds workarounds;
-    workarounds.max_texture_size = INT_MAX - 1;
 
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = base::MakeRefCounted<SharedContextState>(
@@ -67,7 +66,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
 
     backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-        workarounds, GpuFeatureInfo());
+        context_state_->feature_info());
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =

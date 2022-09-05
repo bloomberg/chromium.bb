@@ -11,10 +11,10 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
-#include "build/chromeos_buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace data_decoder {
@@ -82,7 +82,7 @@ class ImageDecoder {
 
   enum ImageCodec {
     DEFAULT_CODEC = 0,  // Uses WebKit image decoding (via WebImage).
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
     PNG_CODEC,  // Restrict decoding to libpng.
 #endif
   };
@@ -117,6 +117,7 @@ class ImageDecoder {
   static void Cancel(ImageRequest* image_request);
 
  private:
+  friend base::NoDestructor<ImageDecoder>;
   using RequestMap = std::map<int, ImageRequest*>;
 
   ImageDecoder();

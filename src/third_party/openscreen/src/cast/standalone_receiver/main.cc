@@ -78,7 +78,7 @@ options:
 }
 
 InterfaceInfo GetInterfaceInfoFromName(const char* name) {
-  OSP_CHECK(name != nullptr) << "Missing mandatory argument: interface.";
+  OSP_CHECK(name) << "Missing mandatory argument: <interface>";
   InterfaceInfo interface_info;
   std::vector<InterfaceInfo> network_interfaces = GetNetworkInterfaces();
   for (auto& interface : network_interfaces) {
@@ -87,16 +87,8 @@ InterfaceInfo GetInterfaceInfoFromName(const char* name) {
       break;
     }
   }
-
-  if (interface_info.name.empty()) {
-    auto error_or_info = GetLoopbackInterfaceForTesting();
-    if (error_or_info.has_value()) {
-      if (error_or_info.value().name == name) {
-        interface_info = std::move(error_or_info.value());
-      }
-    }
-  }
-  OSP_CHECK(!interface_info.name.empty()) << "Invalid interface specified.";
+  OSP_CHECK(!interface_info.name.empty())
+      << "Invalid interface " << name << " specified.";
   return interface_info;
 }
 
@@ -134,7 +126,7 @@ int RunStandaloneReceiver(int argc, char* argv[]) {
       << "Note: compiled without external libs. The dummy player will "
          "be linked and no video decoding will occur. If this is not desired, "
          "install the required external libraries. For more information, see: "
-         "[external_libraries.md](../../build/config/external_libraries.md).";
+         "[external_libraries.md](../streaming/external_libraries.md).";
 #endif
 
   // A note about modifying command line arguments: consider uniformity

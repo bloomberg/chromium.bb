@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/numerics/clamped_math.h"
 #include "crypto/sha2.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parse_certificate.h"
@@ -164,7 +165,8 @@ bool VerifyCRL(const Crl& crl,
   net::CertPathBuilder path_builder(
       parsed_cert.get(), trust_store, &path_builder_delegate, verification_time,
       net::KeyPurpose::ANY_EKU, net::InitialExplicitPolicy::kFalse,
-      {net::AnyPolicy()}, net::InitialPolicyMappingInhibit::kFalse,
+      {net::der::Input(net::kAnyPolicyOid)},
+      net::InitialPolicyMappingInhibit::kFalse,
       net::InitialAnyPolicyInhibit::kFalse);
   net::CertPathBuilder::Result result = path_builder.Run();
   if (!result.HasValidPath()) {

@@ -17,7 +17,9 @@
 #include "base/observer_list_types.h"
 #include "base/sequence_checker.h"
 #include "components/account_id/account_id.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/features.h"
 
 namespace apps {
 
@@ -53,9 +55,9 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
     // Called when the publisher for |app_type| has finished initiating apps.
     // Note that this will not be called for app types initialized prior to this
     // observer being registered. Observers should call
-    // AppRegistryCache::GetInitializedAppTypes() at the time of starting
+    // AppRegistryCache::InitializedAppTypes() at the time of starting
     // observation to get a set of the app types which have been initialized.
-    virtual void OnAppTypeInitialized(apps::mojom::AppType app_type) {}
+    virtual void OnAppTypeInitialized(apps::AppType app_type) {}
 
     // Called when the AppRegistryCache object (the thing that this observer
     // observes) will be destroyed. In response, the observer, |this|, should
@@ -115,11 +117,13 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   void OnApps(std::vector<apps::mojom::AppPtr> deltas,
               apps::mojom::AppType app_type,
               bool should_notify_initialized);
-  void OnApps(std::vector<std::unique_ptr<App>> deltas,
+  void OnApps(std::vector<AppPtr> deltas,
               apps::AppType app_type,
               bool should_notify_initialized);
 
-  apps::mojom::AppType GetAppType(const std::string& app_id);
+  AppType GetAppType(const std::string& app_id);
+
+  std::vector<AppPtr> GetAllApps();
 
   void SetAccountId(const AccountId& account_id);
 
@@ -135,12 +139,14 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   //
   // f must be synchronous, and if it asynchronously calls ForEachApp again,
   // it's not guaranteed to see a consistent state.
-  //
-  // TODO(crbug.com/1253250): ForEachApp will be replaced by ForApp when all
-  // fields of the App struct are added.
   template <typename FunctionType>
   void ForEachApp(FunctionType f) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+    if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
+      ForAllApps(std::move(f));
+      return;
+    }
 
     for (const auto& s_iter : mojom_states_) {
       const apps::mojom::App* state = s_iter.second.get();
@@ -198,12 +204,13 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   //
   // f must be synchronous, and if it asynchronously calls ForOneApp again,
   // it's not guaranteed to see a consistent state.
-  //
-  // TODO(crbug.com/1253250): ForOneApp will be replaced by ForApp when all
-  // fields of the App struct are added.
   template <typename FunctionType>
   bool ForOneApp(const std::string& app_id, FunctionType f) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+    if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
+      return ForApp(app_id, std::move(f));
+    }
 
     auto s_iter = mojom_states_.find(app_id);
     const apps::mojom::App* state =
@@ -240,26 +247,26 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   }
 
   // Returns the set of app types that have so far been initialized.
-  const std::set<apps::mojom::AppType>& GetInitializedAppTypes() const;
+  const std::set<AppType>& InitializedAppTypes() const;
 
-  bool IsAppTypeInitialized(apps::mojom::AppType app_type) const;
+  bool IsAppTypeInitialized(AppType app_type) const;
 
  private:
   friend class AppRegistryCacheTest;
   friend class PublisherTest;
 
   void DoOnApps(std::vector<apps::mojom::AppPtr> deltas);
-  void DoOnApps(std::vector<std::unique_ptr<App>> deltas);
+  void DoOnApps(std::vector<AppPtr> deltas);
 
-  // NOINLINE should force this function to appear on the stack in crash dumps.
-  // https://crbug.com/1237267.
-  void NOINLINE OnAppTypeInitialized();
+  void OnMojomAppTypeInitialized();
+
+  void OnAppTypeInitialized();
 
   base::ObserverList<Observer> observers_;
 
   // Maps from app_id to the latest state: the "sum" of all previous deltas.
   std::map<std::string, apps::mojom::AppPtr> mojom_states_;
-  std::map<std::string, std::unique_ptr<App>> states_;
+  std::map<std::string, AppPtr> states_;
 
   // Track the deltas being processed or are about to be processed by OnApps.
   // They are separate to manage the "notification and merging might be delayed
@@ -280,23 +287,20 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   std::map<std::string, apps::mojom::App*> mojom_deltas_in_progress_;
   std::vector<apps::mojom::AppPtr> mojom_deltas_pending_;
   std::map<std::string, App*> deltas_in_progress_;
-  std::vector<std::unique_ptr<App>> deltas_pending_;
+  std::vector<AppPtr> deltas_pending_;
 
   // Saves app types which will finish initialization, and OnAppTypeInitialized
   // will be called to notify observers.
-  std::set<apps::mojom::AppType> in_progress_initialized_app_types_;
+  std::set<apps::mojom::AppType> in_progress_initialized_mojom_app_types_;
+  std::set<AppType> in_progress_initialized_app_types_;
 
   // Saves app types which have finished initialization, and
   // OnAppTypeInitialized has be called to notify observers.
-  std::set<apps::mojom::AppType> initialized_app_types_;
+  std::set<AppType> initialized_app_types_;
 
   AccountId account_id_;
 
   SEQUENCE_CHECKER(my_sequence_checker_);
-
-  // A sentinel value checking for a UAF in https://crbug.com/1237267. Should be
-  // removed after https://crbug.com/1237267 is fixed.
-  uint32_t uaf_sentinel_;
 };
 
 }  // namespace apps

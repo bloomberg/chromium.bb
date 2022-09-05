@@ -187,6 +187,13 @@ base::TimeTicks WebPerformance::FirstContentfulPaintAsMonotonicTime() const {
   return private_->timing()->FirstContentfulPaintAsMonotonicTime();
 }
 
+base::TimeTicks
+WebPerformance::FirstContentfulPaintRenderedButNotPresentedAsMonotonicTime()
+    const {
+  return private_->timing()
+      ->FirstContentfulPaintRenderedButNotPresentedAsMonotonicTime();
+}
+
 double WebPerformance::FirstMeaningfulPaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstMeaningfulPaint());
 }
@@ -224,9 +231,13 @@ uint64_t WebPerformance::ExperimentalLargestImagePaintSize() const {
   return 0u;
 }
 
-LargestContentfulPaintTypeMask WebPerformance::LargestContentfulPaintType()
+blink::LargestContentfulPaintType WebPerformance::LargestContentfulPaintType()
     const {
   return private_->timing()->LargestContentfulPaintType();
+}
+
+double WebPerformance::LargestContentfulPaintImageBPP() const {
+  return private_->timing()->LargestContentfulPaintImageBPP();
 }
 
 double WebPerformance::ExperimentalLargestTextPaint() const {
@@ -252,6 +263,11 @@ absl::optional<base::TimeDelta> WebPerformance::FirstInputDelay() const {
 
 absl::optional<base::TimeDelta> WebPerformance::FirstInputTimestamp() const {
   return private_->timing()->FirstInputTimestamp();
+}
+
+absl::optional<base::TimeTicks>
+WebPerformance::FirstInputTimestampAsMonotonicTime() const {
+  return private_->timing()->FirstInputTimestampAsMonotonicTime();
 }
 
 absl::optional<base::TimeDelta> WebPerformance::LongestInputDelay() const {

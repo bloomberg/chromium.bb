@@ -177,6 +177,33 @@ int av1_search_palette_mode(IntraModeSearchState *intra_search_state,
                             PICK_MODE_CONTEXT *ctx, RD_STATS *this_rd_cost,
                             int64_t best_rd);
 
+/*!\brief Evaluate luma palette mode for inter frames.
+ *
+ * \ingroup intra_mode_search
+ * \callergraph
+ * \callgraph
+ * This function handles luma palette mode when the current frame is an
+ * inter frame.
+ *
+ * \param[in]    cpi                Top-level encoder structure.
+ * \param[in]    x                  Pointer to structure holding all the data
+ *                                  for the current macroblock.
+ * \param[in]    bsize              Current partition block size.
+ * \param[in]    ref_frame_cost     The entropy cost for signaling that the
+ *                                  current ref frame is an intra frame.
+ * \param[in]    ctx                Structure to hold the number of 4x4 blks to
+ *                                  copy the tx_type and txfm_skip arrays.
+ * \param[in]    this_rd_cost       Struct to keep track of palette mode's
+ *                                  rd_stats.
+ * \param[in]    best_rd            Best RD seen for this block so far.
+ *
+ * \return Returns nothing.
+ */
+void av1_search_palette_mode_luma(const AV1_COMP *cpi, MACROBLOCK *x,
+                                  BLOCK_SIZE bsize, unsigned int ref_frame_cost,
+                                  PICK_MODE_CONTEXT *ctx,
+                                  RD_STATS *this_rd_cost, int64_t best_rd);
+
 /*!\brief Perform intra-mode search on luma channels for intra frames.
  *
  * \ingroup intra_mode_search

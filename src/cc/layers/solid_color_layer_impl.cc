@@ -5,6 +5,7 @@
 #include "cc/layers/solid_color_layer_impl.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "cc/layers/append_quads_data.h"
 #include "cc/trees/effect_node.h"
@@ -21,7 +22,7 @@ SolidColorLayerImpl::SolidColorLayerImpl(LayerTreeImpl* tree_impl, int id)
 SolidColorLayerImpl::~SolidColorLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
-    LayerTreeImpl* tree_impl) {
+    LayerTreeImpl* tree_impl) const {
   return SolidColorLayerImpl::Create(tree_impl, id());
 }
 
@@ -30,7 +31,7 @@ void SolidColorLayerImpl::AppendSolidQuads(
     const Occlusion& occlusion_in_layer_space,
     viz::SharedQuadState* shared_quad_state,
     const gfx::Rect& visible_layer_rect,
-    SkColor color,
+    SkColor4f color,
     bool force_anti_aliasing_off,
     SkBlendMode effect_blend_mode,
     AppendQuadsData* append_quads_data) {
@@ -44,8 +45,7 @@ void SolidColorLayerImpl::AppendSolidQuads(
   // mask, but will not work in complex blend mode situations. This bug is
   // tracked in crbug.com/939168.
   if (effect_blend_mode == SkBlendMode::kSrcOver) {
-    float alpha =
-        (SkColorGetA(color) * (1.0f / 255.0f)) * shared_quad_state->opacity;
+    float alpha = color.fA * shared_quad_state->opacity;
 
     if (alpha < std::numeric_limits<float>::epsilon())
       return;
@@ -57,8 +57,9 @@ void SolidColorLayerImpl::AppendSolidQuads(
     return;
 
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-  quad->SetNew(shared_quad_state, visible_layer_rect, visible_quad_rect, color,
-               force_anti_aliasing_off);
+  // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+  quad->SetNew(shared_quad_state, visible_layer_rect, visible_quad_rect,
+               color.toSkColor(), force_anti_aliasing_off);
 }
 
 void SolidColorLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,

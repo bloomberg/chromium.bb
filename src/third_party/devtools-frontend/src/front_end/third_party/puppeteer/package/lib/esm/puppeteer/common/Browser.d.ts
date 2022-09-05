@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 /// <reference types="node" />
-import { ChildProcess } from 'child_process';
-import { Protocol } from 'devtools-protocol';
-
-import { Connection } from './Connection.js';
-import { EventEmitter } from './EventEmitter.js';
-import { Page } from './Page.js';
-import { Viewport } from './PuppeteerViewport.js';
 import { Target } from './Target.js';
-
+import { EventEmitter } from './EventEmitter.js';
+import { Connection } from './Connection.js';
+import { Protocol } from 'devtools-protocol';
+import { Page } from './Page.js';
+import { ChildProcess } from 'child_process';
+import { Viewport } from './PuppeteerViewport.js';
 /**
  * BrowserContext options.
  *
@@ -47,6 +45,10 @@ export declare type BrowserCloseCallback = () => Promise<void> | void;
  * @public
  */
 export declare type TargetFilterCallback = (target: Protocol.Target.TargetInfo) => boolean;
+/**
+ * @internal
+ */
+export declare type IsPageTargetCallback = (target: Protocol.Target.TargetInfo) => boolean;
 /**
  * @public
  */
@@ -155,13 +157,14 @@ export declare class Browser extends EventEmitter {
     /**
      * @internal
      */
-    static create(connection: Connection, contextIds: string[], ignoreHTTPSErrors: boolean, defaultViewport?: Viewport | null, process?: ChildProcess, closeCallback?: BrowserCloseCallback, targetFilterCallback?: TargetFilterCallback): Promise<Browser>;
+    static create(connection: Connection, contextIds: string[], ignoreHTTPSErrors: boolean, defaultViewport?: Viewport | null, process?: ChildProcess, closeCallback?: BrowserCloseCallback, targetFilterCallback?: TargetFilterCallback, isPageTargetCallback?: IsPageTargetCallback): Promise<Browser>;
     private _ignoreHTTPSErrors;
     private _defaultViewport?;
     private _process?;
     private _connection;
     private _closeCallback;
     private _targetFilterCallback;
+    private _isPageTargetCallback;
     private _defaultContext;
     private _contexts;
     private _screenshotTaskQueue;
@@ -174,12 +177,16 @@ export declare class Browser extends EventEmitter {
     /**
      * @internal
      */
-    constructor(connection: Connection, contextIds: string[], ignoreHTTPSErrors: boolean, defaultViewport?: Viewport | null, process?: ChildProcess, closeCallback?: BrowserCloseCallback, targetFilterCallback?: TargetFilterCallback);
+    constructor(connection: Connection, contextIds: string[], ignoreHTTPSErrors: boolean, defaultViewport?: Viewport | null, process?: ChildProcess, closeCallback?: BrowserCloseCallback, targetFilterCallback?: TargetFilterCallback, isPageTargetCallback?: IsPageTargetCallback);
     /**
      * The spawned browser process. Returns `null` if the browser instance was created with
      * {@link Puppeteer.connect}.
      */
     process(): ChildProcess | null;
+    /**
+     * @internal
+     */
+    _setIsPageTargetCallback(isPageTargetCallback?: IsPageTargetCallback): void;
     /**
      * Creates a new incognito browser context. This won't share cookies/cache with other
      * browser contexts.
@@ -266,7 +273,7 @@ export declare class Browser extends EventEmitter {
      * const newWindowTarget = await browser.waitForTarget(target => target.url() === 'https://www.example.com/');
      * ```
      */
-    waitForTarget(predicate: (x: Target) => boolean, options?: WaitForTargetOptions): Promise<Target>;
+    waitForTarget(predicate: (x: Target) => boolean | Promise<boolean>, options?: WaitForTargetOptions): Promise<Target>;
     /**
      * An array of all open pages inside the Browser.
      *
@@ -395,7 +402,7 @@ export declare class BrowserContext extends EventEmitter {
      * @returns Promise which resolves to the first target found
      * that matches the `predicate` function.
      */
-    waitForTarget(predicate: (x: Target) => boolean, options?: {
+    waitForTarget(predicate: (x: Target) => boolean | Promise<boolean>, options?: {
         timeout?: number;
     }): Promise<Target>;
     /**

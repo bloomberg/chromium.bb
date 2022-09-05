@@ -8,7 +8,6 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
-#include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/env.h"
@@ -16,6 +15,7 @@
 #include "ui/aura/window_occlusion_change_builder.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/transform.h"
@@ -982,9 +982,6 @@ void WindowOcclusionTracker::OnOcclusionStateChanged(
     WindowTreeHost* host,
     Window::OcclusionState new_state,
     const SkRegion& occluded_region) {
-  // TODO: the meaning of this histogram is different if
-  // `kApplyNativeOccludedRegionToWindowTracker` is true. Remove the histogram.
-  UMA_HISTOGRAM_ENUMERATION("WindowOcclusionChanged", new_state);
   Window* root_window = host->window();
   auto root_window_state_it = root_windows_.find(root_window);
   if (root_window_state_it == root_windows_.end())

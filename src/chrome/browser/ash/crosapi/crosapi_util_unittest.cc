@@ -38,7 +38,7 @@ class CrosapiUtilTest : public testing::Test {
     fake_user_manager_->UserLoggedIn(account_id, user->username_hash(),
                                      /*browser_restart=*/false,
                                      /*is_child=*/false);
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         user, &testing_profile_);
   }
 
@@ -57,7 +57,7 @@ TEST_F(CrosapiUtilTest, GetInterfaceVersions) {
 
   // Check that a known interface with version > 0 is present and has non-zero
   // version.
-  EXPECT_GT(versions[mojom::KeystoreService::Uuid_], 0);
+  EXPECT_GT(versions[mojom::KeystoreService::Uuid_], 0u);
 
   // Check that the empty token is not present.
   base::Token token;
@@ -91,7 +91,7 @@ TEST_F(CrosapiUtilTest,
   fake_user_manager_->UserLoggedIn(account_id, user->username_hash(),
                                    /*browser_restart=*/false,
                                    /*is_child=*/false);
-  chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+  ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
       user, &testing_profile_);
 
   EXPECT_TRUE(browser_util::IsSigninProfileOrBelongsToAffiliatedUser(
@@ -134,6 +134,9 @@ TEST_F(CrosapiUtilTest, DeviceSettingsWithData) {
   testing_profile_.ScopedCrosSettingsTestHelper()
       ->GetStubbedProvider()
       ->SetBoolean(ash::kAttestationForContentProtectionEnabled, true);
+  testing_profile_.ScopedCrosSettingsTestHelper()
+      ->GetStubbedProvider()
+      ->SetBoolean(ash::kAccountsPrefEphemeralUsersEnabled, false);
 
   base::Value allowlist(base::Value::Type::LIST);
   base::Value ids(base::Value::Type::DICTIONARY);
@@ -150,7 +153,9 @@ TEST_F(CrosapiUtilTest, DeviceSettingsWithData) {
 
   EXPECT_EQ(settings->attestation_for_content_protection_enabled,
             crosapi::mojom::DeviceSettings::OptionalBool::kTrue);
-  EXPECT_EQ(settings->usb_detachable_allow_list->usb_device_ids.size(), 1);
+  EXPECT_EQ(settings->device_ephemeral_users_enabled,
+            crosapi::mojom::DeviceSettings::OptionalBool::kFalse);
+  ASSERT_EQ(settings->usb_detachable_allow_list->usb_device_ids.size(), 1u);
   EXPECT_EQ(
       settings->usb_detachable_allow_list->usb_device_ids[0]->has_vendor_id,
       true);

@@ -15,7 +15,7 @@
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_utils.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "ui/color/color_mixers.h"
 #endif
 
@@ -42,19 +42,32 @@ absl::optional<GlobalManager>& GetGlobalManager() {
 
 }  // namespace
 
+ColorProviderManager::InitializerSupplier::InitializerSupplier() = default;
+
+ColorProviderManager::InitializerSupplier::~InitializerSupplier() = default;
+
+ColorProviderManager::ThemeInitializerSupplier::ThemeInitializerSupplier(
+    ThemeType theme_type)
+    : theme_type_(theme_type) {}
+
 ColorProviderManager::Key::Key()
     : Key(ColorMode::kLight,
           ContrastMode::kNormal,
           SystemTheme::kDefault,
+          FrameType::kChromium,
           nullptr) {}
 
-ColorProviderManager::Key::Key(ColorMode color_mode,
-                               ContrastMode contrast_mode,
-                               SystemTheme system_theme,
-                               scoped_refptr<InitializerSupplier> custom_theme)
+ColorProviderManager::Key::Key(
+    ColorMode color_mode,
+    ContrastMode contrast_mode,
+    SystemTheme system_theme,
+    FrameType frame_type,
+    scoped_refptr<ThemeInitializerSupplier> custom_theme)
     : color_mode(color_mode),
       contrast_mode(contrast_mode),
+      elevation_mode(ElevationMode::kLow),
       system_theme(system_theme),
+      frame_type(frame_type),
       custom_theme(std::move(custom_theme)) {}
 
 ColorProviderManager::Key::Key(const Key&) = default;
@@ -75,10 +88,10 @@ ColorProviderManager& ColorProviderManager::Get() {
   absl::optional<GlobalManager>& manager = GetGlobalManager();
   if (!manager.has_value()) {
     manager.emplace();
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     manager.value().AppendColorProviderInitializer(
         base::BindRepeating(AddColorMixers));
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
   }
 
   return manager.value();

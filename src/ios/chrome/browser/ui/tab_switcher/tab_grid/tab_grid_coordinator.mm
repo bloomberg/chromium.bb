@@ -10,16 +10,18 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/commerce/price_alert_util.h"
 #include "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -123,9 +125,9 @@
     RecentTabsContextMenuHelper* recentTabsContextMenuHelper;
 // The action sheet coordinator, if one is currently being shown.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
-// Coordinator for snackbar presentation on |_regularBrowser|.
+// Coordinator for snackbar presentation on `_regularBrowser`.
 @property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
-// Coordinator for snackbar presentation on |_incognitoBrowser|.
+// Coordinator for snackbar presentation on `_incognitoBrowser`.
 @property(nonatomic, strong) SnackbarCoordinator* incognitoSnackbarCoordinator;
 // The timestamp of the user entering the tab grid.
 @property(nonatomic, assign) base::TimeTicks tabGridEnterTime;
@@ -264,7 +266,6 @@
   // A modal may be presented on top of the Recent Tabs or tab grid.
   [self.baseViewController dismissModals];
   self.baseViewController.tabGridMode = TabGridModeNormal;
-  [self showFullscreen:NO];
 
   [self dismissPopovers];
 
@@ -284,10 +285,14 @@
   self.baseViewController.activePage = page;
 }
 
+- (void)setActiveMode:(TabGridMode)mode {
+  self.baseViewController.tabGridMode = mode;
+}
+
 - (UIViewController*)activeViewController {
   if (self.bvcContainer) {
     // When installing the thumb strip while the tab grid is opened, there is no
-    // |currentBVC|.
+    // `currentBVC`.
     DCHECK(self.bvcContainer.currentBVC || [self isThumbStripEnabled]);
     return self.bvcContainer.currentBVC ?: self.bvcContainer;
   }
@@ -298,8 +303,7 @@
   if (self.isThumbStripEnabled) {
     ViewRevealState currentState =
         self.thumbStripCoordinator.panHandler.currentState;
-    return currentState == ViewRevealState::Revealed ||
-           currentState == ViewRevealState::Fullscreen;
+    return currentState == ViewRevealState::Revealed;
   }
   return self.bvcContainer == nil && !self.firstPresentation;
 }
@@ -315,12 +319,19 @@
 - (void)showTabGrid {
   BOOL animated = !self.animationsDisabledForTesting;
 
-  if (ShowThumbStripInTraitCollection(
-          self.baseViewController.traitCollection)) {
+  if ([self isThumbStripEnabled]) {
     [self.thumbStripCoordinator.panHandler
         setNextState:ViewRevealState::Revealed
-            animated:animated];
-    [self.baseViewController contentWillAppearAnimated:animated];
+            animated:animated
+             trigger:ViewRevealTrigger::TabGrid];
+    // Don't do any animation in the tab grid. All that animation will be
+    // controlled by the pan handler/-animateViewReveal:.
+    [self.baseViewController contentWillAppearAnimated:NO];
+
+    // Record when the tab switcher is presented.
+    self.tabGridEnterTime = base::TimeTicks::Now();
+    base::RecordAction(base::UserMetricsAction("MobileTabGridEntered"));
+    [self.priceCardMediator logMetrics:TAB_SWITCHER];
     return;
   }
 
@@ -359,14 +370,14 @@
       // On iOS 15+, snapshotting views with afterScreenUpdates:YES waits 0.5s
       // for the status bar style to update. Work around that delay by taking
       // the snapshot first (during
-      // |transitionFromBrowser:toTabGrid:activePage:withCompletion|) and then
+      // `transitionFromBrowser:toTabGrid:activePage:withCompletion`) and then
       // updating the status bar style afterwards.
       self.baseViewController.childViewControllerForStatusBarStyle = nil;
     });
   }
-  self.tabGridEnterTime = base::TimeTicks::Now();
 
   // Record when the tab switcher is presented.
+  self.tabGridEnterTime = base::TimeTicks::Now();
   base::RecordAction(base::UserMetricsAction("MobileTabGridEntered"));
   [self.priceCardMediator logMetrics:TAB_SWITCHER];
 }
@@ -403,7 +414,8 @@
       [self.baseViewController contentWillDisappearAnimated:YES];
       [self.thumbStripCoordinator.panHandler
           setNextState:ViewRevealState::Hidden
-              animated:YES];
+              animated:YES
+               trigger:ViewRevealTrigger::TabGrid];
     }
 
     if (completion) {
@@ -431,23 +443,32 @@
   self.bvcContainer = [[BVCContainerViewController alloc] init];
   self.bvcContainer.currentBVC = viewController;
   self.bvcContainer.incognito = incognito;
+  // Set fallback presenter, because currentBVC can be nil if the tab grid is
+  // up but no tabs exist in current page.
+  self.bvcContainer.fallbackPresenterViewController = self.baseViewController;
 
   BOOL animated = !self.animationsDisabledForTesting;
   // Never animate the first time.
   if (self.firstPresentation)
     animated = NO;
 
-  // Extened |completion| to signal the tab switcher delegate
+  // Extend `completion` to signal the tab switcher delegate
   // that the animated "tab switcher dismissal" (that is, presenting something
   // on top of the tab switcher) transition has completed.
   // Finally, the launch mask view should be removed.
   ProceduralBlock extendedCompletion = ^{
     [self.delegate tabGridDismissTransitionDidEnd:self];
+    if (self.baseViewController.tabGridMode == TabGridModeSearch) {
+      // In search mode, the tabgrid mode is not reset before the animation so
+      // the animation can start from the correct cell. Once the animation is
+      // complete, reset the tab grid mode.
+      self.baseViewController.tabGridMode = TabGridModeNormal;
+    }
     if (!GetFirstResponder()) {
       // It is possible to already have a first responder (for example the
       // omnibox). In that case, we don't want to mark BVC as first responder.
       // TODO(crbug.com/1223090): Adding DCHECK below to confirm hypothesis
-      // that |-becomeFirstResponder| is crashing due to |currentBVC| not
+      // that `-becomeFirstResponder` is crashing due to `currentBVC` not
       // being in the view hierarchy.
       DCHECK(self.bvcContainer.currentBVC.view.window);
       [self.bvcContainer.currentBVC becomeFirstResponder];
@@ -474,7 +495,7 @@
   // On iOS 15+, snapshotting views with afterScreenUpdates:YES waits 0.5s for
   // the status bar style to update. Work around that delay by taking the
   // snapshot first (during
-  // |transitionFromTabGrid:toBrowser:activePage:withCompletion|) and then
+  // `transitionFromTabGrid:toBrowser:activePage:withCompletion`) and then
   // updating the status bar style afterwards.
   self.baseViewController.childViewControllerForStatusBarStyle =
       self.bvcContainer.currentBVC;
@@ -526,13 +547,14 @@
 
   // Create a BVC add it to this view controller if not present. The thumb strip
   // always needs a BVC container on screen.
-  self.bvcContainer =
-      self.bvcContainer ?: [[BVCContainerViewController alloc] init];
+  if (!self.bvcContainer) {
+    self.bvcContainer = [[BVCContainerViewController alloc] init];
+    self.bvcContainer.fallbackPresenterViewController = self.baseViewController;
+  }
   if (!self.bvcContainer.view.superview) {
     [self.baseViewController addChildViewController:self.bvcContainer];
     self.bvcContainer.view.frame = self.baseViewController.view.bounds;
     [self.baseViewController.view addSubview:self.bvcContainer.view];
-    self.bvcContainer.view.accessibilityViewIsModal = YES;
     [self.bvcContainer didMoveToParentViewController:self.baseViewController];
   }
 
@@ -685,10 +707,10 @@
   self.firstPresentation = YES;
 
   // TODO(crbug.com/850387) : Currently, consumer calls from the mediator
-  // prematurely loads the view in |RecentTabsTableViewController|. Fix this so
+  // prematurely loads the view in `RecentTabsTableViewController`. Fix this so
   // that the view is loaded only by an explicit placement in the view
   // hierarchy. As a workaround, the view controller hierarchy is loaded here
-  // before |RecentTabsMediator| updates are started.
+  // before `RecentTabsMediator` updates are started.
   self.window.rootViewController = self.baseViewController;
   if (self.remoteTabsMediator.browserState) {
     [self.remoteTabsMediator initObservers];
@@ -776,8 +798,8 @@
                focusOmnibox:(BOOL)focusOmnibox
                closeTabGrid:(BOOL)closeTabGrid {
   DCHECK(self.regularBrowser && self.incognitoBrowser);
-  DCHECK(closeTabGrid || ShowThumbStripInTraitCollection(
-                             self.baseViewController.traitCollection));
+  DCHECK(closeTabGrid || [self isThumbStripEnabled]);
+
   Browser* activeBrowser = nullptr;
   switch (page) {
     case TabGridPageIncognitoTabs:
@@ -909,33 +931,54 @@
   [handler openURLInNewTab:[OpenNewTabCommand commandWithURLFromChrome:URL]];
 }
 
-- (void)showFullscreen:(BOOL)fullscreen {
+- (void)dismissBVC {
   if (![self isThumbStripEnabled]) {
     return;
   }
-  ViewRevealingVerticalPanHandler* panHandler =
-      self.thumbStripCoordinator.panHandler;
-  if (fullscreen && panHandler.currentState == ViewRevealState::Revealed) {
-    [panHandler setNextState:ViewRevealState::Fullscreen animated:YES];
-  } else if (!fullscreen &&
-             panHandler.currentState == ViewRevealState::Fullscreen) {
-    [panHandler setNextState:ViewRevealState::Revealed animated:YES];
-  }
+  [self showTabViewController:nil
+                    incognito:NO
+           shouldCloseTabGrid:NO
+                   completion:nil];
 }
 
-#pragma mark - RecentTabsPresentationDelegate
+- (void)setBVCAccessibilityViewModal:(BOOL)modal {
+  self.bvcContainer.view.accessibilityViewIsModal = modal;
+}
 
-- (void)showHistoryFromRecentTabs {
+- (void)openSearchResultsPageForSearchText:(NSString*)searchText {
+  TemplateURLService* templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(
+          self.regularBrowser->GetBrowserState());
+
+  const TemplateURL* searchURLTemplate =
+      templateURLService->GetDefaultSearchProvider();
+
+  TemplateURLRef::SearchTermsArgs searchArgs(
+      base::SysNSStringToUTF16(searchText));
+
+  GURL searchURL(searchURLTemplate->url_ref().ReplaceSearchTerms(
+      searchArgs, templateURLService->search_terms_data()));
+  [self openLinkWithURL:searchURL];
+}
+
+- (void)showHistoryFilteredBySearchText:(NSString*)searchText {
   // A history coordinator from main_controller won't work properly from the
   // tab grid. Using a local coordinator works better and we need to set
-  // |loadStrategy| to YES to ALWAYS_NEW_FOREGROUND_TAB.
+  // `loadStrategy` to YES to ALWAYS_NEW_FOREGROUND_TAB.
   self.historyCoordinator = [[HistoryCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                          browser:self.regularBrowser];
+  self.historyCoordinator.searchTerms = searchText;
   self.historyCoordinator.loadStrategy =
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   self.historyCoordinator.presentationDelegate = self;
   [self.historyCoordinator start];
+}
+
+#pragma mark - RecentTabsPresentationDelegate
+
+- (void)showHistoryFromRecentTabsFilteredBySearchTerms:(NSString*)searchTerms {
+  [self showHistoryFilteredBySearchText:searchTerms];
 }
 
 - (void)showActiveRegularTabFromRecentTabs {
@@ -943,6 +986,11 @@
       shouldActivateBrowser:self.regularBrowser
              dismissTabGrid:YES
                focusOmnibox:NO];
+}
+
+- (void)showRegularTabGridFromRecentTabs {
+  [self.baseViewController setCurrentPageAndPageControl:TabGridPageRegularTabs
+                                               animated:YES];
 }
 
 #pragma mark - HistoryPresentationDelegate
@@ -1039,7 +1087,6 @@
   base::RecordAction(
       base::UserMetricsAction("MobileTabGridTabContextMenuSelectTabs"));
   self.baseViewController.tabGridMode = TabGridModeSelection;
-  [self showFullscreen:YES];
 }
 
 - (void)removeSessionAtTableSectionWithIdentifier:(NSInteger)sectionIdentifier {
@@ -1067,8 +1114,15 @@
   BOOL isInPeekState = panHandler.currentState == ViewRevealState::Peeked;
   if ([self isThumbStripEnabled] && isInPeekState &&
       level <= SceneActivationLevelBackground) {
-    [panHandler setNextState:ViewRevealState::Hidden animated:NO];
+    [panHandler setNextState:ViewRevealState::Hidden
+                    animated:NO
+                     trigger:ViewRevealTrigger::AppBackgrounding];
     [self dismissPopovers];
+  }
+  if (ShowThumbStripInTraitCollection(
+          self.baseViewController.traitCollection) !=
+      [self isThumbStripEnabled]) {
+    [self updateThumbstripIfNeededOnViewController:self.baseViewController];
   }
 }
 
@@ -1076,6 +1130,16 @@
 
 - (void)viewController:(UIViewController*)viewController
     traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.regularBrowser)->GetSceneState();
+  if (sceneState.activationLevel < SceneActivationLevelForegroundInactive) {
+    return;
+  }
+  [self updateThumbstripIfNeededOnViewController:viewController];
+}
+
+- (void)updateThumbstripIfNeededOnViewController:
+    (UIViewController*)viewController {
   BOOL canShowThumbStrip =
       ShowThumbStripInTraitCollection(viewController.traitCollection);
   if (canShowThumbStrip != [self isThumbStripEnabled]) {

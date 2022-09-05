@@ -10,7 +10,10 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
+import android.graphics.Rect;
+import android.view.DragEvent;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -31,14 +34,17 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowPhoneWindow;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.ui.util.AccessibilityUtil;
 import org.chromium.ui.widget.UiWidgetFactory;
 
 /** Unit test for {@link ContextMenuDialog}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowPhoneWindow.class})
+@LooperMode(LooperMode.Mode.LEGACY)
 public class ContextMenuDialogUnitTest {
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -53,6 +59,10 @@ public class ContextMenuDialogUnitTest {
     UiWidgetFactory mMockUiWidgetFactory;
     @Spy
     PopupWindow mSpyPopupWindow;
+    @Mock
+    View mMockTouchEventDelegateView;
+    @Mock
+    AccessibilityUtil mMockAccessibilityUtil;
 
     @Before
     public void setup() {
@@ -112,9 +122,7 @@ public class ContextMenuDialogUnitTest {
     public void testShowPopupWindow() {
         mDialog = createContextMenuDialog(/*isPopup=*/true, /*shouldRemoveScrim=*/false);
         mDialog.show();
-        // Change layout params and request layout so #onLayoutChange is triggered.
-        mRootView.setRight(mRootView.getRight() + 1);
-        mRootView.requestLayout();
+        requestLayoutForRootView();
 
         final ArgumentCaptor<Integer> gravityCaptor = ArgumentCaptor.forClass(Integer.class);
         Mockito.verify(mSpyPopupWindow)
@@ -135,17 +143,14 @@ public class ContextMenuDialogUnitTest {
         mDialog = createContextMenuDialog(/*isPopup=*/true, /*shouldRemoveScrim=*/false);
         mDialog.show();
         // Change layout params and request layout so #onLayoutChange is triggered.
-        mRootView.setRight(mRootView.getRight() + 1);
-        mRootView.requestLayout();
+        requestLayoutForRootView();
         Mockito.verify(mSpyPopupWindow)
                 .showAtLocation(eq(mRootView.getRootView()), anyInt(), anyInt(), anyInt());
 
         // Mock up popup window is showing.
         Mockito.doReturn(true).when(mSpyPopupWindow).isShowing();
 
-        // Change layout params and request layout so #onLayoutChange is triggered.
-        mRootView.setRight(mRootView.getRight() - 1);
-        mRootView.requestLayout();
+        requestLayoutForRootView();
         Mockito.verify(mSpyPopupWindow).dismiss();
     }
 
@@ -163,9 +168,89 @@ public class ContextMenuDialogUnitTest {
         Mockito.verify(mSpyPopupWindow, Mockito.times(0)).dismiss();
     }
 
+    @Test
+    public void testShowPopupWindow_NotFocusableInA11y() throws Exception {
+        Mockito.doReturn(true).when(mMockAccessibilityUtil).isTouchExplorationEnabled();
+
+        mDialog = createContextMenuDialog(/*isPopup=*/true, /*shouldRemoveScrim=*/false);
+        mDialog.show();
+        // Change layout params and request layout so #onLayoutChange is triggered.
+        requestLayoutForRootView();
+
+        Mockito.verify(mSpyPopupWindow).setFocusable(eq(true));
+    }
+
+    @Test
+    public void testDispatchTouchToDelegate() {
+        mDialog = createContextMenuDialog(/*isPopup=*/true, /*shouldRemoveScrim=*/true);
+        mDialog.show();
+        requestLayoutForRootView();
+        Mockito.verify(mSpyPopupWindow)
+                .showAtLocation(eq(mRootView.getRootView()), anyInt(), anyInt(), anyInt());
+        Mockito.doReturn(true).when(mMockTouchEventDelegateView).isAttachedToWindow();
+
+        // common motion events other than ACTION_DOWN should be forwarded to touch event delegate.
+        int[] motionEvenActions = new int[] {MotionEvent.ACTION_CANCEL,
+                MotionEvent.ACTION_HOVER_ENTER, MotionEvent.ACTION_HOVER_EXIT,
+                MotionEvent.ACTION_HOVER_MOVE, MotionEvent.ACTION_MOVE, MotionEvent.ACTION_OUTSIDE,
+                MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP,
+                MotionEvent.ACTION_SCROLL, MotionEvent.ACTION_UP};
+        for (int actionType : motionEvenActions) {
+            MotionEvent event = createMockMotionEventWithActionType(actionType);
+            mDialog.onTouchEvent(event);
+            Mockito.verify(mMockTouchEventDelegateView, Mockito.description("Action" + actionType))
+                    .dispatchTouchEvent(eq(event));
+        }
+
+        // ACTION_DOWN should dismiss the dialog and the popup window.
+        MotionEvent downEvent = createMockMotionEventWithActionType(MotionEvent.ACTION_DOWN);
+        mDialog.onTouchEvent(downEvent);
+        Mockito.verify(mMockTouchEventDelegateView, Mockito.times(0))
+                .dispatchTouchEvent(eq(downEvent));
+        Mockito.verify(mSpyPopupWindow).dismiss();
+    }
+
+    @Test
+    public void testDispatchDragEvents() {
+        mDialog = createContextMenuDialog(/*isPopup=*/true, /*shouldRemoveScrim=*/true);
+        mDialog.show();
+        requestLayoutForRootView();
+        Mockito.verify(mSpyPopupWindow)
+                .showAtLocation(eq(mRootView.getRootView()), anyInt(), anyInt(), anyInt());
+        Assert.assertNotNull("OnDragListener is null.", mDialog.getOnDragListenerForTesting());
+
+        final DragEvent mockDragEvent = Mockito.mock(DragEvent.class);
+        Mockito.doReturn(DragEvent.ACTION_DRAG_LOCATION).when(mockDragEvent).getAction();
+
+        Mockito.doReturn(true).when(mMockTouchEventDelegateView).isAttachedToWindow();
+        mDialog.getOnDragListenerForTesting().onDrag(mRootView, mockDragEvent);
+        Mockito.verify(mMockTouchEventDelegateView, Mockito.times(1))
+                .dispatchDragEvent(eq(mockDragEvent));
+
+        final DragEvent mockDragEvent2 = Mockito.mock(DragEvent.class);
+        Mockito.doReturn(false).when(mMockTouchEventDelegateView).isAttachedToWindow();
+        mDialog.getOnDragListenerForTesting().onDrag(mRootView, mockDragEvent2);
+        Mockito.verify(mMockTouchEventDelegateView, Mockito.times(0))
+                .dispatchDragEvent(eq(mockDragEvent2));
+    }
+
     private ContextMenuDialog createContextMenuDialog(boolean isPopup, boolean shouldRemoveScrim) {
-        return new ContextMenuDialog(mActivity, 0, 0, 0, 0, ContextMenuDialog.NO_CUSTOM_MARGIN,
+        return new ContextMenuDialog(mActivity, 0, ContextMenuDialog.NO_CUSTOM_MARGIN,
                 ContextMenuDialog.NO_CUSTOM_MARGIN, mRootView, mMenuContentView, isPopup,
-                shouldRemoveScrim, 0, 0);
+                shouldRemoveScrim, 0, 0, mMockTouchEventDelegateView, new Rect(0, 0, 0, 0),
+                mMockAccessibilityUtil);
+    }
+
+    private void requestLayoutForRootView() {
+        // Change layout params and request layout so #onLayoutChange is triggered.
+        mRootView.setRight(mRootView.getRight() + 1);
+        mRootView.requestLayout();
+    }
+
+    private MotionEvent createMockMotionEventWithActionType(int actionType) {
+        MotionEvent motionEvent = Mockito.mock(MotionEvent.class);
+        Mockito.doReturn(actionType).when(motionEvent).getAction();
+
+        return motionEvent;
     }
 }

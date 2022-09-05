@@ -14,10 +14,6 @@ namespace features {
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;
 
-// Used to enable the workaround for WKWebView history clobber bug
-// (crbug.com/887497).
-extern const base::Feature kHistoryClobberWorkaround;
-
 // Used to prevent native apps from being opened when a universal link is tapped
 // and the user is browsing in off the record mode.
 extern const base::Feature kBlockUniversalLinksInOffTheRecordMode;
@@ -47,9 +43,6 @@ extern const base::Feature kRecordSnapshotSize;
 // WKWebView is set as NSURLRequestAttributionUser on iOS 15.
 extern const base::Feature kSetRequestAttribution;
 
-// When enabled, display non-live preview for context menus in web content.
-extern const base::Feature kWebViewNativeContextMenuPhase2;
-
 // When enabled, the default context menu from WKWebView is used.
 extern const base::Feature kDefaultWebViewContextMenu;
 
@@ -58,11 +51,6 @@ extern const base::Feature kDisableNonHTMLScreenshotOnIOS15;
 
 // Feature flag that enable Shared Highlighting color change in iOS.
 extern const base::Feature kIOSSharedHighlightingColorChange;
-
-// Feature flag that enables creating pending item on POST form submission.
-// Also, for GET form submissions with same page navigation, retains the
-// transition type of new navigation item.
-extern const base::Feature kCreatePendingItemForPostFormSubmission;
 
 // Enable the new download API if available.
 extern const base::Feature kEnableNewDownloadAPI;
@@ -75,6 +63,22 @@ extern const base::Feature kSynthesizedRestoreSession;
 // See //docs/ios/unrealized_web_state.md for more information.
 extern const base::Feature kEnableUnrealizedWebStates;
 
+// Enables user control for camera and/or microphone access for a specific site
+// through site settings during its lifespan. When enabled, each web state will
+// keep track of whether camera and/or microphone access is granted by the user
+// for its current site.
+extern const base::Feature kMediaPermissionsControl;
+
+// Enables the Fullscreen API in WebKit (supported on iOS 16.0+). This API
+// allows web sites to enter fullscreen mode, with all browser UI hidden.
+extern const base::Feature kEnableFullscreenAPI;
+
+// Feature flag enabling use of new iOS 15
+// loadSimulatedRequest:responseHTMLString: API to display error pages in
+// CRWWKNavigationHandler. The helper method IsLoadSimulatedRequestAPIEnabled()
+// should be used instead of directly checking this feature.
+extern const base::Feature kUseLoadSimulatedRequestForOfflinePage;
+
 // When true, the native context menu for the web content are used.
 bool UseWebViewNativeContextMenuWeb();
 
@@ -83,6 +87,14 @@ bool ShouldTakeScreenshotOnNonHTMLContent();
 
 // When true, the new download API should be used.
 bool IsNewDownloadAPIEnabled();
+
+// When true, user control for camera and/or microphone access should be
+// enabled.
+bool IsMediaPermissionsControlEnabled();
+
+// When true, the new loadSimulatedRequest API should be used when displaying
+// error pages.
+bool IsLoadSimulatedRequestAPIEnabled();
 
 }  // namespace features
 }  // namespace web

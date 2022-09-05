@@ -21,9 +21,12 @@
 namespace libgav1 {
 
 bool SegmentationMap::Allocate(int32_t rows4x4, int32_t columns4x4) {
+  if (rows4x4 * columns4x4 > rows4x4_ * columns4x4_) {
+    segment_id_buffer_.reset(new (std::nothrow) int8_t[rows4x4 * columns4x4]);
+  }
+
   rows4x4_ = rows4x4;
   columns4x4_ = columns4x4;
-  segment_id_buffer_.reset(new (std::nothrow) int8_t[rows4x4_ * columns4x4_]);
   if (segment_id_buffer_ == nullptr) return false;
   segment_id_.Reset(rows4x4_, columns4x4_, segment_id_buffer_.get());
   return true;

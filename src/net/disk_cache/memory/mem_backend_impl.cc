@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "net/base/net_errors.h"
@@ -45,9 +44,6 @@ base::LinkNode<MemEntryImpl>* NextSkippingChildren(
 
 MemBackendImpl::MemBackendImpl(net::NetLog* net_log)
     : Backend(net::MEMORY_CACHE),
-      custom_clock_for_testing_(nullptr),
-      max_size_(0),
-      current_size_(0),
       net_log_(net_log),
       memory_pressure_listener_(
           FROM_HERE,

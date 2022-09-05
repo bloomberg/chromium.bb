@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "crypto/signature_verifier.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -26,15 +27,14 @@
 #include "net/cert/sct_auditing_delegate.h"
 #include "net/cert/x509_util.h"
 #include "net/http/transport_security_state.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/crypto_protocol.h"
 
 using base::StringPrintf;
 using std::string;
 
 namespace net {
 
-ProofVerifyDetailsChromium::ProofVerifyDetailsChromium()
-    : pkp_bypassed(false), is_fatal_cert_error(false) {}
+ProofVerifyDetailsChromium::ProofVerifyDetailsChromium() = default;
 
 ProofVerifyDetailsChromium::~ProofVerifyDetailsChromium() {}
 
@@ -164,7 +164,7 @@ class ProofVerifierChromium::Job {
   // passed to CertVerifier::Verify.
   int cert_verify_flags_;
 
-  State next_state_;
+  State next_state_ = STATE_NONE;
 
   base::TimeTicks start_time_;
 
@@ -185,7 +185,6 @@ ProofVerifierChromium::Job::Job(
       transport_security_state_(transport_security_state),
       sct_auditing_delegate_(sct_auditing_delegate),
       cert_verify_flags_(cert_verify_flags),
-      next_state_(STATE_NONE),
       start_time_(base::TimeTicks::Now()),
       net_log_(net_log) {
   CHECK(proof_verifier_);
@@ -423,7 +422,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
         break;
       case TransportSecurityState::PKPStatus::BYPASSED:
         verify_details_->pkp_bypassed = true;
-        FALLTHROUGH;
+        [[fallthrough]];
       case TransportSecurityState::PKPStatus::OK:
         // Do nothing.
         break;
@@ -540,8 +539,7 @@ int ProofVerifierChromium::Job::CheckCTCompliance() {
           cert_verify_result.policy_compliance,
           proof_verifier_->network_isolation_key_);
 
-  if (sct_auditing_delegate_ &&
-      sct_auditing_delegate_->IsSCTAuditingEnabled()) {
+  if (sct_auditing_delegate_) {
     sct_auditing_delegate_->MaybeEnqueueReport(
         HostPortPair(hostname_, port_), cert_verify_result.verified_cert.get(),
         cert_verify_result.scts);

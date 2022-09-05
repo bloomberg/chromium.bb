@@ -31,12 +31,12 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/live_caption/caption_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "extensions/browser/extension_system.h"
-#include "media/base/media_switches.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -325,7 +325,7 @@ GetA11yFullscreenMagnifierFocusFollowingSearchConcepts() {
 }
 
 bool IsLiveCaptionEnabled() {
-  return media::IsLiveCaptionFeatureEnabled();
+  return captions::IsLiveCaptionFeatureSupported();
 }
 
 bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
@@ -340,10 +340,6 @@ bool IsSwitchAccessTextAllowed() {
 bool AreTabletNavigationButtonsAllowed() {
   return ash::features::IsHideShelfControlsInTabletModeEnabled() &&
          ash::TabletMode::IsBoardTypeMarkedAsTabletCapable();
-}
-
-bool AreDictationLocalePrefsAllowed() {
-  return ::features::IsExperimentalAccessibilityDictationOfflineEnabled();
 }
 
 }  // namespace
@@ -748,9 +744,7 @@ void AccessibilitySection::AddLoadTimeData(
 
   html_source->AddLocalizedString(
       "dictationDescription",
-      ::features::IsExperimentalAccessibilityDictationOfflineEnabled()
-          ? IDS_SETTINGS_ACCESSIBILITY_DICTATION_NEW_DESCRIPTION
-          : IDS_SETTINGS_ACCESSIBILITY_DICTATION_DESCRIPTION);
+      IDS_SETTINGS_ACCESSIBILITY_DICTATION_NEW_DESCRIPTION);
 
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
@@ -768,9 +762,6 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddBoolean(
       "isMagnifierContinuousMouseFollowingModeSettingEnabled",
       IsMagnifierContinuousMouseFollowingModeSettingEnabled());
-
-  html_source->AddBoolean("areDictationLocalePrefsAllowed",
-                          AreDictationLocalePrefsAllowed());
 
   ::settings::AddCaptionSubpageStrings(html_source);
 }

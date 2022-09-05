@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/nearby/src/cpp/platform/api/platform.h"
+#include "third_party/nearby/src/internal/platform/implementation/platform.h"
 
+#include "ash/services/nearby/public/mojom/firewall_hole.mojom.h"
+#include "ash/services/nearby/public/mojom/tcp_socket_factory.mojom.h"
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/thread_pool.h"
@@ -23,24 +25,27 @@
 #include "chrome/services/sharing/nearby/platform/scheduled_executor.h"
 #include "chrome/services/sharing/nearby/platform/submittable_executor.h"
 #include "chrome/services/sharing/nearby/platform/webrtc.h"
+#include "chrome/services/sharing/nearby/platform/wifi_lan_medium.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
-#include "third_party/nearby/src/cpp/platform/api/atomic_boolean.h"
-#include "third_party/nearby/src/cpp/platform/api/atomic_reference.h"
-#include "third_party/nearby/src/cpp/platform/api/ble.h"
-#include "third_party/nearby/src/cpp/platform/api/ble_v2.h"
-#include "third_party/nearby/src/cpp/platform/api/bluetooth_adapter.h"
-#include "third_party/nearby/src/cpp/platform/api/bluetooth_classic.h"
-#include "third_party/nearby/src/cpp/platform/api/condition_variable.h"
-#include "third_party/nearby/src/cpp/platform/api/count_down_latch.h"
-#include "third_party/nearby/src/cpp/platform/api/log_message.h"
-#include "third_party/nearby/src/cpp/platform/api/mutex.h"
-#include "third_party/nearby/src/cpp/platform/api/scheduled_executor.h"
-#include "third_party/nearby/src/cpp/platform/api/server_sync.h"
-#include "third_party/nearby/src/cpp/platform/api/submittable_executor.h"
-#include "third_party/nearby/src/cpp/platform/api/webrtc.h"
-#include "third_party/nearby/src/cpp/platform/api/wifi.h"
-#include "third_party/nearby/src/cpp/platform/impl/shared/file.h"
+#include "third_party/nearby/src/internal/platform/implementation/atomic_boolean.h"
+#include "third_party/nearby/src/internal/platform/implementation/atomic_reference.h"
+#include "third_party/nearby/src/internal/platform/implementation/ble.h"
+#include "third_party/nearby/src/internal/platform/implementation/ble_v2.h"
+#include "third_party/nearby/src/internal/platform/implementation/bluetooth_adapter.h"
+#include "third_party/nearby/src/internal/platform/implementation/bluetooth_classic.h"
+#include "third_party/nearby/src/internal/platform/implementation/condition_variable.h"
+#include "third_party/nearby/src/internal/platform/implementation/count_down_latch.h"
+#include "third_party/nearby/src/internal/platform/implementation/log_message.h"
+#include "third_party/nearby/src/internal/platform/implementation/mutex.h"
+#include "third_party/nearby/src/internal/platform/implementation/scheduled_executor.h"
+#include "third_party/nearby/src/internal/platform/implementation/server_sync.h"
+#include "third_party/nearby/src/internal/platform/implementation/shared/file.h"
+#include "third_party/nearby/src/internal/platform/implementation/submittable_executor.h"
+#include "third_party/nearby/src/internal/platform/implementation/webrtc.h"
+#include "third_party/nearby/src/internal/platform/implementation/wifi.h"
+#include "third_party/nearby/src/internal/platform/implementation/wifi_hotspot.h"
 
 namespace location {
 namespace nearby {
@@ -50,6 +55,19 @@ int GetCurrentTid() {
   // SubmittableExecutor and ScheduledExecutor does not own a thread pool
   // directly nor manages threads, thus cannot support this debug feature.
   return 0;
+}
+
+std::string ImplementationPlatform::GetDownloadPath(std::string& parent_folder,
+                                                    std::string& file_name) {
+  // This should return the <download_path>/parent_folder/file_name. For now we
+  // will just return an empty string, since chrome doesn't call this yet.
+  // TODO(b/223710122): Eventually chrome should implement this method.
+  NOTIMPLEMENTED();
+  return std::string("");
+}
+
+OSName ImplementationPlatform::GetCurrentOS() {
+  return OSName::kChromeOS;
 }
 
 std::unique_ptr<SubmittableExecutor>
@@ -105,6 +123,7 @@ std::unique_ptr<AtomicBoolean> ImplementationPlatform::CreateAtomicBoolean(
   return std::make_unique<chrome::AtomicBoolean>(initial_value);
 }
 
+ABSL_DEPRECATED("This interface will be deleted in the near future.")
 std::unique_ptr<InputFile> ImplementationPlatform::CreateInputFile(
     std::int64_t payload_id,
     std::int64_t total_size) {
@@ -113,11 +132,31 @@ std::unique_ptr<InputFile> ImplementationPlatform::CreateInputFile(
       connections.ExtractInputFile(payload_id));
 }
 
+std::unique_ptr<InputFile> ImplementationPlatform::CreateInputFile(
+    absl::string_view file_path,
+    size_t size) {
+  // This constructor is not called by Chrome. Returning nullptr, just in case.
+  // TODO(b/223710122): Eventually chrome should implement and use this
+  // constructor exclusively.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+ABSL_DEPRECATED("This interface will be deleted in the near future.")
 std::unique_ptr<OutputFile> ImplementationPlatform::CreateOutputFile(
     std::int64_t payload_id) {
   auto& connections = connections::NearbyConnections::GetInstance();
   return std::make_unique<chrome::OutputFile>(
       connections.ExtractOutputFile(payload_id));
+}
+
+std::unique_ptr<OutputFile> ImplementationPlatform::CreateOutputFile(
+    absl::string_view file_path) {
+  // This constructor is not called by Chrome. Returning nullptr, just in case.
+  // TODO(b/223710122): Eventually chrome should implement and use this
+  // constructor exclusively.
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 std::unique_ptr<LogMessage> ImplementationPlatform::CreateLogMessage(
@@ -173,8 +212,43 @@ std::unique_ptr<WifiMedium> ImplementationPlatform::CreateWifiMedium() {
   return nullptr;
 }
 
-std::unique_ptr<WifiLanMedium> ImplementationPlatform::CreateWifiLanMedium() {
+std::unique_ptr<WifiHotspotMedium>
+ImplementationPlatform::CreateWifiHotspotMedium() {
   return nullptr;
+}
+
+std::unique_ptr<WifiLanMedium> ImplementationPlatform::CreateWifiLanMedium() {
+  auto& connections = connections::NearbyConnections::GetInstance();
+
+  // TODO(https://crbug.com/1261238): This should always be bound when the
+  // WifiLan feature flag is enabled. Update logging to ERROR after launch.
+  const mojo::SharedRemote<chromeos::network_config::mojom::CrosNetworkConfig>&
+      cros_network_config = connections.cros_network_config();
+  if (!cros_network_config.is_bound()) {
+    VLOG(1) << "CrosNetworkConfig not bound. Returning null WifiLan medium";
+    return nullptr;
+  }
+
+  // TODO(https://crbug.com/1261238): This should always be bound when the
+  // WifiLan feature flag is enabled. Update logging to ERROR after launch.
+  const mojo::SharedRemote<sharing::mojom::FirewallHoleFactory>&
+      firewall_hole_factory = connections.firewall_hole_factory();
+  if (!firewall_hole_factory.is_bound()) {
+    VLOG(1) << "FirewallHoleFactory not bound. Returning null WifiLan medium";
+    return nullptr;
+  }
+
+  // TODO(https://crbug.com/1261238): This should always be bound when the
+  // WifiLan feature flag is enabled. Update logging to ERROR after launch.
+  const mojo::SharedRemote<sharing::mojom::TcpSocketFactory>&
+      tcp_socket_factory = connections.tcp_socket_factory();
+  if (!tcp_socket_factory.is_bound()) {
+    VLOG(1) << "TcpSocketFactory not bound. Returning null WifiLan medium";
+    return nullptr;
+  }
+
+  return std::make_unique<chrome::WifiLanMedium>(
+      tcp_socket_factory, cros_network_config, firewall_hole_factory);
 }
 
 std::unique_ptr<WebRtcMedium> ImplementationPlatform::CreateWebRtcMedium() {

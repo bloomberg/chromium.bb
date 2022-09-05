@@ -7,14 +7,15 @@
 
 #include "ash/components/tether/wifi_hotspot_disconnector.h"
 #include "base/memory/weak_ptr.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/network/network_connection_handler.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/network/network_state_handler.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
-namespace chromeos {
-
-class NetworkConnectionHandler;
-class NetworkStateHandler;
+namespace ash {
 
 namespace tether {
 
@@ -48,12 +49,10 @@ class WifiHotspotDisconnectorImpl : public WifiHotspotDisconnector {
                                   const std::string& wifi_network_path,
                                   base::OnceClosure success_callback,
                                   StringErrorCallback error_callback);
-  void OnFailedWifiDisconnect(
-      const std::string& wifi_network_guid,
-      const std::string& wifi_network_path,
-      StringErrorCallback error_callback,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+  void OnFailedWifiDisconnect(const std::string& wifi_network_guid,
+                              const std::string& wifi_network_path,
+                              StringErrorCallback error_callback,
+                              const std::string& error_name);
   void CleanUpAfterWifiDisconnection(const std::string& wifi_network_path,
                                      base::OnceClosure success_callback,
                                      StringErrorCallback error_callback);
@@ -68,6 +67,6 @@ class WifiHotspotDisconnectorImpl : public WifiHotspotDisconnector {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_WIFI_HOTSPOT_DISCONNECTOR_IMPL_H_

@@ -26,7 +26,6 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
   ScriptPromise Cancel(ScriptState*, ScriptValue reason) override;
   void ContextDestroyed() override;
 
-  void SignalErrorImmediately(DOMException*);
   void SignalErrorOnClose(DOMException*);
 
   void Trace(Visitor*) const override;
@@ -37,7 +36,6 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
 
   void OnHandleReady(MojoResult, const mojo::HandleSignalsState&);
   void OnFlush(ScriptPromiseResolver*);
-  void ExpectPipeClose();
   void PipeClosed();
   void Close();
 
@@ -45,7 +43,6 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
   mojo::SimpleWatcher watcher_;
   Member<SerialPort> serial_port_;
   Member<DOMException> pending_exception_;
-  bool expect_close_ = false;
 };
 
 }  // namespace blink

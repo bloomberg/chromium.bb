@@ -12,12 +12,14 @@
 #include <vector>
 
 #include "ash/components/arc/mojom/net.mojom.h"
+#include "ash/components/arc/net/cert_manager.h"
 #include "ash/components/arc/session/connection_observer.h"
 #include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/patchpanel/patchpanel_service.pb.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -56,6 +58,7 @@ class ArcNetHostImpl : public KeyedService,
   ~ArcNetHostImpl() override;
 
   void SetPrefService(PrefService* pref_service);
+  void SetCertManager(std::unique_ptr<CertManager> cert_manager);
 
   // ARC -> Chrome calls:
 
@@ -88,17 +91,13 @@ class ArcNetHostImpl : public KeyedService,
   void AddPasspointCredentials(
       mojom::PasspointCredentialsPtr credentials) override;
 
-  void RemovePasspointCredentials(const std::string& package_name) override;
+  void RemovePasspointCredentials(
+      mojom::PasspointRemovalPropertiesPtr properties) override;
 
   void SetAlwaysOnVpn(const std::string& vpnPackage, bool lockdown) override;
 
   std::unique_ptr<base::DictionaryValue> TranslateVpnConfigurationToOnc(
       const mojom::AndroidVpnConfiguration& cfg);
-
-  base::Value TranslateEapCredentialsToDict(const mojom::EapCredentials& cred);
-
-  base::Value TranslatePasspointCredentialsToDict(
-      const mojom::PasspointCredentials& cred);
 
   // Overridden from chromeos::NetworkStateHandlerObserver.
   void ScanCompleted(const chromeos::DeviceState* /*unused*/) override;
@@ -118,7 +117,8 @@ class ArcNetHostImpl : public KeyedService,
 
  private:
   const chromeos::NetworkState* GetDefaultNetworkFromChrome();
-  void UpdateActiveNetworks();
+  void UpdateActiveNetworks(
+      const std::vector<patchpanel::NetworkDevice>& devices);
   void DefaultNetworkSuccessCallback(const std::string& service_path,
                                      const base::DictionaryValue& dictionary);
 
@@ -129,6 +129,11 @@ class ArcNetHostImpl : public KeyedService,
   // This is sufficient to pass CTS but it might not handle multiple
   // successive Create operations (crbug.com/631646).
   bool GetNetworkPathFromGuid(const std::string& guid, std::string* path);
+
+  // Get active layer 3 network connections for ARC. This function will run
+  // a callback that listed current active networks for ARC.
+  void GetActiveNetworks(GetNetworksCallback callback,
+                         const std::vector<patchpanel::NetworkDevice>& devices);
 
   // Look through the list of known networks for an ARC VPN service.
   // If found, return the Shill service path.  Otherwise return
@@ -161,6 +166,41 @@ class ArcNetHostImpl : public KeyedService,
   // Ask Android to disconnect any VPN app that is currently connected.
   void DisconnectArcVpn();
 
+  // Translate EAP credentials to base::Value dictionary and run |callback|.
+  // If it is necessary to import certificates this method will asynchronously
+  // import them and run |callback| afterwards.
+  void TranslateEapCredentialsToDict(
+      mojom::EapCredentialsPtr cred,
+      base::OnceCallback<void(base::Value)> callback);
+
+  // Synchronously translate EAP credentials to base::Value dictionary with
+  // empty or imported certificate and slot ID. |callback| is then run with
+  // the translated values.
+  void TranslateEapCredentialsToDictWithCertID(
+      mojom::EapCredentialsPtr cred,
+      base::OnceCallback<void(base::Value)> callback,
+      const absl::optional<std::string>& cert_id,
+      const absl::optional<int>& slot_id);
+
+  // Translate passpoint credentials to base::Value dictionary and run
+  // |callback|. If it is necessary to import certificates this method will
+  // asynchronously import them and run |callback| afterwards.
+  void TranslatePasspointCredentialsToDict(
+      mojom::PasspointCredentialsPtr cred,
+      base::OnceCallback<void(base::Value)> callback);
+
+  // Synchronously translate passpoint credentials to base::Value dictionary
+  // with EAP fields translated inside |dict|. |callback| is then run with
+  // the translated values.
+  void TranslatePasspointCredentialsToDictWithEapTranslated(
+      mojom::PasspointCredentialsPtr cred,
+      base::OnceCallback<void(base::Value)> callback,
+      base::Value dict);
+
+  // Synchronously calls Chrome OS to add passpoint credentials from ARC with
+  // the properties values translated taken from mojo.
+  void AddPasspointCredentialsWithProperties(base::Value properties);
+
   void CreateNetworkSuccessCallback(
       base::OnceCallback<void(const std::string&)> callback,
       const std::string& service_path,
@@ -168,8 +208,7 @@ class ArcNetHostImpl : public KeyedService,
 
   void CreateNetworkFailureCallback(
       base::OnceCallback<void(const std::string&)> callback,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+      const std::string& error_name);
 
   // Callback for chromeos::NetworkHandler::GetShillProperties
   void ReceiveShillProperties(const std::string& service_path,
@@ -188,6 +227,8 @@ class ArcNetHostImpl : public KeyedService,
   std::string arc_vpn_service_path_;
   // Owned by the user profile whose context was used to initialize |this|.
   PrefService* pref_service_ = nullptr;
+
+  std::unique_ptr<CertManager> cert_manager_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<ArcNetHostImpl> weak_factory_{this};

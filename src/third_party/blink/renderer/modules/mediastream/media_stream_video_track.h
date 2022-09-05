@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "third_party/blink/public/platform/modules/mediastream/secure_display_link_tracker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
@@ -181,6 +182,10 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
   void SetIsScreencastForTesting(bool is_screencast) {
     is_screencast_ = is_screencast;
   }
+
+  MediaStreamTrackPlatform::StreamType Type() const override {
+    return MediaStreamTrackPlatform::StreamType::kVideo;
+  };
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamRemoteVideoSourceTest, StartTrack);

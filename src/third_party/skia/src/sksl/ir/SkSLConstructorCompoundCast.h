@@ -8,13 +8,17 @@
 #ifndef SKSL_CONSTRUCTOR_COMPOUND_CAST
 #define SKSL_CONSTRUCTOR_COMPOUND_CAST
 
-#include "src/sksl/SkSLContext.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLExpression.h"
 
 #include <memory>
+#include <utility>
 
 namespace SkSL {
+
+class Context;
+class Type;
 
 /**
  * Represents the construction of a vector/matrix typecast, such as `half3(myInt3)` or
@@ -26,11 +30,11 @@ class ConstructorCompoundCast final : public SingleArgumentConstructor {
 public:
     inline static constexpr Kind kExpressionKind = Kind::kConstructorCompoundCast;
 
-    ConstructorCompoundCast(int line, const Type& type, std::unique_ptr<Expression> arg)
-        : INHERITED(line, kExpressionKind, &type, std::move(arg)) {}
+    ConstructorCompoundCast(Position pos, const Type& type, std::unique_ptr<Expression> arg)
+        : INHERITED(pos, kExpressionKind, &type, std::move(arg)) {}
 
     static std::unique_ptr<Expression> Make(const Context& context,
-                                            int line,
+                                            Position pos,
                                             const Type& type,
                                             std::unique_ptr<Expression> arg);
 
@@ -39,8 +43,8 @@ public:
         return false;
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::make_unique<ConstructorCompoundCast>(fLine, this->type(), argument()->clone());
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::make_unique<ConstructorCompoundCast>(pos, this->type(), argument()->clone());
     }
 
 private:

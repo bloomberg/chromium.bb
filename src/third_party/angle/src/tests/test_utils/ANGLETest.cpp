@@ -84,24 +84,6 @@ void TestPlatform_logWarning(PlatformMethods *platform, const char *warningMessa
 
 void TestPlatform_logInfo(PlatformMethods *platform, const char *infoMessage) {}
 
-void TestPlatform_overrideWorkaroundsD3D(PlatformMethods *platform, FeaturesD3D *featuresD3D)
-{
-    auto *testPlatformContext = static_cast<TestPlatformContext *>(platform->context);
-    if (testPlatformContext->currentTest)
-    {
-        testPlatformContext->currentTest->overrideWorkaroundsD3D(featuresD3D);
-    }
-}
-
-void TestPlatform_overrideFeaturesVk(PlatformMethods *platform, FeaturesVk *featuresVulkan)
-{
-    auto *testPlatformContext = static_cast<TestPlatformContext *>(platform->context);
-    if (testPlatformContext->currentTest)
-    {
-        testPlatformContext->currentTest->overrideFeaturesVk(featuresVulkan);
-    }
-}
-
 const std::array<Vector3, 6> kQuadVertices = {{
     Vector3(-1.0f, 1.0f, 0.5f),
     Vector3(-1.0f, -1.0f, 0.5f),
@@ -190,8 +172,15 @@ bool ShouldAlwaysForceNewDisplay()
     return (!systemInfo || !IsWindows() || systemInfo->hasAMDGPU());
 }
 
-GPUTestConfig::API GetTestConfigAPIFromRenderer(EGLenum renderer, EGLenum deviceType)
+GPUTestConfig::API GetTestConfigAPIFromRenderer(angle::GLESDriverType driverType,
+                                                EGLenum renderer,
+                                                EGLenum deviceType)
 {
+    if (driverType != angle::GLESDriverType::AngleEGL)
+    {
+        return GPUTestConfig::kAPIUnknown;
+    }
+
     switch (renderer)
     {
         case EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE:
@@ -214,7 +203,7 @@ GPUTestConfig::API GetTestConfigAPIFromRenderer(EGLenum renderer, EGLenum device
         case EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE:
             return GPUTestConfig::kAPIMetal;
         default:
-            std::cerr << "Unknown Renderer enum: 0x%X\n" << renderer;
+            std::cerr << "Unknown Renderer enum: 0x" << std::hex << renderer << "\n";
             return GPUTestConfig::kAPIUnknown;
     }
 }
@@ -222,6 +211,13 @@ GPUTestConfig::API GetTestConfigAPIFromRenderer(EGLenum renderer, EGLenum device
 
 GLColorRGB::GLColorRGB(const Vector3 &floatColor)
     : R(ColorDenorm(floatColor.x())), G(ColorDenorm(floatColor.y())), B(ColorDenorm(floatColor.z()))
+{}
+
+GLColor::GLColor(const Vector3 &floatColor)
+    : R(ColorDenorm(floatColor.x())),
+      G(ColorDenorm(floatColor.y())),
+      B(ColorDenorm(floatColor.z())),
+      A(255)
 {}
 
 GLColor::GLColor(const Vector4 &floatColor)
@@ -604,12 +600,10 @@ void ANGLETestBase::ANGLETestSetUp()
         angle::Sleep(GetTestStartDelaySeconds() * 1000);
     }
 
-    gDefaultPlatformMethods.overrideWorkaroundsD3D = TestPlatform_overrideWorkaroundsD3D;
-    gDefaultPlatformMethods.overrideFeaturesVk     = TestPlatform_overrideFeaturesVk;
-    gDefaultPlatformMethods.logError               = TestPlatform_logError;
-    gDefaultPlatformMethods.logWarning             = TestPlatform_logWarning;
-    gDefaultPlatformMethods.logInfo                = TestPlatform_logInfo;
-    gDefaultPlatformMethods.context                = &gPlatformContext;
+    gDefaultPlatformMethods.logError   = TestPlatform_logError;
+    gDefaultPlatformMethods.logWarning = TestPlatform_logWarning;
+    gDefaultPlatformMethods.logInfo    = TestPlatform_logInfo;
+    gDefaultPlatformMethods.context    = &gPlatformContext;
 
     gPlatformContext.ignoreMessages   = false;
     gPlatformContext.warningsAsErrors = false;
@@ -619,9 +613,9 @@ void ANGLETestBase::ANGLETestSetUp()
 
     // Check the skip list.
 
-    angle::GPUTestConfig::API api = GetTestConfigAPIFromRenderer(mCurrentParams->getRenderer(),
-                                                                 mCurrentParams->getDeviceType());
-    GPUTestConfig testConfig      = GPUTestConfig(api, 0);
+    angle::GPUTestConfig::API api = GetTestConfigAPIFromRenderer(
+        mCurrentParams->driver, mCurrentParams->getRenderer(), mCurrentParams->getDeviceType());
+    GPUTestConfig testConfig = GPUTestConfig(api, 0);
 
     std::stringstream fullTestNameStr;
     fullTestNameStr << testInfo->test_case_name() << "." << testInfo->name();
@@ -672,8 +666,8 @@ void ANGLETestBase::ANGLETestSetUp()
     int osWindowWidth  = mFixture->osWindow->getWidth();
     int osWindowHeight = mFixture->osWindow->getHeight();
 
-    const bool isRotated = mCurrentParams->eglParameters.emulatedPrerotation == 90 ||
-                           mCurrentParams->eglParameters.emulatedPrerotation == 270;
+    const bool isRotated = mCurrentParams->isEnabled(Feature::EmulatedPrerotation90) ||
+                           mCurrentParams->isEnabled(Feature::EmulatedPrerotation270);
     if (isRotated)
     {
         std::swap(osWindowWidth, osWindowHeight);
@@ -718,10 +712,22 @@ void ANGLETestBase::ANGLETestSetUp()
             FAIL() << "Internal parameter conflict error.";
         }
 
-        if (mFixture->eglWindow->initializeSurface(
-                mFixture->osWindow, driverLib, mFixture->configParams) != GLWindowResult::NoError)
+        const GLWindowResult windowResult = mFixture->eglWindow->initializeSurface(
+            mFixture->osWindow, driverLib, mFixture->configParams);
+
+        if (windowResult != GLWindowResult::NoError)
         {
-            FAIL() << "egl surface init failed.";
+            if (windowResult != GLWindowResult::Error)
+            {
+                // If the test requests an extension that isn't supported, automatically skip the
+                // test.
+                GTEST_SKIP() << "Test skipped due to missing extension";
+            }
+            else
+            {
+                // Otherwise fail the test.
+                FAIL() << "egl surface init failed.";
+            }
         }
 
         if (!mDeferContextInit && !mFixture->eglWindow->initializeContext())
@@ -1053,7 +1059,7 @@ void ANGLETestBase::drawIndexedQuad(GLuint program,
                                     GLfloat positionAttribZ,
                                     GLfloat positionAttribXYScale)
 {
-    ASSERT(!mFixture->configParams.webGLCompatibility.valid() ||
+    ASSERT(!mFixture || !mFixture->configParams.webGLCompatibility.valid() ||
            !mFixture->configParams.webGLCompatibility.value());
     drawIndexedQuad(program, positionAttribName, positionAttribZ, positionAttribXYScale, false);
 }
@@ -1408,6 +1414,11 @@ void ANGLETestBase::setRobustResourceInit(bool enabled)
     mFixture->configParams.robustResourceInit = enabled;
 }
 
+void ANGLETestBase::setMutableRenderBuffer(bool enabled)
+{
+    mFixture->configParams.mutableRenderBuffer = enabled;
+}
+
 void ANGLETestBase::setContextProgramCacheEnabled(bool enabled)
 {
     mFixture->configParams.contextProgramCacheEnabled = enabled;
@@ -1451,11 +1462,6 @@ int ANGLETestBase::getWindowWidth() const
 int ANGLETestBase::getWindowHeight() const
 {
     return mHeight;
-}
-
-bool ANGLETestBase::isEmulatedPrerotation() const
-{
-    return mCurrentParams->eglParameters.emulatedPrerotation != 0;
 }
 
 void ANGLETestBase::setWindowVisible(OSWindow *osWindow, bool isVisible)

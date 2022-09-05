@@ -48,7 +48,7 @@ void RunBenchmark(RasterSource* raster_source,
     // quantization when the layer is very small.
     base::LapTimer timer(kWarmupRuns, base::Milliseconds(kTimeLimitMillis),
                          kTimeCheckInterval);
-    SkColor color = SK_ColorTRANSPARENT;
+    SkColor4f color = SkColors::kTransparent;
     gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
         content_rect, 1.f / contents_scale.x(), 1.f / contents_scale.y());
     *is_solid_color =
@@ -68,7 +68,7 @@ void RunBenchmark(RasterSource* raster_source,
       image_settings->image_to_current_frame_index = {};
 
       PlaybackImageProvider image_provider(
-          image_decode_cache, gfx::ColorSpace(), std::move(image_settings));
+          image_decode_cache, TargetColorParams(), std::move(image_settings));
       RasterSource::PlaybackSettings settings;
       settings.image_provider = &image_provider;
 

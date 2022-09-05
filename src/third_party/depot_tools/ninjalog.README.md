@@ -14,9 +14,7 @@ $ autoninja -C out/Release chrome
 autoninja uploads ninja's build log for Google employees but we don't collect
 logs from external contributors.
 
-We use [this page](https://chromium-build-stats-staging.appspot.com/should-upload)
-to decide whether an autoninja user is a Googler or not. Only people with access
-to Google's internal network can see 'Success'.
+We use `goma_auth info` to decide whether an autoninja user is a Googler or not.
 
 Before uploading logs, autoninja shows a message 10 times to warn users that we
 will collect build logs.

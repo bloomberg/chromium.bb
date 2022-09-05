@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
-#include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/common/dbus_client.h"
+#include "chromeos/dbus/common/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dlcservice/dlcservice.pb.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/dlcservice/dbus-constants.h"
@@ -88,7 +88,7 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
 
   // Installs the DLC passed in while reporting progress through the progress
   // callback and only calls install callback on install success/failure.
-  virtual void Install(const std::string& dlc_id,
+  virtual void Install(const dlcservice::InstallRequest& install_request,
                        InstallCallback callback,
                        ProgressCallback progress_callback) = 0;
 

@@ -42,12 +42,6 @@ enum {
   ASURFACE_TRANSACTION_TRANSPARENCY_OPAQUE = 2,
 };
 
-// ANativeWindow_FrameRateCompatibility enums
-enum {
-  ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_DEFAULT = 0,
-  ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE = 1
-};
-
 // ASurfaceTransaction
 using pASurfaceTransaction_create = ASurfaceTransaction* (*)(void);
 using pASurfaceTransaction_delete = void (*)(ASurfaceTransaction*);
@@ -111,6 +105,8 @@ using pASurfaceTransaction_setFrameRate =
              ASurfaceControl* surface_control,
              float frameRate,
              int8_t compatibility);
+using pASurfaceTransaction_setFrameTimeline =
+    void (*)(ASurfaceTransaction* transaction, int64_t vsync_id);
 using pASurfaceTransaction_reparent = void (*)(ASurfaceTransaction*,
                                                ASurfaceControl* surface_control,
                                                ASurfaceControl* new_parent);
@@ -242,6 +238,7 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setHdrMetadata_cta861_3);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setHdrMetadata_smpte2086);
     LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setFrameRate);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setFrameTimeline);
 
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getPresentFenceFd);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getLatchTime);
@@ -284,6 +281,7 @@ struct SurfaceControlMethods {
   pASurfaceTransaction_setHdrMetadata_smpte2086
       ASurfaceTransaction_setHdrMetadata_smpte2086Fn;
   pASurfaceTransaction_setFrameRate ASurfaceTransaction_setFrameRateFn;
+  pASurfaceTransaction_setFrameTimeline ASurfaceTransaction_setFrameTimelineFn;
 
   // TransactionStats methods.
   pASurfaceTransactionStats_getPresentFenceFd
@@ -371,9 +369,9 @@ absl::optional<uint64_t> GetDataSpaceTransfer(
       return DataSpace::TRANSFER_SMPTE_170M;
     case gfx::ColorSpace::TransferID::LINEAR_HDR:
       return DataSpace::TRANSFER_LINEAR;
-    case gfx::ColorSpace::TransferID::SMPTEST2084:
+    case gfx::ColorSpace::TransferID::PQ:
       return DataSpace::TRANSFER_ST2084;
-    case gfx::ColorSpace::TransferID::ARIB_STD_B67:
+    case gfx::ColorSpace::TransferID::HLG:
       return DataSpace::TRANSFER_HLG;
     // We use SRGB for BT709. See |ColorSpace::GetTransferFunction()| for
     // details.
@@ -399,7 +397,7 @@ uint64_t ColorSpaceToADataSpace(const gfx::ColorSpace& color_space) {
   if (!color_space.IsValid() || color_space == gfx::ColorSpace::CreateSRGB())
     return ADATASPACE_SRGB;
 
-  if (color_space == gfx::ColorSpace::CreateSCRGBLinear())
+  if (color_space == gfx::ColorSpace::CreateSRGBLinear())
     return ADATASPACE_SCRGB_LINEAR;
 
   if (color_space == gfx::ColorSpace::CreateDisplayP3D65())
@@ -543,6 +541,12 @@ bool SurfaceControl::SupportsOnCommit() {
              nullptr;
 }
 
+bool SurfaceControl::SupportsSetFrameTimeline() {
+  return IsSupported() &&
+         SurfaceControlMethods::Get().ASurfaceTransaction_setFrameTimelineFn !=
+             nullptr;
+}
+
 void SurfaceControl::SetStubImplementationForTesting() {
   SurfaceControlMethods::GetImpl(/*load_functions=*/false).InitWithStubs();
 }
@@ -681,6 +685,12 @@ void SurfaceControl::Transaction::SetCrop(const Surface& surface,
   CHECK(SurfaceControlMethods::Get().ASurfaceTransaction_setCropFn);
   SurfaceControlMethods::Get().ASurfaceTransaction_setCropFn(
       transaction_, surface.surface(), RectToARect(rect));
+}
+
+void SurfaceControl::Transaction::SetFrameTimelineId(int64_t vsync_id) {
+  CHECK(SurfaceControlMethods::Get().ASurfaceTransaction_setFrameTimelineFn);
+  SurfaceControlMethods::Get().ASurfaceTransaction_setFrameTimelineFn(
+      transaction_, vsync_id);
 }
 
 void SurfaceControl::Transaction::SetOpaque(const Surface& surface,

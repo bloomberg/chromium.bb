@@ -6,9 +6,9 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #error "Unsupported on Android."
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -244,7 +244,8 @@ bool MediaStreamFocusDelegate::UpdateUMA(bool focus,
 
 bool MediaStreamFocusDelegate::BadMessage(
     bad_message::BadMessageReason reason) {
-  content::RenderFrameHost* const rfh = capturing_web_contents_->GetMainFrame();
+  content::RenderFrameHost* const rfh =
+      capturing_web_contents_->GetPrimaryMainFrame();
   if (rfh) {
     bad_message::ReceivedBadMessage(rfh->GetProcess(), reason);
   }

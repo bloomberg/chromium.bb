@@ -213,8 +213,8 @@ void PrivacyInfoView::OnButtonPressed() {
 void PrivacyInfoView::InitLayout() {
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(kVerticalPaddingDip, kLeftPaddingDip, kVerticalPaddingDip,
-                  kRightPaddingDip),
+      gfx::Insets::TLBR(kVerticalPaddingDip, kLeftPaddingDip,
+                        kVerticalPaddingDip, kRightPaddingDip),
       kCellSpacingDip));
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -222,7 +222,7 @@ void PrivacyInfoView::InitLayout() {
       /*thickness=*/1,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
           views::Emphasis::kMedium),
-      gfx::Insets(kRowMarginDip, kRowMarginDip), gfx::kGoogleGrey300));
+      gfx::Insets::VH(kRowMarginDip, kRowMarginDip), gfx::kGoogleGrey300));
 
   // Info icon.
   InitInfoIcon();
@@ -266,7 +266,6 @@ void PrivacyInfoView::InitText() {
   // underline font style to be applied when the link is focused. This is done
   // manually because default focus handling remains on the search box.
   views::StyledLabel::RangeStyleInfo link_style;
-  link_style.disable_line_wrapping = true;
   auto custom_view = std::make_unique<views::Link>(link);
   custom_view->SetCallback(base::BindRepeating(&PrivacyInfoView::LinkClicked,
                                                base::Unretained(this)));
@@ -293,8 +292,7 @@ void PrivacyInfoView::InitCloseButton() {
   close_button->SetFocusBehavior(FocusBehavior::ALWAYS);
   constexpr int kImageButtonSizeDip = 40;
   constexpr int kIconMarginDip = (kImageButtonSizeDip - kIconSizeDip) / 2;
-  close_button->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kIconMarginDip)));
+  close_button->SetBorder(views::CreateEmptyBorder(kIconMarginDip));
   close_button->SizeToPreferredSize();
 
   // Ink ripple.

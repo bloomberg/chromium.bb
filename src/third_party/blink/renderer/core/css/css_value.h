@@ -21,11 +21,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_H_
 
+#include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/custom_spaces.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -54,7 +54,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
 
   bool IsBasicShapeValue() const {
     return class_type_ >= kBasicShapeCircleClass &&
-           class_type_ <= kBasicShapeInsetClass;
+           class_type_ <= kBasicShapeRectClass;
   }
   bool IsBasicShapeCircleValue() const {
     return class_type_ == kBasicShapeCircleClass;
@@ -67,6 +67,12 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   }
   bool IsBasicShapeInsetValue() const {
     return class_type_ == kBasicShapeInsetClass;
+  }
+  bool IsBasicShapeRectValue() const {
+    return class_type_ == kBasicShapeRectClass;
+  }
+  bool IsBasicShapeXYWHValue() const {
+    return class_type_ == kBasicShapeXYWHClass;
   }
 
   bool IsBorderImageSliceValue() const {
@@ -221,6 +227,8 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
     kBasicShapeEllipseClass,
     kBasicShapePolygonClass,
     kBasicShapeInsetClass,
+    kBasicShapeRectClass,
+    kBasicShapeXYWHClass,
 
     // Image classes.
     kImageClass,
@@ -331,7 +339,7 @@ inline bool CompareCSSValueVector(
   }
 
   for (wtf_size_t i = 0; i < size; i++) {
-    if (!DataEquivalent(first_vector[i], second_vector[i])) {
+    if (!base::ValuesEquivalent(first_vector[i], second_vector[i])) {
       return false;
     }
   }

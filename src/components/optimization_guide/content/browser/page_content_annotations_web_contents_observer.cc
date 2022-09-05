@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/google/core/common/google_util.h"
 #include "components/optimization_guide/content/browser/optimization_guide_decider.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/page_entities_metadata.pb.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_entry.h"
@@ -21,24 +23,65 @@ namespace optimization_guide {
 
 namespace {
 
-// Returns the search query if |url| is a valid Search URL according to
+// Return whether or not we should fetch remote metadata.
+bool FetchRemoteMetadataEnabled() {
+  return features::RemotePageEntitiesEnabled() ||
+         features::RemotePageMetadataEnabled();
+}
+
+// Returns search metadata if |url| is a valid Search URL according to
 // |template_url_service|.
-absl::optional<std::u16string> ExtractSearchTerms(
-    const TemplateURLService* template_url_service,
+absl::optional<SearchMetadata> ExtractSearchMetadata(
+    TemplateURLService* template_url_service,
     const GURL& url) {
-  const TemplateURL* default_search_provider =
-      template_url_service->GetDefaultSearchProvider();
+  if (!template_url_service)
+    return absl::nullopt;
+
+  if (!template_url_service->loaded()) {
+    if (switches::ShouldLogPageContentAnnotationsInput()) {
+      LOG(ERROR) << "Template URL Service not loaded";
+    }
+    return absl::nullopt;
+  }
+
+  const TemplateURL* template_url =
+      template_url_service->GetTemplateURLForHost(url.host());
   const SearchTermsData& search_terms_data =
       template_url_service->search_terms_data();
 
   std::u16string search_terms;
-  if (default_search_provider &&
-      default_search_provider->ExtractSearchTermsFromURL(url, search_terms_data,
-                                                         &search_terms) &&
-      !search_terms.empty()) {
-    return search_terms;
+  bool is_valid_search_url = template_url &&
+                             template_url->ExtractSearchTermsFromURL(
+                                 url, search_terms_data, &search_terms) &&
+                             !search_terms.empty();
+  if (!is_valid_search_url) {
+    if (switches::ShouldLogPageContentAnnotationsInput()) {
+      LOG(ERROR) << "Url " << url << " is not a valid search URL";
+      LOG(ERROR) << "Matching TemplateURL instances for host: "
+                 << template_url_service->GetTemplateURLCountForHostForLogging(
+                        url.host());
+    }
+    return absl::nullopt;
   }
-  return absl::nullopt;
+
+  const std::u16string& normalized_search_query =
+      base::i18n::ToLower(base::CollapseWhitespace(search_terms, false));
+  TemplateURLRef::SearchTermsArgs search_terms_args(normalized_search_query);
+  const TemplateURLRef& search_url_ref = template_url->url_ref();
+  if (!search_url_ref.SupportsReplacement(search_terms_data)) {
+    if (switches::ShouldLogPageContentAnnotationsInput()) {
+      LOG(ERROR) << "Url " << url << " does not support replacement";
+    }
+    return absl::nullopt;
+  }
+
+  if (switches::ShouldLogPageContentAnnotationsInput()) {
+    LOG(ERROR) << "Url " << url << " is a valid search URL";
+  }
+  return SearchMetadata{
+      GURL(search_url_ref.ReplaceSearchTerms(search_terms_args,
+                                             search_terms_data)),
+      base::i18n::ToLower(base::CollapseWhitespace(search_terms, false))};
 }
 
 // Data scoped to a single page. PageData has the same lifetime as the page's
@@ -81,36 +124,17 @@ PageContentAnnotationsWebContentsObserver::
           *web_contents),
       page_content_annotations_service_(page_content_annotations_service),
       template_url_service_(template_url_service),
-      optimization_guide_decider_(optimization_guide_decider),
-      max_size_for_text_dump_(features::MaxSizeForPageContentTextDump()) {
+      optimization_guide_decider_(optimization_guide_decider) {
   DCHECK(page_content_annotations_service_);
 
-  if (!features::ShouldAnnotateTitleInsteadOfPageContent()) {
-    // Make sure we always attach ourselves to a PageTextObserver if we are
-    // annotating page content.
-    PageTextObserver* observer =
-        PageTextObserver::GetOrCreateForWebContents(web_contents);
-    observer->AddConsumer(this);
-  }
-
-  if (features::RemotePageEntitiesEnabled() && optimization_guide_decider_) {
+  if (FetchRemoteMetadataEnabled() && optimization_guide_decider_) {
     optimization_guide_decider_->RegisterOptimizationTypes(
         {proto::PAGE_ENTITIES});
   }
 }
 
 PageContentAnnotationsWebContentsObserver::
-    ~PageContentAnnotationsWebContentsObserver() {
-  // Only detach ourselves if |web_contents()| as well as PageTextObserver for
-  // |web_contents()| are still alive.
-  if (!web_contents())
-    return;
-
-  PageTextObserver* observer =
-      PageTextObserver::FromWebContents(web_contents());
-  if (observer)
-    observer->RemoveConsumer(this);
-}
+    ~PageContentAnnotationsWebContentsObserver() = default;
 
 void PageContentAnnotationsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -122,54 +146,80 @@ void PageContentAnnotationsWebContentsObserver::DidFinishNavigation(
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return;
 
-  PageData* page_data = nullptr;
-  if (features::ShouldAnnotateTitleInsteadOfPageContent()) {
-    page_data = PageData::GetOrCreateForPage(web_contents()->GetPrimaryPage());
-    page_data->set_navigation_id(navigation_handle->GetNavigationId());
-  }
+  PageData* page_data =
+      PageData::GetOrCreateForPage(web_contents()->GetPrimaryPage());
+  page_data->set_navigation_id(navigation_handle->GetNavigationId());
 
   optimization_guide::HistoryVisit history_visit = optimization_guide::
       PageContentAnnotationsService::CreateHistoryVisitFromWebContents(
           web_contents(), navigation_handle->GetNavigationId());
-
-  if (features::RemotePageEntitiesEnabled() && optimization_guide_decider_) {
+  if (FetchRemoteMetadataEnabled() && optimization_guide_decider_) {
     optimization_guide_decider_->CanApplyOptimizationAsync(
         navigation_handle, proto::PAGE_ENTITIES,
         base::BindOnce(&PageContentAnnotationsWebContentsObserver::
-                           OnRemotePageEntitiesReceived,
+                           OnRemotePageMetadataReceived,
                        weak_ptr_factory_.GetWeakPtr(), history_visit));
   }
 
-  if (google_util::IsGoogleSearchUrl(navigation_handle->GetURL())) {
-    // Extract related searches.
-    if (optimization_guide::features::ShouldExtractRelatedSearches()) {
-      page_content_annotations_service_->ExtractRelatedSearches(history_visit,
-                                                                web_contents());
-    }
+  bool is_google_search_url =
+      google_util::IsGoogleSearchUrl(navigation_handle->GetURL());
+  // Extract related searches.
+  if (is_google_search_url &&
+      optimization_guide::features::ShouldExtractRelatedSearches()) {
+    page_content_annotations_service_->ExtractRelatedSearches(history_visit,
+                                                              web_contents());
+  }
 
-    absl::optional<std::u16string> search_terms =
-        ExtractSearchTerms(template_url_service_, navigation_handle->GetURL());
-    if (search_terms) {
+  // Persist search metadata, if applicable if it's a Google search URL or if
+  // it's a search-y URL as determined by the TemplateURLService if the flag is
+  // enabled.
+  if (is_google_search_url ||
+      optimization_guide::features::
+          ShouldPersistSearchMetadataForNonGoogleSearches()) {
+    base::UmaHistogramBoolean(
+        "OptimizationGuide.PageContentAnnotations."
+        "TemplateURLServiceLoadedAtNavigationFinish",
+        template_url_service_ && template_url_service_->loaded());
+
+    absl::optional<SearchMetadata> search_metadata = ExtractSearchMetadata(
+        template_url_service_, navigation_handle->GetURL());
+    if (search_metadata) {
       if (page_data) {
         page_data->set_annotation_was_requested();
       }
-      const std::u16string& normalized_search_query =
-          base::i18n::ToLower(base::CollapseWhitespace(*search_terms, false));
-      page_content_annotations_service_->Annotate(
-          history_visit, base::UTF16ToUTF8(normalized_search_query));
+      history_visit.text_to_annotate =
+          base::UTF16ToUTF8(search_metadata->search_terms);
+      page_content_annotations_service_->Annotate(history_visit);
+      page_content_annotations_service_->PersistSearchMetadata(
+          history_visit, *search_metadata);
+
+      if (switches::ShouldLogPageContentAnnotationsInput()) {
+        LOG(ERROR) << "Annotating search terms: \n"
+                   << "URL: " << navigation_handle->GetURL() << "\n"
+                   << "Text: " << *(history_visit.text_to_annotate);
+      }
+
       return;
     }
   }
 
-  // TODO(crbug/1177102): Remove this title hack once the PageTextObserver works
-  // for same-document navigations.
-  if (navigation_handle->IsSameDocument()) {
+  // Same-document navigations and reloads do not trigger |TitleWasSet|, so we
+  // need to capture the title text here for these cases.
+  if (navigation_handle->IsSameDocument() ||
+      navigation_handle->GetReloadType() != content::ReloadType::NONE) {
     if (page_data) {
       page_data->set_annotation_was_requested();
     }
     // Annotate the title instead.
-    page_content_annotations_service_->Annotate(
-        history_visit, base::UTF16ToUTF8(web_contents()->GetTitle()));
+    history_visit.text_to_annotate =
+        base::UTF16ToUTF8(web_contents()->GetTitle());
+    page_content_annotations_service_->Annotate(history_visit);
+
+    if (switches::ShouldLogPageContentAnnotationsInput()) {
+      LOG(ERROR) << "Annotating same document navigation: \n"
+                 << "URL: " << navigation_handle->GetURL() << "\n"
+                 << "Text: " << *(history_visit.text_to_annotate);
+    }
   }
 }
 
@@ -191,65 +241,18 @@ void PageContentAnnotationsWebContentsObserver::TitleWasSet(
   optimization_guide::HistoryVisit history_visit = optimization_guide::
       PageContentAnnotationsService::CreateHistoryVisitFromWebContents(
           web_contents(), page_data->navigation_id());
-  page_content_annotations_service_->Annotate(
-      history_visit, base::UTF16ToUTF8(entry->GetTitleForDisplay()));
-}
+  history_visit.text_to_annotate =
+      base::UTF16ToUTF8(entry->GetTitleForDisplay());
+  page_content_annotations_service_->Annotate(history_visit);
 
-std::unique_ptr<PageTextObserver::ConsumerTextDumpRequest>
-PageContentAnnotationsWebContentsObserver::MaybeRequestFrameTextDump(
-    content::NavigationHandle* navigation_handle) {
-  DCHECK(!features::ShouldAnnotateTitleInsteadOfPageContent());
-
-  DCHECK(navigation_handle->HasCommitted());
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  DCHECK(navigation_handle->IsInPrimaryMainFrame());
-
-  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
-    return nullptr;
-
-  if (navigation_handle->IsSameDocument())
-    return nullptr;
-
-  if (google_util::IsGoogleSearchUrl(navigation_handle->GetURL()))
-    return nullptr;
-
-  std::unique_ptr<PageTextObserver::ConsumerTextDumpRequest> request =
-      std::make_unique<PageTextObserver::ConsumerTextDumpRequest>();
-  request->max_size = max_size_for_text_dump_;
-  request->events = {mojom::TextDumpEvent::kFirstLayout};
-  request->dump_amp_subframes = true;
-  request->callback = base::BindOnce(
-      &PageContentAnnotationsWebContentsObserver::OnTextDumpReceived,
-      weak_ptr_factory_.GetWeakPtr(),
-      PageContentAnnotationsService::CreateHistoryVisitFromWebContents(
-          navigation_handle->GetWebContents(),
-          navigation_handle->GetNavigationId()));
-  return request;
-}
-
-void PageContentAnnotationsWebContentsObserver::OnTextDumpReceived(
-    const HistoryVisit& visit,
-    const PageTextDumpResult& result) {
-  DCHECK(!features::ShouldAnnotateTitleInsteadOfPageContent());
-
-  if (result.empty()) {
-    return;
+  if (switches::ShouldLogPageContentAnnotationsInput()) {
+    LOG(ERROR) << "Annotating main frame navigation: \n"
+               << "URL: " << entry->GetURL() << "\n"
+               << "Text: " << *(history_visit.text_to_annotate);
   }
-
-  // If the page had AMP frames, then only use that content. Otherwise, use the
-  // mainframe.
-  if (result.GetAMPTextContent()) {
-    page_content_annotations_service_->Annotate(visit,
-                                                *result.GetAMPTextContent());
-    return;
-  }
-  page_content_annotations_service_->Annotate(
-      visit, *result.GetMainFrameTextContent());
 }
 
-void PageContentAnnotationsWebContentsObserver::OnRemotePageEntitiesReceived(
+void PageContentAnnotationsWebContentsObserver::OnRemotePageMetadataReceived(
     const HistoryVisit& history_visit,
     OptimizationGuideDecision decision,
     const OptimizationMetadata& metadata) {
@@ -258,22 +261,36 @@ void PageContentAnnotationsWebContentsObserver::OnRemotePageEntitiesReceived(
 
   absl::optional<proto::PageEntitiesMetadata> page_entities_metadata =
       metadata.ParsedMetadata<proto::PageEntitiesMetadata>();
-  if (!page_entities_metadata || page_entities_metadata->entities().size() == 0)
+  if (!page_entities_metadata)
     return;
 
-  std::vector<history::VisitContentModelAnnotations::Category> entities;
-  for (const auto& entity : page_entities_metadata->entities()) {
-    if (entity.entity_id().empty())
-      continue;
+  // Persist entities to VisitContentModelAnnotations if that feature is
+  // enabled.
+  if (page_entities_metadata->entities().size() != 0 &&
+      features::RemotePageEntitiesEnabled()) {
+    std::vector<history::VisitContentModelAnnotations::Category> entities;
+    for (const auto& entity : page_entities_metadata->entities()) {
+      if (entity.entity_id().empty())
+        continue;
 
-    if (entity.score() < 0 || entity.score() > 100)
-      continue;
+      if (entity.score() < 0 || entity.score() > 100)
+        continue;
 
-    entities.emplace_back(history::VisitContentModelAnnotations::Category(
-        entity.entity_id(), entity.score()));
+      entities.emplace_back(history::VisitContentModelAnnotations::Category(
+          entity.entity_id(), entity.score()));
+    }
+    page_content_annotations_service_->PersistRemotePageEntities(history_visit,
+                                                                 entities);
   }
-  page_content_annotations_service_->PersistRemotePageEntities(history_visit,
-                                                               entities);
+  if (!features::RemotePageMetadataEnabled()) {
+    return;
+  }
+  // Persist any other metadata to VisitContentAnnotations.
+  page_entities_metadata->clear_entities();
+  if (page_entities_metadata->has_alternative_title()) {
+    page_content_annotations_service_->PersistRemotePageMetadata(
+        history_visit, *page_entities_metadata);
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PageContentAnnotationsWebContentsObserver);

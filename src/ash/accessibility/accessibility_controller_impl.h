@@ -213,6 +213,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   Feature& GetFeature(FeatureType feature) const;
 
+  base::WeakPtr<AccessibilityControllerImpl> GetWeakPtr();
+
   // Getters for the corresponding features.
   Feature& autoclick() const;
   Feature& caret_highlight() const;
@@ -252,8 +254,13 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   PointScanController* GetPointScanController();
 
+  // Update the autoclick menu bounds and sticky keys overlay bounds if
+  // necessary. This may need to happen when the display work area changes, or
+  // if system UI regions change (like the virtual keyboard position).
+  void UpdateFloatingPanelBoundsIfNeeded();
+
   // Update the autoclick menu bounds if necessary. This may need to happen when
-  // the display work area changes, or if system ui regions change (like the
+  // the display work area changes, or if system UI regions change (like the
   // virtual keyboard position).
   void UpdateAutoclickMenuBoundsIfNeeded();
 
@@ -449,6 +456,12 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void ShowSpeechRecognitionDownloadNotificationForDictation(
       bool succeeded,
       const std::u16string& display_language) override;
+  void UpdateDictationBubble(
+      bool visible,
+      DictationBubbleIconType icon,
+      const absl::optional<std::u16string>& text,
+      const absl::optional<std::vector<DictationBubbleHintType>>& hints)
+      override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
@@ -480,9 +493,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
     return dictation_soda_download_progress_;
   }
 
-  DictationBubbleController* GetDictationBubbleControllerForTest() {
-    return dictation_bubble_controller_.get();
-  }
+  DictationBubbleController* GetDictationBubbleControllerForTest();
 
  private:
   // Populate |features_| with the feature of the correct type.

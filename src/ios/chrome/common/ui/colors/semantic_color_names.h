@@ -28,17 +28,21 @@ extern NSString* const kPlaceholderImageTintColor;
 // Primary background color.
 extern NSString* const kPrimaryBackgroundColor;
 extern NSString* const kScrimBackgroundColor;
+extern NSString* const kDarkerScrimBackgroundColor;
 // Secondary background color.
 extern NSString* const kSecondaryBackgroundColor;
 extern NSString* const kSeparatorColor;
 extern NSString* const kSolidButtonTextColor;
 extern NSString* const kTableViewRowHighlightColor;
 extern NSString* const kTertiaryBackgroundColor;
+extern NSString* const kUpdatedTertiaryBackgroundColor;
 extern NSString* const kTextPrimaryColor;
 extern NSString* const kTextSecondaryColor;
 extern NSString* const kTextTertiaryColor;
 extern NSString* const kTextQuaternaryColor;
 extern NSString* const kTextfieldBackgroundColor;
+extern NSString* const kTextfieldFocusedBackgroundColor;
+extern NSString* const kTextfieldHighlightBackgroundColor;
 extern NSString* const kTextfieldPlaceholderColor;
 // Color used for buttons on a toolbar.
 extern NSString* const kToolbarButtonColor;
@@ -54,6 +58,12 @@ extern NSString* const kBlueColor;
 // the main content is |kBlueColor| (e.g the background of the collections
 // shortcuts on the NTP).
 extern NSString* const kBlueHaloColor;
+
+// Other shades of blue from the palette.
+extern NSString* const kBlue500Color;
+// Blue 700 light/ Blue 200 dark.
+extern NSString* const kBlue700Color;
+
 // Standard green color.
 extern NSString* const kGreenColor;
 

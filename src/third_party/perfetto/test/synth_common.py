@@ -16,7 +16,7 @@
 import argparse
 
 from collections import namedtuple
-from google.protobuf import descriptor, descriptor_pb2, message_factory, descriptor_pool
+from google.protobuf import descriptor_pb2, message_factory, descriptor_pool
 
 CLONE_THREAD = 0x00010000
 CLONE_VFORK = 0x00004000
@@ -186,6 +186,9 @@ class Trace(object):
 
   def add_atrace_async_end(self, ts, tid, pid, buf):
     self.add_print(ts, tid, 'F|{}|{}|0'.format(pid, buf))
+
+  def add_atrace_instant(self, ts, tid, pid, buf):
+    self.add_print(ts, tid, 'I|{}|{}'.format(pid, buf))
 
   def add_process(self, pid, ppid, cmdline, uid=None):
     process = self.packet.process_tree.processes.add()

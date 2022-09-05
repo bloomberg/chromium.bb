@@ -31,9 +31,8 @@ class SyncedBookmarkTracker;
 
 // Responsible for merging local and remote bookmark models when bookmark sync
 // is enabled for the first time by the user (i.e. no sync metadata exists
-// locally), so we need a best-effort merge based on similarity. It implements
-// similar logic to that in BookmarkModelAssociator::AssociateModels() to be
-// used by the BookmarkModelTypeProcessor().
+// locally), so we need a best-effort merge based on similarity. It is used by
+// the BookmarkModelTypeProcessor().
 class BookmarkModelMerger {
  public:
   // |bookmark_model|, |favicon_service| and |bookmark_tracker| must not be
@@ -59,20 +58,23 @@ class BookmarkModelMerger {
   // Internal representation of a remote tree, composed of nodes.
   class RemoteTreeNode final {
    private:
-    using UpdatesPerParentId =
-        std::unordered_map<std::string, std::list<syncer::UpdateResponseData>>;
+    using UpdatesPerParentGUID =
+        std::unordered_map<base::GUID,
+                           std::list<syncer::UpdateResponseData>,
+                           base::GUIDHash>;
 
    public:
     // Constructs a tree given |update| as root and recursively all descendants
-    // by traversing |*updates_per_parent_id|. |update| and
-    // |updates_per_parent_id| must not be null. All updates
-    // |*updates_per_parent_id| must represent valid updates. Updates
+    // by traversing |*updates_per_parent_guid|. |update| and
+    // |updates_per_parent_guid| must not be null. All updates
+    // |*updates_per_parent_guid| must represent valid updates. Updates
     // corresponding from descendant nodes are moved away from
-    // |*updates_per_parent_id|. |max_depth| is the max tree depth to sync
+    // |*updates_per_parent_guid|. |max_depth| is the max tree depth to sync
     // after which content is silently ignored.
-    static RemoteTreeNode BuildTree(syncer::UpdateResponseData update,
-                                    size_t max_depth,
-                                    UpdatesPerParentId* updates_per_parent_id);
+    static RemoteTreeNode BuildTree(
+        syncer::UpdateResponseData update,
+        size_t max_depth,
+        UpdatesPerParentGUID* updates_per_parent_guid);
 
     ~RemoteTreeNode();
 

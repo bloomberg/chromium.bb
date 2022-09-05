@@ -31,6 +31,10 @@ using TimeoutID = webrtc::StrongAlias<class TimeoutTag, uint64_t>;
 // other messages on the same stream.
 using IsUnordered = webrtc::StrongAlias<class IsUnorderedTag, bool>;
 
+// Stream priority, where higher values indicate higher priority. The meaning of
+// this value and how it's used depends on the stream scheduler.
+using StreamPriority = webrtc::StrongAlias<class StreamPriorityTag, uint16_t>;
+
 // Duration, as milliseconds. Overflows after 24 days.
 class DurationMs : public webrtc::StrongAlias<class DurationMsTag, int32_t> {
  public:
@@ -107,10 +111,11 @@ constexpr inline DurationMs operator-(TimeMs lhs, TimeMs rhs) {
 
 // The maximum number of times the socket should attempt to retransmit a
 // message which fails the first time in unreliable mode.
-class MaxRetransmits : public webrtc::StrongAlias<class TimeMsTag, uint16_t> {
+class MaxRetransmits
+    : public webrtc::StrongAlias<class MaxRetransmitsTag, uint16_t> {
  public:
   constexpr explicit MaxRetransmits(const UnderlyingType& v)
-      : webrtc::StrongAlias<class TimeMsTag, uint16_t>(v) {}
+      : webrtc::StrongAlias<class MaxRetransmitsTag, uint16_t>(v) {}
 
   // There should be no limit - the message should be sent reliably.
   static constexpr MaxRetransmits NoLimit() {

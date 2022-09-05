@@ -44,8 +44,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
                    const GURL& validated_url,
                    int error_code) override;
   void DidChangeVisibleSecurityState() override;
-  void DocumentAvailableInMainFrame(
-      RenderFrameHost* render_frame_host) override;
+  void PrimaryMainDocumentElementAvailable() override;
   void DidFirstVisuallyNonEmptyPaint() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void TitleWasSet(NavigationEntry* entry) override;
@@ -62,6 +61,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void NavigationEntriesDeleted() override;
   void NavigationEntryChanged(
       const EntryChangedDetails& change_details) override;
+  void FrameReceivedUserActivation(RenderFrameHost*) override;
   void WebContentsDestroyed() override;
   void DidChangeThemeColor() override;
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,

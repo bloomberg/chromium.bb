@@ -22,17 +22,21 @@
 #include "include/core/SkTypeface.h"
 #include "include/core/SkTypes.h"
 #include "include/private/SkTDArray.h"
-#include "include/private/chromium/GrSlug.h"
+#include "include/private/chromium/Slug.h"
 #include "tools/ToolUtils.h"
 
-#if SK_SUPPORT_GPU && defined(SK_EXPERIMENTAL_ADD_ATLAS_PADDING)
+#if SK_SUPPORT_GPU
+#include "include/gpu/GrContextOptions.h"
+
 class SlugGM : public skiagm::GM {
 public:
-    SlugGM(const char* txt)
-            : fText(txt) {
-    }
+    SlugGM(const char* txt) : fText(txt) {}
 
 protected:
+    void modifyGrContextOptions(GrContextOptions* ctxOptions) override {
+        ctxOptions->fSupportBilerpFromGlyphAtlas = true;
+    }
+
     void onOnceBeforeDraw() override {
         fTypeface = ToolUtils::create_portable_typeface("serif", SkFontStyle());
         SkFont font(fTypeface);
@@ -57,7 +61,7 @@ protected:
         p.setAntiAlias(true);
         canvas->clipIRect(SkIRect::MakeSize(this->getISize()).makeInset(40, 50));
         canvas->scale(1.3f, 1.3f);
-        sk_sp<GrSlug> slug = GrSlug::ConvertBlob(canvas, *blob, {10, 10}, p);
+        sk_sp<sktext::gpu::Slug> slug = sktext::gpu::Slug::ConvertBlob(canvas, *blob, {10, 10}, p);
         if (slug == nullptr) {
             return;
         }

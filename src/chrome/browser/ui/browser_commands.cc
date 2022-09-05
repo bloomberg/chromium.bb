@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/feed/web_feed_ui_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -44,6 +46,7 @@
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -77,9 +80,8 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
-#include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
+#include "chrome/browser/ui/translate/translate_bubble_ui_action_logger.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -118,7 +120,7 @@
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "components/translate/core/browser/language_state.h"
-#include "components/version_info/version_info.h"
+#include "components/user_education/common/feature_promo_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
@@ -135,7 +137,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -185,21 +186,12 @@ translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
   switch (result) {
     default:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case ShowTranslateBubbleResult::SUCCESS:
       return translate::TranslateBubbleUiEvent::BUBBLE_SHOWN;
-    case ShowTranslateBubbleResult::BROWSER_WINDOW_NOT_VALID:
-      return translate::TranslateBubbleUiEvent::
-          BUBBLE_NOT_SHOWN_WINDOW_NOT_VALID;
     case ShowTranslateBubbleResult::BROWSER_WINDOW_MINIMIZED:
       return translate::TranslateBubbleUiEvent::
           BUBBLE_NOT_SHOWN_WINDOW_MINIMIZED;
-    case ShowTranslateBubbleResult::BROWSER_WINDOW_NOT_ACTIVE:
-      return translate::TranslateBubbleUiEvent::
-          BUBBLE_NOT_SHOWN_WINDOW_NOT_ACTIVE;
-    case ShowTranslateBubbleResult::WEB_CONTENTS_NOT_ACTIVE:
-      return translate::TranslateBubbleUiEvent::
-          BUBBLE_NOT_SHOWN_WEB_CONTENTS_NOT_ACTIVE;
     case ShowTranslateBubbleResult::EDITABLE_FIELD_IS_ACTIVE:
       return translate::TranslateBubbleUiEvent::
           BUBBLE_NOT_SHOWN_EDITABLE_FIELD_IS_ACTIVE;
@@ -633,9 +625,15 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
 
 base::WeakPtr<content::NavigationHandle> OpenCurrentURL(Browser* browser) {
   base::RecordAction(UserMetricsAction("LoadURL"));
-  LocationBar* location_bar = browser->window()->GetLocationBar();
-  if (!location_bar)
+  // TODO(https://crbug.com/1294004): Eliminate extra checks once source of
+  //  bad pointer dereference is identified. See also TODO comment below.
+  CHECK(browser);
+  BrowserWindow* window = browser->window();
+  CHECK(window);
+  LocationBar* location_bar = window->GetLocationBar();
+  if (!location_bar) {
     return nullptr;
+  }
 
   GURL url(location_bar->GetDestinationURL());
   TRACE_EVENT1("navigation", "chrome::OpenCurrentURL", "url", url);
@@ -661,10 +659,13 @@ base::WeakPtr<content::NavigationHandle> OpenCurrentURL(Browser* browser) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DCHECK(extensions::ExtensionSystem::Get(browser->profile())
              ->extension_service());
+  // TODO(https://crbug.com/1294004): Eliminate extra checks once source of
+  //  bad pointer dereference is identified. See also TODO comment above.
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(browser->profile());
+  CHECK(extension_registry);
   const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(browser->profile())
-          ->enabled_extensions()
-          .GetAppByURL(url);
+      extension_registry->enabled_extensions().GetAppByURL(url);
   if (extension) {
     extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_OMNIBOX_LOCATION,
                                     extension->GetType());
@@ -680,7 +681,7 @@ void Stop(Browser* browser) {
 
 void NewWindow(Browser* browser) {
   Profile* const profile = browser->profile();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Web apps should open a window to their launch page.
   if (browser->app_controller()) {
     const web_app::AppId app_id = browser->app_controller()->app_id();
@@ -706,7 +707,6 @@ void NewWindow(Browser* browser) {
   // Hosted apps should open a window to their launch page.
   const extensions::Extension* extension = GetExtensionForBrowser(browser);
   if (extension && extension->is_hosted_app()) {
-    DCHECK(!extension->from_bookmark());
     const auto app_launch_params = CreateAppLaunchParamsUserContainer(
         profile, extension, WindowOpenDisposition::NEW_WINDOW,
         apps::mojom::LaunchSource::kFromKeyboard);
@@ -716,7 +716,7 @@ void NewWindow(Browser* browser) {
     return;
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
   NewEmptyWindow(profile->GetOriginalProfile());
 }
 
@@ -1118,8 +1118,7 @@ void BookmarkAllTabs(Browser* browser) {
   base::RecordAction(UserMetricsAction("BookmarkAllTabs"));
   RecordBookmarkAllTabsWithTabsCount(browser->profile(),
                                      browser->tab_strip_model()->count());
-  // We record the profile that invoked this option.
-  RecordBookmarksAdded(browser->profile());
+
   chrome::ShowBookmarkAllTabsDialog(browser);
 }
 
@@ -1153,8 +1152,7 @@ bool MoveTabToReadLater(Browser* browser, content::WebContents* web_contents) {
   }
   model->AddEntry(url, base::UTF16ToUTF8(title),
                   reading_list::EntrySource::ADDED_VIA_CURRENT_APP);
-  MaybeShowBookmarkBarForReadLater(browser);
-  browser->window()->GetFeaturePromoController()->MaybeShowPromo(
+  browser->window()->MaybeShowFeaturePromo(
       feature_engagement::kIPHReadingListDiscoveryFeature);
   base::UmaHistogramEnumeration(
       "ReadingList.BookmarkBarState.OnEveryAddToReadingList",
@@ -1187,26 +1185,6 @@ bool IsCurrentTabUnreadInReadLater(Browser* browser) {
     return false;
   const ReadingListEntry* entry = model->GetEntryByURL(url);
   return entry && !entry->IsRead();
-}
-
-void MaybeShowBookmarkBarForReadLater(Browser* browser) {
-#if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kSidePanel))
-    return;
-  PrefService* pref_service = browser->profile()->GetPrefs();
-  if (pref_service &&
-      !pref_service->GetBoolean(
-          reading_list::prefs::kReadingListDesktopFirstUseExperienceShown)) {
-    pref_service->SetBoolean(
-        reading_list::prefs::kReadingListDesktopFirstUseExperienceShown, true);
-    base::UmaHistogramEnumeration(
-        "ReadingList.BookmarkBarState.OnFirstAddToReadingList",
-        browser->bookmark_bar_state());
-
-    if (browser->bookmark_bar_state() == BookmarkBar::HIDDEN)
-      ToggleBookmarkBar(browser);
-  }
-#endif  // defined(OS_ANDROID)
 }
 
 void ShowOffersAndRewardsForPage(Browser* browser) {
@@ -1255,6 +1233,16 @@ void ShowVirtualCardManualFallbackBubble(Browser* browser) {
     controller->ReshowBubble();
 }
 
+void ShowVirtualCardEnrollBubble(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  autofill::VirtualCardEnrollBubbleControllerImpl* controller =
+      autofill::VirtualCardEnrollBubbleControllerImpl::FromWebContents(
+          web_contents);
+  if (controller)
+    controller->ReshowBubble();
+}
+
 void Translate(Browser* browser) {
   if (!browser->window()->IsActive())
     return;
@@ -1282,7 +1270,8 @@ void Translate(Browser* browser) {
       web_contents, step, source_language, target_language,
       translate::TranslateErrors::NONE, true);
   if (result != ShowTranslateBubbleResult::SUCCESS)
-    translate::ReportUiAction(TranslateBubbleResultToUiEvent(result));
+    translate::ReportTranslateBubbleUiAction(
+        TranslateBubbleResultToUiEvent(result));
 }
 
 void ManagePasswordsForPage(Browser* browser) {
@@ -1319,7 +1308,7 @@ void SharingHubFromPageAction(Browser* browser) {
   sharing_hub::SharingHubBubbleController* controller =
       sharing_hub::SharingHubBubbleController::CreateOrGetFromWebContents(
           web_contents);
-  controller->ShowBubble();
+  controller->ShowBubble(share::ShareAttempt(web_contents));
 }
 
 void ScreenshotCaptureFromPageAction(Browser* browser) {
@@ -1536,7 +1525,7 @@ void ToggleDevToolsWindow(Browser* browser,
 }
 
 bool CanOpenTaskManager() {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   return true;
 #else
   return false;
@@ -1555,11 +1544,11 @@ void OpenTaskManager(Browser* browser) {
   }
   // Invoke task manager UI in ash, which will call chrome::OpenTaskManager()
   // in ash to run through the code path in the next section
-  // (!defined(OS_ANDROID)).
+  // (!BUILDFLAG(IS_ANDROID)).
   chromeos::LacrosService::Get()
       ->GetRemote<crosapi::mojom::TaskManager>()
       ->ShowTaskManager();
-#elif !defined(OS_ANDROID)
+#elif !BUILDFLAG(IS_ANDROID)
   base::RecordAction(UserMetricsAction("TaskManager"));
   chrome::ShowTaskManager(browser);
 #else
@@ -1596,8 +1585,7 @@ void ShowAppMenu(Browser* browser) {
 
 void ShowAvatarMenu(Browser* browser) {
   browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, true);
+      /*is_source_accelerator=*/true);
 }
 
 void OpenUpdateChromeDialog(Browser* browser) {
@@ -1658,8 +1646,7 @@ void SetAndroidOsForTabletSite(content::WebContents* current_tab) {
   NavigationEntry* entry = current_tab->GetController().GetLastCommittedEntry();
   if (entry) {
     entry->SetIsOverridingUserAgent(true);
-    std::string product =
-        version_info::GetProductNameAndVersionForUserAgent() + " Mobile";
+    std::string product = embedder_support::GetProductAndVersion() + " Mobile";
     blink::UserAgentOverride ua_override;
     ua_override.ua_string_override = content::BuildUserAgentFromOSAndProduct(
         kOsOverrideForTabletSite, product);
@@ -1733,14 +1720,22 @@ Browser* OpenInChrome(Browser* hosted_app_browser) {
 }
 
 bool CanViewSource(const Browser* browser) {
-  return !browser->is_type_devtools() && browser->tab_strip_model()
-                                             ->GetActiveWebContents()
-                                             ->GetController()
-                                             .CanViewSource();
+  if (browser->is_type_devtools()) {
+    return false;
+  }
+
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  // Disallow ViewSource if DevTools are disabled.
+  if (!DevToolsWindow::AllowDevToolsFor(browser->profile(), web_contents)) {
+    return false;
+  }
+  return web_contents->GetController().CanViewSource();
 }
 
 bool CanToggleCaretBrowsing(Browser* browser) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On Mac, ignore the keyboard shortcut unless web contents is focused,
   // because the keyboard shortcut interferes with a Japenese IME when the
   // omnibox is focused.  See https://crbug.com/1138475
@@ -1753,7 +1748,7 @@ bool CanToggleCaretBrowsing(Browser* browser) {
   return rwhv && rwhv->HasFocus();
 #else
   return true;
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 void ToggleCaretBrowsing(Browser* browser) {
@@ -1813,9 +1808,7 @@ bool ShouldInterceptChromeURLNavigationInIncognito(Browser* browser,
 
   bool show_clear_browsing_data_dialog =
       url == GURL(chrome::kChromeUISettingsURL)
-                 .Resolve(chrome::kClearBrowserDataSubPage) &&
-      base::FeatureList::IsEnabled(
-          features::kIncognitoClearBrowsingDataDialogForDesktop);
+                 .Resolve(chrome::kClearBrowserDataSubPage);
 
   bool show_history_disclaimer_dialog =
       url == GURL(chrome::kChromeUIHistoryURL) &&
@@ -1829,8 +1822,6 @@ void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
                                                       const GURL& url) {
   if (url == GURL(chrome::kChromeUISettingsURL)
                  .Resolve(chrome::kClearBrowserDataSubPage)) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kIncognitoClearBrowsingDataDialogForDesktop));
     ShowIncognitoClearBrowsingDataDialog(browser);
   } else if (url == GURL(chrome::kChromeUIHistoryURL)) {
     DCHECK(base::FeatureList::IsEnabled(
@@ -1840,5 +1831,23 @@ void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
     NOTREACHED();
   }
 }
+
+void FollowSite(content::WebContents* web_contents) {
+  DCHECK(!Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->IsIncognitoProfile());
+  feed::FollowSite(web_contents);
+}
+
+void UnfollowSite(content::WebContents* web_contents) {
+  DCHECK(!Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->IsIncognitoProfile());
+  feed::UnfollowSite(web_contents);
+}
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+void RunScreenAIVisualAnnotation(Browser* browser) {
+  browser->RunScreenAIAnnotator();
+}
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 }  // namespace chrome

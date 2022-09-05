@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_CONFIDENTIAL_CONTENTS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_CONFIDENTIAL_CONTENTS_H_
 
+#include <algorithm>
 #include <list>
 #include <string>
 #include <vector>
@@ -17,9 +18,13 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 namespace policy {
 
@@ -27,13 +32,15 @@ namespace policy {
 // Used to cache and later show information about observed confidential contents
 // to the user.
 struct DlpConfidentialContent {
-  DlpConfidentialContent() = default;
+  DlpConfidentialContent() = delete;
   // Constructs DlpConfidentialContent from the title and icon obtained from
   // |web_contents|, which cannot be null.
   explicit DlpConfidentialContent(content::WebContents* web_contents);
-  DlpConfidentialContent(const DlpConfidentialContent& other) = default;
-  DlpConfidentialContent& operator=(const DlpConfidentialContent& other) =
-      default;
+  // Constructs DlpConfidentialContent from the title and icon obtained from
+  // |window|, which cannot be null and |url|.
+  DlpConfidentialContent(aura::Window* window, const GURL& url);
+  DlpConfidentialContent(const DlpConfidentialContent& other);
+  DlpConfidentialContent& operator=(const DlpConfidentialContent& other);
   ~DlpConfidentialContent() = default;
 
   // Contents with the same url are considered equal, ignoring the ref (part
@@ -61,6 +68,28 @@ class DlpConfidentialContents {
   DlpConfidentialContents& operator=(const DlpConfidentialContents& other);
   ~DlpConfidentialContents();
 
+  friend bool operator==(const DlpConfidentialContents& a,
+                         const DlpConfidentialContents& b) {
+    return a.contents_ == b.contents_;
+  }
+  friend bool operator!=(const DlpConfidentialContents& a,
+                         const DlpConfidentialContents& b) {
+    return !(a == b);
+  }
+
+  // Returns true if all the elements in |a| and |b| are equal (i.e. have the
+  // same url) and the same title, and false otherwise. Useful to detect changes
+  // in titles, even if the set of the confidential contents hasn't changed.
+  friend bool EqualWithTitles(const DlpConfidentialContents& a,
+                              const DlpConfidentialContents& b) {
+    return std::equal(
+        a.contents_.begin(), a.contents_.end(), b.contents_.begin(),
+        b.contents_.end(),
+        [](const DlpConfidentialContent& x, const DlpConfidentialContent& y) {
+          return x == y && x.title == y.title;
+        });
+  }
+
   // Returns a reference to the underlying content container.
   base::flat_set<DlpConfidentialContent>& GetContents();
 
@@ -70,19 +99,21 @@ class DlpConfidentialContents {
   // Converts |web_contents| to a DlpConfidentialContent and adds it to the
   // underlying container.
   void Add(content::WebContents* web_contents);
-
-  void Add(const DlpConfidentialContent& content);
+  // Same for |window| and |url| pair.
+  void Add(aura::Window* window, const GURL& url);
 
   // Removes all stored confidential content, if there was any, and adds
   // |web_contents| converted to a DlpConfidentialContent.
   void ClearAndAdd(content::WebContents* web_contents);
+  // Same for |window| and |url| pair.
+  void ClearAndAdd(aura::Window* web_contents, const GURL& url);
 
   // Returns whether there is any content stored or not.
   bool IsEmpty() const;
 
   // Adds all content stored in |other| to the underlying container, without
   // duplicates.
-  void UnionWith(const DlpConfidentialContents& other);
+  void InsertOrUpdate(const DlpConfidentialContents& other);
 
  private:
   base::flat_set<DlpConfidentialContent> contents_;
@@ -126,9 +157,6 @@ class DlpConfidentialContentsCache {
   // Returns the duration for which the entries are kept in the cache.
   static base::TimeDelta GetCacheTimeout();
 
-  // Used only in tests to set a different size limit.
-  void SetCacheSizeLimitForTesting(int limit);
-
   // Used only in tests to inject a task runner for time control.
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -156,10 +184,10 @@ class DlpConfidentialContentsCache {
   void OnEvictionTimerUp(const DlpConfidentialContent& content);
 
   std::list<std::unique_ptr<Entry>> entries_;
-  size_t cache_size_limit_;
+  const size_t cache_size_limit_;
 
   // Used to evict cache entries after the timeout.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 }  // namespace policy

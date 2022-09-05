@@ -183,13 +183,13 @@ TEST_F(AV1ConvolveParametersTest, GetHighbdTestParams) {
 template <typename T>
 class AV1ConvolveTest : public ::testing::TestWithParam<TestParam<T>> {
  public:
-  virtual ~AV1ConvolveTest() { TearDown(); }
+  ~AV1ConvolveTest() override { TearDown(); }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
   }
 
-  virtual void TearDown() override {}
+  void TearDown() override {}
 
   // Randomizes the 8-bit input buffer and returns a pointer to it. Note that
   // the pointer is safe to use with an 8-tap filter. The stride can range
@@ -1385,12 +1385,12 @@ INSTANTIATE_TEST_SUITE_P(
 // logic; they only differentiate the filter parameters and reference function.
 class AV1ConvolveYCompoundTest : public AV1ConvolveXCompoundTest {
  protected:
-  virtual const InterpFilterParams *FilterParams(
+  const InterpFilterParams *FilterParams(
       InterpFilter f, const BlockSize &block) const override {
     return av1_get_interp_filter_params_with_block_size(f, block.Height());
   }
 
-  virtual convolve_x_func ReferenceFunc() const override {
+  convolve_x_func ReferenceFunc() const override {
     return av1_dist_wtd_convolve_y;
   }
 };
@@ -1422,10 +1422,10 @@ INSTANTIATE_TEST_SUITE_P(NEON, AV1ConvolveYCompoundTest,
 
 // Again, the X and Y convolve functions have the same type signature and logic.
 class AV1ConvolveYHighbdCompoundTest : public AV1ConvolveXHighbdCompoundTest {
-  virtual highbd_convolve_x_func ReferenceFunc() const override {
+  highbd_convolve_x_func ReferenceFunc() const override {
     return av1_highbd_dist_wtd_convolve_y;
   }
-  virtual const InterpFilterParams *FilterParams(
+  const InterpFilterParams *FilterParams(
       InterpFilter f, const BlockSize &block) const override {
     return av1_get_interp_filter_params_with_block_size(f, block.Height());
   }

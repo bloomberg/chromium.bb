@@ -69,6 +69,9 @@ export class ProgressCenterPanel {
           if (item.type === ProgressItemType.COPY) {
             return strf('COPY_FILE_NAME', source);
           }
+          if (item.type === ProgressItemType.EXTRACT) {
+            return strf('EXTRACT_FILE_NAME', source);
+          }
           if (item.type === ProgressItemType.MOVE) {
             return strf('MOVE_FILE_NAME', source);
           }
@@ -81,6 +84,9 @@ export class ProgressCenterPanel {
         // Multiple items:
         if (item.type === ProgressItemType.COPY) {
           return strf('COPY_ITEMS_REMAINING', count);
+        }
+        if (item.type === ProgressItemType.EXTRACT) {
+          return strf('EXTRACT_ITEMS_REMAINING', count);
         }
         if (item.type === ProgressItemType.MOVE) {
           return strf('MOVE_ITEMS_REMAINING', count);
@@ -144,6 +150,11 @@ export class ProgressCenterPanel {
                 strf('COPY_FILE_NAME_LONG', source, destination) :
                 strf('FILE_COPIED', source);
           }
+          if (item.type === ProgressItemType.EXTRACT) {
+            return hasDestination ?
+                strf('EXTRACT_FILE_NAME_LONG', source, destination) :
+                strf('FILE_EXTRACTED', source);
+          }
           if (item.type === ProgressItemType.MOVE) {
             return hasDestination ?
                 strf('MOVE_FILE_NAME_LONG', source, destination) :
@@ -163,6 +174,9 @@ export class ProgressCenterPanel {
           return hasDestination ?
               strf('COPY_ITEMS_REMAINING_LONG', count, destination) :
               strf('FILE_ITEMS_COPIED', source);
+        }
+        if (item.type === ProgressItemType.EXTRACT) {
+          return strf('FILE_ITEMS_EXTRACTED', count);
         }
         if (item.type === ProgressItemType.MOVE) {
           return hasDestination ?
@@ -218,27 +232,39 @@ export class ProgressCenterPanel {
           '';
     }
 
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
     const locale = util.getCurrentLocaleOrDefault();
+    let minutes = Math.ceil(seconds / 60);
+    if (minutes <= 1) {
+      // Less than one minute. Display remaining time in seconds.
+      const formatter = new Intl.NumberFormat(
+          locale, {style: 'unit', unit: 'second', unitDisplay: 'long'});
+      return strf(
+          'TIME_REMAINING_ESTIMATE', formatter.format(Math.ceil(seconds)));
+    }
+
+    const minuteFormatter = new Intl.NumberFormat(
+        locale, {style: 'unit', unit: 'minute', unitDisplay: 'long'});
+
+    const hours = Math.floor(minutes / 60);
+    if (hours == 0) {
+      // Less than one hour. Display remaining time in minutes.
+      return strf('TIME_REMAINING_ESTIMATE', minuteFormatter.format(minutes));
+    }
+
+    minutes -= hours * 60;
+
     const hourFormatter = new Intl.NumberFormat(
         locale, {style: 'unit', unit: 'hour', unitDisplay: 'long'});
-    const minuteFormatter = new Intl.NumberFormat(
-        locale, {style: 'unit', unit: 'minute', unitDisplay: 'short'});
 
-    if (hours > 0 && minutes > 0) {
-      return strf(
-          'TIME_REMAINING_ESTIMATE_2', hourFormatter.format(hours),
-          minuteFormatter.format(minutes));
-    } else if (hours > 0) {
+    if (minutes == 0) {
+      // Hours but no minutes.
       return strf('TIME_REMAINING_ESTIMATE', hourFormatter.format(hours));
-    } else if (minutes > 0) {
-      return strf('TIME_REMAINING_ESTIMATE', minuteFormatter.format(minutes));
-    } else {
-      // Round up to 1 min for short period of remaining time.
-      return strf('TIME_REMAINING_ESTIMATE', minuteFormatter.format(1));
     }
+
+    // Hours and minutes.
+    return strf(
+        'TIME_REMAINING_ESTIMATE_2', hourFormatter.format(hours),
+        minuteFormatter.format(minutes));
   }
 
   /**
@@ -293,6 +319,7 @@ export class ProgressCenterPanel {
         case ProgressItemState.COMPLETED:
           // Create a completed panel for copies, moves, deletes and formats.
           if (item.type === ProgressItemType.COPY ||
+              item.type === ProgressItemType.EXTRACT ||
               item.type === ProgressItemType.MOVE ||
               item.type === ProgressItemType.FORMAT ||
               item.type === ProgressItemType.ZIP ||

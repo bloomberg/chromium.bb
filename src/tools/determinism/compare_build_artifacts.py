@@ -64,6 +64,7 @@ def get_files_to_compare(build_dir, recursive=False):
 
 def get_files_to_compare_using_isolate(build_dir):
   # First, find all .runtime_deps files in build_dir.
+  # TODO(crbug.com/1066213): This misses some files.
   runtime_deps_files = glob.glob(os.path.join(build_dir, '*.runtime_deps'))
 
   # Then, extract their contents.
@@ -260,6 +261,7 @@ def get_deps(ninja_path, build_dir, target):
 def compare_deps(first_dir, second_dir, ninja_path, targets):
   """Print difference of dependent files."""
   diffs = set()
+  print('Differences split by build targets:')
   for target in targets:
     first_deps = get_deps(ninja_path, first_dir, target)
     second_deps = get_deps(ninja_path, second_dir, target)
@@ -310,7 +312,23 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
     first_list = get_files_to_compare(first_dir, recursive)
     second_list = get_files_to_compare(second_dir, recursive)
 
+  # Always check that the main ninja files are deterministic.
+  # Ideally we'd compare all of them, but that requires walking
+  # the clobbered build dir to find them. This is less code
+  # and gives most of the benefit.
+  # TODO(thakis): Add build.ninja once comments 9/11 on crbug.com/1278777 are figured out.
+  # TODO(thakis): Run this on non-win32 once we have some plan for handling differences
+  # in goma/non-goma (crbug.com/1278777 comments 14/15) -- maybe have the recipe run
+  # `gn gen` in two additional build dirs with goma off and compare ninja files there?
+  if sys.platform == 'win32':
+    first_list.update(['toolchain.ninja'])
+    second_list.update(['toolchain.ninja'])
 
+  print('See https://chromium.googlesource.com/chromium/src/+/HEAD/docs/deterministic_builds.md')
+  print('for debugging non-determinisitic builds. Skip to "Unexpected diffs:" below')
+  print('and search for "DIFFERENT (unexpected)" for clues about problems.')
+  print()
+  print('Differences of files in build directories:')
   equals = []
   expected_diffs = []
   unexpected_diffs = []
@@ -349,13 +367,14 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
   print('Expected diffs:   %d' % len(expected_diffs))
   print('Unexpected diffs: %d' % len(unexpected_diffs))
   if unexpected_diffs:
-    print('Unexpected files with diffs:\n')
+    print('Unexpected files with diffs:')
     for u in unexpected_diffs:
       print('  %s' % u)
   if unexpected_equals:
-    print('Unexpected files with no diffs:\n')
+    print('Unexpected files with no diffs:')
     for u in unexpected_equals:
       print('  %s' % u)
+  print()
 
   all_diffs = expected_diffs + unexpected_diffs
   diffs_to_investigate = sorted(set(all_diffs).difference(missing_files))

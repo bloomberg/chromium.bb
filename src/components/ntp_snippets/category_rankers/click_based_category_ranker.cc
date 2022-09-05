@@ -347,13 +347,13 @@ base::Time ParseLastDismissedDate(const base::DictionaryValue& value) {
 bool ClickBasedCategoryRanker::ReadOrderFromPrefs(
     std::vector<RankedCategory>* result_categories) const {
   result_categories->clear();
-  const base::ListValue* list =
+  const base::Value* list =
       pref_service_->GetList(prefs::kClickBasedCategoryRankerOrderWithClicks);
-  if (!list || list->GetList().size() == 0) {
+  if (!list || list->GetListDeprecated().size() == 0) {
     return false;
   }
 
-  for (const base::Value& value : list->GetList()) {
+  for (const base::Value& value : list->GetListDeprecated()) {
     const base::DictionaryValue* dictionary;
     if (!value.GetAsDictionary(&dictionary)) {
       LOG(DFATAL) << "Failed to parse category data from prefs param "
@@ -381,17 +381,18 @@ bool ClickBasedCategoryRanker::ReadOrderFromPrefs(
 
 void ClickBasedCategoryRanker::StoreOrderToPrefs(
     const std::vector<RankedCategory>& ordered_categories) {
-  base::ListValue list;
+  base::Value::List list;
   for (const RankedCategory& category : ordered_categories) {
-    auto dictionary = std::make_unique<base::DictionaryValue>();
-    dictionary->SetInteger(kCategoryIdKey, category.category.id());
-    dictionary->SetInteger(kClicksKey, category.clicks);
-    dictionary->SetString(
+    base::Value::Dict dictionary;
+    dictionary.Set(kCategoryIdKey, category.category.id());
+    dictionary.Set(kClicksKey, category.clicks);
+    dictionary.Set(
         kLastDismissedKey,
         base::NumberToString(SerializeTime(category.last_dismissed)));
     list.Append(std::move(dictionary));
   }
-  pref_service_->Set(prefs::kClickBasedCategoryRankerOrderWithClicks, list);
+  pref_service_->Set(prefs::kClickBasedCategoryRankerOrderWithClicks,
+                     base::Value(std::move(list)));
 }
 
 std::vector<ClickBasedCategoryRanker::RankedCategory>::iterator

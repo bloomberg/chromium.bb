@@ -16,7 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "jingle/glue/thread_wrapper.h"
+#include "components/webrtc/thread_wrapper.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/desktop_environment.h"
@@ -31,7 +31,7 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_connection_to_client.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -85,7 +85,7 @@ ChromotingHost::ChromotingHost(
       status_monitor_(new HostStatusMonitor()),
       login_backoff_(&kDefaultBackoffPolicy),
       desktop_environment_options_(options) {
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+  webrtc::ThreadWrapper::EnsureForCurrentMessageLoop();
 }
 
 ChromotingHost::~ChromotingHost() {
@@ -103,7 +103,7 @@ ChromotingHost::~ChromotingHost() {
   // Notify observers.
   if (started_) {
     for (auto& observer : status_monitor_->observers())
-      observer.OnShutdown();
+      observer.OnHostShutdown();
   }
 }
 
@@ -114,7 +114,7 @@ void ChromotingHost::Start(const std::string& host_owner_email) {
   HOST_LOG << "Starting host";
   started_ = true;
   for (auto& observer : status_monitor_->observers())
-    observer.OnStart(host_owner_email);
+    observer.OnHostStarted(host_owner_email);
 
   session_manager_->AcceptIncoming(base::BindRepeating(
       &ChromotingHost::OnIncomingSession, base::Unretained(this)));
@@ -124,7 +124,7 @@ void ChromotingHost::StartChromotingHostServices() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ipc_server_);
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   ipc_server_ = std::make_unique<MojoIpcServer<mojom::ChromotingHostServices>>(
       GetChromotingHostServicesServerName(), this);
   ipc_server_->StartServer();
@@ -203,7 +203,7 @@ void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
 
   // Notify observers.
   for (auto& observer : status_monitor_->observers())
-    observer.OnAccessDenied(client->client_jid());
+    observer.OnClientAccessDenied(client->client_jid());
 }
 
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
@@ -244,7 +244,7 @@ void ChromotingHost::BindSessionServices(
                  << "No connected remote desktop client was found.";
     return;
   }
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   DWORD peer_session_id;
   if (!ProcessIdToSessionId(ipc_server_->current_peer_pid(),
                             &peer_session_id)) {

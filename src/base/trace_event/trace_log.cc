@@ -21,6 +21,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/ranges/algorithm.h"
@@ -30,7 +31,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -49,6 +49,7 @@
 #include "build/build_config.h"
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+#include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/tracing/perfetto_platform.h"
 #include "third_party/perfetto/include/perfetto/ext/trace_processor/export_json.h"  // nogncheck
@@ -59,11 +60,11 @@
 #include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.gen.h"  // nogncheck
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/trace_event/trace_event_etw_export_win.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/debug/elf_reader.h"
 
 // The linker assigns the virtual address of the start of current library to
@@ -390,7 +391,7 @@ void OnUpdateLegacyTraceEventDuration(
 
 }  // namespace
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !defined(OS_NACL)
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
 namespace {
 // Perfetto provides us with a fully formed JSON trace file, while
 // TraceResultBuffer wants individual JSON fragments without a containing
@@ -461,7 +462,7 @@ class JsonStringOutputWriter
   scoped_refptr<RefCountedString> buffer_ = new RefCountedString();
   bool did_strip_prefix_ = false;
 };
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !defined(OS_NACL)
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
 
 // A helper class that allows the lock to be acquired in the middle of the scope
 // and unlocks at the end of scope if locked.
@@ -687,7 +688,7 @@ TraceLog::TraceLog(int generation)
       use_worker_thread_(false) {
   CategoryRegistry::Initialize();
 
-#if defined(OS_NACL)  // NaCl shouldn't expose the process id.
+#if BUILDFLAG(IS_NACL)  // NaCl shouldn't expose the process id.
   SetProcessID(0);
 #else
   SetProcessID(static_cast<int>(GetCurrentProcId()));
@@ -812,7 +813,7 @@ void TraceLog::UpdateCategoryState(TraceCategory* category) {
     state_flags |= TraceCategory::ENABLED_FOR_RECORDING;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
           category->name())) {
     state_flags |= TraceCategory::ENABLED_FOR_ETW_EXPORT;
@@ -863,9 +864,9 @@ void TraceLog::CreateFiltersForTraceConfig() {
     std::unique_ptr<TraceEventFilter> new_filter;
     const std::string& predicate_name = filter_config.predicate_name();
     if (predicate_name == EventNameFilter::kName) {
-      auto whitelist = std::make_unique<std::unordered_set<std::string>>();
-      CHECK(filter_config.GetArgAsSet("event_name_allowlist", &*whitelist));
-      new_filter = std::make_unique<EventNameFilter>(std::move(whitelist));
+      auto allowlist = std::make_unique<std::unordered_set<std::string>>();
+      CHECK(filter_config.GetArgAsSet("event_name_allowlist", &*allowlist));
+      new_filter = std::make_unique<EventNameFilter>(std::move(allowlist));
     } else {
       if (filter_factory_for_testing_)
         new_filter = filter_factory_for_testing_(predicate_name);
@@ -1382,7 +1383,7 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
                              bool discard_events) {
   use_worker_thread_ = use_worker_thread;
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !defined(OS_NACL)
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
   perfetto::TrackEvent::Flush();
 
   if (discard_events) {
@@ -1422,11 +1423,11 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
     auto data = tracing_session_->ReadTraceBlocking();
     OnTraceData(data.data(), data.size(), /*has_more=*/false);
   }
-#elif BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && defined(OS_NACL)
+#elif BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && BUILDFLAG(IS_NACL)
   // Trace processor isn't built on NaCL, so we can't convert the resulting
   // trace into JSON.
   CHECK(false) << "JSON tracing isn't supported on NaCL";
-#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+#else
   if (IsEnabled()) {
     // Can't flush when tracing is enabled because otherwise PostTask would
     // - generate more trace events;
@@ -1475,10 +1476,10 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
   }
 
   FinishFlush(gen, discard_events);
-#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
 }
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !defined(OS_NACL)
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
 void TraceLog::OnTraceData(const char* data, size_t size, bool has_more) {
   if (proto_output_callback_) {
     scoped_refptr<RefCountedString> chunk = new RefCountedString();
@@ -1508,7 +1509,7 @@ void TraceLog::OnTraceData(const char* data, size_t size, bool has_more) {
   tracing_session_.reset();
   json_output_writer_.reset();
 }
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !defined(OS_NACL)
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
 
 // Usually it runs on a different thread.
 void TraceLog::ConvertTraceEventsToTraceFormat(
@@ -1654,7 +1655,7 @@ void TraceLog::OnFlushTimeout(int generation, bool discard_events) {
 
 void TraceLog::UseNextTraceBuffer() {
   logged_events_.reset(CreateTraceBuffer());
-  subtle::NoBarrier_AtomicIncrement(&generation_, 1);
+  generation_.fetch_add(1, std::memory_order_relaxed);
   thread_shared_chunk_.reset();
   thread_shared_chunk_index_ = 0;
 }
@@ -1711,14 +1712,14 @@ bool TraceLog::ShouldAddAfterUpdatingState(
     }
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // This is done sooner rather than later, to avoid creating the event and
   // acquiring the lock, which is not needed for ETW as it's already threadsafe.
   if (*category_group_enabled & TraceCategory::ENABLED_FOR_ETW_EXPORT) {
     TraceEventETWExport::AddEvent(phase, category_group_enabled, name, id,
                                   args);
   }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
   return true;
 }
 
@@ -1922,7 +1923,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamps(
                            args, flags);
       }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       trace_event->SendToATrace();
 #endif
     }
@@ -2057,11 +2058,11 @@ void TraceLog::UpdateTraceEventDurationExplicit(
     return;
   AutoThreadLocalBoolean thread_is_in_trace_event(&thread_is_in_trace_event_);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Generate an ETW event that marks the end of a complete event.
   if (category_group_enabled_local & TraceCategory::ENABLED_FOR_ETW_EXPORT)
     TraceEventETWExport::AddCompleteEndEvent(category_group_enabled, name);
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
   if (category_group_enabled_local & TraceCategory::ENABLED_FOR_RECORDING) {
     auto update_duration_override =
@@ -2083,7 +2084,7 @@ void TraceLog::UpdateTraceEventDurationExplicit(
       DCHECK(trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE);
 
       trace_event->UpdateDuration(now, thread_now, thread_instruction_now);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       trace_event->SendToATrace();
 #endif
     }
@@ -2144,7 +2145,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
     }
   }
 
-#if !defined(OS_NACL)  // NaCl shouldn't expose the process id.
+#if !BUILDFLAG(IS_NACL)  // NaCl shouldn't expose the process id.
   AddMetadataEventWhileLocked(0, "num_cpus", "number",
                               base::SysInfo::NumberOfProcessors());
 #endif
@@ -2155,7 +2156,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
                                 "sort_index", process_sort_index_);
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   AddMetadataEventWhileLocked(current_thread_id, "chrome_library_address",
                               "start_address",
                               base::StringPrintf("%p", &__executable_start));
@@ -2249,11 +2250,13 @@ void TraceLog::set_process_name(const std::string& process_name) {
     AutoLock lock(lock_);
     process_name_ = process_name;
   }
+
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   if (perfetto::Tracing::IsInitialized()) {
     auto track = perfetto::ProcessTrack::Current();
     auto desc = track.Serialize();
     desc.mutable_process()->set_process_name(process_name);
+    desc.mutable_process()->set_pid(process_id_);
     perfetto::TrackEvent::SetTrackDescriptor(track, std::move(desc));
   }
 #endif
@@ -2320,7 +2323,7 @@ TraceBuffer* TraceLog::CreateTraceBuffer() {
                                : kTraceEventVectorBufferChunks);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void TraceLog::UpdateETWCategoryGroupEnabledFlags() {
   // Go through each category and set/clear the ETW bit depending on whether the
   // category is enabled.
@@ -2333,7 +2336,7 @@ void TraceLog::UpdateETWCategoryGroupEnabledFlags() {
     }
   }
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 void TraceLog::SetTraceBufferForTesting(
     std::unique_ptr<TraceBuffer> trace_buffer) {

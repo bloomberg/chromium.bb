@@ -10,7 +10,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/guid.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
@@ -54,8 +53,8 @@ PairingRegistry::Pairing PairingRegistry::Pairing::Create(
   std::string client_id = base::GenerateGUID();
   std::string shared_secret;
   char buffer[kKeySize];
-  crypto::RandBytes(buffer, base::size(buffer));
-  base::Base64Encode(base::StringPiece(buffer, base::size(buffer)),
+  crypto::RandBytes(buffer, std::size(buffer));
+  base::Base64Encode(base::StringPiece(buffer, std::size(buffer)),
                      &shared_secret);
   return Pairing(created_time, client_name, client_id, shared_secret);
 }
@@ -255,7 +254,7 @@ void PairingRegistry::SanitizePairings(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<base::ListValue> sanitized_pairings(new base::ListValue());
-  for (size_t i = 0; i < pairings->GetList().size(); ++i) {
+  for (size_t i = 0; i < pairings->GetListDeprecated().size(); ++i) {
     base::DictionaryValue* pairing_json;
     if (!pairings->GetDictionary(i, &pairing_json)) {
       LOG(WARNING) << "A pairing entry is not a dictionary.";
@@ -275,7 +274,8 @@ void PairingRegistry::SanitizePairings(
         pairing.client_name(),
         pairing.client_id(),
         "");
-    sanitized_pairings->Append(sanitized_pairing.ToValue());
+    sanitized_pairings->GetList().Append(
+        base::Value::FromUniquePtrValue(sanitized_pairing.ToValue()));
   }
 
   std::move(callback).Run(std::move(sanitized_pairings));

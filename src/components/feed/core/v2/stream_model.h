@@ -17,6 +17,7 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "components/feed/core/v2/proto_util.h"
+#include "components/feed/core/v2/public/logging_parameters.h"
 #include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/stream_model/ephemeral_change.h"
 #include "components/feed/core/v2/stream_model/feature_tree.h"
@@ -90,9 +91,7 @@ class StreamModel {
     virtual void OnStoreChange(StoreUpdate update) = 0;
   };
 
-  // TODO(crbug.com/1268575): Add LoggingParameters here, as they should stay
-  // constant over the life of the model.
-  explicit StreamModel(Context* context);
+  StreamModel(Context* context, const LoggingParameters& logging_parameters);
   ~StreamModel();
 
   StreamModel(const StreamModel& src) = delete;
@@ -105,6 +104,10 @@ class StreamModel {
 
   // Data access.
 
+  const LoggingParameters& GetLoggingParameters() const {
+    return logging_parameters_;
+  }
+
   // Was this feed signed in.
   bool signed_in() const { return stream_data_.signed_in(); }
 
@@ -114,6 +117,18 @@ class StreamModel {
   // Has the privacy notice been fulfilled?
   bool privacy_notice_fulfilled() const {
     return stream_data_.privacy_notice_fulfilled();
+  }
+
+  // The client timestamp, in milliseconds from the Epoch, when the content
+  // from the response is retrieved.
+  int64_t last_added_time_millis() const {
+    return stream_data_.last_added_time_millis();
+  }
+
+  // The server timestamp, in milliseconds from the Epoch, when the response is
+  // produced.
+  int64_t last_server_response_time_millis() const {
+    return stream_data_.last_server_response_time_millis();
   }
 
   // Returns the full list of content in the order it should be presented.
@@ -177,6 +192,7 @@ class StreamModel {
 
   void UpdateFlattenedTree();
 
+  const LoggingParameters logging_parameters_;
   // The stream type for which this model is used. Used only for forwarding to
   // observers.
   StreamType stream_type_;

@@ -42,6 +42,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/framework/vulkan/vkNoRenderDocUtil.cpp \
 	external/vulkancts/framework/vulkan/vkNullDriver.cpp \
 	external/vulkancts/framework/vulkan/vkObjUtil.cpp \
+	external/vulkancts/framework/vulkan/vkPipelineConstructionUtil.cpp \
 	external/vulkancts/framework/vulkan/vkPlatform.cpp \
 	external/vulkancts/framework/vulkan/vkPrograms.cpp \
 	external/vulkancts/framework/vulkan/vkQueryUtil.cpp \
@@ -128,6 +129,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/draw/vktDrawBufferObjectUtil.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawConcurrentTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawCreateInfoUtil.cpp \
+	external/vulkancts/modules/vulkan/draw/vktDrawDepthBiasTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawDepthClampTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawDifferingInterpolationTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawDiscardRectanglesTests.cpp \
@@ -140,10 +142,12 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/draw/vktDrawMultiExtTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawMultipleClearsWithinRenderPass.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawMultipleInterpolationTests.cpp \
+	external/vulkancts/modules/vulkan/draw/vktDrawMultisampleLinearInterpolationTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawNegativeViewportHeightTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawOutputLocationTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawScissorTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawShaderDrawParametersTests.cpp \
+	external/vulkancts/modules/vulkan/draw/vktDrawShaderInvocationTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawShaderLayerTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawShaderViewportIndexTests.cpp \
 	external/vulkancts/modules/vulkan/draw/vktDrawSimpleTest.cpp \
@@ -158,11 +162,11 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/dynamic_state/vktDynamicStateTests.cpp \
 	external/vulkancts/modules/vulkan/dynamic_state/vktDynamicStateVPTests.cpp \
 	external/vulkancts/modules/vulkan/fragment_ops/vktFragmentOperationsEarlyFragmentTests.cpp \
-	external/vulkancts/modules/vulkan/fragment_ops/vktFragmentOperationsMakeUtil.cpp \
 	external/vulkancts/modules/vulkan/fragment_ops/vktFragmentOperationsOcclusionQueryTests.cpp \
 	external/vulkancts/modules/vulkan/fragment_ops/vktFragmentOperationsScissorMultiViewportTests.cpp \
 	external/vulkancts/modules/vulkan/fragment_ops/vktFragmentOperationsScissorTests.cpp \
 	external/vulkancts/modules/vulkan/fragment_ops/vktFragmentOperationsTests.cpp \
+	external/vulkancts/modules/vulkan/fragment_ops/vktFragmentOperationsTransientAttachmentTests.cpp \
 	external/vulkancts/modules/vulkan/fragment_shader_interlock/vktFragmentShaderInterlockBasic.cpp \
 	external/vulkancts/modules/vulkan/fragment_shader_interlock/vktFragmentShaderInterlockTests.cpp \
 	external/vulkancts/modules/vulkan/fragment_shading_rate/vktAttachmentRateTests.cpp \
@@ -183,6 +187,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/image/vktImageAtomicSpirvShaders.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageCompressionTranscodingSupport.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageDepthStencilDescriptorTests.cpp \
+	external/vulkancts/modules/vulkan/image/vktImageExtendedUsageBitTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageLoadStoreTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageLoadStoreUtil.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageMisalignedCubeTests.cpp \
@@ -241,12 +246,14 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineExecutablePropertiesTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineExtendedDynamicStateTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineFramebufferAttachmentTests.cpp \
+	external/vulkancts/modules/vulkan/pipeline/vktPipelineImage2DViewOf3DTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineImageSamplingInstance.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineImageTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineImageUtil.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineImageViewTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineInputAssemblyTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineInterfaceMatchingTests.cpp \
+	external/vulkancts/modules/vulkan/pipeline/vktPipelineLibraryTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineLogicOpTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineMakeUtil.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineMatchedAttachmentsTests.cpp \
@@ -258,6 +265,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineMultisampleImageTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineMultisampleInterpolationTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineMultisampleMixedAttachmentSamplesTests.cpp \
+	external/vulkancts/modules/vulkan/pipeline/vktPipelineMultisampleResolveRenderAreaTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineMultisampleSampleLocationsExtTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineMultisampleShaderBuiltInTests.cpp \
 	external/vulkancts/modules/vulkan/pipeline/vktPipelineMultisampleShaderFragmentMaskTests.cpp \
@@ -308,6 +316,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/query_pool/vktQueryPoolStatisticsTests.cpp \
 	external/vulkancts/modules/vulkan/query_pool/vktQueryPoolTests.cpp \
 	external/vulkancts/modules/vulkan/rasterization/vktRasterizationFragShaderSideEffectsTests.cpp \
+	external/vulkancts/modules/vulkan/rasterization/vktRasterizationOrderAttachmentAccessTests.cpp \
 	external/vulkancts/modules/vulkan/rasterization/vktRasterizationProvokingVertexTests.cpp \
 	external/vulkancts/modules/vulkan/rasterization/vktRasterizationTests.cpp \
 	external/vulkancts/modules/vulkan/ray_query/vktRayQueryAccelerationStructuresTests.cpp \
@@ -337,6 +346,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/ray_tracing/vktRayTracingMiscTests.cpp \
 	external/vulkancts/modules/vulkan/ray_tracing/vktRayTracingNonUniformArgsTests.cpp \
 	external/vulkancts/modules/vulkan/ray_tracing/vktRayTracingNullASTests.cpp \
+	external/vulkancts/modules/vulkan/ray_tracing/vktRayTracingPipelineFlagsTests.cpp \
 	external/vulkancts/modules/vulkan/ray_tracing/vktRayTracingPipelineLibraryTests.cpp \
 	external/vulkancts/modules/vulkan/ray_tracing/vktRayTracingProceduralGeometryTests.cpp \
 	external/vulkancts/modules/vulkan/ray_tracing/vktRayTracingShaderBindingTableTests.cpp \
@@ -347,6 +357,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/reconvergence/vktReconvergenceTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktDynamicRenderingTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassDepthStencilResolveTests.cpp \
+	external/vulkancts/modules/vulkan/renderpass/vktRenderPassDepthStencilWriteConditionsTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassFragmentDensityMapTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassLoadStoreOpNoneTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassMultipleSubpassesMultipleCommandBuffersTests.cpp \
@@ -461,6 +472,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/subgroups/vktSubgroupsBuiltinMaskVarTests.cpp \
 	external/vulkancts/modules/vulkan/subgroups/vktSubgroupsBuiltinVarTests.cpp \
 	external/vulkancts/modules/vulkan/subgroups/vktSubgroupsClusteredTests.cpp \
+	external/vulkancts/modules/vulkan/subgroups/vktSubgroupsMultipleDispatchesUniformSubgroupSizeTests.cpp \
 	external/vulkancts/modules/vulkan/subgroups/vktSubgroupsPartitionedTests.cpp \
 	external/vulkancts/modules/vulkan/subgroups/vktSubgroupsQuadTests.cpp \
 	external/vulkancts/modules/vulkan/subgroups/vktSubgroupsScanHelpers.cpp \
@@ -474,6 +486,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/synchronization/vktSynchronizationBasicFenceTests.cpp \
 	external/vulkancts/modules/vulkan/synchronization/vktSynchronizationBasicSemaphoreTests.cpp \
 	external/vulkancts/modules/vulkan/synchronization/vktSynchronizationCrossInstanceSharingTests.cpp \
+	external/vulkancts/modules/vulkan/synchronization/vktSynchronizationImageLayoutTransitionTests.cpp \
 	external/vulkancts/modules/vulkan/synchronization/vktSynchronizationInternallySynchronizedObjectsTests.cpp \
 	external/vulkancts/modules/vulkan/synchronization/vktSynchronizationNoneStageTests.cpp \
 	external/vulkancts/modules/vulkan/synchronization/vktSynchronizationOperation.cpp \
@@ -516,6 +529,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/texture/vktTextureTests.cpp \
 	external/vulkancts/modules/vulkan/texture/vktTextureTexelBufferTests.cpp \
 	external/vulkancts/modules/vulkan/texture/vktTextureTexelOffsetTests.cpp \
+	external/vulkancts/modules/vulkan/transform_feedback/vktPrimitivesGeneratedQueryTests.cpp \
 	external/vulkancts/modules/vulkan/transform_feedback/vktTransformFeedbackFuzzLayoutCase.cpp \
 	external/vulkancts/modules/vulkan/transform_feedback/vktTransformFeedbackFuzzLayoutTests.cpp \
 	external/vulkancts/modules/vulkan/transform_feedback/vktTransformFeedbackRandomLayoutCase.cpp \
@@ -967,6 +981,7 @@ LOCAL_SRC_FILES := \
 	modules/gles3/functional/es3fDepthStencilTests.cpp \
 	modules/gles3/functional/es3fDepthTests.cpp \
 	modules/gles3/functional/es3fDitheringTests.cpp \
+	modules/gles3/functional/es3fDrawBuffersIndexedTests.cpp \
 	modules/gles3/functional/es3fDrawTests.cpp \
 	modules/gles3/functional/es3fFboApiTests.cpp \
 	modules/gles3/functional/es3fFboColorbufferTests.cpp \
@@ -1085,6 +1100,7 @@ LOCAL_SRC_FILES := \
 	modules/gles3/tes3TestCase.cpp \
 	modules/gles3/tes3TestPackage.cpp \
 	modules/gles3/tes3TestPackageEntry.cpp \
+	modules/gles3/tgl45es3TestPackage.cpp \
 	modules/gles31/functional/es31fAdvancedBlendTests.cpp \
 	modules/gles31/functional/es31fAndroidExtensionPackES31ATests.cpp \
 	modules/gles31/functional/es31fAtomicCounterTests.cpp \
@@ -1095,7 +1111,6 @@ LOCAL_SRC_FILES := \
 	modules/gles31/functional/es31fCopyImageTests.cpp \
 	modules/gles31/functional/es31fDebugTests.cpp \
 	modules/gles31/functional/es31fDefaultVertexArrayObjectTests.cpp \
-	modules/gles31/functional/es31fDrawBuffersIndexedTests.cpp \
 	modules/gles31/functional/es31fDrawElementsBaseVertexTests.cpp \
 	modules/gles31/functional/es31fDrawTests.cpp \
 	modules/gles31/functional/es31fFboColorbufferTests.cpp \
@@ -1190,7 +1205,7 @@ LOCAL_SRC_FILES := \
 	modules/gles31/tes31TestCase.cpp \
 	modules/gles31/tes31TestPackage.cpp \
 	modules/gles31/tes31TestPackageEntry.cpp \
-	modules/gles31/tgl45TestPackage.cpp \
+	modules/gles31/tgl45es31TestPackage.cpp \
 	modules/glshared/glsAttributeLocationTests.cpp \
 	modules/glshared/glsBufferTestUtil.cpp \
 	modules/glshared/glsBuiltinPrecisionTests.cpp \

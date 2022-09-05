@@ -26,22 +26,20 @@ typedef struct {
   bool recon_set;
 } TuneButteraugliInfo;
 
-typedef struct AV1_COMP AV1_COMP;
+struct AV1_COMP;
 static const BLOCK_SIZE butteraugli_rdo_bsize = BLOCK_16X16;
 
-void av1_set_butteraugli_rdmult(const AV1_COMP *cpi, MACROBLOCK *x,
+void av1_set_butteraugli_rdmult(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                 BLOCK_SIZE bsize, int mi_row, int mi_col,
                                 int *rdmult);
 
-void av1_setup_butteraugli_recon(AV1_COMP *cpi,
-                                 const YV12_BUFFER_CONFIG *recon);
-
-void av1_setup_butteraugli_source(AV1_COMP *cpi);
+void av1_setup_butteraugli_source(struct AV1_COMP *cpi);
 
 // 'K' is used to balance the rate-distortion distribution between PSNR
 // and Butteraugli.
-void av1_setup_butteraugli_rdmult_and_restore_source(AV1_COMP *cpi, double K);
+void av1_setup_butteraugli_rdmult_and_restore_source(struct AV1_COMP *cpi,
+                                                     double K);
 
-void av1_setup_butteraugli_rdmult(AV1_COMP *cpi);
+void av1_setup_butteraugli_rdmult(struct AV1_COMP *cpi);
 
 #endif  // AOM_AV1_ENCODER_TUNE_BUTTERAUGLI_H_

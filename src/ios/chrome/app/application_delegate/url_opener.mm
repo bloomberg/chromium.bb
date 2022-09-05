@@ -27,6 +27,9 @@ namespace {
 // Key of the UMA Startup.MobileSessionStartFromApps histogram.
 const char* const kUMAMobileSessionStartFromAppsHistogram =
     "Startup.MobileSessionStartFromApps";
+// Key of the UMA Startup.ShowDefaultPromoFromApps histogram.
+const char* const kUMAShowDefaultPromoFromAppsHistogram =
+    "Startup.ShowDefaultPromoFromApps";
 }  // namespace
 
 @implementation URLOpener
@@ -58,6 +61,11 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
   UMA_HISTOGRAM_ENUMERATION(kUMAMobileSessionStartFromAppsHistogram, callerApp,
                             MOBILE_SESSION_CALLER_APP_COUNT);
 
+  if (params.postOpeningAction == SHOW_DEFAULT_BROWSER_SETTINGS) {
+    UMA_HISTOGRAM_ENUMERATION(kUMAShowDefaultPromoFromAppsHistogram, callerApp,
+                              MOBILE_SESSION_CALLER_APP_COUNT);
+  }
+
   if (initStage == InitStageFirstRun) {
     UMA_HISTOGRAM_ENUMERATION("FirstRun.LaunchSource", [params launchSource],
                               first_run::LAUNCH_SIZE);
@@ -82,8 +90,8 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
       GURL URL;
       GURL virtualURL;
       if ([params completeURL].SchemeIsFile()) {
-        // External URL will be loaded by WebState, which expects |completeURL|.
-        // Omnibox however suppose to display |externalURL|, which is used as
+        // External URL will be loaded by WebState, which expects `completeURL`.
+        // Omnibox however suppose to display `externalURL`, which is used as
         // virtual URL.
         URL = [params completeURL];
         virtualURL = [params externalURL];
@@ -131,7 +139,7 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
     // This method is always called when the SceneState transitions to
     // SceneActivationLevelForegroundActive, and before the handling of
     // startupInformation is done.
-    // Pass |NO| as active to avoid double processing.
+    // Pass `NO` as active to avoid double processing.
     [URLOpener openURL:options
             applicationActive:NO
                     tabOpener:tabOpener

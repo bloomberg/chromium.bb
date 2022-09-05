@@ -4,6 +4,7 @@
 
 import type * as ComponentsModule from '../../../../../../../front_end/ui/legacy/components/utils/utils.js';
 import type * as BindingsModule from '../../../../../../../front_end/models/bindings/bindings.js';
+import * as Platform from '../../../../../../../front_end/core/platform/platform.js';
 import type * as SDKModule from '../../../../../../../front_end/core/sdk/sdk.js';
 import type * as WorkspaceModule from '../../../../../../../front_end/models/workspace/workspace.js';
 import type * as Protocol from '../../../../../../../front_end/generated/protocol.js';
@@ -50,10 +51,10 @@ describeWithMockConnection('Linkifier', async () => {
 
     const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
     assertNotNullOrUndefined(debuggerModel);
-    debuggerModel.suspendModel();
+    void debuggerModel.suspendModel();
 
     const lineNumber = 4;
-    const url = '';
+    const url = Platform.DevToolsPath.EmptyUrlString;
     const anchor = linkifier.maybeLinkifyScriptLocation(target, scriptId1, url, lineNumber);
     assertNotNullOrUndefined(anchor);
     assert.strictEqual(anchor.textContent, '\u200b');
@@ -68,16 +69,16 @@ describeWithMockConnection('Linkifier', async () => {
 
     const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
     assertNotNullOrUndefined(debuggerModel);
-    debuggerModel.suspendModel();
+    void debuggerModel.suspendModel();
 
     const lineNumber = 4;
     // Explicitly set url to empty string and let it resolve through the live location.
-    const url = '';
+    const url = Platform.DevToolsPath.EmptyUrlString;
     const anchor = linkifier.maybeLinkifyScriptLocation(target, scriptId1, url, lineNumber);
     assertNotNullOrUndefined(anchor);
     assert.strictEqual(anchor.textContent, '\u200b');
 
-    debuggerModel.resumeModel();
+    void debuggerModel.resumeModel();
     const scriptParsedEvent: Protocol.Debugger.ScriptParsedEvent = {
       scriptId: scriptId1,
       url: 'https://www.google.com/script.js',
@@ -132,7 +133,8 @@ describeWithMockConnection('Linkifier', async () => {
     dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent1);
 
     // Ask for a link to a script that has not been registered yet, but has the same url.
-    const anchor = linkifier.maybeLinkifyScriptLocation(target, scriptId2, url, lineNumber);
+    const anchor =
+        linkifier.maybeLinkifyScriptLocation(target, scriptId2, url as Platform.DevToolsPath.UrlString, lineNumber);
     assertNotNullOrUndefined(anchor);
 
     // This link should not pick up the first script with the same url, since there's no
@@ -181,17 +183,17 @@ describeWithMockConnection('Linkifier', async () => {
 
     const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
     assertNotNullOrUndefined(debuggerModel);
-    debuggerModel.suspendModel();
+    void debuggerModel.suspendModel();
 
     const lineNumber = 4;
     const options = {columnNumber: 8, showColumnNumber: true, inlineFrameIndex: 0};
     // Explicitly set url to empty string and let it resolve through the live location.
-    const url = '';
+    const url = Platform.DevToolsPath.EmptyUrlString;
     const anchor = linkifier.maybeLinkifyScriptLocation(target, scriptId1, url, lineNumber, options);
     assertNotNullOrUndefined(anchor);
     assert.strictEqual(anchor.textContent, '\u200b');
 
-    debuggerModel.resumeModel();
+    void debuggerModel.resumeModel();
     const scriptParsedEvent: Protocol.Debugger.ScriptParsedEvent = {
       scriptId: scriptId1,
       url: 'https://www.google.com/script.js',

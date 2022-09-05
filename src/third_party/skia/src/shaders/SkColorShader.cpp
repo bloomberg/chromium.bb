@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "src/shaders/SkColorShader.h"
+
 #include "include/core/SkColorSpace.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkColorSpacePriv.h"
@@ -13,7 +15,11 @@
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkUtils.h"
 #include "src/core/SkVM.h"
-#include "src/shaders/SkColorShader.h"
+
+#ifdef SK_ENABLE_SKSL
+#include "src/core/SkKeyHelpers.h"
+#include "src/core/SkPaintParamsKey.h"
+#endif
 
 SkColorShader::SkColorShader(SkColor c) : fColor(c) {}
 
@@ -114,10 +120,10 @@ skvm::Color SkColor4Shader::onProgram(skvm::Builder* p,
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/GrColorInfo.h"
-#include "src/gpu/GrColorSpaceXform.h"
-#include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/SkGr.h"
+#include "src/gpu/ganesh/GrColorInfo.h"
+#include "src/gpu/ganesh/GrColorSpaceXform.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/SkGr.h"
 
 std::unique_ptr<GrFragmentProcessor> SkColorShader::asFragmentProcessor(
         const GrFPArgs& args) const {
@@ -133,4 +139,21 @@ std::unique_ptr<GrFragmentProcessor> SkColor4Shader::asFragmentProcessor(
     return GrFragmentProcessor::MakeColor(color.premul());
 }
 
+#endif
+
+#ifdef SK_ENABLE_SKSL
+void SkColorShader::addToKey(const SkKeyContext& keyContext,
+                             SkPaintParamsKeyBuilder* builder,
+                             SkPipelineDataGatherer* gatherer) const {
+    SolidColorShaderBlock::BeginBlock(keyContext, builder, gatherer,
+                                      SkColor4f::FromColor(fColor).premul());
+    builder->endBlock();
+}
+
+void SkColor4Shader::addToKey(const SkKeyContext& keyContext,
+                              SkPaintParamsKeyBuilder* builder,
+                              SkPipelineDataGatherer* gatherer) const {
+    SolidColorShaderBlock::BeginBlock(keyContext, builder, gatherer, fColor.premul());
+    builder->endBlock();
+}
 #endif

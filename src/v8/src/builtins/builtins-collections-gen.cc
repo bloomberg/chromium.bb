@@ -123,7 +123,8 @@ class BaseCollectionsAssembler : public CodeStubAssembler {
   TNode<IntPtrT> EstimatedInitialSize(TNode<Object> initial_entries,
                                       TNode<BoolT> is_fast_jsarray);
 
-  void GotoIfNotJSReceiver(const TNode<Object> obj, Label* if_not_receiver);
+  void GotoIfCannotBeWeakKey(const TNode<Object> obj,
+                             Label* if_cannot_be_weak_key);
 
   // Determines whether the collection's prototype has been modified.
   TNode<BoolT> HasInitialCollectionPrototype(Variant variant,
@@ -358,7 +359,7 @@ RootIndex BaseCollectionsAssembler::GetAddFunctionNameIndex(Variant variant) {
 void BaseCollectionsAssembler::GotoIfInitialAddFunctionModified(
     Variant variant, TNode<NativeContext> native_context,
     TNode<HeapObject> collection, Label* if_modified) {
-  STATIC_ASSERT(JSCollection::kAddFunctionDescriptorIndex ==
+  static_assert(JSCollection::kAddFunctionDescriptorIndex ==
                 JSWeakCollection::kAddFunctionDescriptorIndex);
 
   // TODO(jgruber): Investigate if this should also fall back to full prototype
@@ -367,7 +368,7 @@ void BaseCollectionsAssembler::GotoIfInitialAddFunctionModified(
       PrototypeCheckAssembler::kCheckPrototypePropertyConstness};
 
   static constexpr int kNoContextIndex = -1;
-  STATIC_ASSERT(
+  static_assert(
       (flags & PrototypeCheckAssembler::kCheckPrototypePropertyIdentity) == 0);
 
   using DescriptorIndexNameValue =
@@ -522,10 +523,14 @@ TNode<IntPtrT> BaseCollectionsAssembler::EstimatedInitialSize(
       [=] { return IntPtrConstant(0); });
 }
 
-void BaseCollectionsAssembler::GotoIfNotJSReceiver(const TNode<Object> obj,
-                                                   Label* if_not_receiver) {
-  GotoIf(TaggedIsSmi(obj), if_not_receiver);
-  GotoIfNot(IsJSReceiver(CAST(obj)), if_not_receiver);
+void BaseCollectionsAssembler::GotoIfCannotBeWeakKey(
+    const TNode<Object> obj, Label* if_cannot_be_weak_key) {
+  GotoIf(TaggedIsSmi(obj), if_cannot_be_weak_key);
+  TNode<Uint16T> instance_type = LoadMapInstanceType(LoadMap(CAST(obj)));
+  GotoIfNot(IsJSReceiverInstanceType(instance_type), if_cannot_be_weak_key);
+  // TODO(v8:12547) Shared structs should only be able to point to shared values
+  // in weak collections. For now, disallow them as weak collection keys.
+  GotoIf(IsJSSharedStructInstanceType(instance_type), if_cannot_be_weak_key);
 }
 
 TNode<Map> BaseCollectionsAssembler::GetInitialCollectionPrototype(
@@ -1433,11 +1438,11 @@ TF_BUILTIN(OrderedHashTableHealIndex, CollectionsBuiltinsAssembler) {
   GotoIfNot(SmiLessThan(SmiConstant(0), index), &return_zero);
 
   // Check if the {table} was cleared.
-  STATIC_ASSERT(OrderedHashMap::NumberOfDeletedElementsOffset() ==
+  static_assert(OrderedHashMap::NumberOfDeletedElementsOffset() ==
                 OrderedHashSet::NumberOfDeletedElementsOffset());
   TNode<IntPtrT> number_of_deleted_elements = LoadAndUntagObjectField(
       table, OrderedHashMap::NumberOfDeletedElementsOffset());
-  STATIC_ASSERT(OrderedHashMap::kClearedTableSentinel ==
+  static_assert(OrderedHashMap::kClearedTableSentinel ==
                 OrderedHashSet::kClearedTableSentinel);
   GotoIf(IntPtrEqual(number_of_deleted_elements,
                      IntPtrConstant(OrderedHashMap::kClearedTableSentinel)),
@@ -1451,7 +1456,7 @@ TF_BUILTIN(OrderedHashTableHealIndex, CollectionsBuiltinsAssembler) {
   {
     TNode<IntPtrT> i = var_i.value();
     GotoIfNot(IntPtrLessThan(i, number_of_deleted_elements), &return_index);
-    STATIC_ASSERT(OrderedHashMap::RemovedHolesIndex() ==
+    static_assert(OrderedHashMap::RemovedHolesIndex() ==
                   OrderedHashSet::RemovedHolesIndex());
     TNode<Smi> removed_index = CAST(LoadFixedArrayElement(
         CAST(table), i, OrderedHashMap::RemovedHolesIndex() * kTaggedSize));
@@ -1680,7 +1685,7 @@ TF_BUILTIN(MapPrototypeSet, CollectionsBuiltinsAssembler) {
     number_of_buckets = SmiUntag(CAST(UnsafeLoadFixedArrayElement(
         table, OrderedHashMap::NumberOfBucketsIndex())));
 
-    STATIC_ASSERT(OrderedHashMap::kLoadFactor == 2);
+    static_assert(OrderedHashMap::kLoadFactor == 2);
     const TNode<WordT> capacity = WordShl(number_of_buckets.value(), 1);
     const TNode<IntPtrT> number_of_elements = SmiUntag(
         CAST(LoadObjectField(table, OrderedHashMap::NumberOfElementsOffset())));
@@ -1756,6 +1761,9 @@ TF_BUILTIN(MapPrototypeDelete, CollectionsBuiltinsAssembler) {
 
   ThrowIfNotInstanceType(context, receiver, JS_MAP_TYPE,
                          "Map.prototype.delete");
+
+  // This check breaks a known exploitation technique. See crbug.com/1263462
+  CSA_CHECK(this, TaggedNotEqual(key, TheHoleConstant()));
 
   const TNode<OrderedHashMap> table =
       LoadObjectField<OrderedHashMap>(CAST(receiver), JSMap::kTableOffset);
@@ -1852,7 +1860,7 @@ TF_BUILTIN(SetPrototypeAdd, CollectionsBuiltinsAssembler) {
     number_of_buckets = SmiUntag(CAST(UnsafeLoadFixedArrayElement(
         table, OrderedHashSet::NumberOfBucketsIndex())));
 
-    STATIC_ASSERT(OrderedHashSet::kLoadFactor == 2);
+    static_assert(OrderedHashSet::kLoadFactor == 2);
     const TNode<WordT> capacity = WordShl(number_of_buckets.value(), 1);
     const TNode<IntPtrT> number_of_elements = SmiUntag(
         CAST(LoadObjectField(table, OrderedHashSet::NumberOfElementsOffset())));
@@ -1924,6 +1932,9 @@ TF_BUILTIN(SetPrototypeDelete, CollectionsBuiltinsAssembler) {
 
   ThrowIfNotInstanceType(context, receiver, JS_SET_TYPE,
                          "Set.prototype.delete");
+
+  // This check breaks a known exploitation technique. See crbug.com/1263462
+  CSA_CHECK(this, TaggedNotEqual(key, TheHoleConstant()));
 
   const TNode<OrderedHashSet> table =
       LoadObjectField<OrderedHashSet>(CAST(receiver), JSMap::kTableOffset);
@@ -2723,17 +2734,18 @@ TF_BUILTIN(WeakMapLookupHashIndex, WeakCollectionsBuiltinsAssembler) {
   auto table = Parameter<EphemeronHashTable>(Descriptor::kTable);
   auto key = Parameter<Object>(Descriptor::kKey);
 
-  Label if_not_found(this);
+  Label if_cannot_be_weak_key(this);
 
-  GotoIfNotJSReceiver(key, &if_not_found);
+  GotoIfCannotBeWeakKey(key, &if_cannot_be_weak_key);
 
-  TNode<IntPtrT> hash = LoadJSReceiverIdentityHash(CAST(key), &if_not_found);
+  TNode<IntPtrT> hash =
+      LoadJSReceiverIdentityHash(CAST(key), &if_cannot_be_weak_key);
   TNode<IntPtrT> capacity = LoadTableCapacity(table);
-  TNode<IntPtrT> key_index =
-      FindKeyIndexForKey(table, key, hash, EntryMask(capacity), &if_not_found);
+  TNode<IntPtrT> key_index = FindKeyIndexForKey(
+      table, key, hash, EntryMask(capacity), &if_cannot_be_weak_key);
   Return(SmiTag(ValueIndexFromKeyIndex(key_index)));
 
-  BIND(&if_not_found);
+  BIND(&if_cannot_be_weak_key);
   Return(SmiConstant(-1));
 }
 
@@ -2788,22 +2800,23 @@ TF_BUILTIN(WeakCollectionDelete, WeakCollectionsBuiltinsAssembler) {
   auto collection = Parameter<JSWeakCollection>(Descriptor::kCollection);
   auto key = Parameter<Object>(Descriptor::kKey);
 
-  Label call_runtime(this), if_not_found(this);
+  Label call_runtime(this), if_cannot_be_weak_key(this);
 
-  GotoIfNotJSReceiver(key, &if_not_found);
+  GotoIfCannotBeWeakKey(key, &if_cannot_be_weak_key);
 
-  TNode<IntPtrT> hash = LoadJSReceiverIdentityHash(CAST(key), &if_not_found);
+  TNode<IntPtrT> hash =
+      LoadJSReceiverIdentityHash(CAST(key), &if_cannot_be_weak_key);
   TNode<EphemeronHashTable> table = LoadTable(collection);
   TNode<IntPtrT> capacity = LoadTableCapacity(table);
-  TNode<IntPtrT> key_index =
-      FindKeyIndexForKey(table, key, hash, EntryMask(capacity), &if_not_found);
+  TNode<IntPtrT> key_index = FindKeyIndexForKey(
+      table, key, hash, EntryMask(capacity), &if_cannot_be_weak_key);
   TNode<IntPtrT> number_of_elements = LoadNumberOfElements(table, -1);
   GotoIf(ShouldShrink(capacity, number_of_elements), &call_runtime);
 
   RemoveEntry(table, key_index, number_of_elements);
   Return(TrueConstant());
 
-  BIND(&if_not_found);
+  BIND(&if_cannot_be_weak_key);
   Return(FalseConstant());
 
   BIND(&call_runtime);
@@ -2871,6 +2884,9 @@ TF_BUILTIN(WeakMapPrototypeDelete, CodeStubAssembler) {
   ThrowIfNotInstanceType(context, receiver, JS_WEAK_MAP_TYPE,
                          "WeakMap.prototype.delete");
 
+  // This check breaks a known exploitation technique. See crbug.com/1263462
+  CSA_CHECK(this, TaggedNotEqual(key, TheHoleConstant()));
+
   Return(CallBuiltin(Builtin::kWeakCollectionDelete, context, receiver, key));
 }
 
@@ -2884,7 +2900,7 @@ TF_BUILTIN(WeakMapPrototypeSet, WeakCollectionsBuiltinsAssembler) {
                          "WeakMap.prototype.set");
 
   Label throw_invalid_key(this);
-  GotoIfNotJSReceiver(key, &throw_invalid_key);
+  GotoIfCannotBeWeakKey(key, &throw_invalid_key);
 
   Return(
       CallBuiltin(Builtin::kWeakCollectionSet, context, receiver, key, value));
@@ -2902,7 +2918,7 @@ TF_BUILTIN(WeakSetPrototypeAdd, WeakCollectionsBuiltinsAssembler) {
                          "WeakSet.prototype.add");
 
   Label throw_invalid_value(this);
-  GotoIfNotJSReceiver(value, &throw_invalid_value);
+  GotoIfCannotBeWeakKey(value, &throw_invalid_value);
 
   Return(CallBuiltin(Builtin::kWeakCollectionSet, context, receiver, value,
                      TrueConstant()));
@@ -2918,6 +2934,9 @@ TF_BUILTIN(WeakSetPrototypeDelete, CodeStubAssembler) {
 
   ThrowIfNotInstanceType(context, receiver, JS_WEAK_SET_TYPE,
                          "WeakSet.prototype.delete");
+
+  // This check breaks a known exploitation technique. See crbug.com/1263462
+  CSA_CHECK(this, TaggedNotEqual(value, TheHoleConstant()));
 
   Return(CallBuiltin(Builtin::kWeakCollectionDelete, context, receiver, value));
 }

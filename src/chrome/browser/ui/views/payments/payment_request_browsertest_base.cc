@@ -95,9 +95,7 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   // Setup the https server.
   https_server_ = std::make_unique<net::EmbeddedTestServer>(
       net::EmbeddedTestServer::TYPE_HTTPS);
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  host_resolver()->AddRule("b.com", "127.0.0.1");
-  host_resolver()->AddRule("c.com", "127.0.0.1");
+  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(https_server_->InitializeAndListen());
   https_server_->ServeFilesFromSourceDirectory("components/test/data/payments");
   https_server_->StartAcceptingConnections();
@@ -173,10 +171,7 @@ void PaymentRequestBrowserTestBase::OnNotSupportedError() {
     event_waiter_->OnEvent(DialogEvent::NOT_SUPPORTED_ERROR);
 }
 
-void PaymentRequestBrowserTestBase::OnConnectionTerminated() {
-  if (event_waiter_)
-    event_waiter_->OnEvent(DialogEvent::DIALOG_CLOSED);
-}
+void PaymentRequestBrowserTestBase::OnConnectionTerminated() {}
 
 void PaymentRequestBrowserTestBase::OnAbortCalled() {
   if (event_waiter_)
@@ -186,6 +181,11 @@ void PaymentRequestBrowserTestBase::OnAbortCalled() {
 void PaymentRequestBrowserTestBase::OnDialogOpened() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::DIALOG_OPENED);
+}
+
+void PaymentRequestBrowserTestBase::OnDialogClosed() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::DIALOG_CLOSED);
 }
 
 void PaymentRequestBrowserTestBase::OnOrderSummaryOpened() {
@@ -273,12 +273,6 @@ void PaymentRequestBrowserTestBase::OnPaymentHandlerWindowOpened() {
     event_waiter_->OnEvent(DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED);
 }
 
-void PaymentRequestBrowserTestBase::SetHostReplaceRule(
-    const std::string& host_pattern,
-    const std::string& replacement) {
-  host_resolver()->AddRule(host_pattern, replacement);
-}
-
 // Install the payment app specified by `hostname`, e.g., "a.com". Specify the
 // filename of the service worker with `service_worker_filename`. Note that
 // the origin has to be initialized first to be supported here. The payment
@@ -289,6 +283,26 @@ void PaymentRequestBrowserTestBase::InstallPaymentApp(
     const std::string& service_worker_filename,
     std::string* url_method_output) {
   NavigateTo(hostname, "/payment_handler_installer.html");
+  *url_method_output = https_server()->GetURL(hostname, "/").spec();
+  *url_method_output =
+      url_method_output->substr(0, url_method_output->length() - 1);
+  ASSERT_NE('/', (*url_method_output)[url_method_output->length() - 1]);
+  ASSERT_EQ("success",
+            content::EvalJs(GetActiveWebContents(),
+                            content::JsReplace("install($1, [$2], false)",
+                                               service_worker_filename,
+                                               *url_method_output)));
+  // We can't output `url_method_output` by return because the ASSERTs require
+  // the method to return void.
+}
+
+// The default |InstallPaymentApp| uses a manifest file that contains an icon.
+// This path doesn't install an icon.
+void PaymentRequestBrowserTestBase::InstallPaymentAppWithoutIcon(
+    const std::string& hostname,
+    const std::string& service_worker_filename,
+    std::string* url_method_output) {
+  NavigateTo(hostname, "/payment_handler_installer_no_icon.html");
   *url_method_output = https_server()->GetURL(hostname, "/").spec();
   *url_method_output =
       url_method_output->substr(0, url_method_output->length() - 1);

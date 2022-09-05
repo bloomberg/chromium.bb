@@ -34,11 +34,12 @@
 
 #include <memory>
 
+#include "base/synchronization/lock.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
@@ -65,8 +66,14 @@ class PLATFORM_EXPORT MediaStreamComponent final
  public:
   MediaStreamComponent(MediaStreamSource*);
   MediaStreamComponent(const String& id, MediaStreamSource*);
+  MediaStreamComponent(const String& id,
+                       MediaStreamSource*,
+                       std::unique_ptr<MediaStreamTrackPlatform>);
+  MediaStreamComponent(MediaStreamSource*,
+                       std::unique_ptr<MediaStreamTrackPlatform>);
 
-  MediaStreamComponent* Clone() const;
+  MediaStreamComponent* Clone(std::unique_ptr<MediaStreamTrackPlatform>
+                                  cloned_platform_track = nullptr) const;
 
   // |m_trackData| may hold pointers to GC objects indirectly, and it may touch
   // eagerly finalized objects in destruction.
@@ -100,7 +107,11 @@ class PLATFORM_EXPORT MediaStreamComponent final
   MediaStreamTrackPlatform* GetPlatformTrack() const {
     return platform_track_.get();
   }
-  void SetPlatformTrack(
+
+  // Deprecated - use the constructor which takes a MediaStreamTrackPlatform
+  // instead.
+  // TODO(crbug.com/1302689): Remove once all callers have been migrated.
+  [[deprecated]] void SetPlatformTrack(
       std::unique_ptr<MediaStreamTrackPlatform> platform_track) {
     platform_track_ = std::move(platform_track);
   }
@@ -136,7 +147,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
 
    private:
     WebAudioSourceProvider* web_audio_source_provider_;
-    Mutex provide_input_lock_;
+    base::Lock provide_input_lock_;
 
     // Used to wrap AudioBus to be passed into |web_audio_source_provider_|.
     WebVector<float*> web_audio_data_;
@@ -157,7 +168,21 @@ class PLATFORM_EXPORT MediaStreamComponent final
   WebLocalFrame* creation_frame_ = nullptr;
 };
 
-typedef HeapVector<Member<MediaStreamComponent>> MediaStreamComponentVector;
+class PLATFORM_EXPORT MediaStreamComponents final
+    : public GarbageCollected<MediaStreamComponents> {
+ public:
+  // At least one of audio_track / video_track must be non-null.
+  MediaStreamComponents(MediaStreamComponent* audio_track,
+                        MediaStreamComponent* video_track);
+
+  void Trace(Visitor*) const;
+
+  Member<MediaStreamComponent> audio_track_;
+  Member<MediaStreamComponent> video_track_;
+};
+
+using MediaStreamComponentVector = HeapVector<Member<MediaStreamComponent>>;
+using MediaStreamsComponentsVector = HeapVector<Member<MediaStreamComponents>>;
 
 }  // namespace blink
 

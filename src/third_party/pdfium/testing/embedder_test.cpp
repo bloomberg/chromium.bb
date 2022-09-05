@@ -4,6 +4,7 @@
 
 #include "testing/embedder_test.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "public/fpdf_edit.h"
 #include "public/fpdf_text.h"
 #include "public/fpdfview.h"
+#include "testing/embedder_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/test_loader.h"
 #include "testing/utils/bitmap_saver.h"
@@ -24,6 +26,7 @@
 #include "third_party/base/check.h"
 #include "third_party/base/containers/contains.h"
 #include "third_party/base/notreached.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 #ifdef PDF_ENABLE_V8
 #include "testing/v8_test_environment.h"
@@ -37,7 +40,7 @@ int GetBitmapBytesPerPixel(FPDF_BITMAP bitmap) {
   return EmbedderTest::BytesPerPixelForFormat(FPDFBitmap_GetFormat(bitmap));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 int CALLBACK GetRecordProc(HDC hdc,
                            HANDLETABLE* handle_table,
                            const ENHMETARECORD* record,
@@ -47,7 +50,219 @@ int CALLBACK GetRecordProc(HDC hdc,
   records.push_back(record);
   return 1;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
+
+// These "jump" into the delegate to do actual testing.
+void UnsupportedHandlerTrampoline(UNSUPPORT_INFO* info, int type) {
+  auto* delegate = static_cast<EmbedderTest*>(info)->GetDelegate();
+  delegate->UnsupportedHandler(type);
+}
+
+int AlertTrampoline(IPDF_JSPLATFORM* platform,
+                    FPDF_WIDESTRING message,
+                    FPDF_WIDESTRING title,
+                    int type,
+                    int icon) {
+  auto* delegate = static_cast<EmbedderTest*>(platform)->GetDelegate();
+  return delegate->Alert(message, title, type, icon);
+}
+
+int SetTimerTrampoline(FPDF_FORMFILLINFO* info, int msecs, TimerCallback fn) {
+  auto* delegate = static_cast<EmbedderTest*>(info)->GetDelegate();
+  return delegate->SetTimer(msecs, fn);
+}
+
+void KillTimerTrampoline(FPDF_FORMFILLINFO* info, int id) {
+  auto* delegate = static_cast<EmbedderTest*>(info)->GetDelegate();
+  return delegate->KillTimer(id);
+}
+
+FPDF_PAGE GetPageTrampoline(FPDF_FORMFILLINFO* info,
+                            FPDF_DOCUMENT document,
+                            int page_index) {
+  auto* delegate = static_cast<EmbedderTest*>(info)->GetDelegate();
+  return delegate->GetPage(info, document, page_index);
+}
+
+void DoURIActionTrampoline(FPDF_FORMFILLINFO* info, FPDF_BYTESTRING uri) {
+  auto* delegate = static_cast<EmbedderTest*>(info)->GetDelegate();
+  return delegate->DoURIAction(uri);
+}
+
+void DoGoToActionTrampoline(FPDF_FORMFILLINFO* info,
+                            int page_index,
+                            int zoom_mode,
+                            float* pos_array,
+                            int array_size) {
+  auto* delegate = static_cast<EmbedderTest*>(info)->GetDelegate();
+  return delegate->DoGoToAction(info, page_index, zoom_mode, pos_array,
+                                array_size);
+}
+
+void OnFocusChangeTrampoline(FPDF_FORMFILLINFO* info,
+                             FPDF_ANNOTATION annot,
+                             int page_index) {
+  auto* delegate = static_cast<EmbedderTest*>(info)->GetDelegate();
+  return delegate->OnFocusChange(info, annot, page_index);
+}
+
+void DoURIActionWithKeyboardModifierTrampoline(FPDF_FORMFILLINFO* info,
+                                               FPDF_BYTESTRING uri,
+                                               int modifiers) {
+  auto* delegate = static_cast<EmbedderTest*>(info)->GetDelegate();
+  return delegate->DoURIActionWithKeyboardModifier(info, uri, modifiers);
+}
+
+// These do nothing (but must return a reasonable default value).
+void InvalidateStub(FPDF_FORMFILLINFO* pThis,
+                    FPDF_PAGE page,
+                    double left,
+                    double top,
+                    double right,
+                    double bottom) {}
+
+void OutputSelectedRectStub(FPDF_FORMFILLINFO* pThis,
+                            FPDF_PAGE page,
+                            double left,
+                            double top,
+                            double right,
+                            double bottom) {}
+
+void SetCursorStub(FPDF_FORMFILLINFO* pThis, int nCursorType) {}
+
+FPDF_SYSTEMTIME GetLocalTimeStub(FPDF_FORMFILLINFO* pThis) {
+  return {122, 11, 6, 28, 12, 59, 59, 500};
+}
+
+void OnChangeStub(FPDF_FORMFILLINFO* pThis) {}
+
+FPDF_PAGE GetCurrentPageStub(FPDF_FORMFILLINFO* pThis, FPDF_DOCUMENT document) {
+  return GetPageTrampoline(pThis, document, 0);
+}
+
+int GetRotationStub(FPDF_FORMFILLINFO* pThis, FPDF_PAGE page) {
+  return 0;
+}
+
+void ExecuteNamedActionStub(FPDF_FORMFILLINFO* pThis, FPDF_BYTESTRING name) {}
+
+void SetTextFieldFocusStub(FPDF_FORMFILLINFO* pThis,
+                           FPDF_WIDESTRING value,
+                           FPDF_DWORD valueLen,
+                           FPDF_BOOL is_focus) {}
+
+#ifdef PDF_ENABLE_XFA
+void DisplayCaretStub(FPDF_FORMFILLINFO* pThis,
+                      FPDF_PAGE page,
+                      FPDF_BOOL bVisible,
+                      double left,
+                      double top,
+                      double right,
+                      double bottom) {}
+
+int GetCurrentPageIndexStub(FPDF_FORMFILLINFO* pThis, FPDF_DOCUMENT document) {
+  return 0;
+}
+
+void SetCurrentPageStub(FPDF_FORMFILLINFO* pThis,
+                        FPDF_DOCUMENT document,
+                        int iCurPage) {}
+
+void GotoURLStub(FPDF_FORMFILLINFO* pThis,
+                 FPDF_DOCUMENT document,
+                 FPDF_WIDESTRING wsURL) {}
+
+void GetPageViewRectStub(FPDF_FORMFILLINFO* pThis,
+                         FPDF_PAGE page,
+                         double* left,
+                         double* top,
+                         double* right,
+                         double* bottom) {
+  *left = 0.0;
+  *top = 0.0;
+  *right = 512.0;
+  *bottom = 512.0;
+}
+
+void PageEventStub(FPDF_FORMFILLINFO* pThis,
+                   int page_count,
+                   FPDF_DWORD event_type) {}
+
+FPDF_BOOL PopupMenuStub(FPDF_FORMFILLINFO* pThis,
+                        FPDF_PAGE page,
+                        FPDF_WIDGET hWidget,
+                        int menuFlag,
+                        float x,
+                        float y) {
+  return true;
+}
+
+FPDF_FILEHANDLER* OpenFileStub(FPDF_FORMFILLINFO* pThis,
+                               int fileFlag,
+                               FPDF_WIDESTRING wsURL,
+                               const char* mode) {
+  return nullptr;
+}
+
+void EmailToStub(FPDF_FORMFILLINFO* pThis,
+                 FPDF_FILEHANDLER* fileHandler,
+                 FPDF_WIDESTRING pTo,
+                 FPDF_WIDESTRING pSubject,
+                 FPDF_WIDESTRING pCC,
+                 FPDF_WIDESTRING pBcc,
+                 FPDF_WIDESTRING pMsg) {}
+
+void UploadToStub(FPDF_FORMFILLINFO* pThis,
+                  FPDF_FILEHANDLER* fileHandler,
+                  int fileFlag,
+                  FPDF_WIDESTRING uploadTo) {}
+
+int GetPlatformStub(FPDF_FORMFILLINFO* pThis, void* platform, int length) {
+  return 0;
+}
+
+int GetLanguageStub(FPDF_FORMFILLINFO* pThis, void* language, int length) {
+  return 0;
+}
+
+FPDF_FILEHANDLER* DownloadFromURLStub(FPDF_FORMFILLINFO* pThis,
+                                      FPDF_WIDESTRING URL) {
+  static const char kString[] = "<body>secrets</body>";
+  static FPDF_FILEHANDLER kFakeFileHandler = {
+      nullptr,
+      [](void*) -> void {},
+      [](void*) -> FPDF_DWORD { return sizeof(kString); },
+      [](void*, FPDF_DWORD off, void* buffer, FPDF_DWORD size) -> FPDF_RESULT {
+        memcpy(buffer, kString, std::min<size_t>(size, sizeof(kString)));
+        return 0;
+      },
+      [](void*, FPDF_DWORD, const void*, FPDF_DWORD) -> FPDF_RESULT {
+        return -1;
+      },
+      [](void*) -> FPDF_RESULT { return 0; },
+      [](void*, FPDF_DWORD) -> FPDF_RESULT { return 0; }};
+  return &kFakeFileHandler;
+}
+
+FPDF_BOOL PostRequestURLStub(FPDF_FORMFILLINFO* pThis,
+                             FPDF_WIDESTRING wsURL,
+                             FPDF_WIDESTRING wsData,
+                             FPDF_WIDESTRING wsContentType,
+                             FPDF_WIDESTRING wsEncode,
+                             FPDF_WIDESTRING wsHeader,
+                             FPDF_BSTR* response) {
+  const char kString[] = "p\0o\0s\0t\0e\0d\0";
+  FPDF_BStr_Set(response, kString, sizeof(kString) - 1);
+  return true;
+}
+
+FPDF_BOOL PutRequestURLStub(FPDF_FORMFILLINFO* pThis,
+                            FPDF_WIDESTRING wsURL,
+                            FPDF_WIDESTRING wsData,
+                            FPDF_WIDESTRING wsEncode) {
+  return true;
+}
+#endif  // PDF_ENABLE_XFA
 
 }  // namespace
 
@@ -230,11 +445,37 @@ FPDF_FORMHANDLE EmbedderTest::SetupFormFillEnvironment(
   FPDF_FORMFILLINFO* formfillinfo = static_cast<FPDF_FORMFILLINFO*>(this);
   memset(formfillinfo, 0, sizeof(FPDF_FORMFILLINFO));
   formfillinfo->version = form_fill_info_version_;
+  formfillinfo->FFI_Invalidate = InvalidateStub;
+  formfillinfo->FFI_OutputSelectedRect = OutputSelectedRectStub;
+  formfillinfo->FFI_SetCursor = SetCursorStub;
   formfillinfo->FFI_SetTimer = SetTimerTrampoline;
   formfillinfo->FFI_KillTimer = KillTimerTrampoline;
+  formfillinfo->FFI_GetLocalTime = GetLocalTimeStub;
+  formfillinfo->FFI_OnChange = OnChangeStub;
   formfillinfo->FFI_GetPage = GetPageTrampoline;
+  formfillinfo->FFI_GetCurrentPage = GetCurrentPageStub;
+  formfillinfo->FFI_GetRotation = GetRotationStub;
+  formfillinfo->FFI_ExecuteNamedAction = ExecuteNamedActionStub;
+  formfillinfo->FFI_SetTextFieldFocus = SetTextFieldFocusStub;
   formfillinfo->FFI_DoURIAction = DoURIActionTrampoline;
   formfillinfo->FFI_DoGoToAction = DoGoToActionTrampoline;
+#ifdef PDF_ENABLE_XFA
+  formfillinfo->FFI_DisplayCaret = DisplayCaretStub;
+  formfillinfo->FFI_GetCurrentPageIndex = GetCurrentPageIndexStub;
+  formfillinfo->FFI_SetCurrentPage = SetCurrentPageStub;
+  formfillinfo->FFI_GotoURL = GotoURLStub;
+  formfillinfo->FFI_GetPageViewRect = GetPageViewRectStub;
+  formfillinfo->FFI_PageEvent = PageEventStub;
+  formfillinfo->FFI_PopupMenu = PopupMenuStub;
+  formfillinfo->FFI_OpenFile = OpenFileStub;
+  formfillinfo->FFI_EmailTo = EmailToStub;
+  formfillinfo->FFI_UploadTo = UploadToStub;
+  formfillinfo->FFI_GetPlatform = GetPlatformStub;
+  formfillinfo->FFI_GetLanguage = GetLanguageStub;
+  formfillinfo->FFI_DownloadFromURL = DownloadFromURLStub;
+  formfillinfo->FFI_PostRequestURL = PostRequestURLStub;
+  formfillinfo->FFI_PutRequestURL = PutRequestURLStub;
+#endif  // PDF_ENABLE_XFA
   formfillinfo->FFI_OnFocusChange = OnFocusChangeTrampoline;
   formfillinfo->FFI_DoURIActionWithKeyboardModifier =
       DoURIActionWithKeyboardModifierTrampoline;
@@ -368,7 +609,7 @@ ScopedFPDFBitmap EmbedderTest::RenderPage(FPDF_PAGE page) {
   return RenderPageWithFlags(page, nullptr, 0);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // static
 std::vector<uint8_t> EmbedderTest::RenderPageWithFlagsToEmf(FPDF_PAGE page,
                                                             int flags) {
@@ -388,7 +629,7 @@ std::vector<uint8_t> EmbedderTest::RenderPageWithFlagsToEmf(FPDF_PAGE page,
   FPDF_RenderPage(dc, page, 0, 0, width, height, 0, flags);
 
   HENHMETAFILE emf = CloseEnhMetaFile(dc);
-  size_t size_in_bytes = GetEnhMetaFileBits(emf, 0, nullptr);
+  UINT size_in_bytes = GetEnhMetaFileBits(emf, 0, nullptr);
   std::vector<uint8_t> buffer(size_in_bytes);
   GetEnhMetaFileBits(emf, size_in_bytes, buffer.data());
   DeleteEnhMetaFile(emf);
@@ -399,7 +640,8 @@ std::vector<uint8_t> EmbedderTest::RenderPageWithFlagsToEmf(FPDF_PAGE page,
 std::string EmbedderTest::GetPostScriptFromEmf(
     pdfium::span<const uint8_t> emf_data) {
   // This comes from Emf::InitFromData() in Chromium.
-  HENHMETAFILE emf = SetEnhMetaFileBits(emf_data.size(), emf_data.data());
+  HENHMETAFILE emf = SetEnhMetaFileBits(
+      pdfium::base::checked_cast<UINT>(emf_data.size()), emf_data.data());
   if (!emf)
     return std::string();
 
@@ -428,7 +670,7 @@ std::string EmbedderTest::GetPostScriptFromEmf(
   DeleteEnhMetaFile(emf);
   return ps_data;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 FPDF_DOCUMENT EmbedderTest::OpenSavedDocument() {
   return OpenSavedDocumentWithPassword(nullptr);
@@ -453,7 +695,8 @@ int EmbedderTest::BytesPerPixelForFormat(int format) {
 FPDF_DOCUMENT EmbedderTest::OpenSavedDocumentWithPassword(
     const char* password) {
   memset(&saved_file_access_, 0, sizeof(saved_file_access_));
-  saved_file_access_.m_FileLen = data_string_.size();
+  saved_file_access_.m_FileLen =
+      pdfium::base::checked_cast<unsigned long>(data_string_.size());
   saved_file_access_.m_GetBlock = GetBlockFromString;
   // Copy data to prevent clearing it before saved document close.
   saved_document_file_data_ = data_string_;
@@ -550,80 +793,6 @@ FPDF_PAGE EmbedderTest::Delegate::GetPage(FPDF_FORMFILLINFO* info,
 }
 
 // static
-void EmbedderTest::UnsupportedHandlerTrampoline(UNSUPPORT_INFO* info,
-                                                int type) {
-  EmbedderTest* test = static_cast<EmbedderTest*>(info);
-  test->delegate_->UnsupportedHandler(type);
-}
-
-// static
-int EmbedderTest::AlertTrampoline(IPDF_JSPLATFORM* platform,
-                                  FPDF_WIDESTRING message,
-                                  FPDF_WIDESTRING title,
-                                  int type,
-                                  int icon) {
-  EmbedderTest* test = static_cast<EmbedderTest*>(platform);
-  return test->delegate_->Alert(message, title, type, icon);
-}
-
-// static
-int EmbedderTest::SetTimerTrampoline(FPDF_FORMFILLINFO* info,
-                                     int msecs,
-                                     TimerCallback fn) {
-  EmbedderTest* test = static_cast<EmbedderTest*>(info);
-  return test->delegate_->SetTimer(msecs, fn);
-}
-
-// static
-void EmbedderTest::KillTimerTrampoline(FPDF_FORMFILLINFO* info, int id) {
-  EmbedderTest* test = static_cast<EmbedderTest*>(info);
-  return test->delegate_->KillTimer(id);
-}
-
-// static
-FPDF_PAGE EmbedderTest::GetPageTrampoline(FPDF_FORMFILLINFO* info,
-                                          FPDF_DOCUMENT document,
-                                          int page_index) {
-  return static_cast<EmbedderTest*>(info)->delegate_->GetPage(info, document,
-                                                              page_index);
-}
-
-// static
-void EmbedderTest::DoURIActionTrampoline(FPDF_FORMFILLINFO* info,
-                                         FPDF_BYTESTRING uri) {
-  EmbedderTest* test = static_cast<EmbedderTest*>(info);
-  return test->delegate_->DoURIAction(uri);
-}
-
-// static
-void EmbedderTest::DoGoToActionTrampoline(FPDF_FORMFILLINFO* info,
-                                          int page_index,
-                                          int zoom_mode,
-                                          float* pos_array,
-                                          int array_size) {
-  EmbedderTest* test = static_cast<EmbedderTest*>(info);
-  return test->delegate_->DoGoToAction(info, page_index, zoom_mode, pos_array,
-                                       array_size);
-}
-
-// static
-void EmbedderTest::OnFocusChangeTrampoline(FPDF_FORMFILLINFO* info,
-                                           FPDF_ANNOTATION annot,
-                                           int page_index) {
-  EmbedderTest* test = static_cast<EmbedderTest*>(info);
-  return test->delegate_->OnFocusChange(info, annot, page_index);
-}
-
-// static
-void EmbedderTest::DoURIActionWithKeyboardModifierTrampoline(
-    FPDF_FORMFILLINFO* info,
-    FPDF_BYTESTRING uri,
-    int modifiers) {
-  EmbedderTest* test = static_cast<EmbedderTest*>(info);
-  return test->delegate_->DoURIActionWithKeyboardModifier(info, uri, modifiers);
-}
-
-// static
 std::string EmbedderTest::HashBitmap(FPDF_BITMAP bitmap) {
   int stride = FPDFBitmap_GetStride(bitmap);
   int usable_bytes_per_row =
@@ -640,13 +809,11 @@ std::string EmbedderTest::HashBitmap(FPDF_BITMAP bitmap) {
   return CryptToBase16(digest);
 }
 
-#ifndef NDEBUG
 // static
 void EmbedderTest::WriteBitmapToPng(FPDF_BITMAP bitmap,
                                     const std::string& filename) {
   BitmapSaver::WriteBitmapToPng(bitmap, filename);
 }
-#endif
 
 // static
 void EmbedderTest::CompareBitmap(FPDF_BITMAP bitmap,
@@ -665,7 +832,11 @@ void EmbedderTest::CompareBitmap(FPDF_BITMAP bitmap,
   if (!expected_md5sum)
     return;
 
-  EXPECT_EQ(expected_md5sum, HashBitmap(bitmap));
+  std::string actual_md5sum = HashBitmap(bitmap);
+  EXPECT_EQ(expected_md5sum, actual_md5sum);
+  if (EmbedderTestEnvironment::GetInstance()->write_pngs()) {
+    WriteBitmapToPng(bitmap, actual_md5sum + ".png");
+  }
 }
 
 // static

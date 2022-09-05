@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -55,7 +56,6 @@
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -79,8 +79,8 @@ int ScrollableArea::MaxOverlapBetweenPages() const {
 }
 
 // static
-float ScrollableArea::DirectionBasedScrollDelta(ScrollGranularity granularity) {
-  return (granularity == ScrollGranularity::kScrollByPercentage)
+float ScrollableArea::DirectionBasedScrollDelta(ui::ScrollGranularity granularity) {
+  return (granularity == ui::ScrollGranularity::kScrollByPercentage)
              ? cc::kPercentDeltaForDirectionalScroll
              : 1;
 }
@@ -110,7 +110,6 @@ ScrollableArea::ScrollableArea(
       scrollbar_captured_(false),
       mouse_over_scrollbar_(false),
       has_been_disposed_(false),
-      uses_composited_scrolling_(false),
       compositor_task_runner_(std::move(compositor_task_runner)) {
   DCHECK(compositor_task_runner_);
 }
@@ -128,14 +127,20 @@ void ScrollableArea::Dispose() {
 void ScrollableArea::ClearScrollableArea() {
   if (mac_scrollbar_animator_)
     mac_scrollbar_animator_->Dispose();
-  scroll_animator_.Clear();
-  programmatic_scroll_animator_.Clear();
+  if (scroll_animator_) {
+    scroll_animator_->DetachElement();
+    scroll_animator_.Clear();
+  }
+  if (programmatic_scroll_animator_) {
+    programmatic_scroll_animator_->DetachElement();
+    programmatic_scroll_animator_.Clear();
+  }
   if (fade_overlay_scrollbars_timer_)
     fade_overlay_scrollbars_timer_->Value().Stop();
 }
 
 MacScrollbarAnimator* ScrollableArea::GetMacScrollbarAnimator() const {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (!mac_scrollbar_animator_) {
     mac_scrollbar_animator_ =
         MacScrollbarAnimator::Create(const_cast<ScrollableArea*>(this));
@@ -170,19 +175,19 @@ ScrollbarOrientation ScrollableArea::ScrollbarOrientationFromDirection(
              : kHorizontalScrollbar;
 }
 
-float ScrollableArea::ScrollStep(ScrollGranularity granularity,
+float ScrollableArea::ScrollStep(ui::ScrollGranularity granularity,
                                  ScrollbarOrientation orientation) const {
   switch (granularity) {
-    case ScrollGranularity::kScrollByLine:
+    case ui::ScrollGranularity::kScrollByLine:
       return LineStep(orientation);
-    case ScrollGranularity::kScrollByPage:
+    case ui::ScrollGranularity::kScrollByPage:
       return PageStep(orientation);
-    case ScrollGranularity::kScrollByDocument:
+    case ui::ScrollGranularity::kScrollByDocument:
       return DocumentStep(orientation);
-    case ScrollGranularity::kScrollByPixel:
-    case ScrollGranularity::kScrollByPrecisePixel:
+    case ui::ScrollGranularity::kScrollByPixel:
+    case ui::ScrollGranularity::kScrollByPrecisePixel:
       return PixelStep(orientation);
-    case ScrollGranularity::kScrollByPercentage:
+    case ui::ScrollGranularity::kScrollByPercentage:
       return PercentageStep(orientation);
     default:
       NOTREACHED();
@@ -190,16 +195,15 @@ float ScrollableArea::ScrollStep(ScrollGranularity granularity,
   }
 }
 
-ScrollOffset ScrollableArea::ResolveScrollDelta(ScrollGranularity granularity,
+ScrollOffset ScrollableArea::ResolveScrollDelta(ui::ScrollGranularity granularity,
                                                 const ScrollOffset& delta) {
   gfx::SizeF step(ScrollStep(granularity, kHorizontalScrollbar),
                   ScrollStep(granularity, kVerticalScrollbar));
 
-  if (granularity == ScrollGranularity::kScrollByPercentage) {
+  if (granularity == ui::ScrollGranularity::kScrollByPercentage) {
     LocalFrame* local_frame = GetLayoutBox()->GetFrame();
     DCHECK(local_frame);
-    gfx::SizeF viewport = ToGfxSizeF(
-        FloatSize(local_frame->GetPage()->GetVisualViewport().Size()));
+    gfx::SizeF viewport(local_frame->GetPage()->GetVisualViewport().Size());
 
     // Convert to screen coordinates (physical pixels).
     float page_scale_factor = local_frame->GetPage()->PageScaleFactor();
@@ -217,7 +221,7 @@ ScrollOffset ScrollableArea::ResolveScrollDelta(ScrollGranularity granularity,
   return gfx::ScaleVector2d(delta, step.width(), step.height());
 }
 
-ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
+ScrollResult ScrollableArea::UserScroll(ui::ScrollGranularity granularity,
                                         const ScrollOffset& delta,
                                         ScrollCallback on_finish) {
   TRACE_EVENT2("input", "ScrollableArea::UserScroll", "x", delta.x(), "y",
@@ -281,7 +285,8 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
   ScrollOffset previous_offset = GetScrollOffset();
 
   ScrollOffset clamped_offset = ClampScrollOffset(offset);
-  if (clamped_offset == previous_offset) {
+  if (clamped_offset == previous_offset &&
+      scroll_type != mojom::blink::ScrollType::kProgrammatic) {
     return;
   }
 
@@ -355,6 +360,13 @@ void ScrollableArea::ProgrammaticScrollHelper(
     // animation already in progress. We don't want two scroll animations
     // running at the same time.
     CancelScrollAnimation();
+  }
+
+  if (offset == GetScrollOffset()) {
+    CancelProgrammaticScrollAnimation();
+    if (on_finish)
+      std::move(on_finish).Run();
+    return;
   }
 
   ScrollCallback callback = std::move(on_finish);
@@ -489,13 +501,6 @@ bool ScrollableArea::ScrollBehaviorFromString(
   return true;
 }
 
-// NOTE: Only called from Internals for testing.
-void ScrollableArea::UpdateScrollOffsetFromInternals(
-    const gfx::Vector2d& offset) {
-  ScrollOffsetChanged(ScrollOffset(offset),
-                      mojom::blink::ScrollType::kProgrammatic);
-}
-
 void ScrollableArea::RegisterScrollCompleteCallback(ScrollCallback callback) {
   DCHECK(!HasBeenDisposed());
   pending_scroll_complete_callbacks_.push_back(std::move(callback));
@@ -621,19 +626,28 @@ void ScrollableArea::SetScrollbarOverlayColorTheme(
   }
 }
 
-void ScrollableArea::RecalculateScrollbarOverlayColorTheme(
-    const Color& background_color) {
+void ScrollableArea::RecalculateScrollbarOverlayColorTheme() {
   ScrollbarOverlayColorTheme old_overlay_theme =
       GetScrollbarOverlayColorTheme();
-  ScrollbarOverlayColorTheme overlay_theme = kScrollbarOverlayColorThemeDark;
 
-  // Reduce the background color from RGB to a lightness value
-  // and determine which scrollbar style to use based on a lightness
-  // heuristic.
-  double hue, saturation, lightness;
-  background_color.GetHSL(hue, saturation, lightness);
-  if (lightness <= .5 && background_color.Alpha())
-    overlay_theme = kScrollbarOverlayColorThemeLight;
+  // Start with a scrollbar overlay theme based on the used color scheme.
+  ScrollbarOverlayColorTheme overlay_theme =
+      UsedColorScheme() == mojom::blink::ColorScheme::kDark
+          ? kScrollbarOverlayColorThemeLight
+          : kScrollbarOverlayColorThemeDark;
+
+  // If there is a background color set on the scroller, use the lightness of
+  // the background color for the scrollbar overlay color theme.
+  if (GetLayoutBox()) {
+    Color background_color = GetLayoutBox()->StyleRef().VisitedDependentColor(
+        GetCSSPropertyBackgroundColor());
+    if (background_color.Alpha()) {
+      double hue, saturation, lightness;
+      background_color.GetHSL(hue, saturation, lightness);
+      overlay_theme = lightness <= 0.5 ? kScrollbarOverlayColorThemeLight
+                                       : kScrollbarOverlayColorThemeDark;
+    }
+  }
 
   if (old_overlay_theme != overlay_theme)
     SetScrollbarOverlayColorTheme(overlay_theme);
@@ -646,21 +660,12 @@ void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
   else
     vertical_scrollbar_needs_paint_invalidation_ = true;
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // GetLayoutBox() may be null in some unit tests.
-    if (auto* box = GetLayoutBox()) {
-      auto* frame_view = GetLayoutBox()->GetFrameView();
-      if (auto* compositor = frame_view->GetPaintArtifactCompositor()) {
-        compositor->SetScrollbarNeedsDisplay(
-            GetScrollbarElementId(orientation));
-      }
+  // GetLayoutBox() may be null in some unit tests.
+  if (auto* box = GetLayoutBox()) {
+    auto* frame_view = GetLayoutBox()->GetFrameView();
+    if (auto* compositor = frame_view->GetPaintArtifactCompositor()) {
+      compositor->SetScrollbarNeedsDisplay(GetScrollbarElementId(orientation));
     }
-  } else {
-    cc::Layer* layer = orientation == kHorizontalScrollbar
-                           ? LayerForHorizontalScrollbar()
-                           : LayerForVerticalScrollbar();
-    if (layer)
-      layer->SetNeedsDisplay();
   }
 
   ScrollControlWasSetNeedsPaintInvalidation();
@@ -914,12 +919,10 @@ int ScrollableArea::HorizontalScrollbarHeight(
   return 0;
 }
 
-FloatQuad ScrollableArea::LocalToVisibleContentQuad(const FloatQuad& quad,
-                                                    const LayoutObject*,
-                                                    unsigned) const {
-  FloatQuad result(quad);
-  result.Move(-GetScrollOffset());
-  return result;
+gfx::QuadF ScrollableArea::LocalToVisibleContentQuad(const gfx::QuadF& quad,
+                                                     const LayoutObject*,
+                                                     unsigned) const {
+  return quad - GetScrollOffset();
 }
 
 gfx::Size ScrollableArea::ExcludeScrollbars(const gfx::Size& size) const {
@@ -1045,15 +1048,19 @@ void ScrollableArea::Trace(Visitor* visitor) const {
 void ScrollableArea::InjectGestureScrollEvent(
     WebGestureDevice device,
     ScrollOffset delta,
-    ScrollGranularity granularity,
+    ui::ScrollGranularity granularity,
     WebInputEvent::Type gesture_type) const {
   // All ScrollableArea's have a layout box, except for the VisualViewport.
   // We shouldn't be injecting scrolls for the visual viewport scrollbar, since
   // it is not hit-testable.
   DCHECK(GetLayoutBox());
 
-  if (granularity == ScrollGranularity::kScrollByPrecisePixel ||
-      granularity == ScrollGranularity::kScrollByPixel) {
+  // Speculative fix for crash reports (crbug.com/1307510).
+  if (!GetLayoutBox() || !GetLayoutBox()->GetFrame())
+    return;
+
+  if (granularity == ui::ScrollGranularity::kScrollByPrecisePixel ||
+      granularity == ui::ScrollGranularity::kScrollByPixel) {
     // Pixel-based deltas need to be scaled up by the input event scale factor,
     // since the GSUs will be scaled down by that factor when being handled.
     float scale = 1;

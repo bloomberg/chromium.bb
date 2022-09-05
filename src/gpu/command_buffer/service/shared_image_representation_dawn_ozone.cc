@@ -4,7 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image_representation_dawn_ozone.h"
 
-#include <dawn_native/VulkanBackend.h>
+#include <dawn/native/VulkanBackend.h>
 
 #include <vulkan/vulkan.h>
 #include "base/logging.h"
@@ -51,14 +51,28 @@ WGPUTexture SharedImageRepresentationDawnOzone::BeginAccess(
   if (texture_) {
     return nullptr;
   }
+
+  // For multi-planar formats, Mesa is yet to support to allocate and bind
+  // vkmemory for each plane respectively.
+  // https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/src/intel/vulkan/anv_formats.c#L765
+  // For now we assume all plane handles are same, and we don't use the
+  // VK_IMAGE_CREATE_DISJOINT_BIT when creating the vkimage for the pixmap.
+  DCHECK(pixmap_->SupportsZeroCopyWebGPUImport() ||
+         pixmap_->GetNumberOfPlanes() == 1)
+      << "Disjoint Multi-plane importing is not supported.";
+
   if (!ozone_backing()->VaSync()) {
     return nullptr;
   }
-  DCHECK(pixmap_->GetNumberOfPlanes() == 1)
-      << "Multi-plane formats are not supported.";
 
   std::vector<gfx::GpuFenceHandle> fences;
-  ozone_backing()->BeginAccess(&fences);
+  bool need_end_fence;
+  if (!ozone_backing()->BeginAccess(
+          /*readonly=*/false, SharedImageBackingOzone::AccessStream::kWebGPU,
+          &fences, need_end_fence)) {
+    return nullptr;
+  }
+  DCHECK(need_end_fence);
 
   gfx::Size pixmap_size = pixmap_->GetBufferSize();
   WGPUTextureDescriptor texture_descriptor = {};
@@ -70,15 +84,19 @@ WGPUTexture SharedImageRepresentationDawnOzone::BeginAccess(
   texture_descriptor.mipLevelCount = 1;
   texture_descriptor.sampleCount = 1;
 
-  // We need to have an internal usage of CopySrc in order to use
-  // CopyTextureToTextureInternal.
+  // We need to have internal usages of CopySrc for copies and
+  // RenderAttachment for clears.
   WGPUDawnTextureInternalUsageDescriptor internalDesc = {};
   internalDesc.chain.sType = WGPUSType_DawnTextureInternalUsageDescriptor;
   internalDesc.internalUsage = WGPUTextureUsage_CopySrc;
+  // No write access to multi-planar pixmaps.
+  if (pixmap_->GetNumberOfPlanes() == 1) {
+    internalDesc.internalUsage |= WGPUTextureUsage_RenderAttachment;
+  }
   texture_descriptor.nextInChain =
       reinterpret_cast<WGPUChainedStruct*>(&internalDesc);
 
-  dawn_native::vulkan::ExternalImageDescriptorDmaBuf descriptor = {};
+  dawn::native::vulkan::ExternalImageDescriptorDmaBuf descriptor = {};
   descriptor.cTextureDescriptor = &texture_descriptor;
   descriptor.isInitialized = IsCleared();
 
@@ -89,18 +107,22 @@ WGPUTexture SharedImageRepresentationDawnOzone::BeginAccess(
   // closed twice (once by ScopedFD and once by the Vulkan implementation).
   int fd = dup(pixmap_->GetDmaBufFd(0));
   descriptor.memoryFD = fd;
-  descriptor.stride = pixmap_->GetDmaBufPitch(0);
+  for (uint32_t plane = 0u; plane < pixmap_->GetNumberOfPlanes(); ++plane) {
+    descriptor.planeLayouts[plane].offset = pixmap_->GetDmaBufOffset(plane);
+    descriptor.planeLayouts[plane].stride = pixmap_->GetDmaBufPitch(plane);
+  }
   descriptor.drmModifier = pixmap_->GetBufferFormatModifier();
   descriptor.waitFDs = {};
 
-  if (ozone_backing()->NeedsSynchronization()) {
-    for (auto& fence : fences) {
-      descriptor.waitFDs.push_back(fence.owned_fd.release());
-    }
+  for (auto& fence : fences) {
+    descriptor.waitFDs.push_back(fence.owned_fd.release());
   }
 
-  texture_ = dawn_native::vulkan::WrapVulkanImage(device_, &descriptor);
+  texture_ = dawn::native::vulkan::WrapVulkanImage(device_, &descriptor);
   if (!texture_) {
+    ozone_backing()->EndAccess(/*readonly=*/false,
+                               SharedImageBackingOzone::AccessStream::kWebGPU,
+                               gfx::GpuFenceHandle());
     close(fd);
   }
 
@@ -113,8 +135,8 @@ void SharedImageRepresentationDawnOzone::EndAccess() {
   }
 
   // Grab the signal semaphore from dawn
-  dawn_native::vulkan::ExternalImageExportInfoOpaqueFD export_info;
-  if (!dawn_native::vulkan::ExportVulkanImage(
+  dawn::native::vulkan::ExternalImageExportInfoOpaqueFD export_info;
+  if (!dawn::native::vulkan::ExportVulkanImage(
           texture_, VK_IMAGE_LAYOUT_UNDEFINED, &export_info)) {
     DLOG(ERROR) << "Failed to export Dawn Vulkan image.";
   } else {
@@ -126,7 +148,9 @@ void SharedImageRepresentationDawnOzone::EndAccess() {
     DCHECK(export_info.semaphoreHandles.size() == 1);
     gfx::GpuFenceHandle fence;
     fence.owned_fd = base::ScopedFD(export_info.semaphoreHandles[0]);
-    ozone_backing()->EndAccess(false /* readonly */, std::move(fence));
+    ozone_backing()->EndAccess(/*readonly=*/false,
+                               SharedImageBackingOzone::AccessStream::kWebGPU,
+                               std::move(fence));
   }
   dawn_procs_->data.textureDestroy(texture_);
   dawn_procs_->data.textureRelease(texture_);

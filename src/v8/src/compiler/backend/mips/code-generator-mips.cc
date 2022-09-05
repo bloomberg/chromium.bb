@@ -167,8 +167,10 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
                      exit());
     __ Addu(scratch1_, object_, index_);
     RememberedSetAction const remembered_set_action =
-        mode_ > RecordWriteMode::kValueIsMap ? RememberedSetAction::kEmit
-                                             : RememberedSetAction::kOmit;
+        mode_ > RecordWriteMode::kValueIsMap ||
+                FLAG_use_full_record_write_builtin
+            ? RememberedSetAction::kEmit
+            : RememberedSetAction::kOmit;
     SaveFPRegsMode const save_fp_mode = frame()->DidAllocateDoubleRegisters()
                                             ? SaveFPRegsMode::kSave
                                             : SaveFPRegsMode::kIgnore;
@@ -2493,16 +2495,6 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       __ fsqrt_w(i.OutputSimd128Register(), i.InputSimd128Register(0));
       break;
     }
-    case kMipsF32x4RecipApprox: {
-      CpuFeatureScope msa_scope(tasm(), MIPS_SIMD);
-      __ frcp_w(i.OutputSimd128Register(), i.InputSimd128Register(0));
-      break;
-    }
-    case kMipsF32x4RecipSqrtApprox: {
-      CpuFeatureScope msa_scope(tasm(), MIPS_SIMD);
-      __ frsqrt_w(i.OutputSimd128Register(), i.InputSimd128Register(0));
-      break;
-    }
     case kMipsF32x4Add: {
       CpuFeatureScope msa_scope(tasm(), MIPS_SIMD);
       __ fadd_w(i.OutputSimd128Register(), i.InputSimd128Register(0),
@@ -3610,7 +3602,6 @@ void AssembleBranchToLabels(CodeGenerator* gen, TurboAssembler* tasm,
 #undef __
 #define __ tasm->
 
-  Condition cc = kNoCondition;
   // MIPS does not have condition code flags, so compare and branch are
   // implemented differently than on the other arch's. The compare operations
   // emit mips pseudo-instructions, which are handled here by branch
@@ -3620,7 +3611,7 @@ void AssembleBranchToLabels(CodeGenerator* gen, TurboAssembler* tasm,
 
   MipsOperandConverter i(gen, instr);
   if (instr->arch_opcode() == kMipsTst) {
-    cc = FlagsConditionToConditionTst(condition);
+    Condition cc = FlagsConditionToConditionTst(condition);
     __ Branch(tlabel, cc, kScratchReg, Operand(zero_reg));
   } else if (instr->arch_opcode() == kMipsAddOvf ||
              instr->arch_opcode() == kMipsSubOvf) {
@@ -3648,10 +3639,10 @@ void AssembleBranchToLabels(CodeGenerator* gen, TurboAssembler* tasm,
         UNSUPPORTED_COND(kMipsMulOvf, condition);
     }
   } else if (instr->arch_opcode() == kMipsCmp) {
-    cc = FlagsConditionToConditionCmp(condition);
+    Condition cc = FlagsConditionToConditionCmp(condition);
     __ Branch(tlabel, cc, i.InputRegister(0), i.InputOperand(1));
   } else if (instr->arch_opcode() == kArchStackPointerGreaterThan) {
-    cc = FlagsConditionToConditionCmp(condition);
+    Condition cc = FlagsConditionToConditionCmp(condition);
     DCHECK((cc == ls) || (cc == hi));
     if (cc == ls) {
       __ xori(i.TempRegister(0), i.TempRegister(0), 1);
@@ -3689,8 +3680,9 @@ void CodeGenerator::AssembleArchDeoptBranch(Instruction* instr,
   AssembleArchBranch(instr, branch);
 }
 
-void CodeGenerator::AssembleArchJump(RpoNumber target) {
-  if (!IsNextInAssemblyOrder(target)) __ Branch(GetLabel(target));
+void CodeGenerator::AssembleArchJumpRegardlessOfAssemblyOrder(
+    RpoNumber target) {
+  __ Branch(GetLabel(target));
 }
 
 #if V8_ENABLE_WEBASSEMBLY
@@ -3756,13 +3748,12 @@ void CodeGenerator::AssembleArchBoolean(Instruction* instr,
   // last output of the instruction.
   DCHECK_NE(0u, instr->OutputCount());
   Register result = i.OutputRegister(instr->OutputCount() - 1);
-  Condition cc = kNoCondition;
   // MIPS does not have condition code flags, so compare and branch are
   // implemented differently than on the other arch's. The compare operations
   // emit mips pseudo-instructions, which are checked and handled here.
 
   if (instr->arch_opcode() == kMipsTst) {
-    cc = FlagsConditionToConditionTst(condition);
+    Condition cc = FlagsConditionToConditionTst(condition);
     if (cc == eq) {
       __ Sltu(result, kScratchReg, 1);
     } else {
@@ -3777,7 +3768,7 @@ void CodeGenerator::AssembleArchBoolean(Instruction* instr,
     // Overflow occurs if overflow register is not zero
     __ Sgtu(result, kScratchReg, zero_reg);
   } else if (instr->arch_opcode() == kMipsCmp) {
-    cc = FlagsConditionToConditionCmp(condition);
+    Condition cc = FlagsConditionToConditionCmp(condition);
     switch (cc) {
       case eq:
       case ne: {
@@ -3888,7 +3879,7 @@ void CodeGenerator::AssembleArchBoolean(Instruction* instr,
     }
     return;
   } else if (instr->arch_opcode() == kArchStackPointerGreaterThan) {
-    cc = FlagsConditionToConditionCmp(condition);
+    Condition cc = FlagsConditionToConditionCmp(condition);
     DCHECK((cc == ls) || (cc == hi));
     if (cc == ls) {
       __ xori(i.OutputRegister(), i.TempRegister(0), 1);
@@ -3931,21 +3922,21 @@ void CodeGenerator::AssembleArchSelect(Instruction* instr,
 void CodeGenerator::FinishFrame(Frame* frame) {
   auto call_descriptor = linkage()->GetIncomingDescriptor();
 
-  const RegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
-  if (saves_fpu != 0) {
+  const DoubleRegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
+  if (!saves_fpu.is_empty()) {
     frame->AlignSavedCalleeRegisterSlots();
   }
 
-  if (saves_fpu != 0) {
-    int count = base::bits::CountPopulation(saves_fpu);
+  if (!saves_fpu.is_empty()) {
+    int count = saves_fpu.Count();
     DCHECK_EQ(kNumCalleeSavedFPU, count);
     frame->AllocateSavedCalleeRegisterSlots(count *
                                             (kDoubleSize / kSystemPointerSize));
   }
 
   const RegList saves = call_descriptor->CalleeSavedRegisters();
-  if (saves != 0) {
-    int count = base::bits::CountPopulation(saves);
+  if (!saves.is_empty()) {
+    int count = saves.Count();
     frame->AllocateSavedCalleeRegisterSlots(count);
   }
 }
@@ -4002,7 +3993,7 @@ void CodeGenerator::AssembleConstructFrame() {
   }
 
   const RegList saves = call_descriptor->CalleeSavedRegisters();
-  const RegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
+  const DoubleRegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
 
   if (required_slots > 0) {
     DCHECK(frame_access_state()->has_frame());
@@ -4043,19 +4034,19 @@ void CodeGenerator::AssembleConstructFrame() {
   const int returns = frame()->GetReturnSlotCount();
 
   // Skip callee-saved and return slots, which are pushed below.
-  required_slots -= base::bits::CountPopulation(saves);
-  required_slots -= 2 * base::bits::CountPopulation(saves_fpu);
+  required_slots -= saves.Count();
+  required_slots -= 2 * saves_fpu.Count();
   required_slots -= returns;
   if (required_slots > 0) {
     __ Subu(sp, sp, Operand(required_slots * kSystemPointerSize));
   }
 
   // Save callee-saved FPU registers.
-  if (saves_fpu != 0) {
+  if (!saves_fpu.is_empty()) {
     __ MultiPushFPU(saves_fpu);
   }
 
-  if (saves != 0) {
+  if (!saves.is_empty()) {
     // Save callee-saved registers.
     __ MultiPush(saves);
   }
@@ -4076,13 +4067,13 @@ void CodeGenerator::AssembleReturn(InstructionOperand* additional_pop_count) {
 
   // Restore GP registers.
   const RegList saves = call_descriptor->CalleeSavedRegisters();
-  if (saves != 0) {
+  if (!saves.is_empty()) {
     __ MultiPop(saves);
   }
 
   // Restore FPU registers.
-  const RegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
-  if (saves_fpu != 0) {
+  const DoubleRegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
+  if (!saves_fpu.is_empty()) {
     __ MultiPopFPU(saves_fpu);
   }
 
@@ -4133,9 +4124,6 @@ void CodeGenerator::AssembleReturn(InstructionOperand* additional_pop_count) {
   if (drop_jsargs) {
     // We must pop all arguments from the stack (including the receiver). This
     // number of arguments is given by max(1 + argc_reg, parameter_slots).
-    if (!kJSArgcIncludesReceiver) {
-      __ Addu(t0, t0, Operand(1));  // Also pop the receiver.
-    }
     if (parameter_slots > 1) {
       __ li(kScratchReg, parameter_slots);
       __ slt(kScratchReg2, t0, kScratchReg);
@@ -4229,10 +4217,10 @@ void CodeGenerator::AssembleMove(InstructionOperand* source,
     } else if (src.type() == Constant::kFloat32) {
       if (destination->IsFPStackSlot()) {
         MemOperand dst = g.ToMemOperand(destination);
-        if (bit_cast<int32_t>(src.ToFloat32()) == 0) {
+        if (base::bit_cast<int32_t>(src.ToFloat32()) == 0) {
           __ sw(zero_reg, dst);
         } else {
-          __ li(kScratchReg, Operand(bit_cast<int32_t>(src.ToFloat32())));
+          __ li(kScratchReg, Operand(base::bit_cast<int32_t>(src.ToFloat32())));
           __ sw(kScratchReg, dst);
         }
       } else {

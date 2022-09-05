@@ -1,29 +1,16 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_MEASUREMENT_H_
 #define CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_MEASUREMENT_H_
 
-#include <memory>
-
-#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
-#include "components/data_use_measurement/core/data_use_measurement.h"
+#include "build/build_config.h"
 
-class PrefService;
-
-namespace data_use_measurement {
-
-class ChromeDataUseMeasurement : public DataUseMeasurement {
+class ChromeDataUseMeasurement {
  public:
-  static void CreateInstance(PrefService* local_state);
-  static ChromeDataUseMeasurement* GetInstance();
-  static void DeleteInstance();
-
-  ChromeDataUseMeasurement(
-      network::NetworkConnectionTracker* network_connection_tracker,
-      PrefService* local_state);
+  static ChromeDataUseMeasurement& GetInstance();
 
   ChromeDataUseMeasurement(const ChromeDataUseMeasurement&) = delete;
   ChromeDataUseMeasurement& operator=(const ChromeDataUseMeasurement&) = delete;
@@ -33,25 +20,38 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
   void ReportNetworkServiceDataUse(int32_t network_traffic_annotation_id_hash,
                                    int64_t recv_bytes,
                                    int64_t sent_bytes);
-  void ReportUserTrafficDataUse(bool is_tab_visible, int64_t recv_bytes);
 
-  void RecordContentTypeMetric(const std::string& mime_type,
-                               bool is_main_frame_resource,
-                               bool is_tab_visible,
-                               int64_t recv_bytes);
-
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  ChromeDataUseMeasurement();
+  ~ChromeDataUseMeasurement();
 
  private:
-  void UpdateMetricsUsagePrefs(int64_t total_bytes,
-                               bool is_cellular,
-                               bool is_metrics_service_usage);
+  // Specifies that data is received or sent, respectively.
+  enum class TrafficDirection { kDownstream, kUpstream };
 
-  raw_ptr<PrefService> local_state_ = nullptr;
+  // Records data use histograms. It gets the size of exchanged
+  // message, its direction (which is upstream or downstream) and reports to the
+  // histogram DataUse.Services.{Dimensions} with, services as the buckets.
+  // |app_state| indicates the app state which can be foreground, or background.
+  void ReportDataUsage(TrafficDirection dir, int64_t message_size_bytes);
+
+#if BUILDFLAG(IS_ANDROID)
+  // Records the count of bytes received and sent by Chrome on the network as
+  // reported by the operating system.
+  void MaybeRecordNetworkBytesOS();
+
+  // Number of bytes received and sent by Chromium as reported by the operating
+  // system when it was last queried for traffic statistics. Set to 0 if the
+  // operating system was never queried.
+  int64_t rx_bytes_os_ = 0;
+  int64_t tx_bytes_os_ = 0;
+
+  // Number of bytes received and sent by Chromium as reported by the network
+  // delegate since the operating system was last queried for traffic
+  // statistics.
+  int64_t bytes_transferred_since_last_traffic_stats_query_ = 0;
+#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
-
-}  // namespace data_use_measurement
 
 #endif  // CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_MEASUREMENT_H_

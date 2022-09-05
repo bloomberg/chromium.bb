@@ -200,7 +200,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
 
     this.dataGrid.setName('ResourceWebSocketFrameView');
     this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
-      this.onFrameSelected(event);
+      void this.onFrameSelected(event);
     }, this);
     this.dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, this.onFrameDeselected, this);
 
@@ -388,13 +388,13 @@ export const _filterTypes: UI.FilterBar.Item[] = [
 ];
 
 export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.SortableDataGridNode<unknown> {
-  private readonly url: string;
+  private readonly url: Platform.DevToolsPath.UrlString;
   readonly frame: SDK.NetworkRequest.WebSocketFrame;
   private readonly isTextFrame: boolean;
   private dataTextInternal: string;
   private binaryViewInternal: BinaryResourceView|null;
 
-  constructor(url: string, frame: SDK.NetworkRequest.WebSocketFrame) {
+  constructor(url: Platform.DevToolsPath.UrlString, frame: SDK.NetworkRequest.WebSocketFrame) {
     let length = String(frame.text.length);
     const time = new Date(frame.time * 1000);
     const timeText = ('0' + time.getHours()).substr(-2) + ':' + ('0' + time.getMinutes()).substr(-2) + ':' +
@@ -461,8 +461,8 @@ export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.Sortab
 
     if (!this.binaryViewInternal) {
       if (this.dataTextInternal.length > 0) {
-        this.binaryViewInternal =
-            new BinaryResourceView(this.dataTextInternal, /* url */ '', Common.ResourceType.resourceTypes.WebSocket);
+        this.binaryViewInternal = new BinaryResourceView(
+            this.dataTextInternal, Platform.DevToolsPath.EmptyUrlString, Common.ResourceType.resourceTypes.WebSocket);
       }
     }
     return this.binaryViewInternal;

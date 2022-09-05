@@ -46,10 +46,10 @@ class WebAppLaunchProcess {
   std::tuple<GURL, bool /*is_file_handling*/> GetLaunchUrl(
       const apps::ShareTarget* share_target) const;
   WindowOpenDisposition GetNavigationDisposition(bool is_new_browser) const;
-  content::WebContents* MaybeLaunchSystemWebApp(const GURL& launch_url);
   std::tuple<Browser*, bool /*is_new_browser*/> EnsureBrowser();
   LaunchHandler::RouteTo GetLaunchRouteTo() const;
-  LaunchHandler::NavigateExistingClient GetLaunchNavigateExistingClient() const;
+  bool RouteToExistingClient() const;
+  bool NeverNavigateExistingClients() const;
 
   Browser* MaybeFindBrowserForLaunch() const;
   Browser* CreateBrowserForLaunch();
@@ -66,9 +66,7 @@ class WebAppLaunchProcess {
   void MaybeEnqueueWebLaunchParams(const GURL& launch_url,
                                    bool is_file_handling,
                                    content::WebContents* web_contents,
-                                   bool is_navigating);
-  void RecordMetrics(const GURL& launch_url,
-                     content::WebContents* web_contents);
+                                   bool started_new_navigation);
 
   Profile& profile_;
   WebAppProvider& provider_;

@@ -69,9 +69,6 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
           boot_phase_monitor_remote) override;
   void OnCameraInstanceReady(
       mojo::PendingRemote<mojom::CameraInstance> camera_remote) override;
-  void OnCastReceiverInstanceReady(
-      mojo::PendingRemote<mojom::CastReceiverInstance> cast_receiver_remote)
-      override;
   void OnCertStoreInstanceReady(
       mojo::PendingRemote<mojom::CertStoreInstance> instance_remote) override;
   void OnClipboardInstanceReady(
@@ -145,6 +142,9 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
   void OnPrintSpoolerInstanceReady(
       mojo::PendingRemote<mojom::PrintSpoolerInstance> print_spooler_remote)
       override;
+  void OnPrivacyItemsInstanceReady(
+      mojo::PendingRemote<mojom::PrivacyItemsInstance> privacy_items_remote)
+      override;
   void OnProcessInstanceReady(
       mojo::PendingRemote<mojom::ProcessInstance> process_remote) override;
   void OnPropertyInstanceReady(
@@ -165,6 +165,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
   void OnStorageManagerInstanceReady(
       mojo::PendingRemote<mojom::StorageManagerInstance> storage_manager_remote)
       override;
+  void OnSystemUiInstanceReady(
+      mojo::PendingRemote<mojom::SystemUiInstance> system_ui_remote) override;
   void OnTimerInstanceReady(
       mojo::PendingRemote<mojom::TimerInstance> timer_remote) override;
   void OnTracingInstanceReady(

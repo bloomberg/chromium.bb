@@ -8,23 +8,19 @@
  * (e.g. start/end offsets) get saved. Line: nodes/offsets at the beginning/end
  * of a line get saved.
  */
+import {Output} from '/chromevox/background/output/output.js';
 
-goog.provide('editing.EditableLine');
-
-goog.scope(function() {
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
-const Cursor = cursors.Cursor;
 const Dir = constants.Dir;
 const EventType = chrome.automation.EventType;
 const FormType = LibLouis.FormType;
-const Range = cursors.Range;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 const Movement = cursors.Movement;
 const Unit = cursors.Unit;
 
-editing.EditableLine = class {
+export class EditableLine {
   /**
    * @param {!AutomationNode} startNode
    * @param {number} startIndex
@@ -35,11 +31,11 @@ editing.EditableLine = class {
    * automatically truncated up to either the line start or end.
    */
   constructor(startNode, startIndex, endNode, endIndex, opt_baseLineOnStart) {
-    /** @private {!Cursor} */
-    this.start_ = new Cursor(startNode, startIndex);
+    /** @private {!cursors.Cursor} */
+    this.start_ = new cursors.Cursor(startNode, startIndex);
     this.start_ = this.start_.deepEquivalent || this.start_;
-    /** @private {!Cursor} */
-    this.end_ = new Cursor(endNode, endIndex);
+    /** @private {!cursors.Cursor} */
+    this.end_ = new cursors.Cursor(endNode, endIndex);
     this.end_ = this.end_.deepEquivalent || this.end_;
 
     /** @private {AutomationNode|undefined} */
@@ -511,7 +507,7 @@ editing.EditableLine = class {
   /**
    * Returns true if |otherLine| surrounds the same line as |this|. Note that
    * the contents of the line might be different.
-   * @param {editing.EditableLine} otherLine
+   * @param {EditableLine} otherLine
    * @return {boolean}
    */
   isSameLine(otherLine) {
@@ -533,7 +529,7 @@ editing.EditableLine = class {
   /**
    * Returns true if |otherLine| surrounds the same line as |this| and has the
    * same selection.
-   * @param {editing.EditableLine} otherLine
+   * @param {EditableLine} otherLine
    * @return {boolean}
    */
   isSameLineAndSelection(otherLine) {
@@ -544,14 +540,18 @@ editing.EditableLine = class {
 
   /**
    * Returns whether this line comes before |otherLine| in document order.
-   * @param {!editing.EditableLine} otherLine
+   * @param {!EditableLine} otherLine
    * @return {boolean}
    */
   isBeforeLine(otherLine) {
-    if (this.isSameLine(otherLine) || !this.lineStartContainer_ ||
-        !otherLine.lineStartContainer_) {
+    if (!this.lineStartContainer_ || !otherLine.lineStartContainer_) {
       return false;
     }
+
+    if (this.isSameLine(otherLine)) {
+      return this.endOffset <= otherLine.endOffset;
+    }
+
     return AutomationUtil.getDirection(
                this.lineStartContainer_, otherLine.lineStartContainer_) ===
         Dir.FORWARD;
@@ -619,38 +619,63 @@ editing.EditableLine = class {
 
   /**
    * Speaks the line using text to speech.
-   * @param {editing.EditableLine} prevLine
+   * @param {EditableLine} prevLine
    */
   speakLine(prevLine) {
-    let prev = (prevLine && prevLine.startContainer_.role) ?
+    // Detect when the entire line is just a breaking space. This occurs on
+    // Google Docs and requires that we speak it as a new line. However, we
+    // still need to account for all of the possible rich output occurring from
+    // ancestors of line nodes.
+    const isLineBreakingSpace = this.text === '\u00a0';
+
+    const prev = (prevLine && prevLine.startContainer_.role) ?
         prevLine.startContainer_ :
         null;
     const lineNodes =
         /** @type {Array<!AutomationNode>} */ (this.value_.getSpansInstanceOf(
             /** @type {function()} */ (this.startContainer_.constructor)));
-    for (let i = 0, cur; cur = lineNodes[i]; i++) {
-      if (cur.children.length) {
-        continue;
+    const speakNodeAtIndex = (index, prev) => {
+      const cur = lineNodes[index];
+      if (!cur) {
+        return;
       }
 
-      const o = new Output().withRichSpeech(
-          Range.fromNode(cur),
-          prev ? Range.fromNode(prev) : Range.fromNode(cur),
-          OutputEventType.NAVIGATE);
+      if (cur.children.length) {
+        speakNodeAtIndex(++index, cur);
+        return;
+      }
+
+      const o = new Output();
+
+      if (isLineBreakingSpace) {
+        // Apply a replacement for \u00a0 to \n.
+        o.withSpeechTextReplacement('\u00a0', '\n');
+      }
+
+      o.withRichSpeech(
+           cursors.Range.fromNode(cur),
+           prev ? cursors.Range.fromNode(prev) : cursors.Range.fromNode(cur),
+           OutputEventType.NAVIGATE)
+          .onSpeechEnd(() => {
+            speakNodeAtIndex(++index, cur);
+          });
 
       // Ignore whitespace only output except if it is leading content on the
       // line.
-      if (!o.isOnlyWhitespace || i === 0) {
+      if (!o.isOnlyWhitespace || index === 0) {
         o.go();
+      } else {
+        speakNodeAtIndex(++index, cur);
       }
-      prev = cur;
-    }
+    };
+
+    speakNodeAtIndex(0, prev);
   }
 
   /**
    * Creates a range around the character to the right of the line's starting
    * position.
-   * @return {!Range}
+   * @return {!cursors.Range}
    */
   createCharRange() {
     const start = this.start_;
@@ -664,12 +689,12 @@ editing.EditableLine = class {
         start.equals(end)) {
       end = new cursors.Cursor(start.node, start.index + 1);
     }
-    return new Range(start, end);
+    return new cursors.Range(start, end);
   }
 
   /**
    * @param {boolean} shouldMoveToPreviousWord
-   * @return {!Range}
+   * @return {!cursors.Range}
    */
   createWordRange(shouldMoveToPreviousWord) {
     const pos = this.start_;
@@ -681,8 +706,7 @@ editing.EditableLine = class {
         Unit.WORD,
         shouldMoveToPreviousWord ? Movement.DIRECTIONAL : Movement.BOUND,
         Dir.BACKWARD);
-    const end = pos.move(Unit.WORD, Movement.BOUND, Dir.FORWARD);
-    return new Range(start, end);
+    const end = start.move(Unit.WORD, Movement.BOUND, Dir.FORWARD);
+    return new cursors.Range(start, end);
   }
-};
-});  // goog.scope
+}

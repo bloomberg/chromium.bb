@@ -10,6 +10,24 @@ title: User-Agent Reduction
 
 ## Updates
 
+May 31, 2022: Phase 4 rollout was increased to an even larger percentage of the
+Chrome 101 population while we evaluate stability.
+
+May 16, 2022: Phase 4 rollout was increased to a larger percentage of the Chrome
+101 population while we evaluate stability.
+
+May 6, 2022: ["Phase 4"](https://www.chromium.org/updates/ua-reduction/#sample-ua-strings-phase-4)
+began rolling out to a small percentage of the Chrome 101 stable population while we evaluate
+stability.
+
+April 11, 2022: Add a table to map from UA to UA-CH
+
+March 3, 2022: Added frozen Chrome OS platform version to
+<code>&lt;unifiedPlatform&gt;</code> value
+
+February 18, 2022: Added information on the platforms for which User-Agent
+reduction is applicable, as well as links to resources.
+
 October 12, 2021: Information on using the Origin Trial with third-party embeds
 was add to the [blog
 post](https://developer.chrome.com/blog/user-agent-reduction-origin-trial/).
@@ -57,6 +75,12 @@ reduced UA string and related JS APIs.
 ## Reduced User Agent String Reference
 
 This reduced format will be available for testing via chrome://flags/#reduce-user-agent in Chrome 93.
+
+### Applicable platforms
+
+User-Agent reduction will be applied to the following platforms: Windows, macOS,
+Linux, Chrome OS, and Chrome on Android.  We don't have current plans for
+User-Agent Reduction on iOS and Android WebView at this time.
 
 ### Unified Format
 
@@ -143,7 +167,7 @@ Chrome/<strong>&lt;majorVersion&gt;</strong>.0.0.0 <strong>&lt;deviceCompat&gt;<
         <li><samp>Windows NT 10.0; Win64; x64</samp>
         <li><samp>Macintosh; Intel Mac OS X 10_15_7</samp>
         <li><samp>X11; Linux x86_64</samp>
-        <li><samp>X11; CrOS x86_64</samp>
+        <li><samp>X11; CrOS x86_64 14541.0.0</samp>
       </ul>
       <p>The possible mobile values* are:
       <ul>
@@ -154,9 +178,74 @@ Chrome/<strong>&lt;majorVersion&gt;</strong>.0.0.0 <strong>&lt;deviceCompat&gt;<
         or device.</em></p>
 </table>
 
+## UA Token to UA-CH Mapping
+
+<table>
+  <tr>
+    <th>UA string token</th>
+    <th>
+      HTTP UA-CH token
+      (<a href="https://wicg.github.io/ua-client-hints/#http-ua-hints">ref</a>)
+    </th>
+    <th>
+      UA-CH JS API
+      (<a href="https://wicg.github.io/ua-client-hints/#interface">ref</a>)
+    </th>
+  </tr>
+  <tr>
+    <td>&lt;androidVersion&gt;</td>
+    <td><code>Sec-CH-UA-Platform-Version</code></td>
+    <td><code>UADataValues.platformVersion</code></td>
+  </tr>
+  <tr>
+    <td>&lt;deviceCompat&gt;</td>
+    <td><code>Sec-CH-UA-Mobile</code></td>
+    <td><code>NavigatorUAData.mobile</code></td>
+  </tr>
+  <tr>
+    <td>&lt;deviceModel&gt;</td>
+    <td><code>Sec-CH-UA-Model</code></td>
+    <td><code>UADataValues.model</code></td>
+  </tr>
+  <tr>
+    <td>&lt;majorVersion&gt;</td>
+    <td><code>Sec-CH-UA</code></td>
+    <td><code>NavigatorUAData.brands</code></td>
+  </tr>
+  <tr>
+    <td>&lt;minorVersion&gt;</td>
+    <td><code>Sec-CH-UA-Full-Version-List</code></td>
+    <td><code>UADataValues.fullVersionList</code></td>
+  </tr>
+  <tr>
+    <td>&lt;oscpu&gt;</td>
+    <td>
+      Any combination of the following, as relevant:<br>
+      <code>Sec-CH-UA-WoW64</code>, <code>Sec-CH-UA-Arch</code>,
+      <code>Sec-CH-UA-Bitness</code>
+    </td>
+    <td>
+      Any combination of the following, as relevant:<br>
+      <code>UADataValues.wow64</code>, <code>UADataValues.arch</code>,
+      <code>UADataValues.bitness</code>
+    </td>
+  </tr>
+  <tr>
+    <td>&lt;unifiedPlatform&gt;</td>
+    <td>
+      <code>Sec-CH-UA-Platform</code> and
+      <code>Sec-CH-UA-Platform-Version</code>
+    </td>
+    <td>
+      <code>UADataValues.platform</code> and
+      <code>UADataValues.platformVersion</code>
+    </td>
+  </tr>
+</table>
+
 ## Sample UA Strings: Phase 4
 
-In Phase 4 we change the <samp>&lt;minorVersion&gt;</samp> token to “0.0.0”.
+In Phase 4 we change the <code>&lt;minorVersion&gt;</code> token to “0.0.0”.
 
 <table>
   <tr>
@@ -196,9 +285,9 @@ In Phase 4 we change the <samp>&lt;minorVersion&gt;</samp> token to “0.0.0”.
 
 ## Sample UA Strings: Phase 5
 
-In Phase 5 we change the <samp>&lt;platform&gt;</samp> and
-<samp>&lt;oscpu&gt;</samp> tokens from their
-platform-defined values to the relevant <samp>&lt;unifiedPlatform&gt;</samp>
+In Phase 5 we change the <code>&lt;platform&gt;</code> and
+<code>&lt;oscpu&gt;</code> tokens from their
+platform-defined values to the relevant <code>&lt;unifiedPlatform&gt;</code>
 token value (which will never change).
 
 Note: There may not be user-visible changes here, unless the user was on a lower
@@ -247,8 +336,8 @@ Chrome 90 for site compatibility reasons.
 
 ## Sample UA Strings: Phase 6
 
-In Phase 6, we change the <samp>&lt;deviceModel&gt;</samp> token to “K” and
-change the <samp>&lt;androidVersion&gt;</samp> token to a static “10” string.
+In Phase 6, we change the <code>&lt;deviceModel&gt;</code> token to “K” and
+change the <code>&lt;androidVersion&gt;</code> token to a static “10” string.
 
 <table>
   <tr>
@@ -350,13 +439,26 @@ change the <samp>&lt;androidVersion&gt;</samp> token to a static “10” string
 
 ## Reduced navigator.appVersion values
 
-navigator.appVersion is effectively an alias of navigator.userAgent (it’s
+<code>navigator.appVersion</code> is effectively an alias of <code>navigator.userAgent</code> (it’s
 [everything after
 “Mozilla/”](https://source.chromium.org/chromium/chromium/src/+/HEAD:third_party/blink/renderer/core/frame/navigator_id.cc;l=56?q=appVersion&ss=chromium)).
-=======
-<samp>navigator.appVersion</samp> is effectively an alias of
-<samp>navigator.userAgent</samp> (it’s [everything after
-“Mozilla/”](https://source.chromium.org/chromium/chromium/src/+/HEAD:third_party/blink/renderer/core/frame/navigator_id.cc;l=56)).
+
+## Reduced navigator.userAgent values
 
 To avoid confusion and reduce implementation complexity, we aim to follow the
-same plan for <samp>navigator.userAgent</samp>.
+same plan for <code>navigator.userAgent</code>.
+
+## Alternative: high entropy client hints
+
+All of the information that was contained in the User-Agent string prior to
+reduction is available through the high entropy client hints, which are available
+by request through the [User-Agent Client Hints](https://github.com/WICG/ua-client-hints)
+request headers, as well as the [navigator.userAgentData.getHighEntropyValues](https://developer.mozilla.org/en-US/docs/Web/API/NavigatorUAData/getHighEntropyValues)
+Javascript API.
+
+## Resources
+
+The following sites show snippets and allow developers to preview what the
+reduced User-Agent string will look like on different platforms:
+- [User-Agent Reduction Snippets](https://developer.chrome.com/docs/privacy-sandbox/user-agent/snippets/)
+- [User-Agent Reduction Interactive Demo](https://reduced-ua.glitch.me/)

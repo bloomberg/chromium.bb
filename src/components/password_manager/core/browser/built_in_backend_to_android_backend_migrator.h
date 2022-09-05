@@ -12,8 +12,6 @@ class PrefService;
 
 namespace password_manager {
 
-class PasswordStoreBackend;
-
 // Instantiate this object to migrate all password stored in the built-in
 // backend to the Android backend. Migration is potentially an expensive
 // operation and shouldn't start during the hot phase of Chrome start.
@@ -25,7 +23,7 @@ class BuiltInBackendToAndroidBackendMigrator {
       PasswordStoreBackend* built_in_backend,
       PasswordStoreBackend* android_backend,
       PrefService* prefs,
-      base::RepeatingCallback<bool()> is_syncing_passwords_callback);
+      PasswordStoreBackend::SyncDelegate* sync_delegate);
 
   BuiltInBackendToAndroidBackendMigrator(
       const BuiltInBackendToAndroidBackendMigrator&) = delete;
@@ -40,13 +38,29 @@ class BuiltInBackendToAndroidBackendMigrator {
   void StartMigrationIfNecessary();
 
  private:
+  struct IsPasswordLess;
   struct BackendAndLoginsResults;
+  class MigrationMetricsReporter;
+
+  using PasswordFormPtrFlatSet =
+      base::flat_set<const PasswordForm*, IsPasswordLess>;
 
   // Saves current migration version in |prefs_|.
   void UpdateMigrationVersionInPref();
 
   // Schedules async calls to read of all passwords from both backends.
   void PrepareForMigration();
+
+  // Migrates all non-syncable data contained in |logins_or_error| to the
+  // |target_backend|. This is implemented by issuing update requests for
+  // all retrieved credentials.
+  void MigrateNonSyncableData(PasswordStoreBackend* target_backend,
+                              LoginsResultOrError logins_or_error);
+
+  // Performs the rolling migration that synchronises entries between
+  // |built_in_backend_| and |android_backend_| to keep them in consistent
+  // state. Calls |MigratePasswordsBetweenAndroidAndBuiltInBackends| internally.
+  void RunRollingMigration();
 
   // Migrates password between |built_in_backend_| and |android_backend_|.
   // |result| consists of passwords from the |built_in_backend_| let's call them
@@ -56,12 +70,64 @@ class BuiltInBackendToAndroidBackendMigrator {
   void MigratePasswordsBetweenAndroidAndBuiltInBackends(
       std::vector<BackendAndLoginsResults> result);
 
+  // Updates both |built_in_backend_| and |android_backend_| such that both
+  // contain the same set of passwords without deleting any password. In
+  // addition, it marks the initial migration as completed.
+  void MergeAndroidBackendAndBuiltInBackend(
+      PasswordFormPtrFlatSet built_in_backend_logins,
+      PasswordFormPtrFlatSet android_logins);
+
+  // Updates |built_in_backend_| such that it contains the same set of passwords
+  // as in |android_backend_|.
+  void MirrorAndroidBackendToBuiltInBackend(
+      PasswordFormPtrFlatSet built_in_backend_logins,
+      PasswordFormPtrFlatSet android_logins);
+
+  // Helper methods to {Add,Update,Remove} |form| in |backend|. This is used to
+  // ensure that all the operations are happening inside
+  // BuiltInBackendToAndroidBackendMigrator life-scope.
+  void AddLoginToBackend(PasswordStoreBackend* backend,
+                         const PasswordForm& form,
+                         base::OnceClosure callback);
+  void UpdateLoginInBackend(PasswordStoreBackend* backend,
+                            const PasswordForm& form,
+                            base::OnceClosure callback);
+  void RemoveLoginFromBackend(PasswordStoreBackend* backend,
+                              const PasswordForm& form,
+                              base::OnceClosure callback);
+
+  // If |changelist| is an empty changelist, migration is aborted by calling
+  // MigrationFinished() indicating the migration is *not* successful.
+  // Otherwise, |callback| is invoked.
+  void RunCallbackOrAbortMigration(base::OnceClosure callback,
+                                   PasswordChangesOrError changelist);
+
+  // Reports metrics and deletes |metrics_reporter_|
+  void MigrationFinished(bool is_success);
+
+  // Returns true if prefs and enabled features allow non-syncable data
+  // migration.
+  bool ShouldMigrateNonSyncableData();
+
+  // Removes blocklisted forms with non-empty |username_value| or
+  // |password_value| from |backend|.
+  // |result_callback| is called with the |LoginsResult| containing valid forms
+  // only or |PasswordStoreBackendError| if it contained in |logins_or_error|.
+  // |logins_or_error| is modified in place.
+  void RemoveBlacklistedFormsWithValues(PasswordStoreBackend* backend,
+                                        LoginsOrErrorReply result_callback,
+                                        LoginsResultOrError logins_or_error);
+
   const raw_ptr<PasswordStoreBackend> built_in_backend_;
   const raw_ptr<PasswordStoreBackend> android_backend_;
 
   const raw_ptr<PrefService> prefs_ = nullptr;
 
-  base::RepeatingCallback<bool()> is_syncing_passwords_callback_;
+  std::unique_ptr<MigrationMetricsReporter> metrics_reporter_;
+
+  const raw_ptr<PasswordStoreBackend::SyncDelegate> sync_delegate_;
+
+  bool non_syncable_data_migration_in_progress_ = false;
 
   base::WeakPtrFactory<BuiltInBackendToAndroidBackendMigrator>
       weak_ptr_factory_{this};

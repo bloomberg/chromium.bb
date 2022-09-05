@@ -9,13 +9,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/alias.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "ios/web/public/browser_state.h"
@@ -334,8 +332,10 @@ void URLRequestChromeJob::MimeTypeAvailable(URLDataSourceIOSImpl* source,
                                             const std::string& mime_type) {
   set_mime_type(mime_type);
 
-  if (mime_type == "text/html")
+  if (mime_type == "text/html" || (mime_type == "application/javascript" &&
+                                   source->ShouldReplaceI18nInJS())) {
     set_source(source);
+  }
 
   NotifyHeadersComplete();
 }
@@ -373,7 +373,7 @@ int URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
 int URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size) {
   // http://crbug.com/373841
   char url_buf[128];
-  base::strlcpy(url_buf, request_->url().spec().c_str(), base::size(url_buf));
+  base::strlcpy(url_buf, request_->url().spec().c_str(), std::size(url_buf));
   base::debug::Alias(url_buf);
 
   int remaining = data_->size() - data_offset_;
@@ -401,8 +401,8 @@ void GetMimeTypeOnUI(URLDataSourceIOSImpl* source,
                      const base::WeakPtr<URLRequestChromeJob>& job) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
   std::string mime_type = source->source()->GetMimeType(path);
-  base::PostTask(FROM_HERE, {WebThread::IO},
-                 base::BindOnce(&URLRequestChromeJob::MimeTypeAvailable, job,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&URLRequestChromeJob::MimeTypeAvailable, job,
                                 base::RetainedRef(source), mime_type));
 }
 
@@ -522,7 +522,7 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
   // message loop before request for data. And correspondingly their
   // replies are put on the IO thread in the same order.
   scoped_refptr<base::SingleThreadTaskRunner> target_runner =
-      base::CreateSingleThreadTaskRunner({web::WebThread::UI});
+      web::GetUIThreadTaskRunner({});
   target_runner->PostTask(
       FROM_HERE, base::BindOnce(&GetMimeTypeOnUI, base::RetainedRef(source),
                                 path, job->weak_factory_.GetWeakPtr()));

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/geometry/size.h"
@@ -61,6 +62,21 @@ libyuv::RotationMode MediaVideoRotationToRotationMode(
 
 namespace {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// (kLastHistogram being the only exception, as it does not map to a logged
+// value, and should be renumbered as new values are inserted.)
+enum {
+  kUnknownHistogram = 0,
+  kVp8SwHistogram = 1,
+  kVp8HwHistogram = 2,
+  kVp9SwHistogram = 3,
+  kVp9HwHistogram = 4,
+  kH264SwHistogram = 5,
+  kH264HwHistogram = 6,
+  kLastHistogram = 7,
+};
+
 static const struct {
   CodecId codec_id;
   media::VideoCodecProfile min_profile;
@@ -73,7 +89,7 @@ static const struct {
 #endif
 };
 
-static_assert(base::size(kPreferredCodecIdAndVEAProfiles) ==
+static_assert(std::size(kPreferredCodecIdAndVEAProfiles) ==
                   static_cast<int>(CodecId::kLast),
               "|kPreferredCodecIdAndVEAProfiles| should consider all CodecIds");
 
@@ -126,6 +142,45 @@ VideoTrackRecorderImpl::CodecEnumerator* GetCodecEnumerator() {
   return enumerator;
 }
 
+static void UmaHistogramForCodec(bool uses_acceleration, CodecId codec_id) {
+  int histogram_index = kUnknownHistogram;
+  if (uses_acceleration) {
+    switch (codec_id) {
+      case CodecId::kVp8:
+        histogram_index = kVp8HwHistogram;
+        break;
+      case CodecId::kVp9:
+        histogram_index = kVp9HwHistogram;
+        break;
+#if BUILDFLAG(RTC_USE_H264)
+      case CodecId::kH264:
+        histogram_index = kH264HwHistogram;
+        break;
+#endif
+      case CodecId::kLast:
+        break;
+    }
+  } else {
+    switch (codec_id) {
+      case CodecId::kVp8:
+        histogram_index = kVp8SwHistogram;
+        break;
+      case CodecId::kVp9:
+        histogram_index = kVp9SwHistogram;
+        break;
+#if BUILDFLAG(RTC_USE_H264)
+      case CodecId::kH264:
+        histogram_index = kH264SwHistogram;
+        break;
+#endif
+      case CodecId::kLast:
+        break;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("Media.MediaRecorder.Codec", histogram_index,
+                            static_cast<int>(kLastHistogram));
+}
+
 }  // anonymous namespace
 
 VideoTrackRecorder::VideoTrackRecorder(
@@ -152,7 +207,7 @@ VideoTrackRecorderImpl::CodecEnumerator::CodecEnumerator(
         vea_supported_profiles) {
   for (const auto& supported_profile : vea_supported_profiles) {
     const media::VideoCodecProfile codec = supported_profile.profile;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // TODO(mcasas): enable other codecs, https://crbug.com/638664.
     static_assert(media::VP8PROFILE_MAX + 1 == media::VP9PROFILE_MIN,
                   "VP8 and VP9 VideoCodecProfiles should be contiguous");
@@ -277,10 +332,13 @@ VideoTrackRecorderImpl::Encoder::~Encoder() {
     origin_task_runner_->DeleteSoon(FROM_HERE,
                                     std::move(num_frames_in_encode_));
   }
-  if (encoder_thread_context_ &&
-      !encoding_task_runner_->RunsTasksInCurrentSequence()) {
-    encoding_task_runner_->DeleteSoon(FROM_HERE,
-                                      std::move(encoder_thread_context_));
+  if (!encoding_task_runner_->RunsTasksInCurrentSequence()) {
+    if (encoder_thread_context_) {
+      encoding_task_runner_->DeleteSoon(FROM_HERE,
+                                        std::move(encoder_thread_context_));
+    }
+    if (video_renderer_)
+      encoding_task_runner_->DeleteSoon(FROM_HERE, std::move(video_renderer_));
   }
 }
 
@@ -660,7 +718,9 @@ void VideoTrackRecorderImpl::InitializeEncoderOnEncoderSupportKnown(
   if (allow_vea_encoder &&
       CanUseAcceleratedEncoder(codec_profile.codec_id, input_size.width(),
                                input_size.height())) {
+    // TODO(b/227350897): remove once codec histogram is verified working
     UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", true);
+    UmaHistogramForCodec(true, codec_profile.codec_id);
 
     const auto vea_profile =
         codec_profile.profile
@@ -678,7 +738,9 @@ void VideoTrackRecorderImpl::InitializeEncoderOnEncoderSupportKnown(
         bits_per_second, vea_profile, codec_profile.level, input_size,
         use_import_mode, main_task_runner_);
   } else {
+    // TODO(b/227350897): remove once codec histogram is verified working
     UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", false);
+    UmaHistogramForCodec(false, codec_profile.codec_id);
     switch (codec_profile.codec_id) {
 #if BUILDFLAG(RTC_USE_H264)
       case CodecId::kH264:

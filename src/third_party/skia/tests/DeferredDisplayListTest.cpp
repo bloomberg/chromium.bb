@@ -27,15 +27,15 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "include/gpu/GrTypes.h"
 #include "include/gpu/gl/GrGLTypes.h"
-#include "include/private/GrTypesPriv.h"
+#include "include/private/gpu/ganesh/GrTypesPriv.h"
 #include "src/core/SkDeferredDisplayListPriv.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetProxy.h"
-#include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/gl/GrGLDefines.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrRenderTargetProxy.h"
+#include "src/gpu/ganesh/GrTextureProxy.h"
+#include "src/gpu/ganesh/gl/GrGLDefines_impl.h"
 #include "src/image/SkImage_GpuBase.h"
 #include "src/image/SkSurface_Gpu.h"
 #include "tests/Test.h"
@@ -50,8 +50,8 @@
 #include <utility>
 
 #ifdef SK_VULKAN
-#include "src/gpu/vk/GrVkCaps.h"
-#include "src/gpu/vk/GrVkSecondaryCBDrawContext.h"
+#include "src/gpu/ganesh/vk/GrVkCaps.h"
+#include "src/gpu/ganesh/vk/GrVkSecondaryCBDrawContext_impl.h"
 #endif
 
 class SurfaceParameters {
@@ -1185,14 +1185,14 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLTextureFlagsTest, reporter, ctxInfo) {
     SkDeferredDisplayListRecorder recorder(characterization);
 
     for (GrGLenum target : { GR_GL_TEXTURE_EXTERNAL, GR_GL_TEXTURE_RECTANGLE, GR_GL_TEXTURE_2D } ) {
-        for (auto mipMapped : { GrMipmapped::kNo, GrMipmapped::kYes }) {
+        for (auto mipmapped : { GrMipmapped::kNo, GrMipmapped::kYes }) {
             GrBackendFormat format = GrBackendFormat::MakeGL(GR_GL_RGBA8, target);
 
             sk_sp<SkImage> image = SkImage::MakePromiseTexture(
                     recorder.getCanvas()->recordingContext()->threadSafeProxy(),
                     format,
                     SkISize::Make(32, 32),
-                    mipMapped,
+                    mipmapped,
                     kTopLeft_GrSurfaceOrigin,
                     kRGBA_8888_SkColorType,
                     kPremul_SkAlphaType,
@@ -1200,7 +1200,11 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLTextureFlagsTest, reporter, ctxInfo) {
                     noop_fulfill_proc,
                     /*release proc*/ nullptr,
                     /*context*/nullptr);
-            if (GR_GL_TEXTURE_2D != target && mipMapped == GrMipmapped::kYes) {
+            if (GR_GL_TEXTURE_2D != target && mipmapped == GrMipmapped::kYes) {
+                REPORTER_ASSERT(reporter, !image);
+                continue;
+            }
+            if (!context->priv().caps()->isFormatTexturable(format, format.textureType())) {
                 REPORTER_ASSERT(reporter, !image);
                 continue;
             }
@@ -1208,7 +1212,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLTextureFlagsTest, reporter, ctxInfo) {
 
             GrTextureProxy* backingProxy = sk_gpu_test::GetTextureImageProxy(image.get(), context);
 
-            REPORTER_ASSERT(reporter, backingProxy->mipmapped() == mipMapped);
+            REPORTER_ASSERT(reporter, backingProxy->mipmapped() == mipmapped);
             if (GR_GL_TEXTURE_2D == target) {
                 REPORTER_ASSERT(reporter, !backingProxy->hasRestrictedSampling());
             } else {

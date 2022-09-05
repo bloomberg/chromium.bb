@@ -19,13 +19,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -123,17 +123,15 @@ void RecordDeletingClipboardSuggestionMetrics(
 
 ClipboardProvider::ClipboardProvider(AutocompleteProviderClient* client,
                                      AutocompleteProviderListener* listener,
-                                     HistoryURLProvider* history_url_provider,
                                      ClipboardRecentContent* clipboard_content)
     : AutocompleteProvider(AutocompleteProvider::TYPE_CLIPBOARD),
       client_(client),
-      listener_(listener),
       clipboard_content_(clipboard_content),
-      history_url_provider_(history_url_provider),
       current_url_suggested_times_(0),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false) {
   DCHECK(clipboard_content_);
+  AddListener(listener);
 }
 
 ClipboardProvider::~ClipboardProvider() {}
@@ -323,17 +321,17 @@ void ClipboardProvider::OnReceiveClipboardContent(
     field_trial_triggered_ = true;
     field_trial_triggered_in_session_ = true;
     AddCreatedMatchWithTracking(input, match, clipboard_contents_age);
-    listener_->OnProviderUpdate(true);
+    NotifyListeners(true);
   } else if (matched_types.find(ClipboardContentType::URL) !=
              matched_types.end()) {
     AutocompleteMatch match = NewBlankURLMatch();
     AddCreatedMatchWithTracking(input, match, clipboard_contents_age);
-    listener_->OnProviderUpdate(true);
+    NotifyListeners(true);
   } else if (matched_types.find(ClipboardContentType::Text) !=
              matched_types.end()) {
     AutocompleteMatch match = NewBlankTextMatch();
     AddCreatedMatchWithTracking(input, match, clipboard_contents_age);
-    listener_->OnProviderUpdate(true);
+    NotifyListeners(true);
   }
   done_ = true;
 }
@@ -438,7 +436,7 @@ void ClipboardProvider::AddImageMatchCallback(
     return;
   }
   AddCreatedMatchWithTracking(input, match.value(), clipboard_contents_age);
-  listener_->OnProviderUpdate(true);
+  NotifyListeners(true);
   done_ = true;
 }
 
@@ -649,8 +647,9 @@ void ClipboardProvider::UpdateClipboardURLContent(const GURL& url,
   // Because the user did not type a related input to get this clipboard
   // suggestion, preserve the subdomain so the user has extra context.
   auto format_types = AutocompleteMatch::GetFormatTypes(false, true);
-  match->contents.assign(url_formatter::FormatUrl(
-      url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+  match->contents.assign(url_formatter::FormatUrl(url, format_types,
+                                                  base::UnescapeRule::SPACES,
+                                                  nullptr, nullptr, nullptr));
   if (!match->contents.empty())
     match->contents_class.push_back({0, ACMatchClassification::URL});
   match->fill_into_edit =

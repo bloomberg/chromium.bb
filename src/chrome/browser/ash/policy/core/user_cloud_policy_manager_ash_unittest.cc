@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -36,9 +37,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/enterprise/browser/reporting/report_scheduler.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -73,33 +73,29 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace em = enterprise_management;
-
-using testing::_;
-using testing::AnyNumber;
-using testing::AtLeast;
-using testing::AtMost;
-using testing::DoAll;
-using testing::Mock;
-using testing::SaveArg;
+namespace policy {
 
 namespace {
+
+namespace em = ::enterprise_management;
+
+using ::testing::_;
+using ::testing::DoAll;
+using ::testing::Mock;
+using ::testing::SaveArg;
 
 const char kUMAReregistrationResult[] =
     "Enterprise.UserPolicyChromeOS.ReregistrationResult";
 
 enum PolicyRequired { POLICY_NOT_REQUIRED, POLICY_REQUIRED };
 
-void SendJobOKNowForBinding(
-    policy::FakeDeviceManagementService* service,
-    policy::DeviceManagementService::JobForTesting job,
-    const enterprise_management::DeviceManagementResponse& response) {
+void SendJobOKNowForBinding(FakeDeviceManagementService* service,
+                            DeviceManagementService::JobForTesting job,
+                            const em::DeviceManagementResponse& response) {
   service->SendJobOKNow(&job, response);
 }
 
 }  // namespace
-
-namespace policy {
 
 using PolicyEnforcement = UserCloudPolicyManagerAsh::PolicyEnforcement;
 
@@ -160,7 +156,7 @@ class UserCloudPolicyManagerAshTest
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     scoped_feature_list_.InitWithFeatures(
         GetParam() /* enabled_features */,
@@ -177,7 +173,7 @@ class UserCloudPolicyManagerAshTest
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile,
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(), u"", 0,
-        std::string(), std::move(factories));
+        std::move(factories));
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_);
 
@@ -185,7 +181,7 @@ class UserCloudPolicyManagerAshTest
     // the signin Profile is an OTR Profile then for this test it suffices to
     // attach it to the main Profile.
     signin_profile_ = TestingProfile::Builder().BuildIncognito(profile_);
-    ASSERT_EQ(signin_profile_, chromeos::ProfileHelper::GetSigninProfile());
+    ASSERT_EQ(signin_profile_, ash::ProfileHelper::GetSigninProfile());
 
     RegisterLocalState(prefs_.registry());
 
@@ -243,7 +239,7 @@ class UserCloudPolicyManagerAshTest
     test_system_shared_loader_factory_->Detach();
     test_signin_shared_loader_factory_->Detach();
 
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -407,10 +403,10 @@ class UserCloudPolicyManagerAshTest
     external_data_manager_->SetPolicyStore(store_);
     const user_manager::User* active_user = user_manager_->GetActiveUser();
     manager_ = std::make_unique<UserCloudPolicyManagerAsh>(
-        chromeos::ProfileHelper::Get()->GetProfileByUser(active_user),
+        ash::ProfileHelper::Get()->GetProfileByUser(active_user),
         std::move(store),
         base::WrapUnique<MockCloudExternalDataManager>(external_data_manager_),
-        base::FilePath(), enforcement_type, fetch_timeout,
+        base::FilePath(), enforcement_type, &prefs_, fetch_timeout,
         base::BindOnce(&UserCloudPolicyManagerAshTest::OnFatalErrorEncountered,
                        base::Unretained(this)),
         active_user->GetAccountId(), task_runner_);
@@ -424,7 +420,7 @@ class UserCloudPolicyManagerAshTest
 
   void InitAndConnectManager() {
     manager_->Init(&schema_registry_);
-    manager_->Connect(&prefs_, &device_management_service_,
+    manager_->Connect(&device_management_service_,
                       /*system_url_loader_factory=*/nullptr);
     // Create the UserCloudPolicyTokenForwarder, which fetches the access
     // token using the IdentityManager and forwards it to the

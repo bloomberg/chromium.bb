@@ -18,11 +18,11 @@ class Window;
 
 namespace ui {
 class OSExchangeData;
+class PresentationTimeRecorder;
 }
 
 namespace ash {
 
-class PresentationTimeRecorder;
 class SplitViewDragIndicators;
 class TabletModeBrowserWindowDragSessionWindowsHider;
 
@@ -45,7 +45,7 @@ class ASH_EXPORT TabDragDropDelegate : public DragDropCaptureDelegate {
   TabDragDropDelegate(aura::Window* root_window,
                       aura::Window* source_window,
                       const gfx::Point& start_location_in_screen);
-  ~TabDragDropDelegate();
+  ~TabDragDropDelegate() override;
 
   TabDragDropDelegate(const TabDragDropDelegate&) = delete;
   TabDragDropDelegate& operator=(const TabDragDropDelegate&) = delete;
@@ -61,6 +61,8 @@ class ASH_EXPORT TabDragDropDelegate : public DragDropCaptureDelegate {
                          const ui::OSExchangeData& drop_data);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TabDragDropDelegateTest, DropWithoutNewWindow);
+
   // Scales or transforms the source window if appropriate for this drag.
   // |candidate_snap_position| is where the dragged tab will be snapped
   // if dropped immediately.
@@ -76,6 +78,23 @@ class ASH_EXPORT TabDragDropDelegate : public DragDropCaptureDelegate {
   void OnNewBrowserWindowCreated(const gfx::Point& location_in_screen,
                                  aura::Window* new_window);
 
+  // This method returns true when all of the conditions below are met
+  //
+  // - Not in split view mode
+  // - In landscape mode
+  // - The current drag location is inside the WebUI tab strip
+  //
+  // When it returns true, we don't allow to enter split view because
+  // it hinders dragging tabs within the tab strip to trigger auto-scroll.
+  // This restriction does not apply to split screen mode because either
+  // the left/right could be non browser window, which may lead to
+  // confusing behavior.
+  // It also does not apply to portrait mode because dragging up/down to
+  // enter split screen does not hinder dragging left/right to move tabs.
+  //
+  // https://crbug.com/1316070
+  bool ShouldPreventSnapToTheEdge(const gfx::Point& location_in_screen);
+
   aura::Window* const root_window_;
   aura::Window* const source_window_;
   const gfx::Point start_location_in_screen_;
@@ -86,7 +105,7 @@ class ASH_EXPORT TabDragDropDelegate : public DragDropCaptureDelegate {
 
   // Presentation time recorder for tab dragging in tablet mode with webui
   // tab strip enable.
-  std::unique_ptr<PresentationTimeRecorder> tab_dragging_recorder_;
+  std::unique_ptr<ui::PresentationTimeRecorder> tab_dragging_recorder_;
 };
 
 }  // namespace ash

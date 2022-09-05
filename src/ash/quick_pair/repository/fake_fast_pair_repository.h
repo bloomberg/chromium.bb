@@ -13,9 +13,15 @@
 #include "base/containers/flat_map.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace chromeos {
+namespace bluetooth_config {
+class DeviceImageInfo;
+}  // namespace bluetooth_config
+}  // namespace chromeos
+
 namespace device {
 class BluetoothDevice;
-}
+}  // namespace device
 
 namespace ash {
 namespace quick_pair {
@@ -37,25 +43,53 @@ class FakeFastPairRepository : public FastPairRepository {
 
   void SetCheckAccountKeysResult(absl::optional<PairingMetadata> result);
 
+  void set_is_account_key_paired_locally(bool is_account_key_paired_locally) {
+    is_account_key_paired_locally_ = is_account_key_paired_locally;
+  }
+
   bool HasKeyForDevice(const std::string& mac_address);
+
+  void set_is_network_connected(bool is_connected) {
+    is_network_connected_ = is_connected;
+  }
+
+  void SetOptInStatus(nearby::fastpair::OptInStatus status);
 
   // FastPairRepository::
   void GetDeviceMetadata(const std::string& hex_model_id,
                          DeviceMetadataCallback callback) override;
-  void IsValidModelId(const std::string& hex_model_id,
-                      base::OnceCallback<void(bool)> callback) override;
   void CheckAccountKeys(const AccountKeyFilter& account_key_filter,
                         CheckAccountKeysCallback callback) override;
   void AssociateAccountKey(scoped_refptr<Device> device,
                            const std::vector<uint8_t>& account_key) override;
-  bool DeleteAssociatedDevice(const device::BluetoothDevice* device) override;
+  bool AssociateAccountKeyLocally(scoped_refptr<Device> device) override;
+  void DeleteAssociatedDevice(const std::string& mac_address,
+                              DeleteAssociatedDeviceCallback callback) override;
+  void FetchDeviceImages(scoped_refptr<Device> device) override;
+  bool PersistDeviceImages(scoped_refptr<Device> device) override;
+  bool EvictDeviceImages(const device::BluetoothDevice* device) override;
+  absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
+  GetImagesForDevice(const std::string& device_id) override;
+  void CheckOptInStatus(CheckOptInStatusCallback callback) override;
+  void UpdateOptInStatus(nearby::fastpair::OptInStatus opt_in_status,
+                         UpdateOptInStatusCallback callback) override;
+  void DeleteAssociatedDeviceByAccountKey(
+      const std::vector<uint8_t>& account_key,
+      DeleteAssociatedDeviceByAccountKeyCallback callback) override;
+  void GetSavedDevices(GetSavedDevicesCallback callback) override;
+  bool IsAccountKeyPairedLocally(
+      const std::vector<uint8_t>& account_key) override;
 
  private:
   static void SetInstance(FastPairRepository* instance);
 
+  nearby::fastpair::OptInStatus status_ =
+      nearby::fastpair::OptInStatus::STATUS_UNKNOWN;
+  bool is_network_connected_ = true;
+  bool is_account_key_paired_locally_ = true;
   base::flat_map<std::string, std::unique_ptr<DeviceMetadata>> data_;
   base::flat_map<std::string, std::vector<uint8_t>> saved_account_keys_;
-  absl::optional<PairingMetadata> check_account_key_result_;
+  absl::optional<PairingMetadata> check_account_keys_result_;
   base::WeakPtrFactory<FakeFastPairRepository> weak_ptr_factory_{this};
 };
 

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
+#include "base/callback.h"
 #include "gin/public/v8_platform.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -46,15 +47,6 @@ class BlinkRootsHandler final : public v8::EmbedderRootsHandler {
       return true;
     }
 
-    if (ToScriptWrappable(traced)->HasEventListeners()) {
-      return true;
-    }
-
-    return false;
-  }
-
-  bool IsRoot(const v8::TracedGlobal<v8::Value>& handle) final {
-    CHECK(false) << "Blink does not use v8::TracedGlobal.";
     return false;
   }
 
@@ -206,6 +198,11 @@ void ThreadState::CollectAllGarbageForTesting(StackState stack_state) {
     }
     previous_live_bytes = live_bytes;
   }
+}
+
+void ThreadState::CollectGarbageInYoungGenerationForTesting(
+    StackState stack_state) {
+  cpp_heap().CollectGarbageInYoungGenerationForTesting(stack_state);
 }
 
 namespace {
